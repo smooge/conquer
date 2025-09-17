@@ -1,10 +1,32 @@
 /*
- * data.h - Data structures and function prototypes
- * 
+ * data.h - Core data structures, constants, and function prototypes for Conquer
+ *
+ * This header file contains the complete data model for the Conquer game system,
+ * including all major data structures (world, nations, sectors, armies, navies),
+ * game constants, macros for data access, and function prototypes. This is the
+ * central data definition file that defines the game's architecture.
+ *
+ * Key Components:
+ * - Game constants and magic numbers
+ * - Core data structures (s_world, s_nation, s_sector, army, navy)
+ * - Nation strategy and diplomacy definitions
+ * - Unit types, leaders, and monsters
+ * - Magic powers and nation classes
+ * - Trade goods and economic systems
+ * - Screen and map display definitions
+ * - Function prototypes for all major game systems
+ *
+ * Architecture Notes:
+ * - Uses legacy K&R function prototypes (requires modernization)
+ * - Extensive use of macros for data access and game calculations
+ * - Complex bit manipulation for naval ship storage
+ * - Global variables extensively used throughout system
+ * - File I/O operations for game state persistence
+ *
  * This file is part of Conquer.
  * Originally Copyright (C) 1988-1989 by Edward M. Barlow and Adam Bryant
  * Copyright (C) 2025 Juan Manuel Méndez Rey (Vejeta) - Licensed under GPL v3 with permission from original authors
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -20,161 +42,272 @@
  */
 
 /*--------I DO NOT BELIEVE IT IS NECESSARY TO ALTER THIS FILE----------------*/
+
+/*
+ * =============================================================================
+ * FUNDAMENTAL SYSTEM CONSTANTS
+ * =============================================================================
+ * Basic return codes, limits, and system-wide constants used throughout the
+ * game engine. These values control core system behavior and resource limits.
+ */
+
+/*
+ * Shell return codes - Standard exit status values for process termination
+ */
 #define	FAIL	1		/* fail return to shell			*/
 #define	SUCCESS	0		/* successful return to shell		*/
+
+/*
+ * System timing and limits
+ */
 #define TIME_DEAD	3600	/* number of seconds for file aging	*/
 #define	BIG	500000000L	/* BIGGER THAN ANYTHING SHOULD BE	*/
 				/* this is used to protect against overflow */
+
+/*
+ * Screen display calculations
+ */
 #define	SCRARM	((LINES-14)/2)	/* number of armies to fit on screen	*/
 
+/*
+ * Boolean constants - Standard true/false values with curses compatibility
+ */
 /* sometimes curses.h defines TRUE	*/
 #ifndef TRUE
 #define	TRUE		1
 #define	FALSE		0
 #endif
 
-/* definitions for mail sending */
-#define	DONEMAIL	(-3)
-#define	NEWSMAIL	(-2)
-#define	ABORTMAIL	(-1)
+/*
+ * Mail system constants - Control values for in-game messaging system
+ */
+#define	DONEMAIL	(-3)	/* Mail composition completed */
+#define	NEWSMAIL	(-2)	/* News/bulletin mail type */
+#define	ABORTMAIL	(-1)	/* Mail composition aborted */
 
-/* definitions for screen redrawing */
-#define	DONE	0
-#define	PART	1
-#define	FULL	2
+/*
+ * Screen refresh modes - Control levels for display updating
+ */
+#define	DONE	0		/* No screen update needed */
+#define	PART	1		/* Partial screen refresh */
+#define	FULL	2		/* Full screen redraw required */
 
+/*
+ * Screen geometry and visibility calculations
+ */
 #define	SCREEN_X_SIZE	(( COLS - 21) / 2)	/* divide by two as only 1/2
 						                       sectors will be shown */
 #define	SCREEN_Y_SIZE	( LINES - 5 )
-#define	HAS_SEEN(x,y)	hasseen[(x)+((y)*((COLS-10)/2))]
+#define	HAS_SEEN(x,y)	hasseen[(x)+((y)*((COLS-10)/2))]	/* sector visibility array access */
+
+/*
+ * String length limits - Maximum sizes for various text fields
+ */
 #define	PASSLTH		7	/* the number of characters in the passwd*/
 #define	NAMELTH		9	/* the number of characters in the name*/
 #define	LEADERLTH	9	/* the number of characters in the leader*/
 #define	FILELTH		80	/*length for filename holders*/
 #define	LINELTH		80	/*length for input string lines*/
 #define	BIGLTH		256	/*length for large storage strings*/
+
+/*
+ * Game system limits
+ */
 #define	NUMCLASS	11	/*number of nation classes */
 
-/* environment variable strings to check */
-#define	ENVIRON_OPTS	"CONQ_OPTS"
+/*
+ * Environment configuration
+ */
+#define	ENVIRON_OPTS	"CONQ_OPTS"	/* environment variable strings to check */
 
-/*simple contour map definitions*/
-#define	WATER		(*(ele+0))
-#define	PEAK		(*(ele+1))
-#define	MOUNTAIN	(*(ele+2))
-#define	HILL		(*(ele+3))
-#define	CLEAR		(*(ele+4))
+/*
+ * =============================================================================
+ * TERRAIN AND WORLD MAP DEFINITIONS
+ * =============================================================================
+ * Constants defining the physical geography and racial characteristics of the
+ * game world. These include elevation levels, racial identifiers, and terrain
+ * features that affect gameplay mechanics.
+ */
 
-/*racial types*/
-#define	GOD		'-'
-#define	ORC		'O'
-#define	ELF		'E'
-#define	DWARF		'D'
-#define	LIZARD		'L'
-#define	HUMAN		'H'
-#define	PIRATE		'P'
-#define	SAVAGE		'S'
-#define	NOMAD		'N'
-#define	TUNKNOWN	'?'
+/*
+ * Elevation/contour map definitions - Terrain altitude levels
+ * Uses dynamic array access through 'ele' pointer for configurable terrain
+ */
+#define	WATER		(*(ele+0))	/* Water/ocean sectors */
+#define	PEAK		(*(ele+1))	/* Mountain peaks */
+#define	MOUNTAIN	(*(ele+2))	/* Mountain terrain */
+#define	HILL		(*(ele+3))	/* Hilly terrain */
+#define	CLEAR		(*(ele+4))	/* Clear/flat terrain */
 
-/*designations*/
-#define	DTOWN		(*(des+0))
-#define	DCITY		(*(des+1))
-#define	DMINE		(*(des+2))
-#define	DFARM		(*(des+3))
-#define	DDEVASTATED	(*(des+4))
-#define	DGOLDMINE	(*(des+5))
-#define	DFORT		(*(des+6))
-#define	DRUIN		(*(des+7))
-#define	DSTOCKADE	(*(des+8))
-#define	DCAPITOL	(*(des+9))
-#define	DSPECIAL	(*(des+10))
-#define	DLUMBERYD	(*(des+11))
-#define	DBLKSMITH	(*(des+12))
-#define	DROAD		(*(des+13))
-#define	DMILL		(*(des+14))
-#define	DGRANARY	(*(des+15))
-#define	DCHURCH		(*(des+16))
-#define	DUNIVERSITY	(*(des+17))
-#define	DNODESIG	(*(des+18))
-#define	DBASECAMP	(*(des+19))
+/*
+ * Racial type identifiers - Character codes for different nation races
+ * These single-character codes identify the racial type of nations and NPCs
+ */
+#define	GOD		'-'		/* God/divine entities */
+#define	ORC		'O'		/* Orc nations */
+#define	ELF		'E'		/* Elf nations */
+#define	DWARF		'D'		/* Dwarf nations */
+#define	LIZARD		'L'		/* Lizardmen */
+#define	HUMAN		'H'		/* Human nations */
+#define	PIRATE		'P'		/* Pirate factions */
+#define	SAVAGE		'S'		/* Savage tribes */
+#define	NOMAD		'N'		/* Nomadic peoples */
+#define	TUNKNOWN	'?'		/* Unknown/unidentified race */
 
-/* nation placement variables	*/
-#define	GREAT		'G'
-#define	FAIR		'F'
-#define	RANDOM		'R'
-#define	OOPS		'X'
+/*
+ * Sector designations - Buildings and infrastructure types
+ * Uses dynamic array access through 'des' pointer for configurable designations
+ * These define what type of structure or development exists in a sector
+ */
+#define	DTOWN		(*(des+0))	/* Town settlement */
+#define	DCITY		(*(des+1))	/* City settlement */
+#define	DMINE		(*(des+2))	/* Mining operation */
+#define	DFARM		(*(des+3))	/* Agricultural farm */
+#define	DDEVASTATED	(*(des+4))	/* Devastated/destroyed area */
+#define	DGOLDMINE	(*(des+5))	/* Gold mining operation */
+#define	DFORT		(*(des+6))	/* Military fortress */
+#define	DRUIN		(*(des+7))	/* Ruined structure */
+#define	DSTOCKADE	(*(des+8))	/* Wooden fortification */
+#define	DCAPITOL	(*(des+9))	/* Nation capital city */
+#define	DSPECIAL	(*(des+10))	/* Special/unique designation */
+#define	DLUMBERYD	(*(des+11))	/* Lumber yard */
+#define	DBLKSMITH	(*(des+12))	/* Blacksmith shop */
+#define	DROAD		(*(des+13))	/* Road infrastructure */
+#define	DMILL		(*(des+14))	/* Mill facility */
+#define	DGRANARY	(*(des+15))	/* Food storage granary */
+#define	DCHURCH		(*(des+16))	/* Religious structure */
+#define	DUNIVERSITY	(*(des+17))	/* Educational institution */
+#define	DNODESIG	(*(des+18))	/* No designation (wilderness) */
+#define	DBASECAMP	(*(des+19))	/* Military base camp */
 
-/*vegetation types -- these are legal in designations too*/
-#define	VOLCANO		(*(veg+0))
-#define	DESERT		(*(veg+1))
-#define	TUNDRA		(*(veg+2))
-#define	BARREN		(*(veg+3))
-#define	LT_VEG		(*(veg+4))
-#define	GOOD		(*(veg+5))
-#define	WOOD		(*(veg+6))
-#define	FOREST		(*(veg+7))
-#define	JUNGLE		(*(veg+8))
-#define	SWAMP		(*(veg+9))
-#define	ICE		(*(veg+10))
-#define	NONE		(*(veg+11))
+/*
+ * Nation placement variables - Control nation starting positions in world generation
+ */
+#define	GREAT		'G'		/* Great starting position */
+#define	FAIR		'F'		/* Fair starting position */
+#define	RANDOM		'R'		/* Random placement */
+#define	OOPS		'X'		/* Error/invalid placement */
 
-/*Diplomacy Variables*/
-#define	JIHAD		7
-#define	WAR		6
-#define	HOSTILE		5
-#define	NEUTRAL		4
-#define	FRIENDLY	3
-#define	ALLIED		2
-#define	TREATY		1
-#define	UNMET		0
+/*
+ * Vegetation types - Natural terrain cover affecting sector productivity
+ * Uses dynamic array access through 'veg' pointer for configurable vegetation
+ * These are also legal in designations for mixed terrain types
+ */
+#define	VOLCANO		(*(veg+0))	/* Volcanic terrain */
+#define	DESERT		(*(veg+1))	/* Desert terrain */
+#define	TUNDRA		(*(veg+2))	/* Frozen tundra */
+#define	BARREN		(*(veg+3))	/* Barren wasteland */
+#define	LT_VEG		(*(veg+4))	/* Light vegetation */
+#define	GOOD		(*(veg+5))	/* Good farmland */
+#define	WOOD		(*(veg+6))	/* Wooded terrain */
+#define	FOREST		(*(veg+7))	/* Dense forest */
+#define	JUNGLE		(*(veg+8))	/* Tropical jungle */
+#define	SWAMP		(*(veg+9))	/* Swamp/marsh */
+#define	ICE		(*(veg+10))	/* Ice/frozen terrain */
+#define	NONE		(*(veg+11))	/* No vegetation */
+
+/*
+ * =============================================================================
+ * DIPLOMACY AND MILITARY SYSTEMS
+ * =============================================================================
+ */
+
+/*
+ * Diplomacy Variables - Relationship levels between nations
+ * Ordered from most hostile (7) to unmet (0)
+ */
+#define	JIHAD		7	/* Holy war - highest hostility */
+#define	WAR		6	/* Open warfare */
+#define	HOSTILE		5	/* Hostile relations */
+#define	NEUTRAL		4	/* Neutral/no formal relations */
+#define	FRIENDLY	3	/* Friendly relations */
+#define	ALLIED		2	/* Military alliance */
+#define	TREATY		1	/* Peace treaty */
+#define	UNMET		0	/* Nations have not met */
 
 #define	BREAKJIHAD	200000L /* $ cost to break confederacy or jihad	*/
 
-/*army status*/
-#define	MARCH		1	/*March	*/
-#define	SCOUT		2	/*Scouting--will not engage enemy if possible*/
-#define	GARRISON	3	/*Garrison--for a town or Capitol	*/
-#define	TRADED		4	/*Indicates an army that has been traded*/
-#define	MILITIA		5	/*Unit is a militia unit */
-#define	FLIGHT		6	/*Indicates army is flying*/
-#define	DEFEND		7	/*Defend	*/
-#define	MAGDEF		8	/*Magically enhanced defend mode*/
-#define	ATTACK		9	/*Attack anybody (Hostile+) within 2 sectors*/
-#define	MAGATT		10	/*Magically enhanced attack mode*/
-#define	GENERAL		11	/* group leader !!!	*/
-#define	SORTIE		12	/*Quick attack from a city */
-#define	SIEGE		13	/*Set siege on a city */
-#define	SIEGED		14	/*Unit under siege */
-#define	ONBOARD		15	/*On board a fleet */
-#define	RULE		16	/*Nation leader status for capitol */
-#define	NUMSTATUS	17	/* number of possible stats	*/
+/*
+ * Army status definitions - Combat and positioning modes for military units
+ * These control army behavior, combat engagement, and special abilities
+ */
+#define	MARCH		1	/* March - standard movement */
+#define	SCOUT		2	/* Scouting - will not engage enemy if possible */
+#define	GARRISON	3	/* Garrison - defending a town or Capitol */
+#define	TRADED		4	/* Indicates an army that has been traded */
+#define	MILITIA		5	/* Unit is a militia unit */
+#define	FLIGHT		6	/* Indicates army is flying */
+#define	DEFEND		7	/* Defensive stance */
+#define	MAGDEF		8	/* Magically enhanced defend mode */
+#define	ATTACK		9	/* Attack anybody (Hostile+) within 2 sectors */
+#define	MAGATT		10	/* Magically enhanced attack mode */
+#define	GENERAL		11	/* Group leader !!! */
+#define	SORTIE		12	/* Quick attack from a city */
+#define	SIEGE		13	/* Set siege on a city */
+#define	SIEGED		14	/* Unit under siege */
+#define	ONBOARD		15	/* On board a fleet */
+#define	RULE		16	/* Nation leader status for capitol */
+#define	NUMSTATUS	17	/* number of possible stats */
 				/* Army groups are implemented in the army
 				status vbl.  if >= NUMSTATUS, you belong to
 				army group x-NUMSTATUS - army groups always
 				of status attack and may not be magicked */
 
-/*seasonal definitions	*/
-#define	TURN		world.turn	/* game turn	*/
-#define	SEASON(x)	((x)%4)
-#define	PSEASON(x)	seasonstr[((x)%4)]
-#define	YEAR(x)		((int)((x+3)/4))
-#define	WINTER		0
-#define	SPRING		1
-#define	SUMMER		2
-#define	FALL		3
+/*
+ * Time and seasonal system - Game calendar and turn progression
+ */
+#define	TURN		world.turn	/* current game turn */
+#define	SEASON(x)	((x)%4)		/* calculate season from turn number */
+#define	PSEASON(x)	seasonstr[((x)%4)]	/* season name string */
+#define	YEAR(x)		((int)((x+3)/4))	/* calculate year from turn */
+#define	WINTER		0		/* Winter season */
+#define	SPRING		1		/* Spring season */
+#define	SUMMER		2		/* Summer season */
+#define	FALL		3		/* Fall/Autumn season */
 
-/* definitions for compass directions */
-#define	CENTERED	0
-#define	NORTH		1
-#define	NORTHEAST	2
-#define	EAST		3
-#define	SOUTHEAST	4
-#define	SOUTH		5
-#define	SOUTHWEST	6
-#define	WEST		7
-#define	NORTHWEST	8
+/*
+ * Compass directions - Movement and positioning system
+ * Used for army movement, map navigation, and spatial calculations
+ */
+#define	CENTERED	0		/* Current position/no movement */
+#define	NORTH		1		/* North direction */
+#define	NORTHEAST	2		/* Northeast direction */
+#define	EAST		3		/* East direction */
+#define	SOUTHEAST	4		/* Southeast direction */
+#define	SOUTH		5		/* South direction */
+#define	SOUTHWEST	6		/* Southwest direction */
+#define	WEST		7		/* West direction */
+#define	NORTHWEST	8		/* Northwest direction */
 
+/*
+ * =============================================================================
+ * CORE DATA STRUCTURES
+ * =============================================================================
+ */
+
+/*
+ * s_world - Global world state and statistics
+ *
+ * Central data structure containing world-wide game state including map
+ * dimensions, turn counter, global resource totals, and mercenary market.
+ * This structure tracks aggregate statistics across all nations and sectors.
+ *
+ * Fields:
+ *   mapx, mapy - World map dimensions (width x height in sectors)
+ *   nations - Number of active player nations
+ *   othrntns - Number of NPC nations (gods, lizards, etc.)
+ *   turn - Current game turn number (used for seasonal calculations)
+ *   m_mil - Available mercenaries in the global mercenary market
+ *   m_aplus, m_dplus - Mercenary combat bonuses (attack/defense)
+ *   w_jewels - Total jewels existing in the world economy
+ *   w_gold - Total gold talons in circulation
+ *   w_food - Total food resources across all sectors
+ *   w_metal - Total metal resources in the world
+ *   w_civ - Total civilian population across all sectors
+ *   w_mil - Total military units across all armies
+ *   w_sctrs - Total number of owned/developed sectors
+ *   score - Aggregate world score (sum of all nation scores)
+ */
 struct	s_world
 {
 	short	mapx,mapy;	/* size of world		*/
@@ -194,21 +327,46 @@ struct	s_world
 	long	score;		/* world score total		*/
 };
 
-#define MAPX		world.mapx
-#define MAPY		world.mapy
-#define	MERCMEN		world.m_mil
-#define	MERCATT		world.m_aplus
-#define	MERCDEF		world.m_dplus
-#define	WORLDJEWELS	world.w_jewels
-#define	WORLDGOLD	world.w_gold
-#define	WORLDMETAL	world.w_metal
-#define	WORLDFOOD	world.w_food
-#define	WORLDSCORE	world.score
-#define	WORLDCIV	world.w_civ
-#define	WORLDSCT	world.w_sctrs
-#define	WORLDMIL	world.w_mil
-#define	WORLDNTN	world.nations
+/*
+ * World data accessor macros - Convenient access to global world state
+ * These macros provide easy access to world structure fields throughout the codebase
+ */
+#define MAPX		world.mapx	/* World map width */
+#define MAPY		world.mapy	/* World map height */
+#define	MERCMEN		world.m_mil	/* Available mercenaries */
+#define	MERCATT		world.m_aplus	/* Mercenary attack bonus */
+#define	MERCDEF		world.m_dplus	/* Mercenary defense bonus */
+#define	WORLDJEWELS	world.w_jewels	/* Total world jewels */
+#define	WORLDGOLD	world.w_gold	/* Total world gold */
+#define	WORLDMETAL	world.w_metal	/* Total world metal */
+#define	WORLDFOOD	world.w_food	/* Total world food */
+#define	WORLDSCORE	world.score	/* Total world score */
+#define	WORLDCIV	world.w_civ	/* Total world civilians */
+#define	WORLDSCT	world.w_sctrs	/* Total owned sectors */
+#define	WORLDMIL	world.w_mil	/* Total world military */
+#define	WORLDNTN	world.nations	/* Number of nations */
 
+/*
+ * s_sector - Individual map sector data
+ *
+ * Represents a single hexagonal sector on the world map containing all
+ * sector-specific information including terrain, ownership, population,
+ * resources, and infrastructure. This is the fundamental unit of the
+ * game world that players interact with and develop.
+ *
+ * Fields:
+ *   designation - Type of development/building in sector (see DTOWN, DCITY, etc.)
+ *   altitude - Terrain elevation level (affects movement, combat)
+ *   vegetation - Natural vegetation type (affects productivity)
+ *   owner - Nation ID that owns this sector (0 = unowned)
+ *   people - Current civilian population in sector
+ *   i_people - Initial civilian population at world generation
+ *   jewels - Jewel production capacity of this sector
+ *   fortress - Fortification level (0-12, affects defense)
+ *   metal - Metal production capacity
+ *   tradegood - Type of exotic trade good produced (affects economy)
+ *   region - (Commented out) Region index for future regional system
+ */
 struct s_sector
 {
 	unsigned char	designation;	/* designation of sector	*/
@@ -223,10 +381,34 @@ struct s_sector
 	unsigned char	tradegood;	/* exotic trade goods in sector	*/
 	/* unsigned char	region;		/* index of region	*/
 };
-#define	SOWN	sct[xcurs+xoffset][ycurs+yoffset].owner
-#define	XREAL	(xcurs+xoffset)
-#define	YREAL	(ycurs+yoffset)
+/*
+ * Sector accessor macros - Quick access to current sector data
+ */
+#define	SOWN	sct[xcurs+xoffset][ycurs+yoffset].owner	/* Current sector owner */
+#define	XREAL	(xcurs+xoffset)		/* Real X coordinate on map */
+#define	YREAL	(ycurs+yoffset)		/* Real Y coordinate on map */
 
+/*
+ * navy - Naval fleet structure
+ *
+ * Represents a naval fleet containing different ship types and their
+ * cargo/crew. Ships use bit-packed storage to efficiently store multiple
+ * ship sizes within the warships/merchant/galleys fields.
+ *
+ * Fields:
+ *   warships - Bit-packed warship counts by size (light/medium/heavy)
+ *   merchant - Bit-packed merchant ship counts by size
+ *   galleys - Bit-packed galley counts by size
+ *   xloc, yloc - Fleet location coordinates on map
+ *   smove - Movement points remaining this turn
+ *   crew - Number of crew aboard the fleet
+ *   people - Civilian passengers carried
+ *   commodity - Reserved for future trade commodity system
+ *   armynum - Army index if fleet is carrying troops
+ *
+ * Note: Ship storage uses complex bit manipulation (see naval macros below)
+ * to pack multiple ship size categories into single fields.
+ */
 struct navy
 {
 	unsigned short warships;
@@ -242,11 +424,20 @@ struct navy
 };
 
 
-/* NATION STRATEGY: a nation's strategy is a part of the ntn[].active
- * variable which tells if it is a PC or NPC, its alignment, and its
- * constraints alignments can be good, neutral, or evil. 
- * NPC Nations can be Expansionsist (with 0,2,4,6 sectors to expand into)
- * or Isolationist.	*/
+/*
+ * =============================================================================
+ * NATION STRATEGY AND AI BEHAVIOR DEFINITIONS
+ * =============================================================================
+ *
+ * NATION STRATEGY: A nation's strategy is part of the ntn[].active variable
+ * which determines if it is a PC or NPC, its moral alignment, and behavioral
+ * constraints. Alignments can be good, neutral, or evil.
+ *
+ * NPC Nations can be:
+ * - Expansionist (with 0,2,4,6 sectors available to expand into)
+ * - Isolationist (non-expansionist behavior)
+ * - Special monster types (peasants, pirates, lizards, nomads, savages)
+ */
 #define	INACTIVE	0
 #define	PC_GOOD		1		/* PC NATIONS	*/
 #define	PC_NEUTRAL	2
@@ -371,6 +562,19 @@ struct navy
 #define	DRAGON		(59+TWOUTYPE)
 #define	MAXMONSTER	(59+TWOUTYPE)
 
+/*
+ * army - Military unit structure
+ *
+ * Represents a single army unit with its type, location, movement,
+ * troop count, and current status/orders.
+ *
+ * Fields:
+ *   unittyp - Unit type ID (see A_MILITIA, A_INFANTRY, etc.)
+ *   xloc, yloc - Army location coordinates on map
+ *   smove - Movement points remaining this turn
+ *   sold - Number of soldiers in this army unit
+ *   stat - Army status/orders (see MARCH, DEFEND, ATTACK, etc.)
+ */
 struct army
 {
 	unsigned char unittyp;
@@ -381,6 +585,27 @@ struct army
 	unsigned char stat;
 };
 
+/*
+ * s_nation - Complete nation state structure
+ *
+ * This is the most complex and critical data structure containing all
+ * information about a nation including identification, resources, military
+ * forces, diplomatic relations, and national characteristics. Each nation
+ * (PC and NPC) has one instance of this structure.
+ *
+ * Key sections:
+ * - Identity: name, password, leader, race, location
+ * - Resources: gold, jewels, food, metal, civilians, military
+ * - Military: armies array, navies array, combat bonuses
+ * - Diplomacy: diplomatic status with all other nations
+ * - National Stats: prestige, popularity, wealth, knowledge, etc.
+ * - Magic: powers bitmask, spell points
+ * - Economics: tax rate, inflation, charity budget
+ *
+ * Note: Contains fixed-size arrays for armies (MAXARM) and navies (MAXNAVY)
+ * and diplomatic relations (NTOTAL). This structure is extensively accessed
+ * throughout the game via the global 'ntn' array and 'curntn' pointer.
+ */
 struct	s_nation		/* player nation stats	*/
 {
 	char	name[NAMELTH+1];	/* name			*/
@@ -404,18 +629,18 @@ struct	s_nation		/* player nation stats	*/
 	long	tciv;		/* total civilians		*/
 	long	metals;		/* total real metal in nation	*/
 	long	tfood;		/* total food in nation		*/
-	long	powers;
+	long	powers;		/* magic powers bitmask		*/
 	short	class;		/* national class		*/
 	short	aplus;		/* attack plus of all soldiers	*/
-	short	dplus;		/* attack plus of all soldiers	*/
+	short	dplus;		/* defense plus of all soldiers	*/
 	short	spellpts;	/* spell points			*/
 	short	tsctrs;		/* total number sectors		*/
 	short	tships;		/* number warships		*/
 	short	inflation;	/* inflation rate		*/
 	unsigned char charity;	/* charity budget (% of Taxes)	*/
-	struct	army arm[MAXARM];
-	struct	navy nvy[MAXNAVY];
-	char	dstatus[NTOTAL];	/* diplomatic status	*/
+	struct	army arm[MAXARM];	/* nation's armies	*/
+	struct	navy nvy[MAXNAVY];	/* nation's navies	*/
+	char	dstatus[NTOTAL];	/* diplomatic status with all nations */
 	unsigned char	tax_rate;	/* taxrate populace	*/
 	unsigned char	prestige;	/* nations prestige	*/
 	unsigned char	popularity;	/* governments popularity	*/
@@ -630,6 +855,34 @@ extern	long		lrand48();
 #define	GOLDTHRESH	10L	/* min ratio of gold:jewels */
 
 #define	SALT "aa"		/* seed for crypt() encryption	*/
+
+/*
+ * =============================================================================
+ * FUNCTION PROTOTYPES - LEGACY K&R STYLE (REQUIRES MODERNIZATION)
+ * =============================================================================
+ *
+ * This section contains function prototypes for the entire Conquer game system.
+ * These are legacy K&R style prototypes that will need to be modernized to
+ * ANSI C standards during Phase 8 (Syntactic and Mechanical Modernization).
+ *
+ * Function Categories:
+ * - Game Core: main(), parse(), execute()
+ * - World Management: createworld(), makeworld(), readmap()
+ * - Nation Management: nationrun(), get_country(), verify_ntn()
+ * - Military: combat(), armymove(), navygoto(), fight()
+ * - Magic System: domagic(), getmagic(), removemgk()
+ * - Economics: budget(), produce(), trade()
+ * - Display: makeside(), makemap(), newdisplay()
+ * - File I/O: readdata(), writedata(), mailopen()
+ * - Utility: score(), random functions, mathematical calculations
+ *
+ * Modernization Notes:
+ * - Many functions have inconsistent or missing parameter specifications
+ * - Return types often omitted (implicitly int)
+ * - Some prototypes duplicated (e.g., getmagic() appears twice)
+ * - Conditional compilation affects some function availability
+ * - Memory allocation functions use non-standard naming (**m2alloc)
+ */
 
 /* extern all subroutine calls	*/
 extern long	getmagic(), getmagic(), getmgkcost(), score_one();
