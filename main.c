@@ -68,6 +68,47 @@ FILE *fexe, *fopen();
 /************************************************************************/
 /*	MAIN() - main loop for conquer					*/
 /************************************************************************/
+
+/*
+ * main - Main game initialization, authentication, and command loop
+ *
+ * This is the primary entry point for the Conquer strategy game. Handles
+ * complete game initialization sequence including command line parsing,
+ * environment variable processing, user authentication, screen setup,
+ * and the main interactive command loop. Manages file locking for multi-user
+ * access and coordinates all major game subsystems.
+ *
+ * Parameters:
+ *   argc - Count of command line arguments
+ *   argv - Array of command line argument strings
+ *
+ * Returns:
+ *   void (exits program via bye() or exit() calls)
+ *
+ * Side Effects:
+ *   - Changes working directory to game data directory
+ *   - Initializes curses screen interface
+ *   - Creates file locks for multi-user coordination
+ *   - Opens execution log files
+ *   - Sets up signal handlers for cleanup
+ *   - Modifies global game state variables
+ *   - May exit program on authentication failure or errors
+ *
+ * Testing Notes:
+ *   Category: C (System Level Only) - Requires full system initialization
+ *   Approach: System testing with mocked file system and user environment
+ *   Key Tests: Command line parsing, authentication flows, screen setup
+ *   Dependencies: File system, user database, curses library, game data files
+ *   Mock Requirements: passwd database, file system, environment variables
+ *   Complexity: Complex - Full game initialization with multiple subsystems
+ *
+ * Notes:
+ *   - Not thread-safe (uses global variables extensively)
+ *   - Requires specific file permissions and directory structure
+ *   - Handles both interactive and batch modes (print maps, scores)
+ *   - Complex authentication with password encryption
+ *   - Legacy K&R function definition style needs modernization
+ */
 void
 main(argc,argv)
 int	argc;
@@ -597,6 +638,41 @@ char	**argv;
 /************************************************************************/
 /* MAKEBOTTOM() - make the bottom of the screen				*/
 /************************************************************************/
+
+/*
+ * makebottom - Create and display the bottom status area of the game screen
+ *
+ * Renders the bottom 4 lines of the screen with game status information
+ * including version, turn number, current nation, treasury, season/year,
+ * help text, and mail notification status. Updates display with current
+ * game state and clears previous content.
+ *
+ * Parameters:
+ *   None
+ *
+ * Returns:
+ *   void
+ *
+ * Side Effects:
+ *   - Modifies screen display (bottom 4 lines)
+ *   - Uses curses library functions to position and write text
+ *   - Accesses global variables: VERSION, PATCHLEVEL, TURN, country, curntn
+ *   - Reads mail status variables for notifications
+ *
+ * Testing Notes:
+ *   Category: B (Integration Required) - Requires curses and global state
+ *   Approach: Integration testing with mocked curses and game state
+ *   Key Tests: Display formatting, mail notifications, nation vs god mode
+ *   Dependencies: Global game state, curses screen, mail system
+ *   Mock Requirements: curses library, global variables
+ *   Complexity: Simple - Straightforward display formatting
+ *
+ * Notes:
+ *   - Not thread-safe (accesses global variables)
+ *   - Assumes curses screen is properly initialized
+ *   - Different display for god mode (country==0) vs normal nations
+ *   - Conditional compilation for SYSMAIL feature
+ */
 void
 makebottom()
 {
@@ -639,6 +715,47 @@ makebottom()
 /*	PARSE() - interpret entered character				*/
 /*	  return TRUE if command is repeatable FALSE otherwise		*/
 /************************************************************************/
+
+/*
+ * parse - Main command interpreter for user input processing
+ *
+ * Central command dispatcher that interprets single-character commands
+ * from user input and executes corresponding game actions. Handles
+ * movement, reports, construction, diplomacy, magic, and administrative
+ * commands. Manages cursor movement, game state changes, and command
+ * repeatability for the main game loop.
+ *
+ * Parameters:
+ *   ch - Single character command code to interpret and execute
+ *
+ * Returns:
+ *   TRUE if command is repeatable (can be executed again with '!' command)
+ *   FALSE if command should not be repeated
+ *
+ * Side Effects:
+ *   - Modifies global cursor position (xcurs, ycurs, selector, pager)
+ *   - Updates game state based on command executed
+ *   - May change screen display mode (redraw flag)
+ *   - Deducts movement costs from nation treasury
+ *   - Can trigger game exit (done flag)
+ *   - May switch active nation (z command)
+ *   - Calls various game subsystem functions
+ *
+ * Testing Notes:
+ *   Category: C (System Level Only) - Complex command system integration
+ *   Approach: System testing with comprehensive command coverage
+ *   Key Tests: All 50+ commands, movement, reports, state changes
+ *   Dependencies: Full game state, all subsystems, curses interface
+ *   Mock Requirements: Extensive - all game subsystems and state
+ *   Complexity: Complex - Central game command dispatcher
+ *
+ * Notes:
+ *   - Not thread-safe (extensive global variable access)
+ *   - Large switch statement with 50+ command cases
+ *   - Some commands restricted to god/admin users
+ *   - Movement commands use vi-like keybindings
+ *   - Legacy K&R function definition style
+ */
 int
 parse(ch)
 	int ch;
@@ -1042,6 +1159,43 @@ parse(ch)
 /************************************************************************/
 /*	SECT_INFO() - display sector debugging information		*/
 /************************************************************************/
+
+/*
+ * sect_info - Display detailed debugging information for current sector
+ *
+ * Debug function available only to god/admin users that shows comprehensive
+ * sector information including unit counts, ownership details, and internal
+ * game state values. Used for debugging game mechanics and verifying
+ * correct sector state during development and troubleshooting.
+ *
+ * Parameters:
+ *   None (uses global cursor position XREAL, YREAL)
+ *
+ * Returns:
+ *   void
+ *
+ * Side Effects:
+ *   - Displays debug information on right side of screen
+ *   - Clears previous display content in debug area
+ *   - Uses curses standout mode for highlighting
+ *   - Waits for user input before returning
+ *   - Restores normal display after debug view
+ *
+ * Testing Notes:
+ *   Category: D (Mock Intensive) - Debug-only admin function
+ *   Approach: Unit testing with mocked game state and curses
+ *   Key Tests: Unit counting accuracy, display formatting, access control
+ *   Dependencies: Admin authentication, game state, curses interface
+ *   Mock Requirements: Game state arrays, curses functions, authentication
+ *   Complexity: Moderate - Sector analysis and display formatting
+ *
+ * Notes:
+ *   - Only available in DEBUG builds
+ *   - Restricted to god/admin users only
+ *   - Not thread-safe (accesses global variables)
+ *   - Provides detailed internal state visibility
+ *   - Used for development and debugging purposes
+ */
 void
 sect_info()
 {
@@ -1101,6 +1255,45 @@ sect_info()
 /************************************************************************/
 /*	MAKESIDE() -	make the right hand side display		*/
 /************************************************************************/
+
+/*
+ * makeside - Create and display the right-hand side information panel
+ *
+ * Renders the detailed sector information panel on the right side of the
+ * screen showing current sector contents, units, ownership, terrain,
+ * resources, and other sector-specific data. Handles visibility rules,
+ * unit listing with paging, enemy unit detection, and resource display
+ * based on nation ownership and magic effects.
+ *
+ * Parameters:
+ *   alwayssee - If TRUE, display info even if sector normally not visible
+ *               If FALSE, respect normal visibility rules
+ *
+ * Returns:
+ *   void
+ *
+ * Side Effects:
+ *   - Updates right side of screen (approximately 20 columns)
+ *   - Clears previous content in display area
+ *   - Uses curses highlighting for important information
+ *   - Accesses global variables for sector and nation data
+ *   - May use random number generation for intelligence estimates
+ *
+ * Testing Notes:
+ *   Category: B (Integration Required) - Requires game state and display
+ *   Approach: Integration testing with various sector configurations
+ *   Key Tests: Visibility rules, unit display, resource calculations
+ *   Dependencies: Global game state, curses interface, sector data
+ *   Mock Requirements: Game state, curses functions, sector arrays
+ *   Complexity: Complex - Multiple display modes and visibility rules
+ *
+ * Notes:
+ *   - Not thread-safe (extensive global variable access)
+ *   - Complex visibility and intelligence rules
+ *   - Handles unit paging for sectors with many units
+ *   - Different display modes for different nation relationships
+ *   - Magic effects influence information visibility
+ */
 void
 makeside(alwayssee)
 int	alwayssee;	/* see even if cant really see sector */
@@ -1388,6 +1581,42 @@ int	alwayssee;	/* see even if cant really see sector */
 /************************************************************************/
 /* 	ARETHEYON() - returns TRUE if 'country' is logged on, else FALSE */
 /************************************************************************/
+
+/*
+ * aretheyon - Check if the current nation is already logged into the game
+ *
+ * Implements file-based locking mechanism to prevent multiple simultaneous
+ * logins for the same nation. Creates or checks for existence of nation-specific
+ * lock files to coordinate multi-user access and maintain game state integrity.
+ * Essential for preventing concurrent access conflicts in the multi-player game.
+ *
+ * Parameters:
+ *   None (uses global variable 'country' for nation identification)
+ *
+ * Returns:
+ *   TRUE if nation is currently logged in (lock file exists)
+ *   FALSE if nation is not logged in (lock file does not exist)
+ *
+ * Side Effects:
+ *   - Creates lock file for current nation if not god mode
+ *   - Modifies global variable 'fison' with lock filename
+ *   - May create file system entries
+ *
+ * Testing Notes:
+ *   Category: B (Integration Required) - Requires file system interaction
+ *   Approach: Integration testing with mocked file system
+ *   Key Tests: Lock creation, collision detection, cleanup on exit
+ *   Dependencies: File system, global country variable
+ *   Mock Requirements: File system operations, check_lock function
+ *   Complexity: Simple - File-based locking mechanism
+ *
+ * Notes:
+ *   - Thread safety depends on underlying file system locking
+ *   - Critical for multi-user game integrity
+ *   - Lock files must be cleaned up on game exit
+ *   - Used in conjunction with check_lock() function
+ *   - Different behavior for god mode vs normal nations
+ */
 int
 aretheyon()
 {
@@ -1401,6 +1630,42 @@ aretheyon()
 /* THIS SUBROUTINE MAY NOT BE ALTERED, AND THE MESSAGE CONTAINED HEREIN	*/
 /* MUST BE SHOWN TO EACH AND EVERY PLAYER, EVERY TIME THEY LOG IN	*/
 /************************************************************************/
+
+/*
+ * copyscreen - Display copyright and licensing information to all players
+ *
+ * Mandatory copyright and license notice display that must be shown to
+ * every player on each login. Shows original copyright information,
+ * current GPL v3 licensing terms, and last update timestamp. This function
+ * is legally required and must not be modified or bypassed.
+ *
+ * Parameters:
+ *   None
+ *
+ * Returns:
+ *   void
+ *
+ * Side Effects:
+ *   - Clears entire screen and displays copyright notice
+ *   - Uses curses highlighting for title information
+ *   - May read and display last update time from file
+ *   - Waits for user acknowledgment (handled by caller)
+ *
+ * Testing Notes:
+ *   Category: A (Unit Testable) - Self-contained display function
+ *   Approach: Unit testing with mocked curses interface
+ *   Key Tests: Copyright text display, formatting, conditional features
+ *   Dependencies: Curses interface, optional TIMELOG file
+ *   Mock Requirements: Curses functions, file system (for TIMELOG)
+ *   Complexity: Simple - Straightforward text display with formatting
+ *
+ * Notes:
+ *   - LEGALLY REQUIRED - Must not be modified or bypassed
+ *   - Thread-safe (no global state modification)
+ *   - Conditional compilation for TIMELOG feature
+ *   - Must be displayed to every player on every login
+ *   - Part of legal compliance for GPL v3 licensing
+ */
 void
 copyscreen()
 {
@@ -1436,6 +1701,45 @@ copyscreen()
 /************************************************************************/
 /*	BYE()	-	exit gracefully from curses			*/
 /************************************************************************/
+
+/*
+ * bye - Graceful game termination with cleanup and resource deallocation
+ *
+ * Performs complete cleanup sequence when exiting the game including
+ * lock file removal, screen restoration, file closure, and program
+ * termination. Ensures proper resource cleanup to prevent system
+ * resource leaks and maintain multi-user game integrity.
+ *
+ * Parameters:
+ *   dounlink - TRUE to remove lock files, FALSE to leave them
+ *              (FALSE used for error exits where cleanup may be unsafe)
+ *
+ * Returns:
+ *   void (function does not return - calls exit())
+ *
+ * Side Effects:
+ *   - Removes nation lock file if dounlink is TRUE
+ *   - Clears and restores terminal screen
+ *   - Disables curses cbreak mode
+ *   - Closes execution log file
+ *   - Prints quit message to stderr
+ *   - Terminates program with SUCCESS exit code
+ *
+ * Testing Notes:
+ *   Category: B (Integration Required) - System cleanup function
+ *   Approach: Integration testing with mocked system resources
+ *   Key Tests: Lock file cleanup, curses cleanup, file closure
+ *   Dependencies: File system, curses library, global file handles
+ *   Mock Requirements: File system, curses functions, exit() behavior
+ *   Complexity: Simple - Sequential cleanup operations
+ *
+ * Notes:
+ *   - Critical for proper resource cleanup
+ *   - Must be called on all normal game exits
+ *   - Signal handlers should call this function
+ *   - Does not return (calls exit())
+ *   - Thread-safe cleanup sequence
+ */
 void
 bye(dounlink)
 int	dounlink;	/* TRUE if want to do unlink */
@@ -1453,6 +1757,42 @@ int	dounlink;	/* TRUE if want to do unlink */
 /************************************************************************/
 /*	CREDITS() -	print credits notice to screen			*/
 /************************************************************************/
+
+/*
+ * credits - Display comprehensive credits and acknowledgments screen
+ *
+ * Shows detailed credits for original authors, contributors, playtesters,
+ * and licensing information. Provides historical context and acknowledgments
+ * for the development and evolution of the Conquer game. Accessible via
+ * the 'v' command during gameplay.
+ *
+ * Parameters:
+ *   None
+ *
+ * Returns:
+ *   void
+ *
+ * Side Effects:
+ *   - Clears entire screen and displays credits information
+ *   - Uses formatted text layout across multiple screen lines
+ *   - Waits for user input before returning (via errormsg call)
+ *   - Does not modify game state
+ *
+ * Testing Notes:
+ *   Category: A (Unit Testable) - Self-contained display function
+ *   Approach: Unit testing with mocked curses interface
+ *   Key Tests: Text formatting, layout, user interaction
+ *   Dependencies: Curses interface, errormsg function
+ *   Mock Requirements: Curses functions, errormsg function
+ *   Complexity: Simple - Static text display with formatting
+ *
+ * Notes:
+ *   - Thread-safe (no global state modification)
+ *   - Historical preservation of contributor acknowledgments
+ *   - Part of proper attribution for open source project
+ *   - Non-interactive display (waits for single keypress)
+ *   - Accessible from main game loop via 'v' command
+ */
 void
 credits()
 {
@@ -1486,6 +1826,43 @@ credits()
 /************************************************************************/
 /*	CAMP_INFO() -	display information about current data file	*/
 /************************************************************************/
+
+/*
+ * camp_info - Display comprehensive campaign and world information screen
+ *
+ * Presents detailed statistics about the current game world including
+ * map dimensions, nation counts, army/navy totals, game configuration
+ * parameters, and administrative contact information. Provides players
+ * with essential game world context and current campaign status.
+ *
+ * Parameters:
+ *   None
+ *
+ * Returns:
+ *   void
+ *
+ * Side Effects:
+ *   - Clears entire screen and displays campaign information
+ *   - Calculates and displays real-time statistics from game data
+ *   - Uses curses highlighting for section headers
+ *   - Waits for user input before returning
+ *   - Accesses global game configuration and nation data
+ *
+ * Testing Notes:
+ *   Category: B (Integration Required) - Requires game state analysis
+ *   Approach: Integration testing with various game state configurations
+ *   Key Tests: Statistics calculation, display formatting, data accuracy
+ *   Dependencies: Global game state, nation arrays, configuration constants
+ *   Mock Requirements: Game state data, curses functions
+ *   Complexity: Moderate - Statistics calculation and formatted display
+ *
+ * Notes:
+ *   - Thread-safe for read operations (does not modify state)
+ *   - Performs real-time calculation of game statistics
+ *   - Useful for players to understand current game scope
+ *   - Shows both world configuration and player-specific data
+ *   - Accessible from main game loop via 'I' command
+ */
 void
 camp_info()
 {
