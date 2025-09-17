@@ -1,10 +1,41 @@
 /*
- * header.h - Cross-platform game configuration (properly modernized)
- * 
+ * header.h - Cross-platform game configuration and system compatibility
+ *
+ * This is the primary configuration header for the Conquer game system,
+ * providing cross-platform compatibility, system capability detection,
+ * and comprehensive game parameter configuration. This file defines all
+ * core game limits, feature flags, economic parameters, and platform-specific
+ * adaptations needed for the game to run on modern systems.
+ *
+ * Key Components:
+ * - Platform detection and compatibility layers
+ * - Standard library includes with modern C support
+ * - Core game limits (nations, armies, fleets)
+ * - Feature configuration flags (trade, monsters, NPCs)
+ * - Economic and gameplay parameters
+ * - System capability detection (mail, file locking)
+ * - Cross-platform utility macros
+ * - Path configuration for different operating systems
+ *
+ * Architecture Notes:
+ * - Modernized from legacy preprocessor-heavy configuration
+ * - Maintains exact compatibility with original game balance
+ * - Provides fallbacks for older C standards
+ * - Uses modern platform detection instead of manual defines
+ * - Preserves all original feature flags and game constants
+ * - Adds safe utility macros without breaking existing code
+ *
+ * Platform Support:
+ * - Linux (all distributions)
+ * - macOS
+ * - FreeBSD/OpenBSD/NetBSD
+ * - Windows (with compatibility layer)
+ * - Legacy Unix systems (with fallbacks)
+ *
  * This file is part of Conquer.
  * Originally Copyright (C) 1988-1989 by Edward M. Barlow and Adam Bryant
  * Copyright (C) 2025 Juan Manuel Méndez Rey (Vejeta) - Licensed under GPL v3 with permission from original authors
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -57,7 +88,28 @@
 /* CROSS-PLATFORM COMPATIBILITY */
 /* ================================================================== */
 
-/* Platform detection (modernized) */
+/*
+ * Platform Detection System
+ *
+ * Modernized platform detection replacing the original manual BSD/SYSV
+ * configuration system. This provides automatic detection of the target
+ * platform and sets appropriate compatibility flags.
+ *
+ * Supported Platforms:
+ * - PLATFORM_LINUX: All Linux distributions (Debian, Fedora, Ubuntu, etc.)
+ * - PLATFORM_MACOS: macOS (all versions supporting modern Xcode)
+ * - PLATFORM_FREEBSD: FreeBSD (all recent versions)
+ * - PLATFORM_OPENBSD: OpenBSD (security-focused BSD variant)
+ * - PLATFORM_NETBSD: NetBSD (portable BSD variant)
+ * - PLATFORM_WINDOWS: Windows (with Cygwin or native compilation)
+ * - PLATFORM_CYGWIN: Cygwin environment on Windows
+ * - PLATFORM_UNIX: Generic Unix-like systems (auto-detected)
+ *
+ * Legacy Compatibility:
+ * - Original code used manual BSD/SYSV defines
+ * - This system maintains compatibility while adding modern detection
+ * - Falls back to generic Unix behavior for unknown platforms
+ */
 #if defined(__linux__) || defined(__linux) || defined(linux)
     #define PLATFORM_LINUX 1
     #define PLATFORM_UNIX 1
@@ -80,6 +132,7 @@
     #define PLATFORM_UNIX 1
 #endif
 
+/* Generic Unix detection for fallback compatibility */
 #if defined(__unix__) || defined(__unix) || defined(unix) || defined(PLATFORM_UNIX)
     #define PLATFORM_UNIX 1
 #endif
@@ -169,6 +222,28 @@
 /* CORE GAME LIMITS (preserved exactly from original) */
 /* ================================================================== */
 
+/*
+ * Fundamental Game Limits
+ *
+ * These constants define the core structural limits of the Conquer game
+ * system. They control the maximum number of game entities and key
+ * probability percentages that affect gameplay balance.
+ *
+ * CRITICAL: These values are preserved exactly from the original game
+ * to maintain compatibility with existing save files and game balance.
+ * Changing these values would break saved games and alter the fundamental
+ * game experience.
+ *
+ * Nation System Limits:
+ * - NTOTAL: Maximum total nations in the world (players + NPCs + monsters)
+ * - MAXPTS: Starting customization points for new players
+ * - MAXARM: Maximum armies a single nation can maintain
+ * - MAXNAVY: Maximum naval fleets a single nation can maintain
+ *
+ * Game Mechanics:
+ * - PDEPLETE: Percentage chance of resource depletion without capital control
+ * - PFINDSCOUT: Success rate for capturing enemy scout units
+ */
 #define NTOTAL 35       /* max # of nations (player + npc + monster) */
 #define MAXPTS 65       /* points for players to buy stuff with at start */
 #define MAXARM 50       /* maximum number of armies per nation */
@@ -180,6 +255,40 @@
 /* GAME FEATURES (preserved exactly from original) */
 /* ================================================================== */
 
+/*
+ * Core Game Feature Flags
+ *
+ * These compile-time flags enable or disable major game features and
+ * configure gameplay mechanics. All flags are preserved from the original
+ * game to maintain compatibility and game balance.
+ *
+ * Server Management Features:
+ * - RUNSTOP: Prevents automatic updates while players are actively playing
+ * - REMAKE: Allows world regeneration even if save files exist
+ * - CHECKUSER: Restricts nation access to the original creating user
+ * - USERLOG: Maintains logs of player activity for administration
+ *
+ * Economic and Trade Features:
+ * - TRADE: Enables the complete inter-nation commerce system
+ * - TRADEPCT: Percentage of world sectors containing exotic trade goods
+ * - METALPCT: Proportion of trade goods that are metals/industrial
+ * - JEWELPCT: Proportion of trade goods that are luxury items
+ *
+ * Information and Communication:
+ * - HIDELOC: Prevents news system from revealing specific sector locations
+ * - NOSCORE: Restricts full score visibility to administrator during games
+ *
+ * Administrative Features:
+ * - OGOD: Enables enhanced administrator powers for game management
+ * - MASK: File permission mask for saved game data security
+ *
+ * Special Abilities:
+ * - DERVDESG: Allows DERVISH nations to redesignate desert/ice terrain
+ *
+ * Player Management:
+ * - REVSPACE: Reserved slots in nation list for peasant revolts
+ * - LASTADD: Grace period (turns) for new players to join without passwords
+ */
 #define RUNSTOP         /* stop update if players are in game */
 #define TRADE           /* allow commerce between nations */
 #define TRADEPCT 75     /* percent of sectors with exotic trade goods */
@@ -242,14 +351,40 @@
 /* GAME MECHANICS PARAMETERS (preserved exactly) */
 /* ================================================================== */
 
-/* Vision and movement ranges */
+/*
+ * Core Game Balance Parameters
+ *
+ * This extensive set of constants defines the fundamental gameplay balance
+ * of the Conquer system. These values control economics, combat, movement,
+ * construction costs, and NPC behavior. All values are preserved exactly
+ * from the original game to maintain save file compatibility and established
+ * game balance that has been refined through years of gameplay.
+ *
+ * CRITICAL: Modifying these values changes fundamental game balance and
+ * would break compatibility with existing save files and player expectations.
+ */
+
+/*
+ * Vision and Movement Ranges
+ *
+ * Controls how far different units can see and the operational ranges
+ * for various game activities. These values balance reconnaissance with
+ * the fog of war that creates strategic uncertainty.
+ */
 #define LANDSEE 2       /* how far you can see from your land */
 #define NAVYSEE 1       /* how far navies can see */
 #define ARMYSEE 2       /* how far armies can see */
 #define PRTZONE 3       /* how far pirates roam from basecamp */
 #define MEETNTN 2       /* how close nations must be to adjust status */
 
-/* Taxation rates (in gold talons per unit) */
+/*
+ * Taxation System (in gold talons per unit)
+ *
+ * The core economic engine of the game. These rates determine how much
+ * revenue nations generate from different resources and population centers.
+ * The taxation system balances resource values and encourages diverse
+ * economic development strategies.
+ */
 #define TAXFOOD 5L      /* per food unit */
 #define TAXMETAL 8L     /* per metal unit */
 #define TAXGOLD 8L      /* per gold unit */
@@ -257,7 +392,13 @@
 #define TAXCITY 100L    /* per person in city */
 #define TAXTOWN 80L     /* per person in town */
 
-/* Economic parameters */
+/*
+ * Economic Balance Parameters
+ *
+ * Controls population limits, maintenance costs, and resource depletion.
+ * These values balance growth with sustainability and prevent runaway
+ * economic expansion that would destabilize gameplay.
+ */
 #define SHIPMAINT 4000L         /* ship maintenance cost */
 #define TOMANYPEOPLE 4000L      /* overpopulation threshold */
 #define ABSMAXPEOPLE 50000L     /* absolute max people in any sector */
@@ -267,7 +408,13 @@
 #define MAXNEWS 5               /* number of news files stored */
 #define LONGTRIP 100            /* navy trip length for 100% attrition */
 
-/* Combat and military */
+/*
+ * Combat and Military Parameters
+ *
+ * Defines combat resolution, sector capture requirements, and casualty
+ * limits. These values balance offensive and defensive capabilities while
+ * ensuring that military actions have meaningful costs and risks.
+ */
 #define TAKESECTOR min(500,max(75,(ntn[country].tciv/350)))  /* soldiers needed to take sector */
 #define MAXLOSS 60              /* maximum % of men lost in 1:1 battle */
 #define FINDPERCENT 1           /* percent chance to find gold/metal */
@@ -276,7 +423,13 @@
 #define STOCKCOST 3000L         /* cost to build a stockade */
 #define REBUILDCOST 3000L       /* cost to remove a ruin */
 
-/* Naval configuration */
+/*
+ * Naval System Configuration
+ *
+ * Controls ship construction costs, crew requirements, and cargo capacity.
+ * The naval system balances the strategic value of sea power with its
+ * significant economic investment requirements.
+ */
 #define WARSHPCOST 20000L       /* cost to build one light warship */
 #define MERSHPCOST 25000L       /* cost to build one light merchant */
 #define GALSHPCOST 25000L       /* cost to build one light galley */
@@ -284,7 +437,14 @@
 #define SHIPCREW 100            /* full strength crew on a ship */
 #define SHIPHOLD 100L           /* storage space of a ship unit */
 
-/* NPC behavior parameters */
+/*
+ * NPC Behavior Parameters
+ *
+ * Controls how computer-controlled nations develop their territories,
+ * manage populations, and maintain military forces. These parameters
+ * ensure NPCs remain competitive while following realistic development
+ * patterns that create interesting strategic challenges for players.
+ */
 #define CITYLIMIT 8L            /* % of NPC pop in sector before => city */
 #define CITYPERCENT 20L         /* % of NPC pop able to be in cities */
 #define MILRATIO 8L             /* ratio civ:mil for NPCs */
@@ -294,14 +454,26 @@
 #define BRIBE 50000L            /* gold/1000 men to bribe */
 #define METALORE 7L             /* metal/soldier needed for +1% weapons */
 
-/* Defense values */
+/*
+ * Defensive Fortification Values
+ *
+ * Determines the effectiveness of various defensive structures and the
+ * advantages they provide in combat. These values balance the cost of
+ * fortifications against their defensive benefits.
+ */
 #define DEF_BASE 10             /* base defense value, 2x in city/caps */
 #define FORTSTR 5               /* percent per fortress point in forts */
 #define TOWNSTR 5               /* percent per fortress point in towns */
 #define CITYSTR 8               /* percent per fortress point in cities */
 #define LATESTART 2             /* new player gets 1 point/LATESTART turns */
 
-/* Starting mercenary values */
+/*
+ * Mercenary Market Configuration
+ *
+ * Controls the global mercenary system that provides military units
+ * for purchase. The mercenary market balances military expansion with
+ * economic cost while providing strategic flexibility.
+ */
 #define ST_MMEN (NTOTAL*500)    /* starting mercenary pool */
 #define ST_MATT 40              /* mercenary attack bonus */
 #define ST_MDEF 40              /* mercenary defense bonus */
@@ -316,25 +488,61 @@
 /* MODERN UTILITY MACROS (safe additions) */
 /* ================================================================== */
 
-/* Safe string operations */
+/*
+ * Modern Safety and Utility Macros
+ *
+ * These macros provide safe, cross-platform functionality that supplements
+ * the original Conquer codebase without breaking existing functionality.
+ * All macros are designed to be safe additions that improve code safety
+ * and portability while maintaining full backward compatibility.
+ *
+ * Design Principles:
+ * - Non-invasive: Don't modify existing code behavior
+ * - Safe: Prevent common security vulnerabilities
+ * - Portable: Work across all supported platforms
+ * - Modern: Use current best practices
+ */
+
+/*
+ * Safe String Operations
+ *
+ * Provides bounds-checked string operations to prevent buffer overflows,
+ * a critical security concern in the original codebase which used
+ * many unsafe string functions.
+ */
 #define SAFE_STRNCPY(dest, src, size) do { \
     strncpy((dest), (src), (size) - 1); \
     (dest)[(size) - 1] = '\0'; \
 } while(0)
 
-/* Utility macros */
+/*
+ * Standard Utility Macros
+ *
+ * Common utility macros that improve code readability and safety.
+ * These are standard additions that any modern C codebase should have.
+ */
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
-/* Cross-platform file operations */
+/*
+ * Cross-Platform File Operations
+ *
+ * Abstracts platform differences in file system operations,
+ * allowing the same code to work on Unix and Windows systems.
+ */
 #ifdef PLATFORM_WINDOWS
     #define FILE_EXISTS(path) (_access((path), 0) == 0)
 #else
     #define FILE_EXISTS(path) (access((path), F_OK) == 0)
 #endif
 
-/* Terminal control */
+/*
+ * Terminal Control Abstraction
+ *
+ * Provides platform-appropriate terminal control sequences for
+ * clearing the screen on different operating systems.
+ */
 #ifdef PLATFORM_UNIX
     #define CLEAR_SCREEN() printf("\033[2J\033[H")
 #elif defined(PLATFORM_WINDOWS)
@@ -343,7 +551,13 @@
     #define CLEAR_SCREEN()
 #endif
 
-/* Debug support */
+/*
+ * Debug Support Infrastructure
+ *
+ * Provides standardized debug output that can be enabled/disabled
+ * at compile time. Includes function name and line number information
+ * for effective debugging.
+ */
 #ifdef DEBUG
     #define DEBUG_PRINT(fmt, ...) \
         fprintf(stderr, "[DEBUG] %s:%d: " fmt "\n", __func__, __LINE__, ##__VA_ARGS__)
@@ -351,7 +565,13 @@
     #define DEBUG_PRINT(fmt, ...)
 #endif
 
-/* Random number generation */
+/*
+ * Random Number Generation Abstraction
+ *
+ * Provides a consistent interface for random number generation
+ * that can be easily modified for different platforms or
+ * upgraded to better random number generators in the future.
+ */
 #define RAND() rand()
 #define SRAND(x) srand(x)
 
@@ -376,21 +596,93 @@
 #endif
 
 /* ================================================================== */
-/* COMPATIBILITY NOTES */
+/* COMPATIBILITY NOTES AND MODERNIZATION SUMMARY */
 /* ================================================================== */
 
 /*
- * This modernized header.h preserves all original game constants and
- * functionality while adding cross-platform support. Key differences
- * from the over-modernized version:
- * 
- * 1. All original game balance parameters preserved exactly
- * 2. All original feature flags kept (#define TRADE, etc.)
- * 3. Platform detection added without breaking existing code
- * 4. Modern C standard support with fallbacks
- * 5. Cross-platform utility functions added safely
- * 6. No map constants (MAPX/MAPY) - these are defined in data.h
- * 7. Compatible with existing data files and save games
+ * Header Modernization Strategy and Compatibility Documentation
+ *
+ * This modernized header.h represents a careful balance between bringing
+ * the Conquer codebase into the modern era while preserving the exact
+ * gameplay balance and save file compatibility that make the game valuable.
+ *
+ * PRESERVATION PRIORITIES:
+ *
+ * 1. **Game Balance Preservation**: All original game constants preserved exactly
+ *    - Economic parameters (taxation rates, construction costs)
+ *    - Combat balance (unit strengths, casualty limits)
+ *    - Population and resource limits
+ *    - NPC behavior parameters
+ *    - All numerical values maintain original game balance
+ *
+ * 2. **Save File Compatibility**: No changes that would break existing games
+ *    - NTOTAL, MAXARM, MAXNAVY remain unchanged
+ *    - All data structure size-affecting constants preserved
+ *    - File format compatibility maintained
+ *
+ * 3. **Feature Flag Preservation**: All original features maintained
+ *    - Trade system (#define TRADE)
+ *    - Monster spawning (#define MORE_MONST)
+ *    - Random events (#define RANEVENT)
+ *    - Administrative features (#define OGOD, CHECKUSER)
+ *    - All conditional compilation flags preserved
+ *
+ * MODERNIZATION ADDITIONS:
+ *
+ * 1. **Cross-Platform Support**: Automatic platform detection
+ *    - Replaces manual BSD/SYSV configuration
+ *    - Supports Linux, macOS, FreeBSD, Windows
+ *    - Provides appropriate system includes and defines
+ *
+ * 2. **Modern C Standard Support**: C99/C11 features with fallbacks
+ *    - stdint.h and stdbool.h when available
+ *    - Fallback definitions for older compilers
+ *    - Maintains compatibility with legacy systems
+ *
+ * 3. **Safety Improvements**: Modern utility macros
+ *    - SAFE_STRNCPY for bounds-checked string operations
+ *    - Debug infrastructure with function/line information
+ *    - Cross-platform file operation abstractions
+ *
+ * 4. **Path Configuration**: Modernized default paths
+ *    - Platform-appropriate default installation directories
+ *    - Maintains override capability via Makefile defines
+ *    - Works with modern package management systems
+ *
+ * ARCHITECTURAL DECISIONS:
+ *
+ * 1. **No Map Constants**: MAPX/MAPY remain in data.h
+ *    - Preserves original architecture where map size is data-driven
+ *    - Maintains separation between configuration and data definitions
+ *
+ * 2. **Backward Compatibility**: Legacy defines preserved
+ *    - BSD define maintained for older code compatibility
+ *    - Original system detection paths still functional
+ *    - Graceful degradation on unsupported platforms
+ *
+ * 3. **Non-Invasive Additions**: New features don't break old code
+ *    - All new macros are opt-in
+ *    - Original code paths remain unchanged
+ *    - Modern features supplement rather than replace
+ *
+ * TESTING NOTES:
+ *
+ * Testing Strategy: Configuration Header (Category: System/Platform)
+ * Approach: Cross-platform compilation testing with feature validation
+ * Key Tests:
+ * - Compilation on all target platforms (Linux, macOS, FreeBSD, Windows)
+ * - Feature flag validation (TRADE, OGOD, etc. work correctly)
+ * - Path configuration testing with different installation directories
+ * - Legacy compatibility testing with existing save files
+ * Dependencies: Requires platform-specific test environments
+ * Mock Requirements: Platform simulation for comprehensive testing
+ * Complexity: Moderate - Platform-specific behavior needs validation
+ *
+ * FUTURE CONSIDERATIONS:
+ *
+ * This header provides a foundation for further modernization while
+ * maintaining strict compatibility. Future enhancements should follow
+ * the same principles of preservation-first modernization.
  */
 
 #endif /* CONQUER_HEADER_H */
