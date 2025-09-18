@@ -2,6 +2,14 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with legacy code modernization projects.
 
+## CRITICAL PATH REQUIREMENTS
+
+**ALWAYS USE CORRECT PROJECT PATH:**
+- **Correct path**: `/home/ssmoogen/conquer-project/conquer-4.x/`
+- **NEVER use**: `/home/ssmoogan/` (common typo - incorrect spelling)
+- **ALWAYS verify**: All file paths start with `/home/ssmoogen/` (double-o, not single-o)
+- **Apply to**: All file operations, session memory files, documentation paths
+
 ## Project Overview
 
 This is a legacy code modernization project focused on upgrading legacy codebases to modern standards. The primary goals are to improve **correctness, security, portability, and maintainability** for use on today's systems while preserving functionality.
@@ -113,6 +121,30 @@ Before changing a single line of code, establishing a modern, strict, and contro
 ### Phase 3: Comprehensive Documentation 📝
 
 **CRITICAL: Document Functions Before Modernization**
+
+**SYSTEMATIC DOCUMENTATION PROCESS** - Follow this exact workflow for large files to prevent context loss:
+
+#### Documentation Workflow Steps (MANDATORY)
+1. **Check Status File**: Read `_modernization/claude/reports/PHASE_3_FILE_STATUS.md` for current progress
+2. **Count Functions**: Determine total number of routines in the target file
+3. **Create Todo List**: Generate function-by-function todo list for session tracking
+4. **Document One Function**: Work on one function at a time with full documentation
+5. **Checkpoint Decision**: After each function, ask user: continue or save session?
+6. **Loop Until Complete**: Continue until all functions documented or session saved
+7. **File Completion**: When file complete, update status file and create git commit
+8. **Next File Decision**: Ask user to proceed to next file or save session
+
+#### Context Management for Large Files
+- **Todo List**: Essential for tracking progress across functions and sessions
+- **Session Checkpoints**: Stop after each function to prevent context overflow
+- **Status Tracking**: Keep `PHASE_3_FILE_STATUS.md` updated continuously
+- **Git Commits**: Immediate commit when file documentation complete
+- **Memory Files**: Save session state if stopping mid-file
+
+#### Error Recovery
+- **Session Crashes**: Todo list preserves progress if session history lost
+- **Context Limits**: Checkpointing prevents running out of context
+- **Resume Capability**: Status file enables seamless session continuation
 
 **One File Per Session Approach** - document one complete file per session, commit immediately
 

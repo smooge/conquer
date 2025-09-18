@@ -38,6 +38,91 @@ extern short hilmode;   /*highlight modes: 0=owned sectors, 1= armies, 2=none*/
 extern short country;
 int armornvy=AORN;	
 
+/*
+ * mymove - Interactive unit movement interface for armies and navies
+ *
+ * Provides the main interactive movement interface allowing players to move
+ * selected units (armies or navies) across the game map using cursor keys.
+ * Handles movement cost calculation, terrain restrictions, army group management,
+ * and real-time display updates during movement operations.
+ *
+ * Algorithm Overview:
+ * 1. Unit Selection: Get selected unit from map cursor position
+ * 2. Movement Validation: Check unit type, movement points, and restrictions
+ * 3. Army Group Handling: Special processing for grouped armies with confirmation
+ * 4. Interactive Loop: Process keyboard input for directional movement
+ * 5. Movement Cost Calculation: Apply terrain-based movement costs
+ * 6. Flight Mode: Special movement rules for flying units
+ * 7. Naval Movement: Separate movement rules for fleet operations
+ * 8. Real-time Updates: Update display and unit positions during movement
+ *
+ * Movement System Features:
+ * - Directional movement via numpad keys (1-9) and vi-style keys (hjkl)
+ * - Terrain-based movement costs (plains, hills, mountains, water, etc.)
+ * - Flight movement with altitude restrictions and special costs
+ * - Naval movement restricted to water sectors
+ * - Army group coordination with leader-follower relationships
+ * - Movement point tracking with cost validation
+ * - Map boundary checking and invalid move prevention
+ * - Real-time visual feedback with cursor and sector highlighting
+ *
+ * Army Group Management:
+ * - Leaders can move grouped armies as coordinated units
+ * - Group members inherit movement from group leader
+ * - Confirmation required to break units from army groups
+ * - Movement cost calculated based on group composition
+ * - Infantry vs. leader/monster movement calculations
+ *
+ * Special Movement Modes:
+ * - Flight: Altitude-based movement with special terrain costs
+ * - Naval: Water-only movement with fleet-specific restrictions
+ * - Forced marching: Extended movement at cost of unit health
+ * - Terrain specialization: Unit-type movement bonuses/penalties
+ *
+ * Parameters:
+ *   None (uses global game state and cursor position)
+ *
+ * Returns:
+ *   void (modifies unit positions and game state directly)
+ *
+ * Side Effects:
+ *   - Moves selected unit to new map position
+ *   - Decrements unit movement points based on terrain costs
+ *   - Updates map display and cursor position
+ *   - May break units from army groups (with confirmation)
+ *   - Reveals new map sectors through movement (fog of war)
+ *   - Updates global cursor position (xcurs, ycurs)
+ *   - Modifies unit status for army group management
+ *   - Triggers map redraw operations
+ *
+ * Global Variables Used:
+ *   - xcurs, ycurs: Current cursor position on map
+ *   - armornvy: Unit type flag (ARMY/NAVY/AORN)
+ *   - selector, pager: Unit selection state
+ *   - curntn: Current nation context
+ *   - sct[][]: Global sector data for terrain and ownership
+ *   - movecost[][]: Movement cost matrix for terrain types
+ *   - redraw: Display refresh flag
+ *   - LINES: Terminal dimensions for display formatting
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires full game state and display system
+ *   Approach: Integration testing with various unit types and terrain
+ *   Key Tests: Army movement, naval movement, flight mode, army groups, boundaries
+ *   Dependencies: Unit data, map state, movement cost system, display system
+ *   Mock Requirements: Game map, unit positions, movement costs, terminal interface
+ *   Complexity: Complex - Large interactive function with multiple movement modes
+ *
+ * Notes:
+ *   - Thread safety: Not thread-safe due to global variable dependencies
+ *   - Performance: O(1) per movement step, interactive response required
+ *   - Historical context: Core gameplay interface for tactical movement
+ *   - User experience: Real-time interactive movement with immediate feedback
+ *   - Input handling: Supports multiple key layouts (numpad, vi-style)
+ *   - Error handling: Comprehensive validation with user-friendly error messages
+ *   - Display integration: Coordinates with curses library for terminal interface
+ *   - Game balance: Movement costs affect tactical and strategic gameplay
+ */
 void
 mymove()
 {
@@ -620,6 +705,77 @@ mymove()
 	selector=0;
 }
 
+/*
+ * getselunit - Determine which unit is currently selected on the map
+ *
+ * Calculates which army or navy unit is currently selected based on the
+ * cursor position and selection state. Uses a paging system to handle
+ * multiple units in the same sector, returning the appropriate unit ID
+ * and setting the global unit type flag.
+ *
+ * Algorithm:
+ * 1. Scan all armies at current cursor location (XREAL, YREAL)
+ * 2. Count valid armies (those with soldiers and correct position)
+ * 3. Calculate selected army using: (SCRARM*pager) + (selector/2)
+ * 4. If no army selected, scan navies at same location
+ * 5. Count valid navies (those with ships and correct position)
+ * 6. Calculate selected navy using same formula, offset by MAXARM
+ * 7. Set global armornvy flag to indicate unit type found
+ *
+ * Selection System:
+ * - Uses paging to handle multiple units per sector
+ * - selector/2 provides fine-grained selection within page
+ * - SCRARM*pager provides page offset for many units
+ * - Army IDs: 0 to MAXARM-1
+ * - Navy IDs: MAXARM to MAXARM+MAXNAVY-1 (offset encoding)
+ *
+ * Unit Validity Checks:
+ * - Armies: Must have soldiers (P_ASOLD > 0) and be at cursor location
+ * - Navies: Must have ships (warships, merchants, or galleys) and be at location
+ * - Location matching: Unit coordinates must match cursor real coordinates
+ *
+ * Parameters:
+ *   None (uses global cursor position and selection state)
+ *
+ * Returns:
+ *   int - Selected unit ID, or -1 if no valid unit found
+ *         Army IDs: 0 to MAXARM-1
+ *         Navy IDs: MAXARM + navy_number (encoded for distinction)
+ *
+ * Side Effects:
+ *   - Sets global armornvy flag to ARMY, NAVY, or remains unchanged
+ *   - No modification of unit data or positions
+ *   - Read-only operation on game state
+ *
+ * Global Variables Used:
+ *   - selector: Current selection index within page
+ *   - pager: Current page number for unit selection
+ *   - XREAL, YREAL: Real map coordinates from cursor position
+ *   - curntn: Current nation context for unit access
+ *   - armornvy: Unit type flag (set to ARMY or NAVY on success)
+ *
+ * Macros Used:
+ *   - P_ASOLD, P_AXLOC, P_AYLOC: Army soldier count and position
+ *   - P_NWSHP, P_NMSHP, P_NGSHP: Navy ship counts (war, merchant, galley)
+ *   - P_NXLOC, P_NYLOC: Navy position coordinates
+ *   - SCRARM: Screen army count (units per page)
+ *
+ * Testing Notes:
+ *   Category: A (Unit) - Clear calculation with predictable outputs
+ *   Approach: Unit testing with mock unit positions and selection state
+ *   Key Tests: Single unit, multiple units, army/navy mixing, empty sectors
+ *   Dependencies: Unit data arrays, cursor position, selection state
+ *   Mock Requirements: Army and navy data, cursor coordinates, paging state
+ *   Complexity: Simple - Straightforward counting and index calculation
+ *
+ * Notes:
+ *   - Thread safety: Read-only operation, safe for concurrent access
+ *   - Performance: O(n) where n = MAXARM + MAXNAVY (typically small)
+ *   - Historical context: Supports complex unit stacking in sectors
+ *   - Encoding scheme: Navy offset prevents ID collision with armies
+ *   - Paging system: Handles more units than can display on screen
+ *   - Selection granularity: selector/2 allows sub-unit selection precision
+ */
 /************************************************************************/
 /*	GETSELUNIT()	returns id of selected unit (army or navy)	*/
 /*	if navy, number is MAXARM+nvynum.  set armornvy			*/

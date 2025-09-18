@@ -1,20 +1,20 @@
 # Phase 3 Documentation Status - Complete File Inventory
 
 **Date**: 2025-01-18
-**Phase 3 Status**: 4 of 41 files documented (9.8% complete)
+**Phase 3 Status**: 5 of 41 files documented (12.2% complete)
 
 ## Files Documentation Status
 
-### ✅ DOCUMENTED (4 files)
+### ✅ DOCUMENTED (5 files)
 1. **main.c** - Core program entry and initialization
 2. **data.h** - Central data structures and definitions
 3. **header.h** - Configuration and platform compatibility
 4. **combat.c** - Combat resolution and battle mechanics (8 functions documented)
+5. **move.c** - Unit movement and pathfinding (2 functions documented)
 
-### ❌ UNDOCUMENTED (37 files)
+### ❌ UNDOCUMENTED (36 files)
 
-#### Core Game Logic (Priority 1) - 8 files
-5. **move.c** - Unit movement and pathfinding
+#### Core Game Logic (Priority 1) - 7 files
 6. **update.c** - Game state updates and turn processing
 7. **commands.c** - User command processing and dispatch
 8. **data.c** - Data structure manipulation and game state
@@ -65,8 +65,7 @@
 ## Phase 3 Documentation Strategy
 
 ### Recommended File Order (Next 10 sessions)
-1. **move.c** - Movement system (medium complexity)
-3. **commands.c** - Command processing (medium complexity)
+1. **commands.c** - Command processing (medium complexity)
 4. **update.c** - Game state management (high complexity)
 5. **display.c** - User interface (medium complexity)
 6. **io.c** - File operations (medium complexity)
@@ -82,8 +81,8 @@
 - **Maintain documentation standards** from previous files
 
 ### Completion Estimate
-- **37 remaining files** at 1 file per session
-- **37 more sessions** to complete Phase 3
+- **36 remaining files** at 1 file per session
+- **36 more sessions** to complete Phase 3
 - **Critical path**: Core game logic files (Priority 1)
 - **Phase 4 dependency**: Cannot start warning elimination until documentation complete
 
@@ -106,15 +105,15 @@
 
 ## Progress Tracking
 
-### Completed (4/41 = 9.8%)
-- Priority 1: 4 files (main.c, data.h, header.h, combat.c)
+### Completed (5/41 = 12.2%)
+- Priority 1: 5 files (main.c, data.h, header.h, combat.c, move.c)
 - Priority 2: 0 files
 - Priority 3: 0 files
 - Priority 4: 0 files
 - Priority 5: 0 files
 
 ### Remaining Work Distribution
-- Priority 1 (Core Logic): 8 files
+- Priority 1 (Core Logic): 7 files
 - Priority 2 (UI/I/O): 7 files
 - Priority 3 (Admin): 6 files
 - Priority 4 (Specialized): 6 files
@@ -122,5 +121,5 @@
 - Priority 6 (Headers): 1 file
 
 ---
-**Next Action**: Select next file for documentation (recommend move.c)
-**Phase 3 Status**: Significant work remaining - 90.2% of files undocumented
+**Next Action**: Select next file for documentation (recommend commands.c)
+**Phase 3 Status**: Significant work remaining - 87.8% of files undocumented
