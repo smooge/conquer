@@ -44,6 +44,82 @@ extern short redraw;
 
 int roads_this_turn = 0;
 
+/*
+ * desg_ok - Validate sector designation change requests with comprehensive rules
+ *
+ * Performs complete validation of proposed sector designation changes, checking
+ * all game rules including resource requirements, population constraints, magic
+ * prerequisites, and logical transition restrictions. Used by redesignate()
+ * and other construction commands to ensure valid sector development.
+ *
+ * Algorithm:
+ * 1. Vegetation Check: Verify sufficient food production for most designations
+ * 2. Duplicate Prevention: Reject attempts to designate same type
+ * 3. City Protection: Require explicit ruin designation before city changes
+ * 4. Population Requirements: Enforce minimum population for urban development
+ * 5. Access Control: Block player creation of restricted designations
+ * 6. Display Filtering: Handle special visibility rules for UI
+ * 7. Ruin Logic: Validate ruin creation from cities/capitols only
+ * 8. Urban Progression: Enforce city->capitol upgrade path requirements
+ * 9. Resource Matching: Validate specialized buildings against trade goods
+ * 10. Mining Viability: Check resource availability for mines
+ * 11. Magic Prerequisites: Verify magic powers for special constructions
+ *
+ * Designation Rules Enforced:
+ * - Most designations require DESFOOD minimum vegetation
+ * - Cities/towns/capitols need 500+ population
+ * - Capitols must upgrade from cities/towns/ruins
+ * - Universities/lumberyards must match sector trade goods
+ * - Mines require corresponding metal/jewel resources
+ * - Special stone sites require SUMMON magic power
+ * - Pirate coves restricted to NPC/admin creation
+ * - Cities/capitols must be ruined before redesignation
+ *
+ * Error Reporting Modes:
+ * - prtflag=TRUE: Display error messages to user
+ * - prtflag=FALSE: Silent validation for UI filtering
+ *
+ * Parameters:
+ *   prtflag - Display error messages if TRUE, silent validation if FALSE
+ *   desg - Proposed new designation character (DCITY, DMINE, etc.)
+ *   sptr - Pointer to sector being evaluated for designation change
+ *
+ * Returns:
+ *   int - TRUE if designation change is valid, FALSE if invalid/blocked
+ *
+ * Side Effects:
+ *   - May display error messages via errormsg() if prtflag is TRUE
+ *   - Read-only validation, no modification of game state
+ *   - No persistent side effects beyond user notification
+ *
+ * Global Variables Used:
+ *   - country: Current player nation for magic/resource checks
+ *   - DESFOOD: Minimum food requirement constant
+ *   - tg_stype: Trade good to sector type mapping array
+ *
+ * Functions Called:
+ *   - tofood(): Calculate food production potential
+ *   - errormsg(): Display error message to user
+ *   - magic(): Check player magic power availability
+ *   - tg_ok(): Validate trade good employment rules
+ *
+ * Testing Notes:
+ *   Category: A (Unit) - Pure validation logic with clear inputs/outputs
+ *   Approach: Unit testing with comprehensive designation/sector combinations
+ *   Key Tests: All designation types, edge cases, resource constraints, magic
+ *   Dependencies: Sector data, magic system, trade good system
+ *   Mock Requirements: Sector structures, magic checks, resource calculations
+ *   Complexity: Moderate - Multiple validation rules with clear logic paths
+ *
+ * Notes:
+ *   - Thread safety: Read-only operation, safe for concurrent access
+ *   - Performance: O(1) - constant time validation checks
+ *   - Historical context: Core game balance enforcement mechanism
+ *   - Game balance: Prevents resource exploitation and maintains progression
+ *   - UI integration: Dual mode supports both command validation and display
+ *   - Error UX: Provides helpful error messages explaining restrictions
+ *   - Extensibility: Clear structure allows easy addition of new rules
+ */
 /* routine to determine if the given designation is ok; TRUE for ok */
 int
 desg_ok(prtflag, desg, sptr)
@@ -138,6 +214,86 @@ desg_ok(prtflag, desg, sptr)
 	return(TRUE);
 }
 
+/*
+ * redesignate - Change current sector designation with validation and cost processing
+ *
+ * Provides comprehensive sector designation change functionality supporting both
+ * normal player operations and god-mode world editing. Handles validation through
+ * desg_ok(), processes costs, manages special cases like capitol relocation,
+ * and provides interactive UI for designation selection.
+ *
+ * The function operates in two distinct modes:
+ * 1. God Mode (country==0): Allows editing of elevation, vegetation, ownership,
+ *    population, and trade goods with unrestricted access
+ * 2. Player Mode: Standard designation changes with full validation and costs
+ *
+ * Algorithm:
+ * 1. Check for god mode and provide special editing interface if applicable
+ * 2. Validate sector ownership (player mode only)
+ * 3. Display available designations using desg_ok() filtering
+ * 4. Process user input and validate designation choice
+ * 5. Handle special cases (roads, special designations)
+ * 6. Calculate and deduct costs (gold, metal) based on designation type
+ * 7. Update sector designation and handle side effects (capitol moves)
+ * 8. Update adjacent sector influences via SADJDES macro
+ *
+ * Parameters:
+ *   None (operates on global XREAL/YREAL coordinates)
+ *
+ * Returns:
+ *   void (no return value)
+ *
+ * Side Effects:
+ *   - Modifies sector designation at current coordinates
+ *   - Deducts gold and metal from nation treasury
+ *   - May relocate nation capitol for DCAPITOL designation
+ *   - Updates fortress values for ruin operations
+ *   - Increments roads_this_turn counter for road building
+ *   - Updates adjacent sector influences
+ *   - Clears and redraws bottom screen area
+ *
+ * God Mode Features:
+ *   - 'e': Change elevation (water, peak, mountain, hill, clear)
+ *   - 'v': Change vegetation (volcano, desert, tundra, etc.)
+ *   - 'o': Change sector owner
+ *   - 'p': Change population count
+ *   - 't': Change trade good type and value
+ *   - 'd': Normal designation change (falls through to player mode)
+ *
+ * Cost Structure:
+ *   - Basic designations: DESCOST gold
+ *   - Stockades: STOCKCOST gold
+ *   - Towns/Forts: 10*DESCOST gold + DESCOST metal
+ *   - Cities: 20*DESCOST gold + 5*DESCOST metal
+ *   - Capitols: 20*DESCOST gold + 5*DESCOST metal + capitol relocation
+ *   - Ruins from cities: Fortress reduction by 4, rebuild cost applies
+ *   - Roads: Limited to 2 per turn, requires 100+ population
+ *
+ * Special Validations:
+ *   - Ownership check (non-god mode)
+ *   - desg_ok() validation for all designations
+ *   - Road building limitations (2 per turn, 100+ people)
+ *   - Metal requirements for cities and forts
+ *   - Capitol uniqueness enforcement
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires sector data, nation state, UI interaction
+ *   Approach: Integration testing with mock sectors and nation data
+ *   Key Tests: God mode operations, cost calculations, capitol relocation,
+ *             road limits, validation failures, designation filtering
+ *   Dependencies: sct[][] array, ntn[] array, country/curntn globals,
+ *                XREAL/YREAL coordinates, desg_ok() function, UI functions
+ *   Mock Requirements: Screen I/O (mvaddstr, getch), sector ownership,
+ *                     nation treasury values, designation validation
+ *   Complexity: Complex - Multiple operation modes, extensive state changes
+ *
+ * Notes:
+ *   - Thread safety: Not thread-safe due to global state modifications
+ *   - UI Integration: Heavy curses dependency for interactive designation selection
+ *   - God mode provides world editing capabilities for game administration
+ *   - Capitol relocation automatically demotes previous capitol to city
+ *   - SADJDES macro updates influence on adjacent sectors after changes
+ */
 /*change current hex designation*/
 void
 redesignate()
@@ -388,6 +544,109 @@ redesignate()
 	if(isgod==TRUE) reset_god();
 }
 
+/*
+ * construct - Build fortifications, ships, or naval units with comprehensive validation
+ *
+ * Provides complete construction functionality for military infrastructure including
+ * fortification improvements and naval fleet construction/repair. Supports both
+ * god mode operations and standard player construction with resource validation,
+ * cost processing, and capacity management.
+ *
+ * The function handles three main construction types:
+ * 1. Fortification: Increase sector fortress level (+defensive bonus)
+ * 2. Ship Building: Construct new warships, merchants, or galleys
+ * 3. Ship Repair: Add crew to existing damaged fleets
+ *
+ * Algorithm:
+ * 1. Validate ownership and sector requirements (town/city/capitol)
+ * 2. Check population (500+ people) and treasury (positive gold)
+ * 3. Determine available options based on proximity to water
+ * 4. Process user choice (fortify, build ships, or repair ships)
+ * 5. For ships: Validate harbor access and fleet management
+ * 6. Calculate costs with magic/god mode modifiers
+ * 7. Verify resource availability (gold, population)
+ * 8. Execute construction and update all relevant data structures
+ * 9. Display results and update adjacent influences
+ *
+ * Construction Requirements:
+ * - Ownership: Must own the sector (unless god mode)
+ * - Population: 500+ people minimum for construction
+ * - Location: Must be in town, city, or capitol designation
+ * - Treasury: Positive gold balance required
+ * - Harbor: Ships require adjacent water tiles
+ * - Heavy Ships: Require city/capitol (not available in towns)
+ *
+ * Parameters:
+ *   None (operates on global XREAL/YREAL coordinates)
+ *
+ * Returns:
+ *   void (no return value)
+ *
+ * Side Effects:
+ *   - Modifies sector fortress level for fortification
+ *   - Creates or modifies naval fleets in ntn[].navies array
+ *   - Deducts gold from nation treasury
+ *   - Reduces civilian population for crew recruitment
+ *   - Updates fleet composition (warships, merchants, galleys)
+ *   - Adjusts crew levels and cargo capacity
+ *   - Updates adjacent sector influences
+ *   - Clears and redraws bottom screen area
+ *
+ * Fortification System:
+ *   - Cost: FORTCOST * (2^current_fortress_level)
+ *   - Bonus: Varies by designation (TOWNSTR/FORTSTR/CITYSTR)
+ *   - Magic: ARCHITECT doubles defensive bonus
+ *   - Limit: Maximum 11 fortress levels per sector
+ *   - Debt: Can go into debt up to 10 * nation's jewels
+ *
+ * Ship Construction System:
+ *   - Types: Warship (combat), Merchant (cargo), Galley (balanced)
+ *   - Classes: Light, Medium, Heavy (increasing cost/capacity)
+ *   - Cost: Base cost * (class+1) * ship type multiplier
+ *   - Magic: SAILOR reduces ship costs by 50%
+ *   - Crew: SHIPCREW per ship, recruited from sector population
+ *   - Fleet: Manages up to MAXNAVY fleets per nation
+ *
+ * Ship Repair System:
+ *   - Target: Existing fleets with damaged crew levels
+ *   - Cost: Proportional to fleet size and repair amount
+ *   - Crew: Add crew up to SHIPCREW maximum per ship
+ *   - Population: Requires civilians for crew recruitment
+ *   - Validation: Prevents over-crewing beyond ship capacity
+ *
+ * Fleet Management:
+ *   - Allocation: Automatic assignment to available fleet slots
+ *   - Composition: Tracks light/medium/heavy for each ship type
+ *   - Capacity: Calculates total holding and crew requirements
+ *   - Location: Sets fleet position to construction sector
+ *   - Movement: Resets movement points for new/modified fleets
+ *
+ * Cost Modifiers:
+ *   - God Mode: All construction costs set to 0
+ *   - SAILOR Magic: 50% reduction on ship costs
+ *   - ARCHITECT Magic: Double fortress defensive bonus
+ *   - Fortress Scaling: Exponential cost increase (2^level)
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires sector data, fleet arrays, UI interaction
+ *   Approach: Integration testing with mock naval and sector systems
+ *   Key Tests: Cost calculations, fleet allocation, capacity limits,
+ *             fortress scaling, magic modifiers, harbor validation,
+ *             crew management, resource validation
+ *   Dependencies: sct[][] array, ntn[].navies array, magic() system,
+ *                UI functions (mvaddstr, getch), getselunit() function
+ *   Mock Requirements: Fleet data structures, sector ownership,
+ *                     nation treasury/population, magic abilities
+ *   Complexity: Complex - Multiple construction modes, fleet management
+ *
+ * Notes:
+ *   - Thread safety: Not thread-safe due to global state modifications
+ *   - Magic Integration: Multiple spells affect construction costs/bonuses
+ *   - Fleet Limits: Hard-coded ship type limits via N_MASK validation
+ *   - Harbor Detection: Adjacent water tile scanning for ship construction
+ *   - Debt Management: Fortification allows controlled debt up to jewel limit
+ *   - Heavy Ship Restriction: Towns cannot construct heavy class ships
+ */
 /*build fort or ship-type */
 void
 construct()
@@ -738,6 +997,123 @@ construct()
 	refresh();
 }
 
+/*
+ * draft - Military unit recruitment system with comprehensive validation and army management
+ *
+ * Provides complete military recruitment functionality supporting multiple unit types,
+ * cost management, army allocation, and special unit handling (spies, scouts).
+ * Handles both creation of new armies and reinforcement of existing armies with
+ * extensive validation for recruitment limits, resource requirements, and unit
+ * placement rules.
+ *
+ * Unit recruitment system supports multiple categories:
+ * 1. Regular Military: Infantry, cavalry, archers, siege weapons
+ * 2. Naval Units: Marines and sailors (harbor-restricted)
+ * 3. Special Units: Spies (target selection) and scouts
+ * 4. Mercenaries: Hired soldiers with availability limits
+ *
+ * Algorithm:
+ * 1. Validate ownership and sector requirements (towns/cities/capitols)
+ * 2. Check treasury (positive gold) and population constraints
+ * 3. Display available unit types and process user selection
+ * 4. Validate special unit restrictions (harbor for naval, etc.)
+ * 5. Calculate recruitment numbers and costs with magic modifiers
+ * 6. Verify resource availability (gold, metal, population)
+ * 7. Determine army allocation (new army vs. existing army)
+ * 8. Handle special unit setup (spy targets, scout placement)
+ * 9. Deduct costs and population, update army data structures
+ * 10. Update adjacent influences and refresh display
+ *
+ * Recruitment Requirements:
+ * - Ownership: Must own the sector (unless god mode)
+ * - Location: Must be in town, city, or capitol designation
+ * - Treasury: Positive gold balance required
+ * - Population: Sufficient civilian population for recruitment
+ * - Harbor: Marines/sailors require adjacent water tiles
+ * - Army Slots: Available army slots (up to MAXARM per nation)
+ *
+ * Parameters:
+ *   None (operates on global XREAL/YREAL coordinates)
+ *
+ * Returns:
+ *   void (no return value)
+ *
+ * Side Effects:
+ *   - Creates new armies or reinforces existing armies
+ *   - Deducts gold and metal from nation treasury
+ *   - Reduces civilian population for recruited soldiers
+ *   - Increments mercenary counter for mercenary recruitment
+ *   - Sets army location, status, and movement points
+ *   - Updates adjacent sector influences
+ *   - Refreshes map display for new army visibility
+ *   - Clears and redraws bottom screen area
+ *
+ * Unit Type Categories:
+ *   - Regular Units: Use standard enlistment costs and metal requirements
+ *   - Spies: Single unit, target nation selection, special placement rules
+ *   - Scouts: Single unit, automatic SCOUT status assignment
+ *   - Marines/Sailors: Harbor requirement, standard costs
+ *   - Mercenaries: Special availability limits, no population cost
+ *   - Siege Units: SAPPER magic provides cost reduction
+ *
+ * Cost Structure:
+ *   - Gold Cost: u_encost[unit_type] * number_of_men
+ *   - Metal Cost: u_enmetal[unit_type] * number_of_men
+ *   - Magic Modifiers: WARRIOR/WARLORD/CAPTAIN = 50% gold reduction
+ *   - Siege Magic: SAPPER = 50% gold and metal reduction for siege units
+ *   - God Mode: All costs bypassed
+ *
+ * Population Management:
+ *   - Draft Limit: Based on initial population (i_people) vs current population
+ *   - Formula: max_draft = people - (i_people * 192/256)
+ *   - Mercenaries: No population cost, but global availability limit
+ *   - City Requirements: Population distribution rules for large cities
+ *
+ * Army Management:
+ *   - New Army: Automatically allocated to first available slot
+ *   - Existing Army: Must be same unit type and not ONBOARD
+ *   - Status Assignment: New armies default to DEFEND, militia to MILITIA
+ *   - Special Units: Spies and scouts get SCOUT status
+ *   - Location: Set to recruitment sector coordinates
+ *
+ * Mercenary System:
+ *   - Availability: Global limit of MERCMEN/NTOTAL per nation
+ *   - Ratio Limit: Cannot exceed 50% of total army composition
+ *   - Tracking: Global mercgot counter tracks total mercenaries recruited
+ *   - Cost: Standard gold cost, no metal or population requirements
+ *
+ * Spy System:
+ *   - Target Selection: Choose enemy nation for espionage
+ *   - Placement: Known capitols vs. unknown nation handling
+ *   - Intelligence: Provides directional hints for unknown nations
+ *   - Status: Automatic SCOUT status for stealth operations
+ *   - Restrictions: Cannot spy on own nation or inactive nations
+ *
+ * Harbor Requirements:
+ *   - Marines/Sailors: Must have adjacent water tile (WATER altitude)
+ *   - Detection: Scans 3x3 grid around recruitment sector
+ *   - Validation: Error messages for land-locked recruitment attempts
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires army arrays, nation data, UI interaction
+ *   Approach: Integration testing with mock army and nation systems
+ *   Key Tests: Cost calculations, population limits, army allocation,
+ *             mercenary ratios, harbor validation, spy targeting,
+ *             magic modifiers, resource validation
+ *   Dependencies: ntn[].armies array, sct[][] sector data, magic() system,
+ *                UI functions (mvaddstr, getch), get_country() function
+ *   Mock Requirements: Army data structures, nation treasury/population,
+ *                     unit type definitions, magic abilities
+ *   Complexity: Complex - Multiple unit types, extensive validation rules
+ *
+ * Notes:
+ *   - Thread safety: Not thread-safe due to global state modifications
+ *   - Magic Integration: Multiple spells affect recruitment costs and capabilities
+ *   - Unit Limits: Hard-coded army limits via MAXARM validation
+ *   - Population Tracking: Complex draft limit calculation based on turn start
+ *   - Map Integration: Updates display to show new army positions
+ *   - Resource Management: Careful validation prevents over-recruitment
+ */
 /*DRAFT IF IN A CITY*/
 void
 draft()
@@ -1047,6 +1423,107 @@ draft()
 	if(isgod==TRUE) reset_god();
 }
 
+/*
+ * rmessage - Read and manage messages with selective deletion and file locking
+ *
+ * Provides comprehensive message reading functionality with interactive message
+ * display, selective deletion capabilities, and file locking to prevent
+ * concurrent access conflicts. Handles message pagination, user interaction,
+ * and atomic file operations to maintain message integrity during reading.
+ *
+ * The function implements a safe message reading system:
+ * 1. Creates temporary file for modified message storage
+ * 2. Checks for concurrent mail operations via lock files
+ * 3. Displays messages with pagination and user interaction
+ * 4. Allows selective message deletion via user input
+ * 5. Atomically replaces original file with filtered messages
+ *
+ * Algorithm:
+ * 1. Create temporary file for storing kept messages
+ * 2. Open and validate message file existence
+ * 3. Check for send lock file to prevent concurrent access
+ * 4. Read messages one at a time with full-screen display
+ * 5. Handle pagination for long messages (more than screen height)
+ * 6. Present user options: keep message or delete message
+ * 7. Write kept messages to temporary file
+ * 8. Atomically move temporary file to replace original
+ * 9. Update mail system size counter for external integration
+ *
+ * File Operation Safety:
+ * - Temporary File: Creates nation-specific .tmp file for atomic operations
+ * - Lock Detection: Checks for send.msgfileN files indicating active senders
+ * - Atomic Replacement: Uses move_file() for safe file replacement
+ * - Error Handling: Cleanup temporary files on errors
+ *
+ * Parameters:
+ *   None (operates on global country variable for file selection)
+ *
+ * Returns:
+ *   void (no return value)
+ *
+ * Side Effects:
+ *   - Modifies message file by removing deleted messages
+ *   - Creates and removes temporary files during operation
+ *   - Clears and redraws entire screen for message display
+ *   - Updates global redraw flag for screen refresh
+ *   - Increments conq_mail_size counter (if SYSMAIL enabled)
+ *   - May block if concurrent mail operations detected
+ *
+ * Message Display System:
+ *   - Full Screen: Clears screen for each message display
+ *   - Pagination: Automatic "more" prompts for long messages
+ *   - Highlighting: Uses standout mode for prompts and controls
+ *   - Interactive: User controls message deletion via return key
+ *   - End Detection: Messages terminated by "END" marker lines
+ *
+ * User Interface:
+ *   - Display: Full-screen message rendering with line-by-line output
+ *   - Controls: ANY KEY continues, RETURN deletes current message
+ *   - Pagination: Automatic pause at screen boundaries with "more" prompt
+ *   - Status: Clear prompts for user actions and message counts
+ *
+ * File Format:
+ *   - Messages: Line-based format with "END" terminators
+ *   - Storage: Country-specific files (msgfileN where N=country number)
+ *   - Temporary: Uses .tmp extension for atomic operations
+ *   - Lock Files: send.msgfileN indicates active mail sending
+ *
+ * Concurrency Control:
+ *   - Send Detection: Checks for active mail sending via lock files
+ *   - Time Validation: Removes stale lock files older than TIME_DEAD
+ *   - Wait Handling: Returns with message if sender detected
+ *   - File Safety: Atomic operations prevent corruption
+ *
+ * Error Conditions:
+ *   - No Messages: Returns early with appropriate user message
+ *   - File Errors: Cleanup temporary files and report errors
+ *   - Concurrent Access: Detect and defer to active mail operations
+ *   - Lock Files: Handle stale locks and active sender detection
+ *
+ * Integration Points:
+ *   - SYSMAIL: Updates mail size counter for external mail integration
+ *   - Screen: Uses curses for full-screen message display
+ *   - Files: Integrates with move_file() for atomic operations
+ *   - Timing: Uses TIME_DEAD constant for lock file aging
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires file system, screen I/O, timing
+ *   Approach: Integration testing with mock files and screen simulation
+ *   Key Tests: Message pagination, selective deletion, concurrent access,
+ *             file operations, lock file handling, error recovery
+ *   Dependencies: File system operations, curses screen I/O, timing functions,
+ *                move_file() function, message file format
+ *   Mock Requirements: File I/O operations, screen functions, timing,
+ *                     message file content, lock file simulation
+ *   Complexity: Moderate - File operations with concurrency control
+ *
+ * Notes:
+ *   - Thread safety: File locking prevents concurrent access conflicts
+ *   - Screen management: Full-screen interface requires careful state management
+ *   - File integrity: Atomic operations ensure no message loss during reading
+ *   - Performance: Pagination prevents memory issues with large messages
+ *   - User experience: Clear prompts and immediate feedback for message management
+ */
 /*go through msgfile not rewriting to temp messages you discard*/
 /* then move temp to msgfile*/
 void
@@ -1163,6 +1640,126 @@ rmessage()
 #endif /* SYSMAIL */
 }
 
+/*
+ * wmessage - Interactive message composition and sending system
+ *
+ * Provides comprehensive message writing functionality with interactive text
+ * editing, recipient selection, and multiple message formats. Supports sending
+ * to individual nations, news broadcasts, and administrative messages with
+ * full-screen text editing capabilities and real-time character input handling.
+ *
+ * The function implements a sophisticated message composition system:
+ * 1. Interactive recipient selection (nations, news, administrator)
+ * 2. Full-screen text editor with line editing capabilities
+ * 3. Multiple message formats (personal, news, administrative)
+ * 4. Real-time character processing with editing features
+ * 5. Safe file operations with proper locking mechanisms
+ *
+ * Algorithm:
+ * 1. Prompt for and validate message recipient selection
+ * 2. Open mail file with appropriate locking mechanisms
+ * 3. Set up full-screen editing interface with instructions
+ * 4. Process character input with editing commands (backspace, delete)
+ * 5. Handle special commands (Control-D end, ESC abort, line breaks)
+ * 6. Format and write message content to appropriate mail file
+ * 7. Handle pagination for long messages with screen management
+ * 8. Close mail file and complete message sending process
+ *
+ * Recipient Types:
+ * - Individual Nations: Direct messages to specific player nations
+ * - News System: Broadcast messages to all players via news
+ * - Administrator: Messages to game administrator (god account)
+ * - Validation: Checks for active nations and valid recipients
+ *
+ * Parameters:
+ *   None (interactive recipient selection and message composition)
+ *
+ * Returns:
+ *   void (no return value)
+ *
+ * Side Effects:
+ *   - Creates mail files for specified recipients
+ *   - Writes formatted message content to mail system
+ *   - Clears and manages full-screen editing interface
+ *   - Updates global redraw flag for screen refresh
+ *   - May create lock files during mail operations
+ *   - Handles file system operations for message storage
+ *
+ * Text Editor Features:
+ *   - Character Input: Real-time processing of printable characters
+ *   - Backspace/Delete: Line editing with character removal
+ *   - Line Management: Automatic line breaks and continuation
+ *   - Control Commands: Control-D (end), ESC (abort), period (end)
+ *   - Screen Management: Automatic pagination for long messages
+ *   - Visual Feedback: Immediate character display and cursor management
+ *
+ * Message Formats:
+ *   - Personal Messages: "Message to [Nation] from [Sender] (Season Year)"
+ *   - News Messages: Special news format with sender identification
+ *   - Administrative: Different formatting for god/administrator messages
+ *   - Timestamping: Automatic date/time stamps with season and year
+ *
+ * Editing Controls:
+ *   - Printable Characters: Direct input up to 65 characters per line
+ *   - Backspace (\b, \177): Remove previous character with visual feedback
+ *   - Return (\n, \r): Complete current line and advance to next
+ *   - Control-D (\004): End message composition (must be at line start)
+ *   - ESC (\033): Abort message with confirmation prompt
+ *   - Form Feed: Screen refresh and continuation
+ *   - Single Period: Alternative message termination
+ *
+ * Screen Management:
+ *   - Full Screen: Complete screen control for editing interface
+ *   - Title Display: Recipient information and instructions
+ *   - Status Lines: Instructions for ending and aborting messages
+ *   - Cursor Control: Real-time cursor positioning during editing
+ *   - Pagination: Automatic screen clearing for continued editing
+ *   - Visual Feedback: Standout mode for prompts and instructions
+ *
+ * File Operations:
+ *   - Mail Opening: Uses mailopen() with proper locking
+ *   - Content Writing: Formatted output to mail files
+ *   - File Closing: Uses mailclose() for safe completion
+ *   - Error Handling: Proper cleanup on file operation errors
+ *   - Format Control: Different output formats based on message type
+ *
+ * Input Validation:
+ *   - Recipient Validation: Checks for valid and active nations
+ *   - Character Limits: Line length restrictions (65 characters)
+ *   - Command Recognition: Proper handling of special key sequences
+ *   - Abort Confirmation: User confirmation for message abortion
+ *   - End Validation: Control-D must be at beginning of line
+ *
+ * Error Handling:
+ *   - Invalid Recipients: Early return with appropriate messaging
+ *   - File Errors: Proper cleanup and user notification
+ *   - Abort Operations: Clean abort with confirmation prompts
+ *   - Input Errors: Graceful handling of unexpected input
+ *
+ * Integration Points:
+ *   - Mail System: Integrates with mailopen()/mailclose() functions
+ *   - Nation System: Validates against active nation list
+ *   - Screen System: Full curses integration for editing interface
+ *   - Time System: Uses PSEASON() and YEAR() for timestamping
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires mail system, screen I/O, file operations
+ *   Approach: Integration testing with mock mail system and screen simulation
+ *   Key Tests: Text editing, recipient validation, message formatting,
+ *             file operations, screen management, error handling
+ *   Dependencies: Mail system functions, curses screen I/O, nation data,
+ *                file system operations, time/date functions
+ *   Mock Requirements: Mail system, screen functions, nation validation,
+ *                     file operations, user input simulation
+ *   Complexity: Moderate - Interactive editing with file operations
+ *
+ * Notes:
+ *   - Thread safety: Mail system locking handles concurrent access
+ *   - User experience: Full-screen editing with immediate feedback
+ *   - File safety: Proper locking and error handling for mail operations
+ *   - Input handling: Comprehensive character processing for editing
+ *   - Screen management: Complex screen state management for editing interface
+ */
 void
 wmessage()
 {
@@ -1328,6 +1925,107 @@ wmessage()
 	mailclose(temp);
 }
 
+/*
+ * moveciv - Strategic civilian population movement with cost and validation
+ *
+ * Provides civilian population movement functionality allowing players to
+ * relocate civilians between owned sectors within movement distance limits.
+ * Handles cost calculations, ownership validation, movement restrictions,
+ * and sector accessibility checks with comprehensive error handling.
+ *
+ * The function implements a controlled civilian migration system:
+ * 1. Validates sector ownership and population availability
+ * 2. Interactive selection of population count and destination
+ * 3. Enforces movement distance limits (maximum 2 sectors)
+ * 4. Validates destination ownership and accessibility
+ * 5. Processes movement cost and updates population distributions
+ *
+ * Algorithm:
+ * 1. Validate source sector ownership and population existence
+ * 2. Prompt for number of people to move with cost display
+ * 3. Validate population availability and gold sufficiency
+ * 4. Interactive destination coordinate selection (X, Y)
+ * 5. Validate movement distance (maximum 2 sectors in each direction)
+ * 6. Check destination ownership and sector accessibility
+ * 7. Process movement cost deduction and population transfer
+ * 8. Update adjacent sector influences for both locations
+ *
+ * Movement Restrictions:
+ * - Ownership: Must own both source and destination sectors
+ * - Distance: Maximum 2 sectors in X or Y direction (not diagonal distance)
+ * - Population: Cannot move more people than available in source
+ * - Cost: 50 gold per civilian moved (must have sufficient treasury)
+ * - Accessibility: Destination must have positive move cost (movecost[i][j] >= 0)
+ *
+ * Parameters:
+ *   None (operates on global XREAL/YREAL coordinates for source sector)
+ *
+ * Returns:
+ *   void (no return value)
+ *
+ * Side Effects:
+ *   - Reduces population in source sector
+ *   - Increases population in destination sector
+ *   - Deducts movement cost from nation treasury (50 gold per person)
+ *   - Updates adjacent sector influences for both sectors
+ *   - Clears and redraws bottom screen area
+ *
+ * Cost Structure:
+ *   - Fixed Rate: 50 gold talons per civilian moved
+ *   - No Magic Modifiers: Movement cost is not affected by magic abilities
+ *   - Treasury Check: Validates sufficient gold before allowing movement
+ *   - Immediate Deduction: Cost is deducted when movement is executed
+ *
+ * Distance Validation:
+ *   - X-Axis Limit: |destination_x - source_x| <= 2
+ *   - Y-Axis Limit: |destination_y - source_y| <= 2
+ *   - Independent Axes: Limits apply separately to X and Y coordinates
+ *   - No Diagonal Distance: Uses Manhattan-style distance checking
+ *
+ * Sector Validation:
+ *   - Source Ownership: Must own the sector containing civilians to move
+ *   - Destination Ownership: Must own the destination sector
+ *   - Population Check: Source sector must have civilians present
+ *   - Accessibility: Destination sector must allow civilian entry (movecost >= 0)
+ *   - God Mode: OGOD compilation flag allows god to bypass ownership checks
+ *
+ * Error Conditions:
+ *   - Ownership Errors: "Sorry, you don't own that sector"
+ *   - Population Errors: "Nobody lives there" or "not that many people"
+ *   - Cost Errors: "you do not have enough gold talons"
+ *   - Distance Errors: "refuse to move more than two sectors"
+ *   - Accessibility Errors: "refuse to enter that sector"
+ *
+ * User Interface:
+ *   - Information Display: Shows current population and movement cost
+ *   - Coordinate Input: Interactive X and Y coordinate selection
+ *   - Error Feedback: Clear error messages for various failure conditions
+ *   - Cost Preview: Displays cost per civilian before commitment
+ *
+ * Integration Points:
+ *   - Treasury System: Integrates with nation gold management
+ *   - Sector System: Updates population and influence calculations
+ *   - Movement System: Uses movecost array for accessibility validation
+ *   - God Mode: Conditional compilation for administrative access
+ *
+ * Testing Notes:
+ *   Category: A (Unit) - Isolated function with clear input/output behavior
+ *   Approach: Unit testing with mock sector data and user input
+ *   Key Tests: Distance validation, ownership checks, cost calculations,
+ *             population limits, accessibility validation, error handling
+ *   Dependencies: sct[][] sector array, curntn nation data, movecost array,
+ *                XREAL/YREAL coordinates, user input functions
+ *   Mock Requirements: Sector ownership, population data, treasury values,
+ *                     movecost accessibility, user input simulation
+ *   Complexity: Simple - Straightforward validation and population transfer
+ *
+ * Notes:
+ *   - Thread safety: Not thread-safe due to global state modifications
+ *   - Strategic Purpose: Allows population redistribution for economic planning
+ *   - One-time Use: Comment suggests this may be limited use per turn
+ *   - Distance Logic: Uses absolute difference checking for movement limits
+ *   - God Mode: Conditional ownership bypass for administrative functions
+ */
 /*strategic move of civilians...once only*/
 void
 moveciv()
@@ -1411,6 +2109,97 @@ moveciv()
 	}
 }
 
+/*
+ * armygoto - Army navigation and selection automation for map interface
+ *
+ * Provides automated army navigation functionality for the map interface,
+ * allowing rapid movement between armies and automatic selection cycling.
+ * Handles army validation, screen positioning, cursor management, and
+ * selection state updates for efficient army management during gameplay.
+ *
+ * The function implements intelligent army navigation:
+ * 1. Determines next valid army from current selection
+ * 2. Validates army existence and availability
+ * 3. Updates map cursor position to army location
+ * 4. Adjusts selection interface to highlight target army
+ * 5. Handles wraparound and fallback for army cycling
+ *
+ * Algorithm:
+ * 1. Get current army selection and increment to next army
+ * 2. Search for next army with active soldiers and valid status
+ * 3. Handle wraparound to beginning if end of army list reached
+ * 4. Calculate screen position relative to map offsets
+ * 5. Update cursor position and refresh map display
+ * 6. Adjust selector and pager for proper army highlighting
+ * 7. Iterate selection interface until target army is selected
+ *
+ * Army Validation Criteria:
+ * - Soldier Count: Army must have P_ASOLD > 0 (active soldiers)
+ * - Status Check: Army status must be < NUMSTATUS (not in special group)
+ * - Range Check: Army number must be within valid range (0 to MAXARM)
+ * - Existence: Army must be allocated and active
+ *
+ * Parameters:
+ *   None (operates on global army and interface state)
+ *
+ * Returns:
+ *   int - 1 if valid army found and selected, 0 if no armies available
+ *
+ * Side Effects:
+ *   - Updates global xcurs and ycurs cursor position
+ *   - Modifies global selector and pager for interface highlighting
+ *   - Refreshes map display via coffmap() function
+ *   - Changes current army selection in interface
+ *   - May cycle through multiple interface selections
+ *
+ * Navigation Logic:
+ *   - Sequential Search: Checks armies in ascending order
+ *   - Wraparound: Returns to army 0 if no armies found after current
+ *   - Fallback: Returns 0 if no valid armies exist at all
+ *   - Position Update: Centers map view on selected army location
+ *
+ * Interface Integration:
+ *   - Cursor Management: Updates xcurs/ycurs for map positioning
+ *   - Selection System: Manages selector/pager for army highlighting
+ *   - Screen Offsets: Accounts for xoffset/yoffset in position calculations
+ *   - Map Refresh: Triggers coffmap() to update display
+ *
+ * Selection Interface:
+ *   - Selector: 2-unit increments for selection highlighting
+ *   - Pager: Tracks page changes when selector reaches limit (>=10)
+ *   - Loop Protection: Maximum 500 iterations to prevent infinite loops
+ *   - Target Matching: Continues until getselunit() returns target army
+ *
+ * Error Handling:
+ *   - Invalid Range: Handles army numbers outside valid range
+ *   - No Armies: Returns 0 when no valid armies are found
+ *   - Loop Protection: Prevents infinite loops in selection interface
+ *   - Graceful Fallback: Handles empty army lists appropriately
+ *
+ * Performance Considerations:
+ *   - Sequential Search: O(n) search through army list
+ *   - Interface Updates: Multiple screen updates during selection
+ *   - Loop Limit: 500-iteration limit prevents excessive processing
+ *   - Map Refresh: Single coffmap() call for screen update
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires army data, interface state, map system
+ *   Approach: Integration testing with mock army data and interface
+ *   Key Tests: Army validation, navigation wraparound, cursor positioning,
+ *             selection interface, empty army handling, loop protection
+ *   Dependencies: Army data structures, map coordinates, interface globals,
+ *                getselunit() function, coffmap() function
+ *   Mock Requirements: Army arrays, map positioning, selection state,
+ *                     interface variables, screen functions
+ *   Complexity: Simple - Linear search with interface updates
+ *
+ * Notes:
+ *   - Thread safety: Not thread-safe due to global state modifications
+ *   - UI Integration: Tight coupling with map and selection interfaces
+ *   - Army Management: Essential for efficient army navigation in game
+ *   - Performance: Optimized for typical army counts in gameplay
+ *   - User Experience: Provides smooth army cycling for player convenience
+ */
 int
 armygoto()
 {
@@ -1443,6 +2232,116 @@ armygoto()
 	return(1);
 }
 
+/*
+ * navygoto - Naval fleet navigation and selection automation for map interface
+ *
+ * Provides automated naval fleet navigation functionality for the map interface,
+ * allowing rapid movement between fleets and automatic selection cycling.
+ * Handles fleet validation, screen positioning, cursor management, and
+ * selection state updates for efficient naval fleet management during gameplay.
+ *
+ * The function implements intelligent naval fleet navigation:
+ * 1. Determines next valid fleet from current selection
+ * 2. Validates fleet existence and ship availability
+ * 3. Updates map cursor position to fleet location
+ * 4. Adjusts selection interface to highlight target fleet
+ * 5. Handles wraparound and fallback for fleet cycling
+ *
+ * Algorithm:
+ * 1. Get current navy selection (offset by MAXARM) and increment to next fleet
+ * 2. Search for next fleet with active ships (merchants, warships, or galleys)
+ * 3. Handle wraparound to beginning if end of fleet list reached
+ * 4. Calculate screen position relative to map offsets
+ * 5. Update cursor position and refresh map display
+ * 6. Adjust selector and pager for proper fleet highlighting
+ * 7. Iterate selection interface until target fleet is selected
+ *
+ * Fleet Validation Criteria:
+ * - Ship Count: Fleet must have ships (P_NMSHP > 0 OR P_NWSHP > 0 OR P_NGSHP > 0)
+ * - Range Check: Fleet number must be within valid range (0 to MAXNAVY)
+ * - Existence: Fleet must be allocated and contain at least one ship type
+ * - Active Status: Fleet must be actively deployed and operational
+ *
+ * Parameters:
+ *   None (operates on global fleet and interface state)
+ *
+ * Returns:
+ *   int - 1 if valid fleet found and selected, 0 if no fleets available
+ *
+ * Side Effects:
+ *   - Updates global xcurs and ycurs cursor position
+ *   - Modifies global selector and pager for interface highlighting
+ *   - Refreshes map display via coffmap() function
+ *   - Changes current fleet selection in interface
+ *   - May cycle through multiple interface selections
+ *
+ * Navigation Logic:
+ *   - Sequential Search: Checks fleets in ascending order
+ *   - Wraparound: Returns to fleet 0 if no fleets found after current
+ *   - Fallback: Returns 0 if no valid fleets exist at all
+ *   - Position Update: Centers map view on selected fleet location
+ *   - Navy Offset: Accounts for MAXARM offset in navy numbering
+ *
+ * Ship Type Validation:
+ *   - Merchant Ships: P_NMSHP count for cargo and trade vessels
+ *   - War Ships: P_NWSHP count for combat vessels
+ *   - Galleys: P_NGSHP count for versatile naval units
+ *   - Any Type: Fleet is valid if any ship type count > 0
+ *
+ * Interface Integration:
+ *   - Cursor Management: Updates xcurs/ycurs for map positioning
+ *   - Selection System: Manages selector/pager for fleet highlighting
+ *   - Screen Offsets: Accounts for xoffset/yoffset in position calculations
+ *   - Map Refresh: Triggers coffmap() to update display
+ *   - Navy Indexing: Adjusts for MAXARM offset in fleet numbering
+ *
+ * Selection Interface:
+ *   - Selector: 2-unit increments for selection highlighting
+ *   - Pager: Tracks page changes when selector reaches limit (>=10)
+ *   - Loop Protection: Maximum 500 iterations to prevent infinite loops
+ *   - Target Matching: Continues until (getselunit()-MAXARM) returns target fleet
+ *   - Navy Offset: Handles MAXARM offset for proper fleet identification
+ *
+ * Fleet Position Management:
+ *   - Location Access: Uses P_NXLOC and P_NYLOC for fleet coordinates
+ *   - Screen Mapping: Converts world coordinates to screen coordinates
+ *   - Offset Calculation: Accounts for current map view offsets
+ *   - Cursor Update: Updates xcurs/ycurs for immediate visual feedback
+ *
+ * Error Handling:
+ *   - Invalid Range: Handles fleet numbers outside valid range
+ *   - No Fleets: Returns 0 when no valid fleets are found
+ *   - Loop Protection: Prevents infinite loops in selection interface
+ *   - Graceful Fallback: Handles empty fleet lists appropriately
+ *   - Empty Ships: Handles fleets with zero ships in all categories
+ *
+ * Performance Considerations:
+ *   - Sequential Search: O(n) search through fleet list
+ *   - Interface Updates: Multiple screen updates during selection
+ *   - Loop Limit: 500-iteration limit prevents excessive processing
+ *   - Map Refresh: Single coffmap() call for screen update
+ *   - Ship Counting: Multiple ship type checks per fleet
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires fleet data, interface state, map system
+ *   Approach: Integration testing with mock fleet data and interface
+ *   Key Tests: Fleet validation, ship type checking, navigation wraparound,
+ *             cursor positioning, selection interface, empty fleet handling,
+ *             loop protection, navy offset handling
+ *   Dependencies: Fleet data structures, map coordinates, interface globals,
+ *                getselunit() function, coffmap() function, MAXARM constant
+ *   Mock Requirements: Fleet arrays, ship counts, map positioning, selection state,
+ *                     interface variables, screen functions
+ *   Complexity: Simple - Linear search with interface updates and ship validation
+ *
+ * Notes:
+ *   - Thread safety: Not thread-safe due to global state modifications
+ *   - UI Integration: Tight coupling with map and selection interfaces
+ *   - Fleet Management: Essential for efficient naval navigation in game
+ *   - Navy Numbering: Uses MAXARM offset to distinguish from army units
+ *   - Ship Types: Supports three distinct ship categories for tactical diversity
+ *   - User Experience: Provides smooth fleet cycling for naval operations
+ */
 int
 navygoto()
 {
