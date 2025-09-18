@@ -39,6 +39,42 @@ int	disarray;		/* TRUE if nation in disarray */
 int	**attr;			/* sector attractiveness */
 long	**newpop;		/* storage for old population */
 
+/*
+ * dtol - Convert double to long with precision control
+ *
+ * This utility function converts a double-precision floating point value
+ * to a long integer using string formatting as an intermediate step.
+ * The conversion uses sprintf with "%-60.0lf" format to eliminate fractional
+ * parts and handle precision issues that might occur with direct casting.
+ *
+ * This approach was likely chosen to handle potential floating-point
+ * precision issues in older systems or to ensure consistent rounding
+ * behavior across different platforms.
+ *
+ * Parameters:
+ *   d - Double value to convert to long integer
+ *
+ * Returns:
+ *   Long integer representation of the input double (fractional part discarded)
+ *
+ * Side Effects:
+ *   - Uses local buffer BIGLTH in size for string conversion
+ *   - No global state modifications
+ *
+ * Testing Notes:
+ *   Category: A (Unit Testable)
+ *   Approach: Unit tests with various floating-point values
+ *   Key Tests: Normal values, large values, negative values, edge cases near limits
+ *   Dependencies: None - isolated utility function
+ *   Mock Requirements: None
+ *   Complexity: Simple - straightforward conversion utility
+ *
+ * Notes:
+ *   - Thread safe - uses only local variables
+ *   - Consider replacing with direct casting in modern C implementations
+ *   - String formatting approach may be less efficient than direct conversion
+ *   - BIGLTH buffer size should be sufficient for largest double representations
+ */
 long
 dtol(d) double d;
 {
@@ -49,9 +85,67 @@ dtol(d) double d;
 	return(l);
 }
 
-/****************************************************************/
-/*	UPDATE() - updates the whole world			*/
-/****************************************************************/
+/*
+ * update - Master turn processing coordinator for the entire game world
+ *
+ * This is the central orchestrator function that executes a complete game turn
+ * by coordinating all major game subsystems in a carefully designed sequence.
+ * It represents the core game loop that processes one complete turn cycle,
+ * updating all nations, resolving conflicts, and advancing the world state.
+ *
+ * The function follows a strict execution order to ensure game consistency:
+ * 1. Initialize turn infrastructure (news file, integrity checks)
+ * 2. Execute all nations in random order (diplomatic, economic, military actions)
+ * 3. Process special nation types (monsters, if enabled)
+ * 4. Resolve combat between all military units
+ * 5. Handle sector capture and territorial changes
+ * 6. Process trade agreements (if trade system enabled)
+ * 7. Update military units and movement capabilities
+ * 8. Execute random events (if random event system enabled)
+ * 9. Update all world sectors (population, resources, development)
+ * 10. Process economic systems (food consumption, trade goods, famine)
+ * 11. Handle leader birth and development
+ * 12. Check for nation destruction due to low population/military
+ * 13. Finalize news reporting and file management
+ * 14. Apply NPC difficulty balancing (if cheat system enabled)
+ * 15. Calculate nation scores and rankings
+ * 16. Process mercenary system updates
+ * 17. Clean up temporary files and sort news
+ * 18. Advance turn counter and recalculate nation attributes
+ *
+ * Parameters:
+ *   None - operates on global game state
+ *
+ * Returns:
+ *   void - does not return values, modifies global game state
+ *
+ * Side Effects:
+ *   - Modifies all global game data structures
+ *   - Creates and writes news files for the current turn
+ *   - Executes system commands for file management and sorting
+ *   - Increments global TURN counter
+ *   - Calls check() multiple times for integrity validation
+ *   - May destroy nations that fall below survival thresholds
+ *   - Updates nation attributes, scores, and military capabilities
+ *   - Processes file I/O for news management and cleanup
+ *
+ * Testing Notes:
+ *   Category: C (System Level Only)
+ *   Approach: Full system integration testing with complete game state
+ *   Key Tests: Turn sequence integrity, file operations, nation lifecycle
+ *   Dependencies: All major game subsystems, file system, global game state
+ *   Mock Requirements: File system, system command execution, all subsystem functions
+ *   Complexity: Complex - orchestrates entire game turn with multiple interdependent systems
+ *
+ * Notes:
+ *   - This function represents the core game loop execution
+ *   - Order of operations is critical for game balance and consistency
+ *   - Multiple conditional compilation blocks for optional features
+ *   - Heavy reliance on global state makes this difficult to unit test
+ *   - File operations and system commands require careful error handling
+ *   - News file management ensures player communication and game history
+ *   - Integrity checks (check()) provide critical error detection throughout turn processing
+ */
 void
 update()
 {
@@ -136,10 +230,57 @@ update()
 	att_bonus();	/* calculate tradegood bonus for nation attributes */
 }
 
-/****************************************************************/
-/*	ATTRACT() - how attractive is sector to civilians	*/
-/* returns attractiveness 					*/
-/****************************************************************/
+/*
+ * attract - Calculate sector attractiveness for civilian population movement
+ *
+ * Calculates how attractive a specific sector is to civilian populations
+ * for migration purposes. The calculation considers sector designation,
+ * natural resources, trade goods, and race-specific preferences.
+ * This is a core component of the population movement algorithm that
+ * drives demographic changes across the game world.
+ *
+ * Algorithm:
+ * 1. Base attractiveness from trade goods and their values
+ * 2. Designation-specific bonuses (cities, farms, mines, etc.)
+ * 3. Race-specific modifiers based on cultural preferences
+ *   - Dwarves prefer mountains and mining sectors
+ *   - Elves prefer forests and natural environments
+ *   - Humans are adaptable to most environments
+ *   - Orcs have their own environmental preferences
+ * 4. Special case handling for food-starved nations (farm attractiveness)
+ * 5. Devastated or inaccessible sectors have zero attractiveness
+ *
+ * Parameters:
+ *   x - X coordinate of the sector (0-MAPX)
+ *   y - Y coordinate of the sector (0-MAPY)
+ *   race - Race type (DWARF, ELF, HUMAN, ORC) determining preferences
+ *
+ * Returns:
+ *   Integer attractiveness value (0 or positive)
+ *   0 for devastated sectors or inaccessible terrain
+ *   Higher values indicate more attractive sectors for migration
+ *
+ * Side Effects:
+ *   - None - pure calculation function with no state changes
+ *   - Reads from global sector array sct[x][y]
+ *   - Reads from global nation array ntn[] for food calculations
+ *
+ * Testing Notes:
+ *   Category: A (Unit Testable)
+ *   Approach: Unit tests with mock sector data and race parameters
+ *   Key Tests: Race preferences, trade good bonuses, devastation handling,
+ *              food scarcity farm attractiveness, resource-based bonuses
+ *   Dependencies: Global sct[][] array, ntn[] array, trade good constants
+ *   Mock Requirements: Sector data structures, nation food statistics
+ *   Complexity: Moderate - multiple conditional branches with race logic
+ *
+ * Notes:
+ *   - Central to population migration mechanics in move_people()
+ *   - Race-specific constants (DWOODATTR, EGOLDATTR, etc.) drive preferences
+ *   - Food scarcity calculation affects farm attractiveness dynamically
+ *   - Devastated sectors always return 0 regardless of other factors
+ *   - Negative movement costs indicate inaccessible terrain
+ */
 int
 attract(int x,int y,int race)
 {
@@ -247,10 +388,68 @@ attract(int x,int y,int race)
 	if((designation==DDEVASTATED)||(Attr<0)||(movecost[x][y]<0)) Attr=0;
 	return(Attr);
 }
-/****************************************************************/
-/*	ARMYMOVE() 						*/
-/* armymove moves an army... and returns the # of sectors taken	*/
-/****************************************************************/
+/*
+ * armymove - AI system for army movement and sector capture
+ *
+ * Complex AI function that handles automated army movement for NPC nations.
+ * Implements sophisticated movement algorithms based on attractiveness,
+ * leader behavior, group formation, and strategic sector capture.
+ * This is a core component of the NPC AI system that drives computer-controlled
+ * expansion and military activity across the game world.
+ *
+ * Algorithm:
+ * 1. Validate army status and movement capability
+ * 2. Handle special leader behavior (kings stay in capitol)
+ * 3. Calculate movement targets based on army type:
+ *    - Leaders without groups: find soldiers to command
+ *    - Leaders with groups: coordinate group movement
+ *    - Regular units: move based on sector attractiveness
+ * 4. Execute probabilistic movement using weighted random selection
+ * 5. Handle sector capture and ownership changes
+ * 6. Update group member positions for coordinated movement
+ * 7. Fallback movement algorithms for difficult terrain
+ *
+ * Movement Logic:
+ * - Strong armies (>TAKESECTOR) have smaller search radius (2) but can go anywhere
+ * - Weak armies have larger search radius (4) but limited to cities
+ * - Leaders without groups seek out unattached soldiers to command
+ * - Movement costs and pathfinding determine accessibility
+ * - Attractiveness values drive target selection probability
+ *
+ * Parameters:
+ *   armynum - Army identifier/index for the moving unit
+ *
+ * Returns:
+ *   Integer count of sectors captured during this movement (0 or positive)
+ *   0 if no movement occurred or no captures made
+ *   Positive value indicates successful expansion
+ *
+ * Side Effects:
+ *   - Modifies army position (P_AXLOC, P_AYLOC)
+ *   - Changes army status (P_ASTAT) for leadership changes
+ *   - Updates sector ownership (sct[x][y].owner)
+ *   - Modifies attractiveness values (attr[x][y]) after movement
+ *   - Increases nation popularity for new conquests
+ *   - Updates positions of grouped units under leader command
+ *
+ * Testing Notes:
+ *   Category: B (Integration Required)
+ *   Approach: Integration tests with full world state and pathfinding
+ *   Key Tests: Leader behavior, group coordination, sector capture,
+ *              pathfinding integration, attractiveness-based movement,
+ *              fallback algorithms, army strength thresholds
+ *   Dependencies: Global army arrays, sector data, pathfinding, attractiveness
+ *   Mock Requirements: World state, nation data, movement costs, pathfinding
+ *   Complexity: Complex - multiple AI behaviors and world state interactions
+ *
+ * Notes:
+ *   - XENIX platform has special handling for integer arithmetic
+ *   - Kings always return to capitol when set to RULE status
+ *   - Two-pass movement algorithm handles difficult terrain situations
+ *   - Attractiveness is reduced after army visits to prevent clustering
+ *   - Group leaders coordinate movement of all assigned units
+ *   - Complex conditional logic for different army types and situations
+ */
 int
 armymove(armynum)
 int armynum;
@@ -441,10 +640,49 @@ int armynum;
 	return(takesctr);
 }
 
-/****************************************************************/
-/*	SCORE() 						*/
-/* score updates the scores of all nations			*/
-/****************************************************************/
+/*
+ * score - Update scoring for all active nations
+ *
+ * Iterates through all nations and updates their cumulative scores
+ * using the score_one() function. This is called once per turn
+ * during the main update cycle to track nation performance and
+ * ranking over time. Provides the scoring system that measures
+ * player and NPC progress throughout the game.
+ *
+ * Algorithm:
+ * 1. Print status message for score updating
+ * 2. Iterate through all possible nations (1 to NTOTAL-1)
+ * 3. Check if each nation is active using isntn()
+ * 4. Add current turn score to cumulative nation score
+ * 5. Continue until all active nations processed
+ *
+ * Parameters:
+ *   None
+ *
+ * Returns:
+ *   void - No return value
+ *
+ * Side Effects:
+ *   - Modifies ntn[x].score for all active nations
+ *   - Prints status message to stdout
+ *   - Calls score_one() which may perform additional scoring calculations
+ *
+ * Testing Notes:
+ *   Category: A (Unit Testable)
+ *   Approach: Unit tests with mock nation data and score_one() function
+ *   Key Tests: Active nation detection, score accumulation, boundary conditions,
+ *              score_one() integration, NTOTAL boundary handling
+ *   Dependencies: Global ntn[] array, score_one() function, isntn() macro
+ *   Mock Requirements: Nation status data, score calculation functions
+ *   Complexity: Simple - straightforward iteration with function calls
+ *
+ * Notes:
+ *   - Called once per turn during main update cycle
+ *   - Depends on score_one() for actual scoring algorithm
+ *   - Only processes active nations to avoid updating dead/inactive nations
+ *   - Nation 0 is skipped (nations start at index 1)
+ *   - Cumulative scoring allows tracking long-term nation performance
+ */
 void
 score()
 {
@@ -455,14 +693,59 @@ score()
 }
 
 #ifdef CHEAT
-/****************************************************************/
-/*	CHEAT() 						*/
-/* this routine cheats in favor of npc nations 			*/
-/*								*/
-/* I take pride in this code... it needs not to cheat to play a */
-/* good	game.  This routine is the only cheating that it will	*/
-/* do, and it is fairly minor.					*/
-/****************************************************************/
+/*
+ * cheat - NPC difficulty balancing and fairness adjustments (conditional compilation)
+ *
+ * Optional balancing system that provides minor assistance to NPC nations
+ * when they fall behind human players. This function is only compiled
+ * when CHEAT is defined and represents the only "cheating" assistance
+ * the game provides to computer-controlled opponents.
+ *
+ * Algorithm:
+ * 1. Identify active NPC nations vs human players
+ * 2. Calculate average combat bonuses for human vs NPC nations
+ * 3. Provide economic assistance (gold) to struggling NPCs
+ * 4. Balance combat effectiveness based on player averages
+ * 5. Improve diplomatic relations between same-race NPCs
+ * 6. Slightly worsen relations between different races
+ *
+ * Balancing Mechanisms:
+ * - Gold injection for NPCs with low gold/civilian ratios
+ * - Combat skill adjustments based on human player averages
+ * - Diplomatic bias toward same-race cooperation
+ * - Score-based assistance targeting (only help underperforming NPCs)
+ * - Race-based exclusions (orcs don't get combat bonuses)
+ *
+ * Parameters:
+ *   None
+ *
+ * Returns:
+ *   void - No return value
+ *
+ * Side Effects:
+ *   - May increase NPC nation gold (ntn[x].tgold)
+ *   - May increase combat bonuses (ntn[x].aplus, ntn[x].dplus)
+ *   - Modifies diplomatic relations (ntn[x].dstatus[y])
+ *   - Prints assistance messages to stdout for transparency
+ *
+ * Testing Notes:
+ *   Category: D (Mock Intensive)
+ *   Approach: Unit tests with extensive mocking of nation data and file access
+ *   Key Tests: NPC identification, average calculations, threshold behaviors,
+ *              race-based logic, diplomatic modifications, boundary conditions
+ *   Dependencies: Global ntn[] array, file system access, exefile paths
+ *   Mock Requirements: Nation data, file access, randomization functions
+ *   Complexity: Moderate - multiple calculation phases with conditional logic
+ *
+ * Notes:
+ *   - Only compiled when CHEAT preprocessor flag is defined
+ *   - Designed as minimal assistance to maintain game balance
+ *   - Transparency through console output of all assistance provided
+ *   - Author's pride comment indicates philosophy of minimal AI assistance
+ *   - File access checks determine which nations are actively played
+ *   - Score comparison ensures only struggling NPCs receive help
+ *   - Diplomatic changes are probabilistic and gradual
+ */
 void
 cheat()
 {
@@ -538,11 +821,74 @@ cheat()
 #endif /* CHEAT */
 
 
-/****************************************************************/
-/*	UPDEXECS() 						*/
-/* update all nations in a random order				*/
-/* move civilians of that nation 				*/
-/****************************************************************/
+/*
+ * updexecs - Execute all nations in randomized order with comprehensive nation processing
+ *
+ * Central nation execution system that processes all active nations in
+ * random order during each game turn. Handles player command execution,
+ * NPC AI processing, leadership management, civilian movement, and
+ * magical system updates. This is the heart of the turn-based
+ * nation management system.
+ *
+ * Algorithm:
+ * 1. Allocate attractiveness and population movement matrices
+ * 2. Create randomized execution order for all active nations
+ * 3. For each nation in random order:
+ *    a. Execute player commands or run NPC AI
+ *    b. Handle computer assistance for inactive players (CMOVE)
+ *    c. Process NPC magic and takeover attempts (ORCTAKE)
+ *    d. Check and manage national leadership status
+ *    e. Handle leadership transitions and disarray states
+ *    f. Calculate sector attractiveness for civilian movement
+ *    g. Execute civilian population movement
+ * 4. Reset nation statistics and spell point calculations
+ * 5. Process magical regeneration and bonuses
+ * 6. Cleanup allocated memory
+ *
+ * Nation Processing Features:
+ * - Random execution order prevents turn order advantages
+ * - Leadership crisis management with automatic succession
+ * - Computer assistance for inactive human players
+ * - NPC magical takeover attempts based on monster availability
+ * - Civilian movement based on sector attractiveness
+ * - Capital proximity bonuses for population movement
+ * - Spell point regeneration and magical bonuses
+ *
+ * Parameters:
+ *   None - processes all nations globally
+ *
+ * Returns:
+ *   void - No return value
+ *
+ * Side Effects:
+ *   - Allocates and frees attr[][] and newpop[][] matrices
+ *   - Executes player commands and NPC AI systems
+ *   - Modifies nation leadership and army positions
+ *   - Updates sector attractiveness and civilian populations
+ *   - Resets nation statistics (ships, military totals)
+ *   - Modifies spell points based on magical abilities
+ *   - Sends mail messages to players about leadership changes
+ *   - Writes news entries for significant events
+ *
+ * Testing Notes:
+ *   Category: C (System Level Only)
+ *   Approach: System testing with full game state and all subsystems
+ *   Key Tests: Random nation ordering, leadership management, NPC execution,
+ *              memory allocation/cleanup, civilian movement, spell calculations
+ *   Dependencies: Complete game state, file systems, mail/news systems,
+ *                execute(), nationrun(), move_people(), magic() systems
+ *   Mock Requirements: Full world simulation with all game subsystems
+ *   Complexity: Complex - orchestrates multiple major game systems
+ *
+ * Notes:
+ *   - Uses multiple conditional compilation blocks (TRADE, NPC, CMOVE, ORCTAKE)
+ *   - Random nation execution prevents predictable advantages
+ *   - Memory management critical - allocates large matrices
+ *   - Leadership system prevents nations from becoming unplayable
+ *   - XENIX platform requires special integer arithmetic handling
+ *   - Nation disarray occurs when primary leader is killed
+ *   - Civilian movement driven by sector attractiveness calculations
+ */
 void
 updexecs()
 {
@@ -730,6 +1076,71 @@ printf("checking for leader in nation %s: armynum=%d\n",curntn->name,armynum);
 	free(newpop);
 }
 
+/*
+ * do_lizard - Special update routine for lizard nation AI behavior
+ *
+ * Implements specialized AI behavior for the lizard race, featuring
+ * automatic population growth, aggressive movement patterns, and
+ * strategic positioning around friendly armies. This function provides
+ * unique racial characteristics that differentiate lizard nations from
+ * standard NPC behavior.
+ *
+ * Algorithm:
+ * 1. Iterate through all army slots for the current lizard nation
+ * 2. For active armies, grant movement points and apply 2% population growth
+ * 3. Even-numbered armies: Set to garrison status for defensive positioning
+ * 4. Odd-numbered armies: Follow and support the previous (even) army
+ * 5. Implement siege relief by randomly moving to adjacent enemy sectors
+ * 6. Apply garrison bonuses when positioned in owned forts
+ * 7. Maintain aggressive attack stance when not garrisoned
+ *
+ * Special Behaviors:
+ * - Population Growth: 2% per turn for active lizard armies
+ * - Paired Army Strategy: Even armies garrison, odd armies provide mobile support
+ * - Siege Relief: Automatic attempts to relieve besieged friendly forces
+ * - Fort Utilization: Intelligent use of fort defensive bonuses
+ * - Aggressive Expansion: Tendency to move into enemy territory
+ *
+ * Race-Specific Features:
+ * - Higher reproduction rate than other races
+ * - Coordinated army movement patterns
+ * - Aggressive territorial expansion behavior
+ * - Strategic fort usage for defense
+ *
+ * Parameters:
+ *   None - Uses global 'country' variable for current nation
+ *
+ * Returns:
+ *   void
+ *
+ * Side Effects:
+ *   - Modifies army positions, populations, and status for lizard nation
+ *   - Updates movement points for all lizard armies
+ *   - Changes army status (GARRISON, ATTACK, SIEGED)
+ *   - May relocate armies for strategic positioning
+ *   - Uses global variables: country, curntn, ntn array, sct array
+ *
+ * Testing Notes:
+ *   Category: B (Integration Required)
+ *   Approach: Integration testing with full world state
+ *   Key Tests: Population growth calculation, army pairing behavior, siege relief
+ *   Dependencies: Global nation/army data, sector map, random number generator
+ *   Mock Requirements: Nation setup, army configuration, sector ownership
+ *   Complexity: Moderate - race-specific AI with multiple behavior patterns
+ *
+ * Platform Notes:
+ *   - Uses XENIX-specific integer arithmetic to prevent overflow
+ *   - Includes debug output for army position validation
+ *   - Handles edge cases for army positioning and water detection
+ *
+ * Notes:
+ *   - Only called for lizard race nations during update cycle
+ *   - Implements unique racial characteristics not found in other NPC types
+ *   - Population growth gives lizards significant long-term advantage
+ *   - Army coordination provides tactical military benefits
+ *   - Thread safety: Not thread-safe due to global variable dependencies
+ */
+
 /****************************************************************/
 /*	DO_LIZARD() 						*/
 /* update lizards	 					*/
@@ -796,6 +1207,87 @@ do_lizard()
 	}
 #endif /* DEBUG */
 }
+
+/*
+ * updcapture - Process sector capture and scout detection for all nations
+ *
+ * Handles the critical end-of-turn logic for territorial expansion through
+ * sector capture and the dangerous game of scouting enemy territory. This
+ * function processes two main systems: army-based sector capture and
+ * scout detection/capture mechanics.
+ *
+ * Algorithm:
+ * 1. Initialize occupation matrix using prep(0,-1) to track army positions
+ * 2. For each active nation and army:
+ *    a. Check army size requirements (players: TAKESECTOR, NPCs: >75)
+ *    b. Validate capture conditions (not on fleet, not in water)
+ *    c. Process sector ownership changes based on war status
+ *    d. Handle population displacement with slavery/massacre mechanics
+ * 3. Process scout capture mechanics:
+ *    a. Calculate detection probability based on diplomatic status
+ *    b. Handle scout capture with appropriate notifications
+ * 4. Process capital capture and nation destruction via sackem()
+ *
+ * Sector Capture Rules:
+ * - Players require TAKESECTOR soldiers minimum for capture
+ * - NPCs require >75 soldiers (balancing for AI army generation)
+ * - Armies on ships cannot capture territory
+ * - Water sectors cannot be captured
+ * - Only sectors occupied solely by attacking nation can be captured
+ * - War status required for hostile takeovers
+ *
+ * Scout Detection System:
+ * - Scouts detected with PFINDSCOUT% chance in hostile territory
+ * - Reduced detection (PFINDSCOUT/5%) in neutral owned territory
+ * - Detection varies by diplomatic status (hostile vs neutral)
+ * - Captured scouts are eliminated from the game
+ *
+ * Population Displacement:
+ * - Different race captures trigger flee() with potential slavery
+ * - SLAVER magic enhances population capture efficiency
+ * - Same race captures are less devastating to civilians
+ *
+ * Parameters:
+ *   None - Uses global variables for world state
+ *
+ * Returns:
+ *   void
+ *
+ * Side Effects:
+ *   - Modifies sector ownership across the entire map
+ *   - Updates nation popularity scores for territorial gains
+ *   - Removes captured scouts from armies
+ *   - Triggers capital destruction via sackem() for lost capitals
+ *   - Sends mail notifications to affected players
+ *   - Writes news reports for sector captures
+ *   - Uses global variables: country, curntn, sct array, ntn array, occ array
+ *
+ * Testing Notes:
+ *   Category: B (Integration Required)
+ *   Approach: Integration testing with full world state and army setup
+ *   Key Tests: Sector capture rules, scout detection rates, capital loss
+ *   Dependencies: Army positions, diplomatic status, sector ownership, mail system
+ *   Mock Requirements: Multiple nations, armies, diplomatic relationships
+ *   Complexity: Complex - multiple interacting systems and edge cases
+ *
+ * Balance Considerations:
+ * - NPC army size advantage compensates for AI limitations
+ * - Scout detection prevents excessive intelligence gathering
+ * - Popularity system rewards territorial expansion
+ * - Capital vulnerability creates strategic focal points
+ *
+ * Historical Context:
+ * - HIDELOC compilation option hides coordinates in news reports
+ * - Different detection rates balance scouting risk vs reward
+ * - Population displacement reflects medieval conquest mechanics
+ *
+ * Notes:
+ *   - Critical for territorial control and expansion mechanics
+ *   - Balances aggressive expansion with scouting risks
+ *   - Capital capture triggers catastrophic nation destruction
+ *   - Scout mechanics encourage careful intelligence operations
+ *   - Thread safety: Not thread-safe due to global variable dependencies
+ */
 
 /****************************************************************/
 /*	UPDCAPTURE() 						*/
@@ -902,6 +1394,103 @@ updcapture()
 			sackem(country);
 	}
 }
+
+/*
+ * updsectors - Comprehensive sector-by-sector world update and economic simulation
+ *
+ * Handles the complex economic engine that drives population growth, resource
+ * depletion, trade good discovery, diplomatic contact, and national economics.
+ * This function processes every owned sector on the map and calculates national
+ * statistics including wealth distribution, poverty levels, and inflation rates.
+ *
+ * Algorithm:
+ * Phase 1 - Sector Processing (for each sector):
+ * 1. Random trade good discovery (FINDPERCENT chance per turn)
+ * 2. Calculate seasonal reproduction rates (varies by nation and season)
+ * 3. Validate capitol designations (only one per nation)
+ * 4. Apply population growth based on current population and food availability
+ * 5. Handle resource depletion for mines (population vs resource balance)
+ * 6. Process mine exhaustion (converts to devastated sectors)
+ * 7. Handle diplomatic contact between adjacent nations (MEETNTN range)
+ * 8. Desert reversion for sectors with insufficient food production
+ *
+ * Phase 2 - National Economics (for each nation):
+ * 1. Check for capitol loss and trigger nation depletion
+ * 2. Calculate national totals via spreadsheet() function
+ * 3. Apply charity system (redistributes wealth to reduce poverty)
+ * 4. Calculate poverty index based on wealth per civilian ratio
+ * 5. Process inflation mechanics (taxes, military burden, poverty factors)
+ * 6. Apply inflation effects to national treasury
+ * 7. Update final resource totals (metals, jewels, food)
+ *
+ * Population Growth Mechanics:
+ * - Seasonal variation: Higher growth in spring/summer, lower in winter
+ * - Size-based rates: Small populations grow faster (bootstrap effect)
+ * - Urban areas: Cities/capitols/towns have reduced growth (urbanization)
+ * - Food limitation: Desert conditions prevent normal growth
+ * - Maximum limits: Population caps prevent infinite growth
+ *
+ * Economic Systems:
+ * - Wealth Distribution: Charity system redistributes gold to civilians
+ * - Poverty Calculation: Complex formula based on gold-per-civilian ratios
+ * - Inflation Engine: Multi-factor system (taxes, military, poverty)
+ * - Resource Depletion: Mining efficiency decreases with overpopulation
+ * - Treasury Management: Large treasuries suffer inflation penalties
+ *
+ * Diplomatic Contact:
+ * - Automatic meeting when nations expand into adjacent sectors
+ * - Bidirectional contact establishment (both nations meet each other)
+ * - Range-based detection (MEETNTN sector radius)
+ * - Triggers diplomatic relationship initialization
+ *
+ * Resource Discovery:
+ * - Random chance for new trade goods in unexploited sectors
+ * - Equal probability between metals and jewels discovery
+ * - Only occurs in sectors without existing trade goods
+ * - Provides ongoing economic development opportunities
+ *
+ * Parameters:
+ *   None - Uses global world state variables
+ *
+ * Returns:
+ *   void
+ *
+ * Side Effects:
+ *   - Modifies population levels across all owned sectors
+ *   - Updates trade good availability and mine resources
+ *   - Establishes diplomatic contact between expanding nations
+ *   - Recalculates all national economic statistics
+ *   - Triggers nation depletion for capitol-less countries
+ *   - Uses global variables: sct array, ntn array, country, curntn, spread structure
+ *
+ * Testing Notes:
+ *   Category: C (System Level Only)
+ *   Approach: Full system testing with complete world state
+ *   Key Tests: Population growth rates, economic calculations, diplomatic contact
+ *   Dependencies: Complete world map, multiple nations, economic data structures
+ *   Mock Requirements: Extensive - world state, multiple nations, sector ownership
+ *   Complexity: Complex - multiple interacting economic and demographic systems
+ *
+ * Economic Balance Features:
+ * - Progressive poverty calculation (wealth inequality handling)
+ * - Inflation as economic regulation mechanism
+ * - Charity system for wealth redistribution
+ * - Military burden on civilian economy
+ * - Resource scarcity driving expansion pressure
+ *
+ * Performance Considerations:
+ * - Processes entire world map every turn (O(MAPX*MAPY))
+ * - Heavy computational load for large worlds
+ * - Economic calculations for all active nations
+ * - Critical path function affecting game performance
+ *
+ * Notes:
+ *   - Central economic engine for the entire game world
+ *   - Balances population growth against resource constraints
+ *   - Implements sophisticated economic modeling for strategy game
+ *   - Creates pressure for territorial expansion and resource control
+ *   - Thread safety: Not thread-safe due to extensive global variable usage
+ */
 
 /**************************************************************/
 /*	UPDSECTORS() 						*/
@@ -1085,6 +1674,118 @@ updsectors()
 		}
 	}
 }
+
+/*
+ * updmil - Comprehensive military system update and movement calculation
+ *
+ * Handles the complex military engine that manages army movement points,
+ * siege warfare mechanics, naval fleet operations, unit maintenance costs,
+ * leadership coordination, and combat status updates. This function is
+ * the core of the military simulation system.
+ *
+ * Algorithm:
+ * Phase 1 - Army Processing (for each nation and army):
+ * 1. Check for national disarray (lack of proper leadership)
+ * 2. Determine default unit types for PC vs NPC nations
+ * 3. Calculate movement points based on unit type and army status
+ * 4. Handle special status validation (siege, garrison, rule)
+ * 5. Process magical effects (flight, roads, sapper abilities)
+ * 6. Apply unit maintenance costs (gold for regulars, jewels for monsters)
+ * 7. Coordinate group movement under generals (slowest unit + 2)
+ *
+ * Phase 2 - Naval Operations (for each fleet):
+ * 1. Process storm damage and ship destruction (STORMS feature)
+ * 2. Calculate fleet movement based on crew efficiency and ship speed
+ * 3. Apply magical sailing bonuses (SAILOR magic doubles speed)
+ * 4. Update national ship totals and maintenance costs
+ * 5. Handle crewless ship abandonment
+ *
+ * Phase 3 - Siege Resolution:
+ * 1. Validate ongoing sieges with proper force ratios
+ * 2. Compare attacker strength vs defender strength (2:1 ratio required)
+ * 3. Apply SIEGED status to defending units in besieged sectors
+ * 4. Generate news reports and mail notifications for sieges
+ * 5. Restrict movement for units under siege
+ *
+ * Movement Calculation System:
+ * - Base movement from unit type and national maximum movement
+ * - Status modifiers: MARCH (+50%), GARRISON/SIEGE (0), DEFEND (base)
+ * - Leadership effects: Disarray reduces movement to 0
+ * - Terrain penalties: Roads magic reduces enemy movement in foreign territory
+ * - Group coordination: Generals coordinate multiple units at slowest speed +2
+ * - Player restrictions: PC units move at half speed without leader presence
+ *
+ * Siege Warfare Mechanics:
+ * - Attackers need 2:1 advantage over defenders to maintain siege
+ * - Siege engines count as 3x regular troops in siege calculations
+ * - Militia defend at 50% effectiveness when besieged
+ * - Successful sieges immobilize all defending units except flying units
+ * - Fort value determines siege viability (no siege on unfortified positions)
+ *
+ * Naval System Features:
+ * - Storm damage with percentage-based ship destruction (PSTORM)
+ * - Crew dependency: Fleets without crew are automatically abandoned
+ * - Speed calculation based on crew efficiency vs optimal crew levels
+ * - Magical enhancement: SAILOR magic doubles fleet movement
+ * - Maintenance costs scale with fleet holding capacity
+ *
+ * Economic Integration:
+ * - Unit maintenance deducted from national treasury
+ * - Different cost structures: Regular units (gold), Monsters (gold + jewels)
+ * - SAPPER magic reduces siege engine maintenance by 50%
+ * - Fleet maintenance based on total carrying capacity
+ * - Monster dismissal when jewel payments cannot be made
+ *
+ * Parameters:
+ *   None - Uses global military and nation state variables
+ *
+ * Returns:
+ *   void
+ *
+ * Side Effects:
+ *   - Updates movement points for all armies and fleets
+ *   - Modifies army status based on tactical situations
+ *   - Deducts maintenance costs from national treasuries
+ *   - Establishes or removes siege conditions
+ *   - Dismisses unpaid monster units
+ *   - Sends mail notifications to affected players
+ *   - Generates news reports for military events
+ *   - Uses global variables: country, curntn, ntn array, sct array, occ array
+ *
+ * Testing Notes:
+ *   Category: B (Integration Required)
+ *   Approach: Integration testing with full military and world state
+ *   Key Tests: Movement calculation, siege mechanics, naval operations
+ *   Dependencies: Complete military setup, economic system, magic system
+ *   Mock Requirements: Multiple nations, armies, fleets, fortifications
+ *   Complexity: Complex - multiple interacting military subsystems
+ *
+ * Military Balance Features:
+ * - Leadership dependency prevents leaderless military effectiveness
+ * - Economic constraints limit military expansion through maintenance costs
+ * - Siege mechanics create tactical focal points and defensive advantages
+ * - Group movement coordination enables combined arms tactics
+ * - Storm risks balance naval power projection
+ *
+ * Performance Considerations:
+ * - Processes all armies and fleets every turn
+ * - Siege validation requires checking all armies in contested sectors
+ * - Complex movement calculations for each unit
+ * - Critical path function for military gameplay
+ *
+ * Historical Context:
+ * - STORMS feature adds environmental hazards to naval operations
+ * - HIDELOC option provides operational security in news reports
+ * - Multiple magic systems integrate with military mechanics
+ * - Different unit types have distinct tactical roles and costs
+ *
+ * Notes:
+ *   - Core military simulation engine for strategic gameplay
+ *   - Balances tactical complexity with economic constraints
+ *   - Integrates leadership, magic, and economic systems
+ *   - Creates meaningful strategic choices between unit types
+ *   - Thread safety: Not thread-safe due to extensive global variable usage
+ */
 
 /****************************************************************/
 /*	UPDMIL() 						*/
@@ -1372,6 +2073,107 @@ updmil()
 	printf("done with military\n");
 }
 
+/*
+ * updcomodities - Economic commodities management and famine resolution system
+ *
+ * Handles the critical economic systems that manage food consumption, famine
+ * catastrophes, commodity trading balance, and overflow protection. This
+ * function implements the harsh realities of medieval economics where food
+ * shortages can devastate populations and unbalanced economies self-regulate
+ * through automatic commodity trading.
+ *
+ * Algorithm:
+ * Phase 1 - Food Consumption and Famine Processing:
+ * 1. Calculate total food consumption (military eats 2x civilian rate)
+ * 2. Process famine when food deficit occurs:
+ *    a. Target urban populations (towns, cities, capitals) first
+ *    b. Kill up to 1/3 of urban population per food deficit
+ *    c. Generate famine news reports and player notifications
+ * 3. Apply food spoilage rates to remaining food stores
+ *
+ * Phase 2 - Economic Balance and Overflow Protection:
+ * 1. Detect gold/jewel imbalance using GOLDTHRESH ratio
+ * 2. Force automatic jewel purchases to maintain economic stability
+ * 3. Apply overflow protection to prevent integer overflow crashes
+ * 4. Generate news reports for economic anomalies
+ *
+ * Famine Mechanics:
+ * - Military units consume food at 2x P_EATRATE (double civilian consumption)
+ * - Civilians consume food at P_EATRATE per person
+ * - Food shortages trigger urban famine (rural areas more resilient)
+ * - Urban deaths scale with food deficit (1 death per 3 food shortage)
+ * - Maximum 33% urban population loss per famine event
+ * - Famine targets cities/towns/capitals preferentially over rural areas
+ *
+ * Economic Regulation:
+ * - Automatic commodity trading when gold exceeds GOLDTHRESH*jewels ratio
+ * - Forced jewel purchases at GODJEWL/GODPRICE exchange rate
+ * - Prevents runaway gold accumulation without jewel backing
+ * - Maintains economic balance through mandatory diversification
+ *
+ * Food Spoilage System:
+ * - Remaining food reduced by nation's spoilage rate percentage
+ * - Represents natural decay, storage losses, and distribution inefficiency
+ * - Creates pressure for regular food production and trade
+ * - Prevents infinite food stockpiling strategies
+ *
+ * Overflow Protection:
+ * - Monitors all major economic variables for overflow conditions
+ * - Clamps values to BIG constant to prevent integer wraparound
+ * - Reports overflow events in news for debugging and balance
+ * - Protects game stability from extreme economic conditions
+ *
+ * Parameters:
+ *   None - Uses global nation and world state variables
+ *
+ * Returns:
+ *   void
+ *
+ * Side Effects:
+ *   - Reduces national food supplies based on consumption
+ *   - Kills urban populations during famine events
+ *   - Forces automatic commodity purchases for economic balance
+ *   - Applies food spoilage to remaining stores
+ *   - Clamps economic variables to prevent overflow
+ *   - Sends mail notifications to affected players
+ *   - Generates news reports for famines and economic events
+ *   - Uses global variables: country, curntn, ntn array, sct array
+ *
+ * Testing Notes:
+ *   Category: B (Integration Required)
+ *   Approach: Integration testing with economic and population systems
+ *   Key Tests: Famine calculations, commodity trading, overflow protection
+ *   Dependencies: Nation economic data, population systems, mail system
+ *   Mock Requirements: Nations with food shortages, economic imbalances
+ *   Complexity: Moderate - economic simulation with multiple interacting systems
+ *
+ * Economic Balance Features:
+ * - Harsh famine penalties discourage military over-expansion
+ * - Automatic trading prevents economic exploitation
+ * - Spoilage creates ongoing resource pressure
+ * - Urban targeting makes city development risky during food crises
+ * - Overflow protection ensures game stability
+ *
+ * Historical Context:
+ * - HIDELOC option provides operational security for famine locations
+ * - Seasonal messaging provides immersive timeline context
+ * - Military food burden reflects historical army logistics challenges
+ * - Urban famine vulnerability models medieval city dependencies
+ *
+ * Mathematical Formulas:
+ * - Food Consumption: (tmil * P_EATRATE * 2) + (tciv * P_EATRATE)
+ * - Famine Deaths: min(people/3, food_deficit/3)
+ * - Spoilage: tfood * (100 - spoilrate) / 100
+ * - Commodity Trading: jewels += (excess_gold * GODJEWL / GODPRICE)
+ *
+ * Notes:
+ *   - Critical economic regulation system preventing game-breaking accumulation
+ *   - Balances military expansion against economic sustainability
+ *   - Creates meaningful resource management decisions
+ *   - Famine system adds realistic consequences to poor planning
+ *   - Thread safety: Not thread-safe due to global variable dependencies
+ */
+
 /****************************************************************/
 /*	UPDCOMODITIES()						*/
 /* update commodities						*/
@@ -1471,6 +2273,105 @@ updcomodities()
 	}
 }
 
+/*
+ * updleader - Leader development and monster spawning system
+ *
+ * Manages the critical leadership generation system that spawns both natural
+ * leaders and supernatural monsters based on national characteristics and
+ * magical abilities. This function ensures nations maintain leadership
+ * continuity while providing magical nations with monster reinforcements.
+ *
+ * Algorithm:
+ * Phase 1 - Monster Spawning (Spring season only):
+ * 1. Check for monster summoning magic (MI_MONST, AV_MONST, MA_MONST)
+ * 2. Determine monster strength tier based on magical abilities
+ * 3. Randomly select appropriate monster type within strength limits
+ * 4. Spawn monster at national capital with default stats
+ * 5. Notify player of monster birth via mail system
+ *
+ * Phase 2 - Natural Leader Birth:
+ * 1. Calculate birth rate based on national class characteristics
+ * 2. Apply random chance for leader generation (class-dependent rates)
+ * 3. Spawn leader type appropriate to national class
+ * 4. Place new leader at capital with standard starting attributes
+ * 5. Send player notification of leadership addition
+ *
+ * Monster Spawning System:
+ * - Seasonal Restriction: Only occurs during SPRING season
+ * - Magical Requirement: Requires MI_MONST magic minimum
+ * - Strength Tiers: MI_MONST (100), AV_MONST (200), MA_MONST (BIG)
+ * - Type Selection: Random choice from MINMONSTER to MAXMONSTER range
+ * - Strength Validation: Monster strength must not exceed magical capacity
+ * - Capital Spawn: All monsters appear at national capital location
+ *
+ * Leader Birth Rates by Class:
+ * - High Birth Rate (50/400 = 12.5%): King, Trader, Emperor, NPC
+ * - Medium Birth Rate (25/400 = 6.25%): Wizard, Priest, Pirate, Warlord, Demon
+ * - Low Birth Rate (2/400 = 0.5%): Dragon, Shadow (rare/powerful classes)
+ * - Error Handling: Undefined classes trigger program termination
+ *
+ * Leadership Mechanics:
+ * - Leader Type: Determined by getleader(class) function for class appropriateness
+ * - Starting Strength: Based on unitminsth table for leader type
+ * - Default Status: All new leaders start in DEFEND status
+ * - Movement Bonus: New leaders get 2x national maximum movement
+ * - Capital Placement: Leaders always spawn at national capital
+ *
+ * Spawn Limitations:
+ * - Army Slot Dependency: Requires available army slot (MAXARM limit)
+ * - Single Spawn: Only one leader/monster per turn maximum
+ * - Capital Requirement: Spawning location tied to capital location
+ * - Class Validation: Prevents spawning for undefined nation classes
+ *
+ * Parameters:
+ *   None - Uses global nation state and magic system variables
+ *
+ * Returns:
+ *   void
+ *
+ * Side Effects:
+ *   - Creates new leader or monster units in available army slots
+ *   - Places new units at national capitals
+ *   - Sends mail notifications to human players
+ *   - Generates console output for debugging/monitoring
+ *   - Uses global variables: ntn array, curntn, nation
+ *
+ * Testing Notes:
+ *   Category: B (Integration Required)
+ *   Approach: Integration testing with magic system and nation setup
+ *   Key Tests: Birth rate calculations, monster type selection, class handling
+ *   Dependencies: Magic system, nation class data, army management
+ *   Mock Requirements: Nations with different classes, magic abilities
+ *   Complexity: Moderate - probabilistic system with class-dependent logic
+ *
+ * Balance Considerations:
+ * - Birth rates balanced to prevent leader flooding while ensuring succession
+ * - Monster spawning limited to magical nations to maintain fantasy balance
+ * - Seasonal restriction on monsters prevents constant supernatural reinforcement
+ * - Class-based rates reflect leadership rarity and power level
+ * - Capital spawning creates predictable but defendable leadership source
+ *
+ * Strategic Implications:
+ * - Provides leadership succession for long-term nation survival
+ * - Rewards magical investment with monster reinforcements
+ * - Creates incentive to protect national capitals (leadership source)
+ * - Balances rare classes with lower birth rates
+ * - Enables recovery from leadership losses
+ *
+ * Historical Context:
+ * - Spring spawning reflects natural birth/awakening cycles
+ * - Class-based rates model different leadership structures
+ * - Monster summoning integrates fantasy elements
+ * - Capital spawning models hereditary leadership traditions
+ *
+ * Notes:
+ *   - Essential for long-term nation viability and leadership continuity
+ *   - Integrates magic system with leadership mechanics
+ *   - Provides both mundane and supernatural leadership sources
+ *   - Creates strategic value for capital protection
+ *   - Thread safety: Not thread-safe due to global variable dependencies
+ */
+
 /****************************************************************/
 /* Conquer: Copyright (c) 1988 by Edward M Barlow
 /*	UPDLEADER()						*/
@@ -1552,6 +2453,115 @@ updleader()
 		}
 	}
 }
+
+/*
+ * move_people - Civilian population movement algorithm based on sector attractiveness
+ *
+ * Implements sophisticated population dynamics modeling where civilians migrate
+ * between sectors based on relative attractiveness calculations. This function
+ * creates realistic population flows that respond to economic opportunities,
+ * safety conditions, and environmental factors, forming the demographic
+ * foundation of the economic simulation.
+ *
+ * Algorithm:
+ * 1. Initialize rolling population buffer for efficient map processing
+ * 2. For each sector owned by the current nation:
+ *    a. Calculate total attractiveness in 5x5 neighborhood around sector
+ *    b. Distribute current population proportionally to surrounding attractions
+ *    c. Move population fractions toward equilibrium (1/5 convergence rate)
+ *    d. Update rolling buffer with new population distributions
+ * 3. Apply final population changes to world map
+ *
+ * Mathematical Model:
+ * EQUILIBRIUM(sector) = Attractiveness(sector) / Total_Area_Attractiveness * Total_Area_Population
+ * MOVEMENT_DELTA = (EQUILIBRIUM - Current_Population) / 5
+ * NEW_POPULATION = Current_Population + MOVEMENT_DELTA
+ *
+ * Attractiveness-Based Distribution:
+ * - Each sector attracts population proportional to its attractiveness rating
+ * - Population flows from less attractive to more attractive areas
+ * - 5x5 neighborhood (2-sector radius) determines local migration area
+ * - Gradual convergence (20% per turn) prevents violent population swings
+ *
+ * Buffer Management System:
+ * - Uses rotating 5-column buffer (newpop[x%5][y]) for memory efficiency
+ * - Processes map in column-by-column fashion to minimize memory usage
+ * - Maintains consistency across map boundaries with careful buffer rotation
+ * - Handles map edges correctly with boundary condition management
+ *
+ * Population Flow Mechanics:
+ * - Migration occurs only within same-nation territories (no cross-border movement)
+ * - Empty sectors (people=0) do not participate in population exchanges
+ * - Attractiveness calculated by attract() function (food, trade, safety, race preferences)
+ * - Movement preserves total population (conservation of people)
+ * - Gradual equilibration prevents population shock and maintains stability
+ *
+ * Memory Management:
+ * - Rolling buffer technique processes entire world with minimal memory overhead
+ * - Column-wise processing enables efficient large-world handling
+ * - Boundary management ensures correct edge cases without buffer overruns
+ * - Modular arithmetic (x%5) provides efficient circular buffer indexing
+ *
+ * Performance Optimizations:
+ * - Processes only owned sectors to reduce computation
+ * - Uses integer arithmetic throughout for speed and precision
+ * - Minimizes memory allocation with fixed-size circular buffer
+ * - Batches population updates to reduce write operations
+ *
+ * Parameters:
+ *   None - Uses global nation, sector, and attractiveness data
+ *
+ * Returns:
+ *   void
+ *
+ * Side Effects:
+ *   - Modifies population levels across all sectors owned by current nation
+ *   - Uses and modifies global newpop buffer for intermediate calculations
+ *   - Reads attractiveness matrix (attr) calculated by attract() function
+ *   - Uses global variables: country, sct array, newpop array, attr array
+ *
+ * Testing Notes:
+ *   Category: A (Unit Testable)
+ *   Approach: Unit testing with mock attractiveness data and sector setup
+ *   Key Tests: Population conservation, equilibrium convergence, boundary handling
+ *   Dependencies: Attractiveness matrix, sector ownership data
+ *   Mock Requirements: Nation with multiple sectors, attractiveness values
+ *   Complexity: Moderate - algorithmic complexity with mathematical precision requirements
+ *
+ * Mathematical Properties:
+ * - Population Conservation: Total population remains constant across moves
+ * - Convergence: System approaches equilibrium state over multiple turns
+ * - Stability: Gradual movement prevents oscillation and population shock
+ * - Proportionality: Population distribution matches attractiveness ratios
+ * - Locality: Migration limited to local neighborhoods (5x5 area)
+ *
+ * Demographic Modeling Features:
+ * - Economic Migration: Population flows toward profitable trade centers
+ * - Safety Migration: Civilians flee from dangerous or war-torn areas
+ * - Racial Preferences: Different races prefer different terrain types
+ * - Capital Attraction: Proximity to capital increases sector desirability
+ * - Resource-Based Movement: Mining and farming opportunities drive migration
+ *
+ * Integration with Game Systems:
+ * - Works with attract() function output for sector desirability
+ * - Influences economic calculations through population distribution
+ * - Affects military recruitment pools in population centers
+ * - Creates strategic value for improving sector attractiveness
+ * - Drives urban/rural population dynamics
+ *
+ * Historical Context:
+ * - Models medieval population movements based on economic opportunity
+ * - Reflects historical migration patterns toward trade centers and safety
+ * - Implements gradual demographic change rather than sudden population shifts
+ * - Balances individual choice with collective demographic trends
+ *
+ * Notes:
+ *   - Core demographic engine driving economic and military population distribution
+ *   - Creates dynamic population landscapes responding to player actions
+ *   - Essential for realistic economic modeling and strategic depth
+ *   - Mathematical precision ensures stable long-term demographic patterns
+ *   - Thread safety: Not thread-safe due to global buffer and sector modifications
+ */
 
 /* MOVE CIVILIANS based on the ratio of attractivenesses
  *
