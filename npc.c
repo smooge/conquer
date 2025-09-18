@@ -99,6 +99,23 @@ static	int Avg_tradegood;
 				 * the value is 500
 				 */
 
+/*
+ * prtattr - Debug output function for sector attractiveness visualization
+ *
+ * Displays a formatted grid showing the attractiveness values calculated for
+ * sectors around the current nation's capital. This function is essential for
+ * debugging and tuning the AI attractiveness calculation algorithms.
+ *
+ * Parameters:
+ *   None (uses global curntn for current nation and attr for attractiveness)
+ *
+ * Returns:
+ *   void (debug output only)
+ *
+ * Testing Notes:
+ *   Category: D (Mock) - Debug-only function requiring specific compile flags
+ *   Complexity: Simple - Straightforward debug output with conditional compilation
+ */
 void
 prtattr()
 {
