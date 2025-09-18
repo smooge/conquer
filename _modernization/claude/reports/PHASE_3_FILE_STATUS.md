@@ -1,22 +1,22 @@
 # Phase 3 Documentation Status - Complete File Inventory
 
 **Date**: 2025-01-18
-**Phase 3 Status**: 5 of 41 files documented (12.2% complete)
+**Phase 3 Status**: 7 of 41 files documented (17.1% complete)
 
 ## Files Documentation Status
 
-### ✅ DOCUMENTED (5 files)
+### ✅ DOCUMENTED (7 files)
 1. **main.c** - Core program entry and initialization
 2. **data.h** - Central data structures and definitions
 3. **header.h** - Configuration and platform compatibility
 4. **combat.c** - Combat resolution and battle mechanics (8 functions documented)
 5. **move.c** - Unit movement and pathfinding (2 functions documented)
+6. **commands.c** - User command processing and dispatch (9 functions documented)
+7. **update.c** - Game state updates and turn processing (14 functions documented - COMPLETE)
 
-### ❌ UNDOCUMENTED (36 files)
+### ❌ UNDOCUMENTED (34 files)
 
-#### Core Game Logic (Priority 1) - 7 files
-6. **update.c** - Game state updates and turn processing
-7. **commands.c** - User command processing and dispatch
+#### Core Game Logic (Priority 1) - 5 files
 8. **data.c** - Data structure manipulation and game state
 9. **npc.c** - AI/NPC behavior and automation
 10. **check.c** - Game state validation and integrity checks
@@ -65,14 +65,12 @@
 ## Phase 3 Documentation Strategy
 
 ### Recommended File Order (Next 10 sessions)
-1. **commands.c** - Command processing (medium complexity)
-4. **update.c** - Game state management (high complexity)
-5. **display.c** - User interface (medium complexity)
-6. **io.c** - File operations (medium complexity)
-7. **data.c** - Data manipulation (medium complexity)
-8. **admin.c** - Administrative functions (low complexity)
-9. **npc.c** - AI behavior (medium complexity)
-10. **navy.c** - Naval system (medium complexity)
+1. **data.c** - Data structure manipulation (high complexity)
+2. **display.c** - User interface (medium complexity)
+3. **io.c** - File operations (medium complexity)
+4. **admin.c** - Administrative functions (low complexity)
+5. **npc.c** - AI behavior (medium complexity)
+6. **navy.c** - Naval system (medium complexity)
 
 ### Session Approach
 - **One file per session** for manageable commits
@@ -81,8 +79,8 @@
 - **Maintain documentation standards** from previous files
 
 ### Completion Estimate
-- **36 remaining files** at 1 file per session
-- **36 more sessions** to complete Phase 3
+- **34 remaining files** at 1 file per session
+- **34 more sessions** to complete Phase 3
 - **Critical path**: Core game logic files (Priority 1)
 - **Phase 4 dependency**: Cannot start warning elimination until documentation complete
 
@@ -105,15 +103,15 @@
 
 ## Progress Tracking
 
-### Completed (5/41 = 12.2%)
-- Priority 1: 5 files (main.c, data.h, header.h, combat.c, move.c)
+### Completed (7/41 = 17.1%)
+- Priority 1: 7 files (main.c, data.h, header.h, combat.c, move.c, commands.c, update.c)
 - Priority 2: 0 files
 - Priority 3: 0 files
 - Priority 4: 0 files
 - Priority 5: 0 files
 
 ### Remaining Work Distribution
-- Priority 1 (Core Logic): 7 files
+- Priority 1 (Core Logic): 5 files
 - Priority 2 (UI/I/O): 7 files
 - Priority 3 (Admin): 6 files
 - Priority 4 (Specialized): 6 files
@@ -121,5 +119,5 @@
 - Priority 6 (Headers): 1 file
 
 ---
-**Next Action**: Select next file for documentation (recommend commands.c)
-**Phase 3 Status**: Significant work remaining - 87.8% of files undocumented
+**Next Action**: Select next file for documentation (recommend data.c)
+**Phase 3 Status**: Significant work remaining - 82.9% of files undocumented
