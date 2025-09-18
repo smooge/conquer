@@ -122,6 +122,14 @@ Before changing a single line of code, establishing a modern, strict, and contro
 
 **CRITICAL: Document Functions Before Modernization**
 
+**⚠️ DOCUMENTATION ONLY - NO CODE CHANGES ALLOWED ⚠️**
+- **Phase 3 is STRICTLY documentation only**
+- **NO code modifications, fixes, or improvements**
+- **NO changing function signatures, logic, or structure**
+- **ONLY add new documentation comments above functions**
+- **ONLY clarify or improve existing comments if unclear**
+- **All code changes deferred to Phase 4 and later**
+
 **SYSTEMATIC DOCUMENTATION PROCESS** - Follow this exact workflow for large files to prevent context loss:
 
 #### Documentation Workflow Steps (MANDATORY)
@@ -156,6 +164,15 @@ Before changing a single line of code, establishing a modern, strict, and contro
 - **Priority 5**: Utilities and Support Files
 
 **Documentation Requirements**: Analyze each function's purpose, parameters, returns, side effects. Use standard format from [Code Quality Standards](#code-quality-standards). Document before modernization to preserve knowledge and enable safe refactoring.
+
+**⚠️ PHASE 3 STRICT RULES ⚠️**
+- **DOCUMENTATION ONLY**: Add only function documentation comments
+- **NO CODE CHANGES**: Do not modify any existing code, logic, or structure
+- **NO BUG FIXES**: Do not fix obvious bugs or issues found
+- **NO IMPROVEMENTS**: Do not optimize or modernize any code
+- **NO SIGNATURE CHANGES**: Do not modify function parameters or return types
+- **PRESERVE EVERYTHING**: All code must remain exactly as written
+- **DEFER ALL CHANGES**: All code modifications wait until Phase 4+
 
 ### Phase 4: Warning Elimination and Compilation Health 🚨
 

@@ -1,10 +1,36 @@
 /*
- * npc.c - Non-player character AI and behavior
- * 
+ * npc.c - Non-player character AI and behavior management system
+ *
+ * This file implements the comprehensive artificial intelligence system for non-player
+ * characters in Conquer. It provides sophisticated AI behavior including strategic
+ * decision making, diplomatic relations, military planning, economic management,
+ * and tactical movement algorithms.
+ *
+ * Core AI Systems:
+ * - Diplomatic relationship management with dynamic status changes
+ * - Strategic sector attractiveness calculation for movement planning
+ * - Intelligent military reorganization and force allocation
+ * - Economic sector redesignation based on resource needs
+ * - Monster AI behavior (nomads, savages, pirates, lizards)
+ * - Automated nation management for NPC civilizations
+ *
+ * Key Features:
+ * - Multi-layered attractiveness scoring system for tactical decisions
+ * - Visibility-based information warfare (magic powers affect AI knowledge)
+ * - Adaptive AI personality types with different aggression levels
+ * - Context-aware military and economic planning
+ * - Sophisticated diplomacy system with alliance/war state management
+ *
+ * AI Architecture:
+ * The AI operates through a main nationrun() function that coordinates multiple
+ * subsystems including diplomacy, military management, economic planning, and
+ * movement. The attractiveness calculation system uses weighted scoring to
+ * determine optimal AI actions based on current game state and AI personality.
+ *
  * This file is part of Conquer.
  * Originally Copyright (C) 1988-1989 by Edward M. Barlow and Adam Bryant
  * Copyright (C) 2025 Juan Manuel Méndez Rey (Vejeta) - Licensed under GPL v3 with permission from original authors
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
