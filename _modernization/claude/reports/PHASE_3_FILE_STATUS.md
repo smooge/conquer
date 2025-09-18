@@ -1,11 +1,11 @@
 # Phase 3 Documentation Status - Complete File Inventory
 
 **Date**: 2025-01-18
-**Phase 3 Status**: 7 of 41 files documented (17.1% complete)
+**Phase 3 Status**: 8 of 41 files documented (19.5% complete)
 
 ## Files Documentation Status
 
-### ✅ DOCUMENTED (7 files)
+### ✅ DOCUMENTED (8 files)
 1. **main.c** - Core program entry and initialization
 2. **data.h** - Central data structures and definitions
 3. **header.h** - Configuration and platform compatibility
@@ -13,11 +13,11 @@
 5. **move.c** - Unit movement and pathfinding (2 functions documented)
 6. **commands.c** - User command processing and dispatch (9 functions documented)
 7. **update.c** - Game state updates and turn processing (14 functions documented - COMPLETE)
+8. **data.c** - Global game data definitions and configuration tables (NO FUNCTIONS - data only)
 
-### ❌ UNDOCUMENTED (34 files)
+### ❌ UNDOCUMENTED (33 files)
 
-#### Core Game Logic (Priority 1) - 5 files
-8. **data.c** - Data structure manipulation and game state
+#### Core Game Logic (Priority 1) - 4 files
 9. **npc.c** - AI/NPC behavior and automation
 10. **check.c** - Game state validation and integrity checks
 11. **misc.c** - Miscellaneous game utilities and helpers
@@ -65,7 +65,7 @@
 ## Phase 3 Documentation Strategy
 
 ### Recommended File Order (Next 10 sessions)
-1. **data.c** - Data structure manipulation (high complexity)
+1. **npc.c** - AI/NPC behavior and automation (medium complexity)
 2. **display.c** - User interface (medium complexity)
 3. **io.c** - File operations (medium complexity)
 4. **admin.c** - Administrative functions (low complexity)
@@ -79,8 +79,8 @@
 - **Maintain documentation standards** from previous files
 
 ### Completion Estimate
-- **34 remaining files** at 1 file per session
-- **34 more sessions** to complete Phase 3
+- **33 remaining files** at 1 file per session
+- **33 more sessions** to complete Phase 3
 - **Critical path**: Core game logic files (Priority 1)
 - **Phase 4 dependency**: Cannot start warning elimination until documentation complete
 
@@ -103,15 +103,15 @@
 
 ## Progress Tracking
 
-### Completed (7/41 = 17.1%)
-- Priority 1: 7 files (main.c, data.h, header.h, combat.c, move.c, commands.c, update.c)
+### Completed (8/41 = 19.5%)
+- Priority 1: 8 files (main.c, data.h, header.h, combat.c, move.c, commands.c, update.c, data.c)
 - Priority 2: 0 files
 - Priority 3: 0 files
 - Priority 4: 0 files
 - Priority 5: 0 files
 
 ### Remaining Work Distribution
-- Priority 1 (Core Logic): 5 files
+- Priority 1 (Core Logic): 4 files
 - Priority 2 (UI/I/O): 7 files
 - Priority 3 (Admin): 6 files
 - Priority 4 (Specialized): 6 files
@@ -119,5 +119,5 @@
 - Priority 6 (Headers): 1 file
 
 ---
-**Next Action**: Select next file for documentation (recommend data.c)
-**Phase 3 Status**: Significant work remaining - 82.9% of files undocumented
+**Next Action**: Select next file for documentation (recommend npc.c)
+**Phase 3 Status**: Significant work remaining - 80.5% of files undocumented
