@@ -145,7 +145,48 @@ prtattr()
 #endif /* DEBUG */
 }
 
-/*newdip() diplomacy if unmet - ntn 1 is nation you are updating*/
+/*
+ * newdip - Initialize diplomatic status between nations upon first contact
+ *
+ * Establishes the initial diplomatic relationship when two nations first
+ * encounter each other. Uses race-based compatibility, nation types, and
+ * probabilistic factors to determine starting diplomatic status. This
+ * function is crucial for dynamic diplomacy where relationships evolve
+ * based on first contact circumstances rather than predetermined tables.
+ *
+ * Parameters:
+ *   ntn1 - Nation index being updated (the nation whose diplomacy is set)
+ *   ntn2 - Target nation index (the nation being encountered)
+ *
+ * Returns:
+ *   void (modifies ntn[ntn1].dstatus[ntn2] directly)
+ *
+ * Side Effects:
+ *   - Modifies global diplomatic status array ntn[].dstatus[][]
+ *   - May establish HOSTILE, WAR, NEUTRAL, or FRIENDLY status
+ *   - Uses random number generation for probabilistic outcomes
+ *
+ * Diplomatic Logic:
+ *   - PC nations: Generally peaceful (NEUTRAL), hostile only to orcs
+ *   - Orc involvement: High probability of HOSTILE or WAR status
+ *   - Monster nations: Always WAR status with everyone
+ *   - Same race: 50% chance of FRIENDLY, otherwise NEUTRAL
+ *   - Different races: Default to NEUTRAL status
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires nation data structures and race definitions
+ *   Approach: Integration testing with mock nation setups
+ *   Key Tests: PC-orc hostility, same-race friendship, monster warfare
+ *   Dependencies: Global ntn[] array, race constants, status constants
+ *   Mock Requirements: Nation structures with race and active fields
+ *   Complexity: Moderate - Multiple conditional paths with probabilistic outcomes
+ *
+ * Notes:
+ *   - Only updates ntn1's view of ntn2, not bidirectional
+ *   - Random elements make relationships unpredictable but balanced
+ *   - Special rules for PC (player character) nations
+ *   - Orc racial hostility hardcoded for gameplay balance
+ */
 void
 newdip(ntn1,ntn2)
 int	ntn1,ntn2;
@@ -175,6 +216,62 @@ int	ntn1,ntn2;
 }
 
 #ifdef MONSTER
+/*
+ * monster - Master monster controller and dynamic spawning system
+ *
+ * Orchestrates all monster nation AI behavior and manages dynamic monster
+ * spawning to maintain game balance. This function coordinates different
+ * monster types (nomads, pirates, savages, lizards) and implements a
+ * sophisticated army spawning algorithm that scales with map size and
+ * current monster population to prevent gameplay stagnation.
+ *
+ * Parameters:
+ *   None (operates on global nation and map data structures)
+ *
+ * Returns:
+ *   void (modifies global game state)
+ *
+ * Side Effects:
+ *   - Executes AI behavior for all active monster nations
+ *   - Dynamically spawns new monster armies when population is low
+ *   - Modifies army positions, sizes, and unit types
+ *   - Updates sector ownership through monster actions
+ *   - Uses random number generation for spawning and placement
+ *
+ * Monster AI Coordination:
+ *   - Nomads: Roving cavalry that devastate and capture territory
+ *   - Pirates: Naval raiders attacking coastal areas and ships
+ *   - Savages: Tribal warriors expanding through wilderness areas
+ *   - Lizards: Specialized monster type (delegated to update.c)
+ *
+ * Dynamic Spawning Algorithm:
+ *   - Calculates needed troops based on map size formula: (NUMSECTS/MONSTER)
+ *   - Nomad proportion: 5/12 of total with 450 soldiers per army
+ *   - Savage proportion: 1/4 of total with 250 soldiers per army
+ *   - Spawns armies until quota reached or space exhausted
+ *   - 5/8 probability favors nomad spawning over savage spawning
+ *
+ * Spawning Constraints:
+ *   - Nomads: Must spawn on habitable terrain (not water/peaks)
+ *   - Savages: Avoid peaks, water, and heavily populated enemy sectors
+ *   - Army sizes: Nomads 100-600 soldiers, Savages 100-300 soldiers
+ *   - Unit types: Nomads use light cavalry, Savages use racial defaults
+ *
+ * Testing Notes:
+ *   Category: C (System) - Requires full game state and monster subsystems
+ *   Approach: System testing with complete world simulation
+ *   Key Tests: Monster spawning balance, AI coordination, map scaling
+ *   Dependencies: Global ntn[], sct[][], MAXARM, map dimensions
+ *   Mock Requirements: Complete world state with nations and sectors
+ *   Complexity: Complex - Coordinates multiple AI subsystems and dynamic content
+ *
+ * Notes:
+ *   - Requires MONSTER compilation flag to be active
+ *   - MORE_MONST flag enables advanced dynamic spawning
+ *   - Critical for maintaining game challenge and preventing stagnation
+ *   - Spawning formula maintains balance across different map sizes
+ *   - Uses goto statements for army slot allocation (legacy pattern)
+ */
 void
 monster()
 {
@@ -303,6 +400,67 @@ monster()
 
 }
 
+/*
+ * do_nomad - Execute nomad AI behavior for roving cavalry devastation
+ *
+ * Implements the artificial intelligence for nomad nations, which are
+ * characterized by constant movement, territorial capture, and systematic
+ * devastation of conquered lands. Nomads represent roving cavalry forces
+ * that grow over time, never stay in one place, and leave devastation
+ * in their wake while spreading across the map.
+ *
+ * Parameters:
+ *   None (uses global country and curntn for current nomad nation)
+ *
+ * Returns:
+ *   void (modifies global game state)
+ *
+ * Side Effects:
+ *   - Moves all nomad armies to adjacent sectors
+ *   - Captures undefended or unowned territory
+ *   - Devastates captured sectors (reduces fertility/resources)
+ *   - Causes population to flee from captured areas
+ *   - Increases army sizes by 2% per turn (growth mechanic)
+ *   - Generates news reports for territorial captures
+ *   - Destroys armies that become trapped (>100 failed moves)
+ *
+ * Nomad AI Behavior:
+ *   - Constant Movement: Cannot remain in the same sector
+ *   - Random Direction: Moves to adjacent sectors (3x3 grid around current)
+ *   - Habitat Restrictions: Only moves to habitable land (no water/peaks)
+ *   - Reachability: Respects movement constraints and terrain
+ *   - Territory Capture: Takes undefended sectors from other nations
+ *   - Devastation: Systematically destroys captured sector resources
+ *   - Growth: Armies increase in size by 2% each turn
+ *
+ * Capture Logic:
+ *   - Targets unowned sectors or sectors without defending soldiers
+ *   - Avoids capturing from other nomad nations
+ *   - Forces civilian population to flee before capture
+ *   - Immediately devastates captured territory
+ *   - Updates sector ownership to nomad nation
+ *
+ * Movement Algorithm:
+ *   - Attempts random movement within 3x3 grid around current position
+ *   - Validates movement constraints (map bounds, terrain, reachability)
+ *   - Destroys army if unable to find valid move after 100 attempts
+ *   - Uses land_reachp() to verify movement feasibility
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires army, sector, and movement systems
+ *   Approach: Integration testing with mock world state
+ *   Key Tests: Movement validation, capture mechanics, devastation effects
+ *   Dependencies: Global sct[][], ntn[], movement functions, news system
+ *   Mock Requirements: Map sectors, armies, movement calculations
+ *   Complexity: Moderate - Movement AI with capture and growth mechanics
+ *
+ * Notes:
+ *   - Critical for nomad challenge and map dynamics
+ *   - Growth mechanic prevents nomads from being eliminated early
+ *   - Devastation creates permanent map changes affecting late game
+ *   - Movement failure protection prevents infinite loops
+ *   - Uses P_A* macros for army data access (legacy convenience macros)
+ */
 void
 do_nomad()
 {
@@ -351,6 +509,67 @@ do_nomad()
 	}
 }
 
+/*
+ * do_savage - Execute savage AI behavior for tribal warrior expansion
+ *
+ * Implements the artificial intelligence for savage nations, which represent
+ * tribal warrior societies that expand through wilderness areas with
+ * aggressive territorial acquisition. Savages are more selective than nomads
+ * in their movement but equally devastating in their conquest, representing
+ * organized tribal expansion rather than pure nomadic wandering.
+ *
+ * Parameters:
+ *   None (uses global country and curntn for current savage nation)
+ *
+ * Returns:
+ *   void (modifies global game state)
+ *
+ * Side Effects:
+ *   - Moves savage armies to adjacent suitable territories
+ *   - Captures undefended or unowned territory selectively
+ *   - Devastates captured sectors (reduces fertility/resources)
+ *   - Causes population to flee from captured areas
+ *   - Increases army sizes by 2% per turn (growth mechanic)
+ *   - Generates news reports for territorial captures
+ *   - More conservative movement than nomads (single attempt per turn)
+ *
+ * Savage AI Behavior:
+ *   - Selective Movement: Single movement attempt per turn (vs nomad persistence)
+ *   - Random Direction: Moves to adjacent sectors (3x3 grid around current)
+ *   - Habitat Restrictions: Only moves to habitable land (no water/peaks)
+ *   - Reachability: Respects movement constraints and terrain limitations
+ *   - Territory Capture: Takes undefended sectors from other nations
+ *   - Devastation: Systematically destroys captured sector resources
+ *   - Growth: Armies increase in size by 2% each turn
+ *
+ * Capture Logic:
+ *   - Targets unowned sectors or sectors without defending soldiers
+ *   - Avoids capturing from other savage nations (tribal solidarity)
+ *   - Only leaders can actually claim territory ownership
+ *   - All units can devastate regardless of capture ability
+ *   - Forces civilian population to flee before capture
+ *
+ * Movement vs Nomad Differences:
+ *   - Single Move: One movement attempt per turn (nomads retry until success)
+ *   - Stay Put: Can remain in same location if movement fails
+ *   - Selective: More deliberate expansion pattern
+ *   - Leader Rules: Only leaders can claim sectors, all can devastate
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires army, sector, and movement systems
+ *   Approach: Integration testing with mock world state
+ *   Key Tests: Movement patterns, capture mechanics, leader-based claiming
+ *   Dependencies: Global sct[][], ntn[], movement functions, news system
+ *   Mock Requirements: Map sectors, armies, leader units, movement calculations
+ *   Complexity: Moderate - Movement AI with selective capture mechanics
+ *
+ * Notes:
+ *   - More conservative expansion pattern than nomads
+ *   - Leader-based territorial claiming creates strategic depth
+ *   - Devastation occurs regardless of successful territorial claim
+ *   - Growth mechanic maintains savage threat throughout game
+ *   - Uses P_A* macros for army data access (legacy convenience macros)
+ */
 void
 do_savage()
 {
@@ -386,6 +605,70 @@ do_savage()
 	}
 }
 
+/*
+ * do_pirate - Execute pirate AI behavior for naval raiding and fleet expansion
+ *
+ * Implements the artificial intelligence for pirate nations, which operate
+ * naval fleets from base camps to raid other nations' shipping and coastal
+ * areas. Pirates represent maritime threats that hunt for enemy fleets
+ * within their operational zones and dynamically expand their naval power
+ * through successful raids and random fleet augmentation.
+ *
+ * Parameters:
+ *   None (uses global country and curntn for current pirate nation)
+ *
+ * Returns:
+ *   void (modifies global game state)
+ *
+ * Side Effects:
+ *   - Repositions pirate fleets to hunt enemy vessels
+ *   - Maintains proximity to base camps for operational support
+ *   - Randomly expands fleet size with new warships (6.67% chance per turn)
+ *   - Tracks and pursues enemy naval forces within operational zones
+ *   - Generates debug output for fleet movements and base operations
+ *
+ * Pirate AI Behavior:
+ *   - Base Operations: Maintains connection to base camps (DBASECAMP sectors)
+ *   - Fleet Hunting: Actively seeks enemy fleets within PRTZONE radius
+ *   - Target Priority: Hunts warships, merchant vessels, and galleys equally
+ *   - Zone Control: Operates within PRTZONE distance from base camps
+ *   - Fleet Growth: Randomly adds warships to maintain pressure
+ *
+ * Base Camp Logic:
+ *   - Searches PRTZONE radius around fleet for base camps
+ *   - Returns fleets to base if found within operational area
+ *   - Reports fleets that have strayed too far from bases
+ *   - Validates base camp existence and repositions fleets accordingly
+ *
+ * Fleet Hunting Algorithm:
+ *   - Scans all nations for active naval forces
+ *   - Identifies enemy fleets within PRTZONE operational radius
+ *   - Moves pirate fleet to intercept enemy positions
+ *   - Prioritizes any vessel type (warships, merchants, galleys)
+ *   - Maintains aggressive pursuit within operational constraints
+ *
+ * Fleet Expansion Mechanics:
+ *   - 6.67% chance per fleet per turn to add new warship (rand()%15==0)
+ *   - Random warship size selection (light to heavy warship range)
+ *   - Uses NADD_WAR macro for standardized ship addition
+ *   - Expansion only occurs when MORE_MONST compilation flag enabled
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires naval, sector, and nation systems
+ *   Approach: Integration testing with mock naval state and base camps
+ *   Key Tests: Base proximity, fleet hunting, expansion mechanics
+ *   Dependencies: Global ntn[], sct[][], naval arrays, base camp sectors
+ *   Mock Requirements: Naval units, base camps, enemy fleets, map coordinates
+ *   Complexity: Moderate - Naval AI with base operations and target acquisition
+ *
+ * Notes:
+ *   - Most complex monster AI due to naval operations and base coordination
+ *   - PRTZONE defines operational radius for pirate activities
+ *   - Fleet expansion maintains pirate threat throughout game progression
+ *   - Base camp dependency creates strategic vulnerabilities for pirates
+ *   - Uses P_N* macros for naval data access (legacy convenience macros)
+ *   - Requires both MONSTER and MORE_MONST flags for full functionality
+ */
 void
 do_pirate()
 {
