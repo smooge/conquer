@@ -32,34 +32,127 @@
 #define	NTRL	0
 #define	WIMP	3
 
-extern	FILE	*fpmsg;
-extern	FILE	*fnews;
-extern	short	country;
+/* ================= EXTERNAL DEPENDENCIES ================= */
 
-short	retreatside;	/* ATKR, DFND, or none (0) */
-short	retreatx;	/* retreat x square */
-short	retreaty;	/* retreat y square */
+extern	FILE	*fpmsg;		/* Message file for game communications */
+extern	FILE	*fnews;		/* News file for battle reports */
+extern	short	country;	/* Current nation context for operations */
 
-int	unit[MGKNUM];		/*armynum*/
-int	owner[MGKNUM];		/*owner*/
-int	side[MGKNUM];		/*see definitions->1=units 2=unit*/
-long	troops[MGKNUM];		/*starting troops in army */
-int	xspot,yspot;		/*location of battles*/
-int	anation;		/*nation attacking in this fight*/
-int	dnation;		/*one nation defending in this fight*/
-int	count=0;                /*number of armies or navies in sector*/
+/* ================= GLOBAL COMBAT STATE VARIABLES ================= */
+/*
+ * MODERNIZATION NOTE: These global variables should be encapsulated
+ * in a combat context structure for better thread safety and clarity
+ */
 
-/* indicators of naval or army combat */
-#define COMBAT_X	0
-#define COMBAT_A	1
-#define COMBAT_N	2
-#define FOUGHT_A	4
-#define FOUGHT_N	8
+/*
+ * Retreat Coordination Variables
+ * Manage unit withdrawal from battle when conditions warrant retreat
+ */
+short	retreatside;	/* Retreating side: ATKR, DFND, or none (0) */
+short	retreatx;	/* Retreat destination x coordinate */
+short	retreaty;	/* Retreat destination y coordinate */
 
-/************************************************************************/
-/*	COMBAT()	run all combat on the map			*/
-/*  	for each sector, determine if armies in with attack mode	*/
-/************************************************************************/
+/*
+ * Battle Participant Arrays
+ * Track all units involved in current battle for resolution calculations
+ */
+int	unit[MGKNUM];		/* Army/navy unit numbers participating */
+int	owner[MGKNUM];		/* Nation ownership of each unit */
+int	side[MGKNUM];		/* Combat side assignment (ATKR/DFND/NTRL) */
+long	troops[MGKNUM];		/* Starting troop strength for each unit */
+
+/*
+ * Battle Location and Primary Combatants
+ * Define the geographic and political context of current battle
+ */
+int	xspot,yspot;		/* Map coordinates where battle occurs */
+int	anation;		/* Primary attacking nation in this battle */
+int	dnation;		/* Primary defending nation in this battle */
+int	count=0;                /* Total number of units in battle sector */
+
+/* ================= COMBAT TYPE AND STATUS INDICATORS ================= */
+/*
+ * Combat Type Tracking Flags
+ * Used to prevent multiple battles in same sector and track combat history
+ */
+#define COMBAT_X	0	/* No combat occurred in sector */
+#define COMBAT_A	1	/* Army combat possible/initiated */
+#define COMBAT_N	2	/* Naval combat possible/initiated */
+#define FOUGHT_A	4	/* Army combat already completed */
+#define FOUGHT_N	8	/* Naval combat already completed */
+
+/*
+ * combat - Global Combat Orchestration and Battle Management
+ *
+ * Scans the entire world map to identify and resolve all potential battles
+ * between nations. Handles both army and naval combat in a systematic manner,
+ * ensuring each sector is processed only once per turn to prevent conflicts.
+ *
+ * ALGORITHM:
+ * 1. Initialize combat tracking matrix for all map sectors
+ * 2. For each active nation in reverse order (highest ID first):
+ *    a. Check all armies for attack status and valid targets
+ *    b. Check all navies for combat opportunities
+ *    c. Resolve battles immediately when valid combatants found
+ * 3. Clean up allocated memory and report completion
+ *
+ * COMBAT RESOLUTION ORDER:
+ * - Nations processed in reverse ID order for turn balance
+ * - Army combat checked before naval combat for each nation
+ * - Battles resolved immediately upon detection to handle cascading effects
+ * - Sectors marked as "fought" to prevent duplicate battles
+ *
+ * BATTLE PARTICIPATION CRITERIA:
+ * Army Combat:
+ * - Units must be in attack mode (ATTACK, SORTIE, etc.)
+ * - Units must have hostile diplomatic relationships
+ * - Minimum soldier count requirements
+ * - Sector not already fought in this turn
+ *
+ * Naval Combat:
+ * - Fleets must have warships present
+ * - 2-sector engagement range for naval battles
+ * - Water terrain requirements for fleet positioning
+ * - Hostile diplomatic relationships required
+ *
+ * MEMORY MANAGEMENT:
+ * - Allocates 2D matrix for combat tracking (freed at end)
+ * - Combat participant arrays reused between battles
+ * - Proper cleanup ensures no memory leaks
+ *
+ * DIPLOMATIC CONSIDERATIONS:
+ * - JIHAD relationships always create combat
+ * - WAR status enables automatic engagement
+ * - TREATY and ALLIED nations may join battles
+ * - Nation ownership of sectors affects targeting
+ *
+ * Parameters: None (operates on global game state)
+ * Returns: None (modifies global army/navy state)
+ *
+ * Side Effects:
+ * - Modifies army and navy unit positions and strengths
+ * - Updates sector ownership through battle outcomes
+ * - Generates battle reports in news and mail systems
+ * - May trigger cascading diplomatic relationship changes
+ *
+ * Testing Notes:
+ * Category: B (Integration) - Requires full game state and multiple nations
+ * Approach: Integration testing with mock diplomatic relationships
+ * Key Tests:
+ *   - Multiple nation combat scenarios
+ *   - Army vs naval combat differentiation
+ *   - Retreat and capture mechanics
+ *   - Diplomatic side assignment correctness
+ * Dependencies: Global nation array, sector map, diplomatic relationships
+ * Mock Requirements: Nation data, army/navy arrays, sector ownership
+ * Complexity: Complex - Full game system integration with diplomatic logic
+ *
+ * Notes:
+ * - Critical for turn processing and game balance
+ * - Performance scales with map size and nation count
+ * - Thread safety issues due to global variable usage
+ * - Consider refactoring to use context structure
+ */
 void
 combat()
 {
@@ -202,10 +295,98 @@ combat()
 
 /* macro for owner, accounts for runaway indicator */
 #define UOWNER(x) ((owner[(x)]<(-1))?(-owner[(x)]-1):(owner[(x)]))
-/************************************************************************/
-/*	FIGHT()	-	fight an individual battle given the three	*/
-/*	matricies global to this module					*/
-/************************************************************************/
+/*
+ * fight - Individual Army Battle Resolution Engine
+ *
+ * Resolves a single army battle using the participant matrices populated
+ * by the combat() function. Implements complex combat mechanics including
+ * unit types, terrain effects, fortifications, magic bonuses, and retreat.
+ *
+ * BATTLE RESOLUTION ALGORITHM:
+ * 1. Assign combat sides based on diplomatic relationships
+ * 2. Handle pre-battle unit defections (mercenaries, orcs, goblins)
+ * 3. Calculate total attacking and defending strength
+ * 4. Apply unit-specific combat bonuses and terrain modifiers
+ * 5. Generate random battle outcome using bell curve dice roll
+ * 6. Calculate percentage losses for both sides based on odds
+ * 7. Apply losses to individual units with special case handling
+ * 8. Process retreats and unit movement
+ * 9. Generate comprehensive battle reports for all participants
+ *
+ * COMBAT MECHANICS:
+ * Strength Calculation:
+ * - Base unit soldier counts with unit type modifiers
+ * - Terrain bonuses for defenders (mountains, forests, etc.)
+ * - Fortification bonuses for defending units
+ * - Magic power effects and special abilities
+ * - Leadership bonuses for army groups
+ *
+ * Loss Calculation:
+ * - Bell curve random roll (5d21-5) for base outcome
+ * - Odds-based adjustment favoring stronger side
+ * - Fortification effects increase casualties
+ * - Unit type considerations (leaders vs regular troops)
+ * - Minimum unit survival thresholds
+ *
+ * SPECIAL MECHANICS:
+ * Unit Defection:
+ * - Mercenaries/orcs/goblins may refuse to fight or flee
+ * - Probability based on odds and unit morale
+ * - Defecting units retreat with casualty penalties
+ *
+ * Fortification Combat:
+ * - Catapults and siege engines gain attack bonuses
+ * - Possible fortress damage during siege warfare
+ * - Archer bonuses when defending fortifications
+ * - Cavalry penalties in fortress combat
+ *
+ * Leader Mortality:
+ * - Leaders (heroes, etc.) face death probability
+ * - Death releases any units under their command
+ * - Higher casualty rates increase leader death chance
+ *
+ * Retreat Mechanics:
+ * - Automatic retreat triggers based on loss ratios
+ * - Retreat destination calculated by fdxyretreat()
+ * - Units unable to retreat suffer additional casualties
+ * - Militia units disband to civilian population
+ *
+ * Vampire System:
+ * - Non-vampire casualties feed vampire units
+ * - Zombie armies gain strength from battle deaths
+ * - Magic system integration for undead mechanics
+ *
+ * Parameters: None (uses global battle participant arrays)
+ * Returns: None (modifies global unit state and generates reports)
+ *
+ * Side Effects:
+ * - Modifies army unit strengths and positions
+ * - Updates sector ownership and fortification levels
+ * - Generates mail messages to all battle participants
+ * - Writes battle summary to news file
+ * - May trigger leader death and unit release
+ * - Updates vampire unit strengths from casualties
+ *
+ * Testing Notes:
+ * Category: B (Integration) - Requires army data and diplomatic systems
+ * Approach: Integration testing with various unit compositions
+ * Key Tests:
+ *   - Even odds battles with random variation
+ *   - Overwhelming advantage scenarios
+ *   - Fortification siege mechanics
+ *   - Magic system interactions
+ *   - Retreat and capture outcomes
+ *   - Leader death and unit release
+ * Dependencies: Nation arrays, diplomatic status, magic system
+ * Mock Requirements: Multiple nations with armies, diplomatic relationships
+ * Complexity: Complex - Intricate combat calculations with many variables
+ *
+ * Notes:
+ * - Core gameplay mechanic determining territorial control
+ * - Complex interaction between multiple game systems
+ * - Performance critical for large battles
+ * - Historical combat balance maintained for game compatibility
+ */
 void
 fight()
 {
@@ -676,9 +857,92 @@ printf("I AM VERY CONFUSED - PLEASE HELP... combat.c\n");
 	retreat( -1 );
 }
 
-/************************************************************************/
-/*	CBONUS() - return combat bonuses for unit i			*/
-/************************************************************************/
+/*
+ * cbonus - Calculate Combat Bonus for Individual Unit
+ *
+ * Computes the total combat effectiveness modifier for a specific unit
+ * based on terrain, unit type, status, fortifications, and magical effects.
+ * This bonus is applied to the unit's base strength during battle resolution.
+ *
+ * BONUS CALCULATION FACTORS:
+ *
+ * Terrain Effects (Defenders):
+ * - Mountain terrain: +20% bonus
+ * - Hill terrain: +10% bonus
+ * - Jungle vegetation: +20% bonus
+ * - Forest vegetation: +15% bonus
+ * - Wood vegetation: +10% bonus
+ *
+ * Unit Status Modifiers:
+ * - MARCH status: -40% penalty (units in movement)
+ * - MAGDEF status: +30% bonus (magical defense)
+ * - MAGATT status: +30% bonus (magical attack)
+ * - SORTIE status: Variable based on fortification and unit type
+ * - SIEGED status: -20% penalty
+ * - Army groups (>=NUMSTATUS): +20% bonus
+ *
+ * Fortification Effects:
+ * - Defending in owned fortification: Full fort value bonus
+ * - Zombie units: Half fort value (poor wall utilization)
+ * - Cavalry/Knights in forts: -20% penalty
+ * - Archers in owned forts: +15% bonus
+ * - Archers in enemy forts: +5% bonus
+ * - Sapper magic vs fortifications: +10% attack bonus
+ *
+ * Unit Type Specializations:
+ * - Base attack/defense values from unit type tables
+ * - Phalanx/Legion formations: Size-based bonuses
+ * - Mercenary units: Special attack/defense modifiers
+ * - Monster units: Fear bonuses in sorties
+ * - Mounted units: Sortie bonuses for mobility
+ *
+ * Magic System Integration:
+ * - DESTROYER/DERVISH powers in ice/desert: +30% bonus
+ * - VAMPIRE effects handled in main battle resolution
+ * - SAPPER abilities for siege warfare
+ * - SAILOR bonuses for naval unit effectiveness
+ *
+ * SORTIE SPECIAL MECHANICS:
+ * When attacking from owned fortification (sortie):
+ * - Base +10% bonus for organized attack
+ * - Dragoon/Legion/Phalanx: +5% organization bonus
+ * - Light Cavalry/Cavalry: +10% mounted bonus
+ * - Avian/Elephant/Knight: +15% elite mounted bonus
+ * - Monsters: +5% fear factor bonus
+ *
+ * Parameters:
+ *   num - Index into global unit arrays for target unit
+ *
+ * Returns:
+ *   Integer percentage bonus to apply to unit strength
+ *   Positive values increase effectiveness, negative reduce it
+ *
+ * Side Effects:
+ * - Accesses global combat state arrays (unit, owner, side)
+ * - Reads terrain and fortification data from sector
+ * - Queries magic system for special abilities
+ * - May access nation statistics for mercenary modifiers
+ *
+ * Testing Notes:
+ * Category: A (Unit) - Pure calculation function with clear inputs/outputs
+ * Approach: Unit tests with various terrain/unit/status combinations
+ * Key Tests:
+ *   - Terrain bonus calculations for all terrain types
+ *   - Unit type attack/defense value lookups
+ *   - Fortification bonus calculations
+ *   - Magic system integration
+ *   - Status modifier applications
+ *   - Sortie bonus calculations
+ * Dependencies: Global arrays, terrain data, magic system
+ * Mock Requirements: Unit data, terrain sectors, magic abilities
+ * Complexity: Moderate - Multiple conditional calculations with table lookups
+ *
+ * Notes:
+ * - Critical for combat balance and tactical depth
+ * - Historical balance values preserved for compatibility
+ * - Consider caching results for performance in large battles
+ * - Unit type arrays must be properly initialized
+ */
 int
 cbonus(int num)
 {
@@ -776,6 +1040,63 @@ cbonus(int num)
 	return(armbonus);
 }
 
+/*
+ * fdxyretreat - Calculate optimal retreat destination for units in combat
+ *
+ * Determines the safest adjacent sector for retreating units during combat.
+ * Uses a priority system to find the best available retreat location:
+ * 1. Friendly sectors owned by retreating nation
+ * 2. Neutral sectors with friendly diplomatic status
+ * 3. Unoccupied sectors with sufficient food capacity
+ * 4. If no valid retreat found, sets retreat coordinates to current location
+ *    (forcing retreat to nation's capital with heavy casualties)
+ *
+ * Algorithm:
+ * - First checks if current sector is a town/city/capital (no retreat needed)
+ * - Determines retreating nation based on retreat side (attacker/defender)
+ * - Scans all 8 adjacent sectors in systematic grid pattern
+ * - For each adjacent sector, validates:
+ *   * Food capacity sufficient for retreating units
+ *   * Diplomatic relations allow safe passage
+ *   * No hostile forces present to block retreat
+ * - Returns first valid retreat location found, or current location if none
+ *
+ * Parameters:
+ *   None (uses global combat state variables)
+ *
+ * Returns:
+ *   void (sets global retreatx, retreaty coordinates)
+ *
+ * Side Effects:
+ *   - Sets retreatx, retreaty global variables to retreat destination
+ *   - If retreatside is 0, clears retreat entirely and returns immediately
+ *   - May set retreat destination to current location if no valid retreat
+ *
+ * Global Variables Used:
+ *   - retreatside: Which side is retreating (ATKR/DFND/0=none)
+ *   - xspot, yspot: Current battle location coordinates
+ *   - retreatx, retreaty: Calculated retreat destination (output)
+ *   - anation, dnation: Attacking and defending nation IDs
+ *   - sct[][]: Global sector data for terrain and ownership
+ *   - ntn[]: Global nation data for diplomatic status
+ *   - country: Current player nation ID for food calculations
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires map state, diplomatic relations
+ *   Approach: Integration testing with various map configurations
+ *   Key Tests: Adjacent friendly sectors, blocked retreats, food capacity
+ *   Dependencies: Global map state, nation diplomatic status, food system
+ *   Mock Requirements: Map sectors, diplomatic relationships, food calculations
+ *   Complexity: Moderate - Grid scanning with multiple validation criteria
+ *
+ * Notes:
+ *   - Thread safety: Not thread-safe due to global variable dependencies
+ *   - Performance: O(1) complexity - always scans exactly 8 adjacent sectors
+ *   - Historical context: Part of original retreat mechanics system
+ *   - Retreat failure handling: Forces retreat to capital with 30-75% casualties
+ *   - Diplomatic integration: Respects alliance/war status for safe passage
+ *   - Town/city sectors block retreats (defensive advantage mechanic)
+ */
 void
 fdxyretreat()	/* finds retreat location */
 {
@@ -813,6 +1134,63 @@ fdxyretreat()	/* finds retreat location */
 	}
 }
 
+/*
+ * retreat - Execute unit retreats from combat to predetermined destination
+ *
+ * Moves retreating units from the battle sector to the destination calculated
+ * by fdxyretreat(). Handles two retreat modes: mass retreat of all units on
+ * retreating side, or selective retreat of a single unit (typically mercenaries
+ * who refused to fight). Applies different casualty rates based on unit type.
+ *
+ * Algorithm:
+ * - Early exit if no retreat is occurring (retreatside == 0)
+ * - Iterate through all units in the battle
+ * - For mass retreat (unitnum == -1): process all units on retreating side
+ * - For selective retreat: process only the specified unit
+ * - Apply unit-specific retreat handling:
+ *   * Naval units (marines/sailors): Suffer 15% casualties, remain in place
+ *   * Land units: Move to retreat coordinates without additional casualties
+ * - For selective retreat, exit immediately after processing target unit
+ *
+ * Parameters:
+ *   unitnum - Unit index for selective retreat, or -1 for mass retreat
+ *            -1: Retreat all units on the retreating side (normal battle retreat)
+ *            >=0: Retreat only the specified unit (mercenary refusal/rout)
+ *
+ * Returns:
+ *   void (modifies unit locations and troop counts directly)
+ *
+ * Side Effects:
+ *   - Moves land units to retreat coordinates (retreatx, retreaty)
+ *   - Reduces naval unit troop strength by 15% (represents evacuation losses)
+ *   - Naval units remain at battle location (cannot retreat overland)
+ *   - No additional side effects for units not on retreating side
+ *
+ * Global Variables Used:
+ *   - retreatside: Which side is retreating (ATKR/DFND/0=none)
+ *   - retreatx, retreaty: Destination coordinates set by fdxyretreat()
+ *   - count: Number of units in current battle
+ *   - owner[]: Nation ownership of each unit in battle
+ *   - unit[]: Unit array indices for each combatant
+ *   - side[]: Combat side assignment for each unit
+ *   - ntn[]: Global nation data containing army information
+ *
+ * Testing Notes:
+ *   Category: A (Unit) - Clear input/output with predictable behavior
+ *   Approach: Unit testing with mock army data and battle state
+ *   Key Tests: Mass retreat, selective retreat, naval unit handling, no-retreat case
+ *   Dependencies: Global army data, battle state variables
+ *   Mock Requirements: Army locations, unit types, battle participants
+ *   Complexity: Simple - Straightforward iteration with clear logic branches
+ *
+ * Notes:
+ *   - Thread safety: Not thread-safe due to global variable dependencies
+ *   - Performance: O(n) where n = number of units in battle (typically small)
+ *   - Historical context: Supports both voluntary and involuntary retreats
+ *   - Naval retreat limitation: Represents inability to retreat ships overland
+ *   - Casualty asymmetry: Naval units suffer retreat losses, land units don't
+ *   - Used for: Battle retreats, mercenary desertion, diplomatic withdrawals
+ */
 void
 retreat(unitnum)
 int	unitnum;	/* if -1 then normal, else retreat only unit ismerc */
@@ -837,6 +1215,86 @@ int	unitnum;	/* if -1 then normal, else retreat only unit ismerc */
 	}
 }
 
+
+/*
+ * navalcbt - Execute complete naval combat resolution for all fleets in sector
+ *
+ * Implements the comprehensive naval battle system, handling multiple fleet types
+ * (warships, galleys, merchants) with complex combat mechanics including capture,
+ * sinking, and crew casualties. This is the naval equivalent of the land-based
+ * fight() function, featuring detailed ship-by-ship resolution and diplomatic
+ * side assignment.
+ *
+ * Algorithm Overview:
+ * 1. Diplomatic Side Assignment: Determine attacker/defender/neutral based on
+ *    nation relationships (war, jihad, treaty, alliance status)
+ * 2. Combat Strength Calculation: Calculate crew effectiveness by ship type:
+ *    - Warship crew: 1.0x base strength
+ *    - Galley crew: 2.0x base strength
+ *    - Merchant crew: 4.0x base strength
+ *    - Embarked armies: Variable multipliers (Marines 3x, Sailors/Archers 1.5x)
+ *    - Sailor magic bonus: +25% effectiveness for all crew types
+ * 3. Combat Resolution: Bell curve dice mechanics with odds-based modifiers
+ * 4. Loss Distribution: Ship-by-ship resolution with capture vs. sinking
+ * 5. Crew Casualties: Proportional losses based on combat outcome
+ * 6. Battle Reporting: Detailed mail reports to all participating nations
+ *
+ * Ship Combat Mechanics:
+ * - Three ship classes: Light, Medium, Heavy (different combat values)
+ * - Three ship types: Warships (combat), Galleys (hybrid), Merchants (transport)
+ * - Capture probability based on relative fleet strength and ship type
+ * - Warships have higher combat effectiveness but lower capture resistance
+ * - Galleys can carry armies and provide combined arms bonuses
+ * - Merchants are vulnerable but valuable capture targets
+ *
+ * Capture vs. Sinking System:
+ * - Capture rates vary by ship type and relative strength
+ * - Captured ships join victor's fleet under new ownership
+ * - Sunk ships are completely destroyed with crew losses
+ * - Capture probability: (enemy_strength / total_strength) * base_rate
+ *
+ * Parameters:
+ *   None (uses global battle state from combat() setup)
+ *
+ * Returns:
+ *   void (modifies fleet compositions and sends mail reports)
+ *
+ * Side Effects:
+ *   - Modifies ship counts in participating nation fleets
+ *   - Reduces crew numbers based on combat casualties
+ *   - Transfers captured ships between nations
+ *   - Sends detailed battle reports via mail system
+ *   - Updates global combat statistics for session
+ *   - May trigger army casualties for embarked forces
+ *
+ * Global Variables Used:
+ *   - count: Number of participating fleets in battle
+ *   - owner[], unit[], side[]: Fleet ownership, unit IDs, combat sides
+ *   - anation, dnation: Primary attacking and defending nations
+ *   - xspot, yspot: Battle location coordinates
+ *   - ntn[]: Global nation data (fleets, armies, diplomatic status)
+ *   - country, curntn: Current nation context for processing
+ *   - TURN: Current game turn for battle timestamping
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires multiple fleets and diplomatic setup
+ *   Approach: Integration testing with various fleet compositions
+ *   Key Tests: Multi-nation battles, ship captures, crew calculations, magic effects
+ *   Dependencies: Fleet data, diplomatic relationships, mail system, magic system
+ *   Mock Requirements: Fleet compositions, nation relationships, battle scenarios
+ *   Complexity: Complex - Multi-phase naval combat with extensive calculations
+ *
+ * Notes:
+ *   - Thread safety: Not thread-safe due to global variable dependencies
+ *   - Performance: O(n*m) where n=fleets, m=average ships per fleet
+ *   - Historical context: Sophisticated naval warfare simulation
+ *   - Diplomatic integration: Respects complex alliance/war relationships
+ *   - Magic system: Sailor magic provides significant combat advantages
+ *   - Capture mechanics: Realistic ship capture vs. destruction ratios
+ *   - Mail integration: Comprehensive battle reporting to all participants
+ *   - Ship type balance: Each ship type has distinct tactical role
+ *   - Combined arms: Army-navy cooperation through embarked forces
+ */
 
 /*SUBROUTINE TO RUN NAVAL COMBAT ON ALL SHIPS */
 /* quick define for easier reading */
@@ -1321,6 +1779,70 @@ navalcbt()
 	printf("Out Naval Combat....\n");
 }
 
+/*
+ * capture - Distribute captured ship to appropriate fleet during naval combat
+ *
+ * Assigns a captured enemy ship to a specific fleet on the victorious side,
+ * using a weighted distribution system based on fleet sizes. The ship is
+ * awarded to the fleet with the largest warship capacity, representing
+ * the fleet most capable of securing and integrating the captured vessel.
+ *
+ * Algorithm:
+ * - Scan all fleets on the victorious side (ATKR or DFND)
+ * - Calculate cumulative warship capacity for weighted selection
+ * - Use holdcount parameter to determine which fleet receives the prize
+ * - Award ship to the fleet whose capacity bracket contains holdcount
+ * - Add the captured ship to the winning fleet's inventory
+ * - Restore nation context to maintain global state consistency
+ *
+ * Ship Distribution Logic:
+ * - Larger fleets have higher probability of receiving captured ships
+ * - Distribution proportional to warship hold capacity (combat effectiveness)
+ * - Ensures ships go to fleets capable of utilizing them effectively
+ * - Prevents captured ships from being assigned to non-existent fleets
+ *
+ * Parameters:
+ *   type - Ship type being captured (QWAR=warship, QGAL=galley, QMER=merchant)
+ *   to - Combat side receiving the captured ship (ATKR/DFND)
+ *   shipsize - Size class of captured ship (N_LIGHT/N_MEDIUM/N_HEAVY)
+ *   holdcount - Weighted distribution selector based on fleet capacities
+ *
+ * Returns:
+ *   void (modifies fleet inventories directly)
+ *
+ * Side Effects:
+ *   - Adds one ship of specified type/size to a victorious fleet
+ *   - Temporarily changes curntn global pointer during processing
+ *   - Restores original nation context after ship assignment
+ *   - May fail silently if no valid recipient fleet found
+ *
+ * Global Variables Used:
+ *   - count: Number of fleets participating in battle
+ *   - owner[], unit[], side[]: Fleet ownership, unit IDs, combat sides
+ *   - curntn: Current nation context pointer (saved/restored)
+ *   - ntn[]: Global nation data for fleet modifications
+ *
+ * Macros Used:
+ *   - fltwhold(): Calculate warship hold capacity for fleet
+ *   - NADD_WAR(), NADD_GAL(), NADD_MER(): Add ships to fleet inventory
+ *
+ * Testing Notes:
+ *   Category: A (Unit) - Clear input/output with predictable ship assignment
+ *   Approach: Unit testing with mock fleet data and capture scenarios
+ *   Key Tests: Ship type assignment, side validation, fleet selection logic
+ *   Dependencies: Fleet data structures, ship inventory macros
+ *   Mock Requirements: Battle participants, fleet capacities, ship inventories
+ *   Complexity: Simple - Straightforward weighted distribution algorithm
+ *
+ * Notes:
+ *   - Thread safety: Not thread-safe due to global variable dependencies
+ *   - Performance: O(n) where n = number of participating fleets
+ *   - Historical context: Represents prize allocation in naval warfare
+ *   - Fair distribution: Larger fleets receive more captures (realistic)
+ *   - Error handling: Silent failure if no valid recipient found
+ *   - Integration: Called from navalcbt() during combat resolution
+ *   - Ship types: Supports all three naval vessel categories
+ */
 /* routine to distribute a captured ship */
 void
 capture(type,to,shipsize,holdcount)
@@ -1370,6 +1892,61 @@ capture(type,to,shipsize,holdcount)
 	curntn = saventn;
 }
 
+/*
+ * show_ships - Format and display naval battle results in mail reports
+ *
+ * Generates formatted output for naval combat casualties (sunk ships) and
+ * prize captures in battle reports sent to participating nations. Provides
+ * clear, consistent formatting for ship losses and gains across all three
+ * vessel types (warships, galleys, merchants).
+ *
+ * Algorithm:
+ * - Check if any ships of any type need reporting (total > 0)
+ * - If ships to report, output descriptive header with side and action
+ * - For each ship type with non-zero count, append count and type name
+ * - Complete line with newline for clean report formatting
+ * - Skip output entirely if no ships to report (avoids empty lines)
+ *
+ * Output Format Examples:
+ * - "Attacking ships sunk: 3 Warships 2 Galleys"
+ * - "Defending ships captured: 1 Merchants"
+ * - "Attacking ships sunk: 5 Warships 1 Galleys 2 Merchants"
+ *
+ * Parameters:
+ *   who - Side description string ("Attacking" or "Defending")
+ *   what - Action description string ("sunk" or "captured")
+ *   war - Number of warships affected (0 = none to report)
+ *   gal - Number of galleys affected (0 = none to report)
+ *   mer - Number of merchant ships affected (0 = none to report)
+ *
+ * Returns:
+ *   void (outputs directly to mail file stream)
+ *
+ * Side Effects:
+ *   - Writes formatted text to global mail file stream (fm)
+ *   - Outputs newline character to complete the report line
+ *   - No output if all ship counts are zero (clean report formatting)
+ *
+ * Global Variables Used:
+ *   - fm: Global mail file stream for battle report output
+ *
+ * Testing Notes:
+ *   Category: A (Unit) - Simple formatting function with clear inputs/outputs
+ *   Approach: Unit testing with various ship count combinations
+ *   Key Tests: All zero counts, single ship type, multiple ship types, formatting
+ *   Dependencies: Mail file stream for output
+ *   Mock Requirements: Mail system context, file stream handling
+ *   Complexity: Simple - Straightforward conditional formatting
+ *
+ * Notes:
+ *   - Thread safety: Not thread-safe due to global file stream dependency
+ *   - Performance: O(1) - constant time formatting operation
+ *   - Historical context: Clean battle report presentation for players
+ *   - Integration: Called from navalcbt() for result reporting
+ *   - Output optimization: Skips empty reports to avoid clutter
+ *   - Formatting consistency: Standardized naval battle report format
+ *   - User experience: Clear, readable battle outcome presentation
+ */
 /* routine to display combat results */
 void
 show_ships(who,what,war,gal,mer)
