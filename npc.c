@@ -727,6 +727,60 @@ do_pirate()
 
 #ifdef NPC
 void
+/*
+ * n_redes - Intelligent sector redesignation based on resource needs
+ *
+ * Implements sophisticated economic sector management algorithm that adapts
+ * sector designations based on population, resource thresholds, food ratios,
+ * and overall economic conditions. This function is the core of NPC economic
+ * intelligence, making dynamic decisions about how sectors should be used
+ * to optimize resource production and population management.
+ *
+ * The algorithm balances multiple competing priorities:
+ * 1. Population-driven city formation and management
+ * 2. Food security through farm designation priority
+ * 3. Resource extraction optimization (trade goods, metals, jewels)
+ * 4. Strategic infrastructure placement (stockades, granaries, churches)
+ *
+ * Parameters:
+ *   x - Sector X coordinate (valid map position)
+ *   y - Sector Y coordinate (valid map position)
+ *   goldthresh - Jewel resource threshold for economic decisions (1-4+ range)
+ *   metalthresh - Metal resource threshold for economic decisions (1-4+ range)
+ *   citythresh - Food threshold for city vs farm decisions (varies dynamically)
+ *   hunger - Current food ratio (food per civilian, compared to P_EATRATE)
+ *
+ * Returns:
+ *   void (modifies sector designation and spread statistics directly)
+ *
+ * Side Effects:
+ *   - Modifies sct[x][y].designation (primary economic effect)
+ *   - Updates spread.incity, spread.infarm population tracking
+ *   - Changes resource allocation patterns across the nation
+ *   - Affects overall economic balance and food security
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires sector data, spread calculation, nation state
+ *   Approach: Integration testing with mock nation and sector configurations
+ *   Key Tests: City formation thresholds, food crisis response, resource optimization
+ *   Dependencies: Global spread data, sector structures, nation parameters
+ *   Mock Requirements: Mock sector data with various resource/population combinations
+ *   Complexity: Complex - Multi-factor economic decision making with cascading effects
+ *
+ * Economic Algorithm Details:
+ *   - City Formation: Population > civilians/CITYLIMIT OR (civilians<30k AND people>1k)
+ *   - Food Security: Hunger < P_EATRATE triggers farm conversion priority
+ *   - Resource Extraction: Compares local resources against thresholds for specialization
+ *   - Population Balance: CITYPERCENT controls urban vs rural population distribution
+ *   - Infrastructure Logic: Randomized placement of churches, granaries, blacksmiths
+ *
+ * Notes:
+ *   - Called iteratively with adjusted thresholds based on food conditions
+ *   - Protects capitals and cities from redesignation
+ *   - Uses probabilistic decisions for infrastructure variety
+ *   - Critical for NPC economic competitiveness and survival
+ *   - Complex interaction with spread calculation and resource management
+ */
 n_redes(x,y,goldthresh,metalthresh,citythresh,hunger)
 int	x,y,goldthresh,metalthresh,citythresh;
 float	hunger;
@@ -805,6 +859,68 @@ float	hunger;
 	}
 }
 
+/*
+ * redomil - Military reorganization and force allocation algorithms
+ *
+ * Implements comprehensive military management system that handles all aspects
+ * of NPC military organization including garrison management, army sizing,
+ * resource allocation, unit creation/disbanding, and strategic force distribution.
+ * This function is the core of NPC military intelligence, maintaining optimal
+ * military forces based on economic conditions, threat levels, and strategic needs.
+ *
+ * The algorithm manages multiple military subsystems:
+ * 1. Naval crew allocation with randomized assignments
+ * 2. Army positioning validation and capitol garrison management
+ * 3. Militia validation and elimination of invalid units
+ * 4. Garrison sizing based on ideal peace/war ratios
+ * 5. Army creation, disbanding, splitting, and merging operations
+ * 6. City militia deployment for urban defense
+ * 7. Unit type standardization and equipment management
+ *
+ * Parameters:
+ *   void (operates on global curntn and military data structures)
+ *
+ * Returns:
+ *   void (modifies military arrays and nation statistics directly)
+ *
+ * Side Effects:
+ *   - Modifies army structures: P_ASOLD, P_ATYPE, P_ASTAT, P_AXLOC, P_AYLOC
+ *   - Updates nation totals: curntn->tmil, curntn->tciv
+ *   - Adjusts economic resources: curntn->tgold, curntn->metals
+ *   - Changes sector populations for recruitment/disbanding
+ *   - Repositions armies and validates unit placement
+ *   - Creates/destroys military units based on strategic needs
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires nation data, army arrays, sector information
+ *   Approach: Integration testing with mock military and economic scenarios
+ *   Key Tests: Garrison sizing, army creation/destruction, resource management
+ *   Dependencies: Global nation state, army arrays, sector data, unit cost tables
+ *   Mock Requirements: Mock nation with various economic/military conditions
+ *   Complexity: Complex - Multi-system military management with resource constraints
+ *
+ * Military Management Algorithm Details:
+ *   - Naval Crews: 50% chance to assign SHIPCREW to ships with randomization
+ *   - Garrison Ratio: ideal = tmil * peace / (10*MILINCAP) for capitol defense
+ *   - Army Thresholds: TAKESECTOR minimum, 2*TAKESECTOR maximum for splitting
+ *   - Economic Limits: Resource availability constrains recruitment and equipment
+ *   - Unit Validation: Eliminates invalid militia, repositions distant armies
+ *   - City Defense: Automatic militia deployment in all cities and towns
+ *
+ * Strategic Resource Management:
+ *   - Gold Cost: Unit recruitment costs modified by WARRIOR magic power (50% discount)
+ *   - Metal Requirements: Unit equipment costs based on unit type and metal tables
+ *   - Population Limits: Recruitment limited by available civilian population
+ *   - Economic Constraints: Negative resources reduce ideal military sizes
+ *   - Leader Management: Automatic leader placement in capitol with RULE status
+ *
+ * Notes:
+ *   - Called after economic redesignation to balance military with resources
+ *   - Uses complex peace/war calculations for optimal force sizing
+ *   - Integrates with magic system for cost modifications
+ *   - Critical for NPC military competitiveness and strategic effectiveness
+ *   - Extensive debug output available for military analysis
+ */
 void
 redomil()
 {
@@ -1164,7 +1280,68 @@ redomil()
 		P_ATYPE=defaultunit(country);
 }
 
-/* getdstatus() - do diplomacy for current nation */
+/*
+ * getdstatus - Dynamic diplomatic status management system
+ *
+ * Implements sophisticated AI diplomacy system that manages international
+ * relations between nations based on alignment, military strength, proximity,
+ * and historical relationships. This function calculates and updates diplomatic
+ * status changes using probabilistic models that simulate realistic diplomatic
+ * behavior patterns including alliance formation, hostility escalation, and
+ * peace negotiations.
+ *
+ * The algorithm evaluates multiple diplomatic factors:
+ * 1. Alignment compatibility (good/neutral/evil relationships)
+ * 2. Military strength ratios and threat assessment
+ * 3. Geographic proximity and territorial pressure
+ * 4. Racial affinity and cultural relationships
+ * 5. Historical diplomatic status and relationship momentum
+ * 6. Activity level and diplomatic engagement capacity
+ *
+ * Parameters:
+ *   void (operates on global curntn and diplomatic status arrays)
+ *
+ * Returns:
+ *   void (modifies diplomatic status arrays and generates news/messages)
+ *
+ * Side Effects:
+ *   - Modifies curntn->dstatus[] arrays for all nations
+ *   - Generates news reports for diplomatic changes
+ *   - Sends mail messages to PC nations about status changes
+ *   - May trigger reciprocal diplomatic responses
+ *   - Affects strategic AI behavior in subsequent turns
+ *   - Influences trade, movement, and military targeting decisions
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires nation data, diplomatic arrays, mail system
+ *   Approach: Integration testing with mock diplomatic scenarios and nation configurations
+ *   Key Tests: Alignment interactions, military threat responses, proximity effects
+ *   Dependencies: Global nation arrays, diplomatic status tracking, mail/news systems
+ *   Mock Requirements: Mock nations with various alignments, military strengths, positions
+ *   Complexity: Complex - Multi-factor probabilistic diplomatic decision making
+ *
+ * Diplomatic Algorithm Details:
+ *   - Hostility Base: Activity level determines base hostility (5% to 35% range)
+ *   - Alignment Modifier: +20% hostility for different alignments
+ *   - Racial Bonus: Same race gets +10% friendly, -10% hostile
+ *   - Proximity Penalty: Adjacent to capitol increases tensions
+ *   - Military Imbalance: 4x military/score advantage triggers hostility
+ *   - Treaty Protection: TREATY and JIHAD statuses have special handling
+ *   - Ceasefire Negotiation: 20% chance for mutual WAR to become HOSTILE
+ *
+ * News and Communication System:
+ *   - War Declarations: Automatic news announcements and PC mail notifications
+ *   - Jihad Announcements: Special religious war declarations with notifications
+ *   - Ceasefire Negotiations: Mutual war status can automatically de-escalate
+ *   - Diplomatic Momentum: Status changes influenced by opponent's reciprocal status
+ *
+ * Notes:
+ *   - Only processes NPC nations (returns early for PC nations)
+ *   - Uses sophisticated probability calculations for realistic diplomatic evolution
+ *   - Integrates with mail system for player notification of major changes
+ *   - Critical for creating dynamic political landscape and strategic challenges
+ *   - Prevents diplomatic status changes for certain protected relationships
+ */
 void
 getdstatus()
 {
@@ -1306,10 +1483,65 @@ getdstatus()
 }
 
 	
-/* Find the average world food value per sector
- * and the average tradegood value per sector.
- * This is used for unseen sectors and unseen
- * armies.
+/*
+ * find_avg_sector - Calculate world averages for AI decision support
+ *
+ * Computes critical world statistics that support AI strategic decision making
+ * by calculating average food production, tradegood values, and military density
+ * across the game world. These baseline statistics are used by AI systems to
+ * evaluate unknown sectors, estimate enemy capabilities, and make informed
+ * strategic decisions about expansion, defense, and resource prioritization.
+ *
+ * The function performs two major statistical calculations:
+ * 1. World Resource Averages: Average food and tradegood values per useable sector
+ * 2. Military Density Analysis: Average soldiers per sector for each nation
+ *
+ * These calculations enable AI systems to:
+ * - Estimate value of unexplored or unseen sectors
+ * - Gauge relative military strength of other nations
+ * - Make informed decisions about territorial expansion priorities
+ * - Assess strategic value of different world regions
+ *
+ * Parameters:
+ *   void (operates on global map and nation data structures)
+ *
+ * Returns:
+ *   void (updates global Avg_food, Avg_tradegood, and Avg_soldiers arrays)
+ *
+ * Side Effects:
+ *   - Sets global Avg_food (average food production per useable sector)
+ *   - Sets global Avg_tradegood (average tradegood value per useable sector)
+ *   - Updates Avg_soldiers[nation] for all nations (soldiers per occupied sector)
+ *   - Provides baseline statistics for AI strategic decision algorithms
+ *   - Supports unseen sector evaluation and military assessment systems
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires complete world map and nation data
+ *   Approach: Integration testing with various world configurations and nation states
+ *   Key Tests: Empty world handling, resource distribution calculations, military density
+ *   Dependencies: Global map data, nation military arrays, sector ownership information
+ *   Mock Requirements: Mock world map with sectors, nations with armies and territories
+ *   Complexity: Moderate - Statistical calculation with map traversal and army analysis
+ *
+ * Statistical Calculation Details:
+ *   - Useable Land: Excludes WATER and PEAK altitude sectors
+ *   - Food Calculation: Uses tofood() function for current nation perspective
+ *   - Tradegood Valuation: Metal/jewels=500, other tradegoods=300 value points
+ *   - Military Density: Total military divided by unique sectors occupied
+ *   - Duplicate Prevention: Avoids counting multiple armies in same sector twice
+ *
+ * World Analysis Algorithm:
+ *   - Complete Map Scan: Evaluates every sector for food and tradegood potential
+ *   - Resource Classification: Different tradegood types receive appropriate valuations
+ *   - Military Assessment: Calculates force distribution efficiency for each nation
+ *   - Statistical Safety: Handles edge cases like empty worlds or no armies
+ *
+ * Notes:
+ *   - Static function - only called internally by AI systems
+ *   - Critical foundation for AI strategic intelligence and decision making
+ *   - Provides objective baseline for comparing relative sector and nation values
+ *   - Performance optimized with register variables for map traversal
+ *   - Results used throughout AI subsystems for strategic evaluation
  */
 static void
 find_avg_sector ()
@@ -1367,6 +1599,115 @@ find_avg_sector ()
 	}
 }
 
+/*
+ * nationrun - Master AI Coordination Controller and Primary Turn Processor
+ *
+ * The central command and control function that orchestrates all AI subsystems
+ * for NPC nations during their turn processing. This function coordinates
+ * economic management, military operations, diplomatic relations, infrastructure
+ * development, magical research, and unit movement in an integrated decision-making
+ * framework.
+ *
+ * This is the master AI controller that calls and coordinates all the previously
+ * documented AI subsystems (economic via n_redes(), military via redomil(),
+ * diplomatic via getdstatus(), and strategic intelligence via find_avg_sector()).
+ *
+ * Algorithm Overview:
+ * 1. System Initialization: Validate nation state and initialize global variables
+ * 2. Scope Determination: Set operational boundaries based on nation type (PC vs NPC)
+ * 3. Intelligence Gathering: Update diplomatic status and world statistics
+ * 4. Communication: Send diplomatic messages to hostile players (debug mode)
+ * 5. Strategic Decision: Determine war/peace status and set military posture
+ * 6. Unit Movement: Execute tactical movement for infantry and leaders/monsters
+ * 7. Status Management: Update NPC activity levels based on military engagement
+ * 8. Economic Policy: Set taxation and charity rates based on nation conditions
+ * 9. Sector Management: Execute intelligent sector redesignation for optimization
+ * 10. Infrastructure: Build fortress improvements in urban areas
+ * 11. Military Reorganization: Optimize force allocation and unit deployment
+ * 12. Magical Research: Purchase new powers and magical capabilities
+ * 13. Military Enhancement: Buy attack/defense bonuses with metal resources
+ * 14. Final Validation: Prevent invalid army statuses and ensure consistency
+ *
+ * Strategic Coordination Patterns:
+ * - Economic decisions inform military capability assessments
+ * - Diplomatic status drives military posture (attack vs defend vs peace)
+ * - World intelligence guides expansion and defensive priorities
+ * - Resource availability constrains magical research and military upgrades
+ * - Military activity levels influence NPC engagement status updates
+ *
+ * Decision-Making Framework:
+ * - Peace Operations: Focus on expansion and resource development (pceattr)
+ * - War Operations: Balance attack/defense based on relative military strength
+ * - Defensive Posture: Prioritize territory protection when outmatched
+ * - Offensive Posture: Pursue territorial expansion when militarily superior
+ *
+ * Resource Management Integration:
+ * - Economic: Taxation policy balances revenue with popularity
+ * - Military: Force allocation optimized through redomil() coordination
+ * - Magical: Jewel expenditure prioritizes military vs civilian powers
+ * - Infrastructure: Gold investment in fortress construction when wealthy
+ *
+ * Parameters:
+ *   None - Operates on global nation state (curntn, country) and world data
+ *
+ * Returns:
+ *   void - Function modifies global game state through integrated AI operations
+ *
+ * Side Effects:
+ *   - Modifies nation economic policy (tax rates, charity levels)
+ *   - Updates military force allocation and army positioning
+ *   - Changes sector designations through intelligent redesignation
+ *   - Builds fortress infrastructure in urban centers
+ *   - Purchases magical powers and military enhancements
+ *   - Sends diplomatic messages to player nations (debug mode)
+ *   - Updates global attractiveness map for movement decisions
+ *   - Modifies army statuses and deployment patterns
+ *   - Adjusts NPC activity levels based on military engagement
+ *
+ * Global Dependencies:
+ *   - curntn: Current nation being processed (economic, military, diplomatic state)
+ *   - country: Current nation index for array access and coordination
+ *   - attr[][]: Global attractiveness map for movement and expansion decisions
+ *   - sct[][]: World sector map for territorial and resource management
+ *   - ntn[]: All nations array for diplomatic and military assessments
+ *   - peace: Global peace/war status variable for strategic coordination
+ *   - stx,sty,endx,endy: Operational boundaries for NPC scope limitation
+ *
+ * AI Subsystem Coordination:
+ *   - getdstatus(): Updates diplomatic relations with all nations
+ *   - find_avg_sector(): Calculates world statistics for strategic intelligence
+ *   - pceattr(): Peaceful expansion attractiveness calculation
+ *   - atkattr(): Offensive targeting attractiveness calculation
+ *   - defattr(): Defensive positioning attractiveness calculation
+ *   - n_redes(): Intelligent economic sector redesignation
+ *   - redomil(): Military force reorganization and optimization
+ *   - n_people(): Population attractiveness modification for movement
+ *   - armymove(): Individual army movement execution
+ *
+ * Testing Notes:
+ *   Category: C (System) - Requires complete game state initialization
+ *   Approach: System testing with full nation, world, and diplomatic state
+ *   Key Tests:
+ *     - Peace mode economic optimization and expansion behavior
+ *     - War mode attack/defense strategic decision making
+ *     - Resource management across economic/military/magical systems
+ *     - AI subsystem coordination and information flow
+ *     - NPC activity level adjustments based on military engagement
+ *     - Boundary condition handling (no resources, no military, isolated nations)
+ *   Dependencies: Complete world map, all nations, diplomatic arrays, magic system
+ *   Mock Requirements: Full game simulation environment with turn processing
+ *   Complexity: Complex - Master AI controller with multi-system coordination
+ *
+ * Notes:
+ *   - Thread safety: Not thread-safe due to extensive global state modification
+ *   - Performance: Computationally intensive due to complete world analysis
+ *   - Memory: Modifies large global arrays and data structures
+ *   - Historical: Core AI design dating to original game architecture
+ *   - Integration: Central coordination point for all AI subsystem interactions
+ *   - Magic Number Usage: Contains numerous hardcoded thresholds for AI decisions
+ *   - Debug Support: Includes comprehensive debug output for AI behavior analysis
+ *   - Error Handling: Multiple check() calls ensure data integrity throughout
+ */
 void
 nationrun()
 {
@@ -1657,7 +1998,84 @@ nationrun()
 	}
 }
 
-/* dont allow npcs to trespass onto other nations land */
+/*
+ * n_trespass - Diplomatic Trespass Prevention for AI Movement
+ *
+ * Marks sectors as undesirable (attr[x][y]=1) to prevent NPCs from moving
+ * into territories owned by other nations when not at war. This function
+ * implements diplomatic respect for territorial sovereignty, ensuring NPCs
+ * avoid violating neutral or friendly territory unless in active warfare.
+ *
+ * The function enforces diplomatic movement restrictions by identifying
+ * sectors that belong to other nations and are not appropriate for entry
+ * based on current diplomatic relationships and territorial proximity rules.
+ *
+ * Algorithm:
+ * 1. Scan all sectors within NPC operational boundaries (stx-endx, sty-endy)
+ * 2. For each sector, check multiple diplomatic and territorial conditions
+ * 3. Mark sectors as undesirable (attr=1) if they violate diplomatic rules
+ * 4. Allow movement only into unowned sectors, own territory, or war targets
+ *
+ * Diplomatic Conditions for Trespass Prevention:
+ * - Sector must be owned by another nation (not country, not unowned)
+ * - Sector must be beyond immediate capitol vicinity (>2 sectors away)
+ * - Current nation must not be at war with sector owner
+ * - Sector owner must not be at war with current nation
+ * - Diplomatic relationship must be worse than ALLIED (not allied nations)
+ *
+ * Territorial Proximity Rules:
+ * - Sectors within 2 squares of capitol are exempt (diplomatic immunity zone)
+ * - This allows passage near enemy capitols without being blocked by trespass
+ * - Prevents NPCs from being completely unable to approach enemy territory
+ *
+ * Diplomatic Relationship Matrix:
+ * - ALLIED: Movement allowed (relationship <= ALLIED exempted)
+ * - NEUTRAL/HOSTILE: Movement blocked (ALLIED < relationship < WAR)
+ * - WAR: Movement allowed (relationship >= WAR exempted)
+ * - This creates proper diplomatic behavior respecting neutrality
+ *
+ * Parameters:
+ *   None - Uses global state for current nation and diplomatic relationships
+ *
+ * Returns:
+ *   void - Modifies global attractiveness map attr[x][y]
+ *
+ * Side Effects:
+ *   - Sets attr[x][y]=1 for diplomatically inappropriate sectors
+ *   - Prevents movement into neutral/hostile but non-war territory
+ *   - Preserves diplomatic relationships by avoiding territorial violations
+ *   - Creates movement corridors around enemy capitols for strategic access
+ *
+ * Global Dependencies:
+ *   - stx,sty,endx,endy: NPC operational boundaries for sector scanning
+ *   - sct[][]: World sector map for ownership and territorial information
+ *   - attr[][]: Global attractiveness map modified to prevent movement
+ *   - country: Current nation index for diplomatic relationship lookup
+ *   - curntn: Current nation structure for capitol location access
+ *   - ntn[]: All nations array for bilateral diplomatic status checking
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires diplomatic arrays and world map
+ *   Approach: Integration testing with nations, diplomatic status, and sectors
+ *   Key Tests:
+ *     - Allied territory movement (should be allowed)
+ *     - Neutral territory avoidance (should be blocked)
+ *     - War target accessibility (should be allowed)
+ *     - Capitol proximity exemption (movement near enemy capitols)
+ *     - Bilateral diplomatic status handling (both directions checked)
+ *     - Unowned sector accessibility (should remain unrestricted)
+ *   Dependencies: Complete diplomatic arrays, nation structures, world sectors
+ *   Mock Requirements: Nations with various diplomatic relationships and territories
+ *   Complexity: Moderate - Diplomatic relationship matrix with territorial rules
+ *
+ * Notes:
+ *   - Thread safety: Read-only access to diplomatic data, modifies only attr array
+ *   - Performance: O(sectors) scan within NPC operational boundaries
+ *   - Diplomatic logic: Implements proper diplomatic territorial respect
+ *   - Strategic balance: Capitol proximity rule prevents diplomatic deadlocks
+ *   - Bilateral checking: Ensures both nations agree on diplomatic status
+ *   - Integration: Called by defattr(), atkattr(), and pceattr() coordinators
+ */
 void
 n_trespass()
 {
@@ -1674,7 +2092,87 @@ n_trespass()
 	}
 }
 
-/* you are too far from capitol */
+/*
+ * n_toofar - Capitol Distance Limitation for NPC Operational Scope
+ *
+ * Marks sectors as undesirable (attr[x][y]=1) that fall outside the NPC's
+ * operational boundaries, enforcing distance limitations from the nation's
+ * capitol. This function implements strategic range constraints that prevent
+ * NPCs from overextending their operations beyond manageable distances.
+ *
+ * The function creates a movement restriction zone by marking all sectors
+ * outside the pre-calculated operational boundaries (stx-endx, sty-endy)
+ * as undesirable, ensuring NPCs focus their activities within a reasonable
+ * geographic scope around their capitol.
+ *
+ * Algorithm:
+ * 1. Scan every sector on the entire world map (0-MAPX, 0-MAPY)
+ * 2. Compare each sector against operational boundaries
+ * 3. Mark sectors outside boundaries as undesirable (attr=1)
+ * 4. Leave sectors within boundaries unmodified for other attractiveness functions
+ *
+ * Operational Boundary Logic:
+ * - Boundaries are set in nationrun() based on NPCTOOFAR constant
+ * - PC nations: Use entire world map (stx=sty=0, endx=MAPX, endy=MAPY)
+ * - NPC nations: Limited scope around capitol (NPCTOOFAR distance)
+ * - This creates focused AI behavior preventing scattered expansion
+ *
+ * Strategic Purpose:
+ * - Concentrates NPC activity around their power base (capitol)
+ * - Prevents NPCs from pursuing unrealistic long-distance operations
+ * - Creates regional AI behavior rather than global scope
+ * - Balances game by limiting NPC expansion range
+ *
+ * Performance Considerations:
+ * - Scans entire world map (MAPX * MAPY sectors)
+ * - Simple boundary check operation for each sector
+ * - Sets attr=1 for majority of sectors (outside boundaries)
+ * - Most expensive attractiveness function due to global scope
+ *
+ * Parameters:
+ *   None - Uses global operational boundaries set by nationrun()
+ *
+ * Returns:
+ *   void - Modifies global attractiveness map attr[x][y]
+ *
+ * Side Effects:
+ *   - Sets attr[x][y]=1 for all sectors outside operational boundaries
+ *   - Effectively restricts NPC movement and expansion to regional scope
+ *   - Creates focused AI behavior around capitol region
+ *   - Prevents NPCs from pursuing distant opportunities
+ *
+ * Global Dependencies:
+ *   - stx,sty,endx,endy: Operational boundaries set in nationrun()
+ *   - attr[][]: Global attractiveness map modified for distance restriction
+ *   - MAPX,MAPY: World map dimensions for complete sector scanning
+ *
+ * Integration with Operational Boundaries:
+ *   - nationrun() calculates boundaries based on capitol location and NPCTOOFAR
+ *   - PC nations get unlimited scope (entire world)
+ *   - NPC nations get limited scope (NPCTOOFAR squares from capitol)
+ *   - Boundaries account for world edge conditions and map limits
+ *
+ * Testing Notes:
+ *   Category: A (Unit) - Simple boundary checking with global variables
+ *   Approach: Unit testing with various boundary configurations
+ *   Key Tests:
+ *     - PC nation unlimited scope (no sectors marked undesirable)
+ *     - NPC nation limited scope (sectors outside range marked)
+ *     - World edge boundary conditions (prevent array overflow)
+ *     - Capitol-centered operational area validation
+ *     - NPCTOOFAR distance calculation accuracy
+ *   Dependencies: Global boundary variables and world map dimensions
+ *   Mock Requirements: Operational boundaries (stx,sty,endx,endy)
+ *   Complexity: Simple - Straightforward boundary checking algorithm
+ *
+ * Notes:
+ *   - Thread safety: Read-only access to boundaries, modifies only attr array
+ *   - Performance: O(MAPX*MAPY) global scan - most expensive attractiveness function
+ *   - Strategic design: Regional focus prevents NPC overextension
+ *   - Game balance: Limits NPC expansion range for manageable AI behavior
+ *   - Implementation: Simple but globally comprehensive boundary enforcement
+ *   - Integration: Called by all attractiveness coordinators (defattr, atkattr, pceattr)
+ */
 void
 n_toofar()
 {
@@ -1685,7 +2183,108 @@ n_toofar()
 	}
 }
 
-/* take undefended land */
+/*
+ * n_unowned - Territorial Expansion and Resource Acquisition Attractiveness
+ *
+ * Increases attractiveness (attr[x][y]) for sectors that represent valuable
+ * expansion opportunities, focusing on unowned territory, resource-rich areas,
+ * and food production potential. This function implements the core territorial
+ * expansion logic that drives AI nation growth and resource acquisition.
+ *
+ * The function evaluates sectors based on ownership status, resource wealth,
+ * trade good availability, food production capacity, and strategic value,
+ * creating attractiveness gradients that guide AI expansion decisions toward
+ * the most valuable territories.
+ *
+ * Algorithm:
+ * 1. Capitol Region Priority: Massively boost unowned sectors near capitol (±4 squares)
+ * 2. Resource Evaluation: Assess known sectors for trade goods and resource values
+ * 3. Unknown Sector Estimation: Use world averages for unexplored territories
+ * 4. Ownership Assessment: Prioritize unowned sectors and nomad territories
+ * 5. Food Production: Add food-based attractiveness for economic sustainability
+ * 6. Habitability Adjustment: Reduce attractiveness for uninhabitable terrain
+ *
+ * Capitol Region Expansion (Priority Zone):
+ * - Scans 9x9 grid around capitol (capx±4, capy±4)
+ * - Adds +450 attractiveness to unowned sectors near capitol
+ * - Creates strong preference for consolidating territory around power base
+ * - Ensures secure territorial foundation before distant expansion
+ *
+ * Resource-Based Attractiveness Calculation:
+ * - Metal trade goods: +500 attractiveness (highest priority resources)
+ * - Jewel trade goods: +500 attractiveness (magical/luxury resources)
+ * - Other trade goods: +300 attractiveness (standard valuable resources)
+ * - No trade goods: +0 from this category (basic territories)
+ *
+ * Visibility and Intelligence Handling:
+ * - Known sectors: Use actual resource and food data for precise evaluation
+ * - Unknown sectors: Use world averages (Avg_tradegood, Avg_food) for estimation
+ * - This allows strategic planning even with incomplete reconnaissance
+ *
+ * Territorial Ownership Priorities:
+ * - Unowned sectors (owner=0): +300 attractiveness (primary expansion targets)
+ * - Nomad-controlled sectors: +100 attractiveness (weak opposition territories)
+ * - Owned sectors: +0 from ownership (may have other attractiveness sources)
+ *
+ * Food Production Integration:
+ * - Known sectors: +50 * actual food production value
+ * - Unknown sectors: +50 * estimated average food production
+ * - Ensures expansion considers economic sustainability and population support
+ *
+ * Habitability Penalty:
+ * - Uninhabitable terrain: Divide total attractiveness by 5 (80% reduction)
+ * - Habitable terrain: No penalty applied
+ * - Balances resource value against settlement viability
+ *
+ * Parameters:
+ *   None - Uses global nation state and world map for evaluation
+ *
+ * Returns:
+ *   void - Modifies global attractiveness map attr[x][y]
+ *
+ * Side Effects:
+ *   - Increases attr[x][y] for valuable expansion territories
+ *   - Creates attractiveness gradients favoring resource-rich areas
+ *   - Prioritizes capitol region consolidation over distant expansion
+ *   - Balances immediate territorial gains with long-term economic value
+ *
+ * Global Dependencies:
+ *   - curntn: Current nation for capitol location and visibility calculations
+ *   - country: Nation index for sector visibility and food production queries
+ *   - attr[][]: Global attractiveness map modified with expansion priorities
+ *   - sct[][]: World sector map for ownership, resources, and terrain data
+ *   - ntn[]: All nations array for nomad territory identification
+ *   - stx,sty,endx,endy: Operational boundaries for expansion scope
+ *   - Avg_tradegood, Avg_food: World statistics for unknown sector estimation
+ *
+ * Resource Evaluation Functions:
+ *   - SEE_SECTOR(): Determines if sector is visible for accurate resource assessment
+ *   - tofood(): Calculates food production value for economic planning
+ *   - is_habitable(): Checks terrain suitability for settlement
+ *   - ONMAP(): Validates coordinate bounds for capitol region scanning
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires world map, nations, and statistics
+ *   Approach: Integration testing with various world configurations
+ *   Key Tests:
+ *     - Capitol region unowned sector prioritization (+450 bonus)
+ *     - Resource-rich sector attractiveness (metal/jewels +500)
+ *     - Unknown sector estimation using world averages
+ *     - Unowned vs nomad vs owned territory preference ranking
+ *     - Food production attractiveness calculation accuracy
+ *     - Habitability penalty application (÷5 for uninhabitable)
+ *   Dependencies: World map, nation structures, visibility system, world statistics
+ *   Mock Requirements: Sectors with various resources, ownership, and terrain types
+ *   Complexity: Moderate - Multi-factor territorial evaluation with resource analysis
+ *
+ * Notes:
+ *   - Thread safety: Read-only world access, modifies only attr array
+ *   - Performance: O(operational_area) scan with resource evaluation per sector
+ *   - Strategic design: Balances immediate territorial gains with resource value
+ *   - Economic integration: Food production ensures sustainable expansion
+ *   - Intelligence handling: Graceful degradation for unexplored territories
+ *   - XENIX compatibility: Special integer division handling for older systems
+ */
 void
 n_unowned()
 {
@@ -1744,6 +2343,101 @@ n_unowned()
 }
 
 void
+/*
+ * n_defend - Defensive Positioning Attractiveness Against Specific Enemy Nations
+ *
+ * Calculates and applies defensive attractiveness modifiers based on the presence
+ * and positioning of armies from a specific threatening nation. This function
+ * implements tactical defensive positioning by increasing attractiveness near
+ * enemy forces, defensive terrain, population centers, and the nation's capitol.
+ *
+ * The function creates defensive positioning incentives that guide AI armies
+ * toward strategically important locations for defending against specific threats,
+ * balancing immediate tactical response with strategic territorial protection.
+ *
+ * Algorithm:
+ * 1. Identify enemy army positions and add attractiveness near their locations
+ * 2. Add high attractiveness bonus around own capitol for critical defense
+ * 3. Apply terrain-based defensive bonuses for tactical advantage
+ * 4. Add population-based attractiveness for civilian protection priorities
+ *
+ * Enemy Force Response Logic:
+ * - If enemy armies are visible: Add attractiveness equal to 1/10th army size
+ * - If enemy armies are hidden: Use average army size estimates per sector
+ * - Duplication prevention: Only count average once per sector with multiple armies
+ * - Direct threat response: Higher attractiveness where enemy forces are present
+ *
+ * Capitol Defense Priority:
+ * - +80 attractiveness to all sectors within 1 square of capitol (3x3 grid)
+ * - Creates defensive perimeter around most critical national asset
+ * - Ensures concentrated defense of political and economic center
+ * - Takes priority over other defensive considerations
+ *
+ * Defensive Terrain Utilization:
+ * - Plains (movecost=1): +50 attractiveness for mobility and formations
+ * - Light terrain (movecost≤3): +20 attractiveness for moderate defense
+ * - Difficult terrain (movecost≤5): +10 attractiveness for natural barriers
+ * - Terrain bonuses apply throughout operational area for tactical positioning
+ *
+ * Population Protection Strategy:
+ * - Cities get +50 attractiveness bonus for civilian protection
+ * - Population distribution: 3000 points spread proportionally across civilians
+ * - Higher civilian populations get proportionally higher attractiveness
+ * - Balances military strategy with civilian protection responsibilities
+ *
+ * Parameters:
+ *   natn - Target enemy nation index to defend against (0-MAXNTN)
+ *        Used to locate threatening armies and assess enemy capabilities
+ *
+ * Returns:
+ *   void - Modifies global attractiveness map attr[x][y] with defensive bonuses
+ *
+ * Side Effects:
+ *   - Increases attr[x][y] near enemy army positions for tactical response
+ *   - Adds +80 attractiveness around capitol for critical asset protection
+ *   - Applies terrain-based bonuses throughout operational area
+ *   - Adds population-based attractiveness for civilian protection
+ *   - Creates defensive positioning patterns against specific enemy threats
+ *
+ * Global Dependencies:
+ *   - ntn[]: All nations array for enemy army locations and statistics
+ *   - attr[][]: Global attractiveness map modified with defensive bonuses
+ *   - sct[][]: World sector map for terrain, ownership, and population data
+ *   - country: Current nation index for ownership and territorial checks
+ *   - curntn: Current nation structure for capitol location and civilian count
+ *   - stx,sty,endx,endy: NPC operational boundaries for area scanning
+ *   - movecost[][]: Terrain movement costs for defensive terrain evaluation
+ *   - Avg_soldiers[]: Average army sizes for intelligence-based planning
+ *   - COUNT_ARMIES(): Macro for determining army visibility status
+ *
+ * Intelligence Integration:
+ * - Visible armies: Use exact soldier counts for precise threat assessment
+ * - Hidden armies: Use intelligence averages for estimated threat response
+ * - Sector deduplication: Prevents multiple counting in sectors with many armies
+ * - Adaptive planning: Adjusts defensive strategy based on available information
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires nations, armies, and world map data
+ *   Approach: Integration testing with enemy armies and defensive scenarios
+ *   Key Tests:
+ *     - Enemy army proximity response (attractiveness increases near threats)
+ *     - Capitol defense prioritization (+80 bonus around capitol)
+ *     - Terrain-based defensive positioning (higher values for better terrain)
+ *     - Population protection priorities (cities and civilian concentrations)
+ *     - Intelligence handling (visible vs hidden army responses)
+ *     - Sector deduplication (multiple armies per sector handled correctly)
+ *   Dependencies: Nations with armies, world sectors, intelligence systems
+ *   Mock Requirements: Enemy armies at various locations and visibility states
+ *   Complexity: Moderate - Multi-factor defensive strategy with threat assessment
+ *
+ * Notes:
+ *   - Thread safety: Read-only access to enemy data, modifies only attr array
+ *   - Performance: O(armies + sectors) for enemy analysis and terrain evaluation
+ *   - Strategic balance: Balances immediate threat response with territorial defense
+ *   - Tactical integration: Coordinates with other attractiveness functions for strategy
+ *   - Intelligence adaptation: Gracefully handles incomplete enemy information
+ *   - Defensive doctrine: Implements layered defense with capitol protection priority
+ */
 n_defend(natn)
 register short natn;
 {
@@ -1803,6 +2497,104 @@ register short natn;
 	}
 }
 
+/*
+ * n_attack - Offensive Target Prioritization for Military Campaigns
+ *
+ * Calculates and applies offensive attractiveness modifiers to identify and
+ * prioritize enemy targets based on their strategic value and defensive weakness.
+ * This function implements intelligent target selection by evaluating enemy
+ * cities, comparing defensive strength against available forces, and adjusting
+ * for intelligence limitations in combat planning.
+ *
+ * The function creates offensive positioning incentives that guide AI armies
+ * toward valuable but vulnerable enemy targets, balancing strategic value
+ * against realistic chances of success in combat operations.
+ *
+ * Algorithm:
+ * 1. Scan all sectors owned by target enemy nation within operational boundaries
+ * 2. Identify high-value targets (cities, capitols, towns) using intelligence
+ * 3. Calculate defender-to-attacker ratios for tactical feasibility assessment
+ * 4. Apply attractiveness bonuses based on target value and combat odds
+ * 5. Handle intelligence limitations with conservative estimates and fallback values
+ *
+ * Target Identification Logic:
+ * - Requires successful intelligence: SEE_CITIES(nation,country) must be true
+ * - High-value targets: DCITY, DCAPITOL, DTOWN designations prioritized
+ * - Intelligence failure: All enemy sectors get UNS_CITY_VALUE as potential targets
+ * - Strategic focus: Cities provide maximum economic and political value
+ *
+ * Combat Feasibility Assessment:
+ * - Visible defenders: Use exact enemy soldier counts via solds_in_sector()
+ * - Hidden defenders: Use intelligence estimates via Avg_soldiers[] array
+ * - Attacker strength: Count friendly armies within 1 sector of target
+ * - Success threshold: Attackers must have >1.5x defender strength (3*solds > defenders*2)
+ *
+ * Attractiveness Scaling:
+ * - Perfect intelligence + favorable odds: +500 attractiveness (maximum priority)
+ * - Limited intelligence + favorable odds: +400 attractiveness (high priority)
+ * - Unknown targets (intelligence failure): +UNS_CITY_VALUE (exploration value)
+ * - Unfavorable odds: No bonus applied (realistic tactical assessment)
+ *
+ * Intelligence Integration:
+ * - COUNT_ARMIES(): Determines if exact enemy force counts are available
+ * - SEE_CITIES(): Controls whether city locations and types are visible
+ * - Avg_soldiers[]: Provides fallback estimates when exact counts unavailable
+ * - Graceful degradation: Maintains functionality with incomplete information
+ *
+ * Parameters:
+ *   nation - Target enemy nation index to attack (0-MAXNTN)
+ *          Used to identify enemy territories and assess defensive capabilities
+ *
+ * Returns:
+ *   void - Modifies global attractiveness map attr[x][y] with offensive bonuses
+ *
+ * Side Effects:
+ *   - Increases attr[x][y] for valuable and vulnerable enemy targets
+ *   - Prioritizes cities and towns over regular territory
+ *   - Applies tactical realism through defender-to-attacker ratio analysis
+ *   - Adjusts for intelligence quality in target assessment
+ *   - Creates offensive movement patterns toward optimal targets
+ *
+ * Global Dependencies:
+ *   - ntn[]: All nations array for enemy territory and army information
+ *   - attr[][]: Global attractiveness map modified with offensive bonuses
+ *   - sct[][]: World sector map for ownership and city designation data
+ *   - country: Current nation index for friendly force calculations
+ *   - stx,sty,endx,endy: NPC operational boundaries for target scanning
+ *   - Avg_soldiers[]: Intelligence estimates for enemy force strength
+ *   - SEE_CITIES(): Intelligence macro for city visibility assessment
+ *   - COUNT_ARMIES(): Intelligence macro for force count availability
+ *   - solds_in_sector(): Function for exact enemy defender counts
+ *   - UNS_CITY_VALUE: Constant for unknown target value estimation
+ *
+ * Tactical Decision Framework:
+ * - Strategic value: Cities provide maximum political and economic impact
+ * - Tactical feasibility: Combat odds must favor attackers for target prioritization
+ * - Intelligence adaptation: Adjusts strategy based on available reconnaissance
+ * - Force concentration: Considers nearby friendly armies for realistic combat assessment
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires nations, armies, intelligence, and world map
+ *   Approach: Integration testing with enemy territories and combat scenarios
+ *   Key Tests:
+ *     - City targeting prioritization (high attractiveness for valuable targets)
+ *     - Combat odds calculation (favorable ratios increase attractiveness)
+ *     - Intelligence handling (visible vs hidden enemy forces)
+ *     - Force ratio thresholds (>1.5x attacker advantage required)
+ *     - Fallback targeting (UNS_CITY_VALUE for unknown targets)
+ *     - Multi-army coordination (friendly forces within attack range)
+ *   Dependencies: Nations with cities, armies, intelligence systems, combat mechanics
+ *   Mock Requirements: Enemy territories with varying defenses and intelligence levels
+ *   Complexity: Moderate - Multi-factor offensive strategy with intelligence integration
+ *
+ * Notes:
+ *   - Thread safety: Read-only access to enemy data, modifies only attr array
+ *   - Performance: O(sectors + armies) for target analysis and force calculations
+ *   - Strategic realism: Only targets achievable objectives based on available forces
+ *   - Intelligence dependence: Effectiveness scales with reconnaissance quality
+ *   - Tactical integration: Coordinates with other attractiveness functions for strategy
+ *   - Combat doctrine: Implements combined-arms coordination with force concentration
+ */
 void
 n_attack(nation)
 register short nation;
@@ -1841,7 +2633,101 @@ register short nation;
 	}
 }
 
-/* +100 if undefended sectors of nation, +60 if not */
+/*
+ * n_undefended - Undefended Sector Targeting for Opportunistic Expansion
+ *
+ * Calculates and applies attractiveness modifiers to prioritize enemy sectors
+ * based on their defensive vulnerability and strategic accessibility. This
+ * function implements opportunistic target selection by identifying weakly
+ * defended or completely undefended enemy territories suitable for rapid
+ * conquest with minimal military resistance.
+ *
+ * The function creates tactical opportunities by evaluating enemy territorial
+ * vulnerabilities, distinguishing between undefended sectors (easy targets),
+ * lightly defended areas (moderate difficulty), and uninhabitable regions
+ * (low strategic value but potential staging areas).
+ *
+ * Algorithm:
+ * 1. Scan all sectors owned by target enemy nation within operational boundaries
+ * 2. Evaluate habitability and defensive presence for each enemy sector
+ * 3. Apply attractiveness bonuses based on vulnerability and strategic value
+ * 4. Prioritize completely undefended sectors for immediate opportunity
+ * 5. Provide moderate attractiveness for defended but accessible targets
+ *
+ * Vulnerability Assessment Logic:
+ * - Uninhabitable sectors: +30 attractiveness (low value, staging areas)
+ * - Undefended habitable sectors: +100 attractiveness (maximum opportunity)
+ * - Defended habitable sectors: +60 attractiveness (moderate targets)
+ * - Evaluation based on enemy occupation and territorial suitability
+ *
+ * Defensive Presence Evaluation:
+ * - occ[x][y]==0: No enemy military presence (undefended)
+ * - occ[x][y]>0: Enemy forces present (defended but potentially vulnerable)
+ * - is_habitable(): Determines long-term strategic value of territory
+ * - Focus on sectors with tactical and strategic acquisition potential
+ *
+ * Strategic Value Hierarchy:
+ * - Undefended habitable: Highest priority (+100) - immediate conquest opportunity
+ * - Defended habitable: Moderate priority (+60) - achievable with effort
+ * - Uninhabitable areas: Low priority (+30) - staging or resource value only
+ * - Systematic prioritization creates realistic expansion targeting
+ *
+ * Tactical Integration:
+ * - Coordinates with n_attack() for high-value city targeting
+ * - Complements n_defend() by identifying expansion vs consolidation balance
+ * - Supports territorial acquisition strategies through vulnerability exploitation
+ * - Creates opportunistic movement patterns for efficient conquest
+ *
+ * Parameters:
+ *   nation - Target enemy nation index for vulnerability assessment (0-MAXNTN)
+ *          Used to identify enemy territories and evaluate defensive weaknesses
+ *
+ * Returns:
+ *   void - Modifies global attractiveness map attr[x][y] with opportunity bonuses
+ *
+ * Side Effects:
+ *   - Increases attr[x][y] for vulnerable enemy territories
+ *   - Prioritizes undefended sectors for immediate conquest opportunities
+ *   - Creates expansion patterns toward accessible enemy holdings
+ *   - Balances territorial acquisition with strategic value assessment
+ *   - Guides opportunistic military movements toward weak points
+ *
+ * Global Dependencies:
+ *   - sct[][]: World sector map for enemy territory ownership identification
+ *   - attr[][]: Global attractiveness map modified with opportunity bonuses
+ *   - occ[][]: Military occupation map for defensive presence assessment
+ *   - stx,sty,endx,endy: NPC operational boundaries for target area scanning
+ *   - is_habitable(): Function for territorial strategic value evaluation
+ *   - nation: Target enemy nation parameter for territory identification
+ *
+ * Opportunistic Strategy Framework:
+ * - Vulnerability exploitation: Targets sectors with minimal resistance
+ * - Efficient expansion: Prioritizes low-cost territorial acquisition
+ * - Strategic balance: Considers long-term value alongside immediate opportunity
+ * - Tactical realism: Focuses on achievable objectives rather than costly targets
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires nations, territories, and occupation data
+ *   Approach: Integration testing with enemy territories and defense scenarios
+ *   Key Tests:
+ *     - Undefended sector prioritization (+100 attractiveness verification)
+ *     - Defended sector evaluation (+60 attractiveness for occupied areas)
+ *     - Uninhabitable area handling (+30 for staging area potential)
+ *     - Territory ownership validation (only enemy nation sectors targeted)
+ *     - Habitability assessment (strategic value vs tactical opportunity)
+ *     - Occupation status accuracy (defended vs undefended classification)
+ *   Dependencies: Nations with territories, occupation data, habitability system
+ *   Mock Requirements: Enemy territories with varying defense levels and habitability
+ *   Complexity: Simple - Straightforward vulnerability assessment with clear priorities
+ *
+ * Notes:
+ *   - Thread safety: Read-only access to territory data, modifies only attr array
+ *   - Performance: O(sectors) scan within operational boundaries
+ *   - Strategic focus: Opportunistic expansion through vulnerability exploitation
+ *   - Tactical efficiency: Minimizes military costs through intelligent target selection
+ *   - Integration: Coordinates with other attractiveness functions for balanced strategy
+ *   - Expansion doctrine: Implements efficient territorial acquisition through weakness targeting
+ */
 void
 n_undefended(int nation )
 {
@@ -1857,7 +2743,101 @@ n_undefended(int nation )
 	}
 }
 
-/* add 1/2 of people in owned sectors for small armies */
+/*
+ * n_people - Population-Based Attractiveness Modification for Movement Decisions
+ *
+ * Modifies attractiveness values based on civilian population density within
+ * the nation's own territory, implementing population-centric military strategy
+ * that can either attract forces toward populated areas (for protection) or
+ * away from them (to avoid civilian casualties or for strategic repositioning).
+ *
+ * This function provides flexible population-based movement influence that can
+ * be applied in different strategic contexts - concentrating forces near
+ * civilians during defensive operations or dispersing them during offensive
+ * campaigns to protect non-combatants from retaliation.
+ *
+ * Algorithm:
+ * 1. Scan all sectors within operational boundaries owned by current nation
+ * 2. Evaluate habitability and civilian population for each owned sector
+ * 3. Apply population-based attractiveness modification (addition or subtraction)
+ * 4. Scale influence by population density (1/4 of civilian count)
+ * 5. Operate only on habitable sectors suitable for sustained civilian presence
+ *
+ * Population Influence Logic:
+ * - doadd=TRUE: +population/4 attractiveness (protection/support strategy)
+ * - doadd=FALSE: -population/4 attractiveness (dispersal/avoidance strategy)
+ * - Only habitable sectors: is_habitable() ensures realistic civilian presence
+ * - Proportional scaling: Higher populations create stronger influence
+ *
+ * Strategic Application Contexts:
+ * - Defensive Mode (doadd=TRUE): Concentrate forces near civilians for protection
+ * - Offensive Mode (doadd=FALSE): Disperse forces to protect civilians from retaliation
+ * - Garrison Strategy (doadd=TRUE): Position troops near population centers
+ * - Expeditionary Strategy (doadd=FALSE): Minimize civilian exposure during campaigns
+ *
+ * Population Protection Framework:
+ * - Civilian safety: Military positioning considers non-combatant welfare
+ * - Strategic flexibility: Same function supports opposite tactical approaches
+ * - Realistic constraints: Only applies to habitable sectors with actual populations
+ * - Proportional response: Military influence scales with civilian density
+ *
+ * Tactical Integration:
+ * - Coordinates with n_defend() for civilian protection during defensive operations
+ * - Balances with n_attack() to minimize civilian exposure during offensive campaigns
+ * - Supports garrison vs expeditionary force allocation decisions
+ * - Enables population-centric military strategy implementation
+ *
+ * Parameters:
+ *   doadd - Strategic mode flag controlling population influence direction
+ *         TRUE: Increase attractiveness near populations (protection strategy)
+ *         FALSE: Decrease attractiveness near populations (dispersal strategy)
+ *
+ * Returns:
+ *   void - Modifies global attractiveness map attr[x][y] with population influence
+ *
+ * Side Effects:
+ *   - Increases or decreases attr[x][y] based on civilian population density
+ *   - Applies influence only to nation's own habitable territories
+ *   - Creates population-centric movement patterns for military strategy
+ *   - Balances military objectives with civilian protection considerations
+ *   - Enables flexible strategic doctrine implementation through parameter control
+ *
+ * Global Dependencies:
+ *   - sct[][]: World sector map for territory ownership and population data
+ *   - attr[][]: Global attractiveness map modified with population influence
+ *   - country: Current nation index for territorial ownership verification
+ *   - stx,sty,endx,endy: NPC operational boundaries for area scanning
+ *   - is_habitable(): Function for civilian habitability assessment
+ *   - sct[x][y].people: Civilian population count for influence scaling
+ *
+ * Strategic Doctrine Framework:
+ * - Protection Strategy: Military concentration near civilian populations
+ * - Dispersal Strategy: Military dispersion to protect civilian areas
+ * - Flexible Application: Same function supports different strategic approaches
+ * - Civilian Consideration: Military strategy incorporates non-combatant welfare
+ *
+ * Testing Notes:
+ *   Category: A (Unit) - Simple population-based calculation with clear inputs
+ *   Approach: Unit testing with varying population densities and doadd modes
+ *   Key Tests:
+ *     - Population scaling accuracy (attractiveness = population/4)
+ *     - Addition mode verification (doadd=TRUE increases attractiveness)
+ *     - Subtraction mode verification (doadd=FALSE decreases attractiveness)
+ *     - Habitability filtering (only habitable sectors affected)
+ *     - Territory ownership validation (only own nation sectors modified)
+ *     - Zero population handling (no effect on unpopulated areas)
+ *   Dependencies: Sector data with population and habitability information
+ *   Mock Requirements: Territories with varying population densities
+ *   Complexity: Simple - Straightforward population-based scaling with mode control
+ *
+ * Notes:
+ *   - Thread safety: Read-only access to population data, modifies only attr array
+ *   - Performance: O(sectors) scan within operational boundaries
+ *   - Strategic flexibility: Supports both concentration and dispersal doctrines
+ *   - Civilian focus: Incorporates non-combatant considerations into military strategy
+ *   - Tactical realism: Population influence reflects real-world military constraints
+ *   - Integration: Coordinates with other attractiveness functions for balanced strategy
+ */
 void
 n_people(doadd)
 int doadd;	/* TRUE if adding, FALSE if subtracting */
@@ -1873,7 +2853,101 @@ int doadd;	/* TRUE if adding, FALSE if subtracting */
 	}
 }
 
-/* +60 if between two capitols */
+/*
+ * n_between - Strategic Blocking Position Calculation for Territorial Control
+ *
+ * Calculates and applies attractiveness bonuses to sectors positioned between
+ * the current nation's capitol and an enemy nation's capitol, implementing
+ * strategic territorial control through geographic chokepoint identification
+ * and military positioning along critical communication and supply lines.
+ *
+ * This function identifies and prioritizes positions that can disrupt enemy
+ * operations, control strategic corridors, and establish territorial buffer
+ * zones between competing national power centers, creating tactical advantages
+ * through geographic positioning and strategic depth.
+ *
+ * Algorithm:
+ * 1. Verify enemy capitol visibility through intelligence systems
+ * 2. Calculate rectangular corridor between own and enemy capitol coordinates
+ * 3. Determine coordinate boundaries for strategic corridor identification
+ * 4. Apply uniform attractiveness bonus throughout the strategic corridor
+ * 5. Create territorial control incentives along critical axis of competition
+ *
+ * Strategic Corridor Logic:
+ * - Intelligence prerequisite: SEE_CITIES(nation,country) must be true
+ * - Rectangular corridor: Defined by capitol coordinate boundaries
+ * - Coordinate calculation: min/max values create strategic rectangle
+ * - Uniform bonus: +60 attractiveness throughout entire corridor area
+ *
+ * Capitol Coordinate Analysis:
+ * - X-axis boundaries: min(own_capx, enemy_capx) to max(own_capx, enemy_capx)
+ * - Y-axis boundaries: min(own_capy, enemy_capy) to max(own_capy, enemy_capy)
+ * - Rectangular corridor: All sectors within coordinate boundaries
+ * - Strategic positioning: Controls communication lines between power centers
+ *
+ * Territorial Control Strategy:
+ * - Chokepoint identification: Strategic positions between competing nations
+ * - Communication disruption: Positions along critical supply and command routes
+ * - Buffer zone creation: Territorial depth between national power centers
+ * - Strategic initiative: Proactive positioning rather than reactive defense
+ *
+ * Intelligence Integration:
+ * - Enemy capitol visibility: Required for strategic corridor calculation
+ * - Intelligence failure: Function returns immediately without effect
+ * - Graceful degradation: No strategic positioning when intelligence unavailable
+ * - Realistic constraints: Strategy depends on reconnaissance capabilities
+ *
+ * Parameters:
+ *   nation - Target enemy nation index for corridor calculation (0-MAXNTN)
+ *          Used to locate enemy capitol and calculate strategic positioning
+ *
+ * Returns:
+ *   void - Modifies global attractiveness map attr[x][y] with corridor bonuses
+ *
+ * Side Effects:
+ *   - Increases attr[x][y] by +60 for all sectors in strategic corridor
+ *   - Creates uniform attractiveness throughout capitol-to-capitol rectangle
+ *   - Establishes territorial control priorities along strategic axis
+ *   - Returns immediately if enemy capitol intelligence unavailable
+ *   - Generates strategic positioning patterns for territorial competition
+ *
+ * Global Dependencies:
+ *   - ntn[]: All nations array for enemy capitol coordinate access
+ *   - curntn: Current nation structure for own capitol coordinates
+ *   - attr[][]: Global attractiveness map modified with corridor bonuses
+ *   - SEE_CITIES(): Intelligence macro for enemy capitol visibility assessment
+ *   - ONMAP(): Boundary validation macro for coordinate safety
+ *   - ntn[nation].capx/capy: Enemy capitol coordinates for corridor calculation
+ *   - curntn->capx/capy: Own capitol coordinates for corridor calculation
+ *
+ * Strategic Positioning Framework:
+ * - Geographic advantage: Utilizes terrain and positioning for strategic control
+ * - Territorial competition: Establishes influence along critical national axes
+ * - Proactive strategy: Positions forces before conflicts escalate
+ * - Communication control: Disrupts enemy coordination and supply lines
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires nations, intelligence, and coordinate systems
+ *   Approach: Integration testing with capitol positions and intelligence scenarios
+ *   Key Tests:
+ *     - Corridor calculation accuracy (rectangular boundary verification)
+ *     - Intelligence prerequisite enforcement (SEE_CITIES requirement)
+ *     - Coordinate boundary handling (min/max calculations correct)
+ *     - Map boundary validation (ONMAP coordinate safety)
+ *     - Attractiveness application (+60 bonus throughout corridor)
+ *     - Early return on intelligence failure (no effect when capitol invisible)
+ *   Dependencies: Nations with capitols, intelligence systems, coordinate validation
+ *   Mock Requirements: Enemy nations with visible/invisible capitols at various positions
+ *   Complexity: Simple - Straightforward geometric calculation with intelligence gates
+ *
+ * Notes:
+ *   - Thread safety: Read-only access to capitol data, modifies only attr array
+ *   - Performance: O(corridor_area) application within strategic rectangle
+ *   - Strategic value: Creates territorial control through geographic positioning
+ *   - Intelligence dependence: Effectiveness requires enemy capitol reconnaissance
+ *   - Geometric approach: Simple rectangular corridor calculation
+ *   - Tactical integration: Coordinates with other attractiveness functions for strategy
+ */
 void
 n_between(int nation)
 {
@@ -1911,6 +2985,65 @@ n_between(int nation)
  *	if on cap and war and 2x your garrison go jihad and + 1/2 men
  */
 void
+/*
+ * n_survive - Emergency capitol defense and survival prioritization for crisis situations
+ *
+ * Implements emergency response protocol when the nation's capitol is under immediate
+ * threat or has been captured. Prioritizes reconquest of occupied capitol and defense
+ * against nearby enemy forces within tactical engagement range (5x5 sector area).
+ * Provides crisis management through maximum priority (+1000) capitol recovery and
+ * proportional threat response based on enemy force concentrations.
+ *
+ * Algorithm:
+ * 1. Capitol Recovery: If capitol captured, maximum attractiveness (+1000) for reconquest
+ * 2. Threat Assessment: Scan all hostile nations within war status for nearby armies
+ * 3. Intelligence-Based Response:
+ *    - Perfect Intelligence: Use exact army sizes for precise threat calculation
+ *    - Limited Intelligence: Use average army estimates to prevent intelligence exploitation
+ * 4. Proximity Defense: Double attractiveness for armies directly on capitol (+2x soldiers)
+ * 5. Area Defense: Standard attractiveness for armies in 5x5 engagement zone (+1x soldiers)
+ * 6. Duplicate Prevention: Avoid double-counting multiple armies in same sector
+ *
+ * Capitol Defense Strategy:
+ * - Occupied Capitol: Immediate maximum priority reconquest (attractiveness +1000)
+ * - Direct Threat: Double response for armies positioned on capitol coordinates
+ * - Tactical Zone: Standard response for armies within 2-sector engagement radius
+ * - Intelligence Adaptation: Exact counts vs estimates based on reconnaissance capability
+ *
+ * Crisis Response Features:
+ * - Emergency Prioritization: Capitol survival takes absolute precedence over expansion
+ * - Tactical Assessment: 5x5 sector engagement zone around capitol for threat evaluation
+ * - Intelligence Security: Limited intelligence prevents exact force assessment exploitation
+ * - Proportional Response: Attractiveness scaled by actual or estimated enemy force size
+ *
+ * Parameters:
+ *   (none) - Uses global curntn (current nation), country (nation ID), and world state
+ *
+ * Returns:
+ *   (void) - Modifies global attr[][] attractiveness array with survival priorities
+ *
+ * Side Effects:
+ *   - Modifies attr[][] with emergency capitol defense attractiveness values
+ *   - Reads sct[][] for capitol ownership verification
+ *   - Reads ntn[] for enemy army positions and diplomatic status
+ *   - Uses COUNT_ARMIES() macro for intelligence-based army visibility
+ *   - Accesses Avg_soldiers[] for limited intelligence force estimates
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires nations, armies, diplomatic status, intelligence
+ *   Approach: Integration testing with enemy armies positioned around friendly capitol
+ *   Key Tests: Capitol captured recovery, nearby threat response, intelligence scaling
+ *   Dependencies: Diplomatic system, army positioning, intelligence macros, global state
+ *   Mock Requirements: Nation data, army positions, capitol coordinates, intelligence state
+ *   Complexity: Moderate - Multi-nation threat assessment with intelligence integration
+ *
+ * Notes:
+ *   - Crisis Management: Designed for emergency capitol defense scenarios
+ *   - Intelligence Dependent: Behavior adapts based on reconnaissance capabilities
+ *   - Thread Safety: Not thread-safe due to global variable dependencies
+ *   - Performance: O(nations * armies) but typically called only in crisis situations
+ *   - Legacy Pattern: K&R function declaration needs modernization to ANSI C
+ */
 n_survive()
 {
 	int i;
@@ -1980,6 +3113,69 @@ n_survive()
 	}
 }
 
+/*
+ * defattr - Defensive attractiveness coordinator for comprehensive defensive positioning
+ *
+ * Master coordinator function that orchestrates all defensive attractiveness calculations
+ * to create comprehensive defensive strategy incorporating territorial expansion, threat
+ * response, strategic positioning, and emergency survival protocols. Integrates multiple
+ * defensive attractiveness functions to produce cohesive defensive movement priorities.
+ *
+ * Defensive Strategy Integration:
+ * 1. Territorial Foundation: n_unowned() establishes base expansion attractiveness
+ * 2. Multi-Nation Threat Response: Coordinates defenses against all hostile nations
+ * 3. Enemy-Specific Defense: n_defend() for threat-specific defensive positioning
+ * 4. Strategic Blocking: n_between() for territorial control and corridor blocking
+ * 5. Opportunistic Defense: n_undefended() for exploiting enemy vulnerabilities
+ * 6. Movement Constraints: n_trespass() and n_toofar() for operational limitations
+ * 7. Crisis Management: n_survive() for emergency capitol defense situations
+ *
+ * Algorithm Sequence:
+ * 1. Base Expansion: Calculate unowned territory attractiveness for defensive expansion
+ * 2. War Status Assessment: Identify all nations with hostile diplomatic relations
+ * 3. Multi-Threat Coordination: For each enemy nation simultaneously:
+ *    - Defensive positioning against specific enemy forces (n_defend)
+ *    - Strategic corridor blocking between capitols (n_between)
+ *    - Vulnerability exploitation of enemy territories (n_undefended)
+ * 4. Operational Constraints: Apply movement limitations and diplomatic restrictions
+ * 5. Emergency Protocol: Overlay emergency capitol defense priorities
+ *
+ * Defensive Coordination Features:
+ * - Multi-Enemy Integration: Coordinates defense against multiple simultaneous threats
+ * - Strategic Layering: Combines territorial, tactical, and emergency defensive priorities
+ * - Constraint Application: Ensures all defensive moves respect operational boundaries
+ * - Crisis Override: Emergency survival takes precedence over standard defensive positioning
+ *
+ * Note: Debug print statement incorrectly shows "atkattr()" instead of "defattr()".
+ * This appears to be a copy-paste error from offensive coordinator function.
+ *
+ * Parameters:
+ *   (none) - Uses global curntn (current nation), country (nation ID), and world state
+ *
+ * Returns:
+ *   (void) - Modifies global attr[][] attractiveness array with integrated defensive values
+ *
+ * Side Effects:
+ *   - Modifies attr[][] with comprehensive defensive attractiveness calculations
+ *   - Calls multiple attractiveness functions that modify global state
+ *   - Reads ntn[] for diplomatic status and nation activity verification
+ *   - Uses DEBUG compilation flag for diagnostic output
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires multiple nations, diplomatic system, full world state
+ *   Approach: Integration testing with multiple enemy nations and complex defensive scenarios
+ *   Key Tests: Multi-enemy coordination, defensive priority layering, constraint application
+ *   Dependencies: Full diplomatic system, nation management, all attractiveness subsystems
+ *   Mock Requirements: Multiple nations, complex diplomatic relations, world geography
+ *   Complexity: Moderate - Orchestrates multiple defensive subsystems with proper sequencing
+ *
+ * Notes:
+ *   - Orchestration Function: Primary coordinator for all defensive attractiveness systems
+ *   - Thread Safety: Not thread-safe due to global variable dependencies
+ *   - Performance: O(nations^2 * sectors) due to multiple attractiveness function calls
+ *   - Debug Output: Contains incorrect debug message (shows "atkattr" instead of "defattr")
+ *   - Legacy Pattern: K&R function declaration needs modernization to ANSI C
+ */
 void
 defattr()
 {
@@ -2003,6 +3199,78 @@ defattr()
 	n_survive();
 }
 
+/*
+ * atkattr - Offensive attractiveness coordinator for comprehensive military campaigns
+ *
+ * Master coordinator function that orchestrates all offensive attractiveness calculations
+ * to create comprehensive military strategy incorporating territorial expansion, target
+ * prioritization, strategic positioning, and diplomatic escalation responses. Integrates
+ * multiple offensive attractiveness functions with escalation intensity based on war status.
+ *
+ * Offensive Strategy Integration:
+ * 1. Territorial Foundation: n_unowned() establishes base expansion attractiveness
+ * 2. Diplomatic Escalation: Different offensive intensity based on war vs jihad status
+ * 3. Standard War Operations: Strategic positioning, vulnerability exploitation, direct attack
+ * 4. Jihad Intensification: Repeated offensive function calls for maximum aggression
+ * 5. Operational Constraints: Movement limitations and diplomatic restrictions
+ * 6. Survival Override: Emergency protocols maintain defensive capabilities
+ *
+ * Algorithm Sequence:
+ * 1. Base Expansion: Calculate unowned territory attractiveness for offensive expansion
+ * 2. Nation-by-Nation Assessment: Evaluate diplomatic status with each active nation
+ * 3. War-Level Operations (WAR status): Single-intensity offensive coordination:
+ *    - Strategic corridor blocking between capitols (n_between)
+ *    - Vulnerability exploitation of enemy territories (n_undefended)
+ *    - Direct military target prioritization (n_attack)
+ * 4. Jihad-Level Operations (JIHAD status): Triple-intensity offensive escalation:
+ *    - Repeated attack prioritization calls (4x n_attack for maximum aggression)
+ *    - Doubled strategic positioning (2x n_between, 2x n_undefended)
+ *    - Maximum offensive commitment with sustained pressure
+ * 5. Operational Constraints: Apply movement limitations and diplomatic restrictions
+ * 6. Survival Integration: Maintain emergency defensive capabilities
+ *
+ * Offensive Escalation Features:
+ * - Graduated Response: Different offensive intensity based on diplomatic relations
+ * - War Intensity: Standard offensive operations (1x each function)
+ * - Jihad Intensity: Maximum aggression with repeated function calls (up to 4x attack)
+ * - Strategic Integration: Combines direct attack with territorial positioning
+ * - Constraint Respect: All offensive moves respect operational boundaries
+ *
+ * Jihad Escalation Pattern:
+ * - 4x n_attack() calls: Maximum target prioritization and attack focus
+ * - 2x n_between() calls: Doubled strategic corridor control
+ * - 2x n_undefended() calls: Doubled vulnerability exploitation
+ * - Represents total war commitment with maximum resource allocation
+ *
+ * Parameters:
+ *   (none) - Uses global curntn (current nation), country (nation ID), and world state
+ *
+ * Returns:
+ *   (void) - Modifies global attr[][] attractiveness array with integrated offensive values
+ *
+ * Side Effects:
+ *   - Modifies attr[][] with comprehensive offensive attractiveness calculations
+ *   - Calls multiple attractiveness functions that modify global state
+ *   - Reads ntn[] for diplomatic status and nation activity verification
+ *   - Uses DEBUG compilation flag for diagnostic output
+ *   - Intensive computation during jihad operations due to repeated function calls
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires multiple nations, diplomatic system, full world state
+ *   Approach: Integration testing with various diplomatic scenarios and escalation levels
+ *   Key Tests: War vs jihad intensity differences, multi-enemy coordination, constraint application
+ *   Dependencies: Full diplomatic system, nation management, all attractiveness subsystems
+ *   Mock Requirements: Multiple nations, varied diplomatic relations (WAR/JIHAD), world geography
+ *   Complexity: Moderate - Orchestrates multiple offensive subsystems with escalation scaling
+ *
+ * Notes:
+ *   - Orchestration Function: Primary coordinator for all offensive attractiveness systems
+ *   - Escalation Aware: Adapts offensive intensity based on diplomatic relations
+ *   - Thread Safety: Not thread-safe due to global variable dependencies
+ *   - Performance: O(nations^2 * sectors) for WAR, higher for JIHAD due to repeated calls
+ *   - Diplomatic Integration: Demonstrates sophisticated graduated response capability
+ *   - Legacy Pattern: K&R function declaration needs modernization to ANSI C
+ */
 /*calculate attractiveness of attacking sectors*/
 void
 atkattr()
@@ -2037,6 +3305,72 @@ atkattr()
 	n_survive();
 }
 
+/*
+ * pceattr - Peaceful expansion attractiveness coordinator for non-hostile territorial growth
+ *
+ * Master coordinator function that orchestrates attractiveness calculations during peaceful
+ * periods when the nation is not engaged in active warfare. Focuses on territorial expansion
+ * through uncontested territory acquisition while maintaining operational constraints and
+ * emergency preparedness. Provides peaceful growth strategy with emphasis on expansion.
+ *
+ * Peaceful Strategy Integration:
+ * 1. Triple Expansion Focus: Three calls to n_unowned() for maximum expansion priority
+ * 2. No Hostile Operations: Excludes all military targeting and offensive positioning
+ * 3. Operational Constraints: Maintains movement limitations and diplomatic restrictions
+ * 4. Emergency Preparedness: Retains survival protocols for unexpected threats
+ *
+ * Algorithm Sequence:
+ * 1. Maximum Expansion Priority: Triple n_unowned() calls for intensive territorial growth
+ * 2. Constraint Application: Apply movement limitations (n_toofar, n_trespass)
+ * 3. Emergency Protocols: Maintain defensive capabilities (n_survive)
+ *
+ * Peaceful Expansion Features:
+ * - Expansion Emphasis: Triple territorial acquisition attractiveness through repeated calls
+ * - Non-Aggressive: Excludes all offensive and defensive military positioning functions
+ * - Constraint Respect: All expansion moves respect operational boundaries and diplomacy
+ * - Growth Focus: Optimized for rapid territorial expansion during peaceful periods
+ * - Emergency Ready: Maintains crisis response capability for unexpected threats
+ *
+ * Strategic Design:
+ * - 3x n_unowned(): Maximum emphasis on territorial expansion during peace
+ * - No Military Positioning: Excludes n_attack, n_defend, n_between, n_undefended
+ * - Peaceful Doctrine: Designed for growth-focused expansion without military considerations
+ * - Resource Optimization: Concentrates all attractiveness on uncontested territory
+ *
+ * Comparison with Other Coordinators:
+ * - vs defattr(): Excludes all defensive military positioning, focuses purely on expansion
+ * - vs atkattr(): Excludes all offensive operations, no target prioritization
+ * - Unique Approach: Only coordinator with repeated function calls for expansion emphasis
+ *
+ * Parameters:
+ *   (none) - Uses global curntn (current nation), country (nation ID), and world state
+ *
+ * Returns:
+ *   (void) - Modifies global attr[][] attractiveness array with peaceful expansion values
+ *
+ * Side Effects:
+ *   - Modifies attr[][] with expansion-focused attractiveness calculations
+ *   - Calls n_unowned() three times for maximum territorial acquisition priority
+ *   - Applies operational constraints to prevent invalid movement
+ *   - Maintains emergency survival protocols for unexpected threats
+ *   - Uses DEBUG compilation flag for diagnostic output
+ *
+ * Testing Notes:
+ *   Category: A (Unit) - Simpler coordination with fewer dependencies than military coordinators
+ *   Approach: Unit testing with peaceful diplomatic scenarios and expansion opportunities
+ *   Key Tests: Triple expansion priority, constraint application, no military interference
+ *   Dependencies: Minimal - territorial data, diplomatic constraints, emergency protocols
+ *   Mock Requirements: World geography, territorial ownership, basic diplomatic state
+ *   Complexity: Simple - Straightforward expansion coordination without military complexity
+ *
+ * Notes:
+ *   - Orchestration Function: Specialized coordinator for peaceful territorial growth
+ *   - Growth Optimized: Designed for maximum expansion efficiency during peace
+ *   - Thread Safety: Not thread-safe due to global variable dependencies
+ *   - Performance: O(sectors) with 3x expansion calculation overhead
+ *   - Peaceful Design: Demonstrates clear separation between military and peaceful strategies
+ *   - Legacy Pattern: K&R function declaration needs modernization to ANSI C
+ */
 /*calculate attractiveness when at peace*/
 void
 pceattr()
