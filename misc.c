@@ -46,6 +46,40 @@ char    *memset();
 #endif
 
 #ifdef CONQUER
+/*
+ * move_file - Atomic file move operation using UNIX link/unlink pattern
+ *
+ * Implements atomic file movement by creating a hard link to the destination
+ * and then removing the source. This ensures atomicity on UNIX filesystems
+ * where both link() and unlink() are atomic operations.
+ *
+ * Parameters:
+ *   from - Source file path (must exist and be accessible)
+ *   to   - Destination file path (will be unlinked if exists)
+ *
+ * Returns:
+ *   0 on successful file move, -1 on any failure
+ *
+ * Side Effects:
+ *   - Destination file is removed if it exists
+ *   - Source file is moved to destination location
+ *   - Error messages printed to stderr on failure
+ *   - 2-second sleep delay on error conditions
+ *
+ * Testing Notes:
+ *   Category: C (System) - Requires filesystem access and file operations
+ *   Approach: System testing with temporary files
+ *   Key Tests: File permissions, missing files, cross-filesystem moves
+ *   Dependencies: UNIX filesystem with link/unlink support
+ *   Mock Requirements: None - uses real filesystem operations
+ *   Complexity: Simple - Straightforward file operations with error handling
+ *
+ * Notes:
+ *   - Uses traditional UNIX atomic move pattern (link + unlink)
+ *   - May fail on cross-filesystem moves (different inodes)
+ *   - Error handling includes user feedback and delay
+ *   - Only available when CONQUER is defined
+ */
 int
 move_file( from, to )
 register char	*from;
@@ -73,8 +107,55 @@ register char	*to;
 } /* move_file() */
 #endif /* CONQUER */
 
-/* returns integer input greater than zero or */
-/* -1 for no input.                           */
+/*
+ * get_number - Interactive number input with live editing support
+ *
+ * Provides an interactive number input interface that allows users to type
+ * digits with real-time display feedback and editing capabilities. Implements
+ * character-by-character input processing with backspace/delete support for
+ * correcting input errors. Designed for curses-based terminal interfaces.
+ *
+ * Algorithm:
+ *   - Character-by-character input loop using getch()
+ *   - Real-time display updates with addch() and refresh()
+ *   - Decimal accumulation (multiply by 10, add new digit)
+ *   - Backspace handling with cursor repositioning and digit removal
+ *   - Input validation with 12-digit maximum length limit
+ *
+ * Parameters:
+ *   None
+ *
+ * Returns:
+ *   Long integer value entered by user (>= 0)
+ *   -1 if no digits were entered (empty input)
+ *
+ * Side Effects:
+ *   - Reads from stdin using curses getch()
+ *   - Modifies screen display with addch(), move(), refresh()
+ *   - Changes cursor position during editing operations
+ *   - Requires curses library initialization (initscr, etc.)
+ *
+ * Input Handling:
+ *   - Digits (0-9): Accumulate into number, display on screen
+ *   - Backspace (\b, DEL \177): Remove last digit, erase from display
+ *   - Enter/Return (\n, \r): Complete input and return value
+ *   - Other characters: Ignored (no action)
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires curses library and terminal
+ *   Approach: Integration testing with mock terminal/curses interface
+ *   Key Tests: [Digit entry, backspace editing, empty input, overflow protection]
+ *   Dependencies: curses library (stdscr, getch, addch, refresh, move, getyx)
+ *   Mock Requirements: Terminal interface mocking for automated testing
+ *   Complexity: Moderate - User interface with state management and editing
+ *
+ * Notes:
+ *   - Maximum input length limited to 12 digits to prevent overflow
+ *   - Uses long type to handle larger integers on system
+ *   - Relies on curses library for all terminal I/O operations
+ *   - Character 127 (\177) handles DEL key on some terminals
+ *   - Real-time feedback provides immediate visual confirmation
+ */
 long
 get_number()
 {
@@ -121,9 +202,80 @@ unsigned char	**history_reachp;
 int	level;
 
 /*
- *	land_2reachp()
+ * land_2reachp - Recursive land pathfinding algorithm with movement optimization
+ *
+ * Core recursive pathfinding engine that determines if a land unit can reach
+ * a destination within available movement points. Implements intelligent
+ * direction prioritization, movement cost analysis, diplomatic constraints,
+ * and cycle detection for efficient path exploration. Used by land movement
+ * systems throughout the game.
+ *
+ * Algorithm:
+ *   1. Base case checks: destination reached, no movement points, impossible distance
+ *   2. Direction prioritization based on target vector (optimized movement selection)
+ *   3. 8-directional exploration with boundary and terrain validation
+ *   4. Movement cost calculation and availability checking
+ *   5. History tracking to prevent revisiting with worse paths
+ *   6. Diplomatic status checking for passage permissions
+ *   7. Recursive exploration with backtracking and level management
+ *
+ * Direction Priority Strategy:
+ *   - Pure horizontal: prioritize X-axis movement, then diagonals
+ *   - Pure vertical: prioritize Y-axis movement, then diagonals
+ *   - Diagonal: prioritize diagonal movement toward target, then orthogonal
+ *
+ * Parameters:
+ *   ax - Starting X coordinate on world map
+ *   ay - Starting Y coordinate on world map
+ *   move_points - Remaining movement points for pathfinding
+ *
+ * Returns:
+ *   1 if destination (bx,by) is reachable with given movement points
+ *   0 if destination cannot be reached or blocked by constraints
+ *
+ * Side Effects:
+ *   - Modifies global history_reachp[][] array for cycle detection
+ *   - Increments/decrements global 'level' variable for recursion tracking
+ *   - Reads from global terrain data (sct[][]), movement costs (movecost[][])
+ *   - Accesses diplomatic status arrays (ntn[].dstatus[][])
+ *   - Uses global destination coordinates (bx, by) and moving_country
+ *
+ * Global Dependencies:
+ *   - bx, by: destination coordinates (must be set before calling)
+ *   - moving_country: nation attempting movement (for diplomatic checks)
+ *   - history_reachp[][]: 2D array tracking best movement points to each sector
+ *   - level: recursion depth counter for debugging/optimization
+ *   - sct[][]: sector data including owner, altitude, terrain type
+ *   - movecost[][]: movement cost table for each map sector
+ *   - ntn[]: nation data including diplomatic status matrices
+ *
+ * Constraints and Blocking Conditions:
+ *   - PEAK and WATER altitude sectors block land movement
+ *   - Negative movement costs indicate impassable terrain
+ *   - War status blocks passage through enemy-controlled sectors
+ *   - Neutral nations may block passage (complex diplomatic logic)
+ *   - Map boundaries (0 <= x < MAPX, 0 <= y < MAPY)
+ *   - Insufficient movement points for sector entry cost
+ *
+ * Testing Notes:
+ *   Category: C (System) - Requires full game state initialization
+ *   Approach: System testing with complete world map and diplomatic setup
+ *   Key Tests: [Basic pathfinding, diplomatic blocking, terrain constraints, movement costs]
+ *   Dependencies: Complete game world (map, nations, diplomacy, movement tables)
+ *   Mock Requirements: Full game state including maps, nations, diplomatic status
+ *   Complexity: Complex - Recursive algorithm with multiple global dependencies
+ *
+ * Known Issues:
+ *   - BUG: Should engage hostile armies even if they don't own the sector
+ *   - BUG: Doesn't account for THE_VOID, HIDDEN, and NINJA special statuses
+ *   - Complex diplomatic logic may have edge cases (lines 331-337)
+ *
+ * Performance Notes:
+ *   - Optimized direction selection reduces search space significantly
+ *   - History tracking prevents exponential path explosion
+ *   - Early termination optimizations for impossible distances
+ *   - Recursion depth tracked via 'level' variable for debugging
  */
-
 int
 land_2reachp( ax, ay, move_points )
 int	ax;
@@ -267,7 +419,81 @@ int	move_points;
 } /* land_2reachp() */
 
 /*
- *	land_reachp()
+ * land_reachp - Land reachability analysis wrapper with administrative controls
+ *
+ * High-level interface to the land pathfinding system that provides complete
+ * reachability analysis between two map coordinates. Handles memory management,
+ * global state setup, input validation, and cleanup for the underlying recursive
+ * pathfinding algorithm. Designed for administrative functions and debugging.
+ *
+ * Algorithm:
+ *   1. Input validation (movement points limits, terrain accessibility)
+ *   2. Dynamic memory allocation for pathfinding history tracking
+ *   3. History array initialization (BSD vs standard library compatibility)
+ *   4. Global state setup for recursive pathfinding engine
+ *   5. Recursive pathfinding execution via land_2reachp()
+ *   6. Memory cleanup and result return
+ *
+ * Administrative Features:
+ *   - Movement point overflow detection with error reporting
+ *   - Terrain validation for both start and destination coordinates
+ *   - Cross-platform memory operations (BSD vs POSIX compatibility)
+ *   - Complete memory management lifecycle for pathfinding operations
+ *
+ * Parameters:
+ *   ax - Starting X coordinate on world map
+ *   ay - Starting Y coordinate on world map
+ *   gx - Goal/destination X coordinate on world map
+ *   gy - Goal/destination Y coordinate on world map
+ *   move_points - Available movement points for pathfinding analysis
+ *   movee - Country/nation identifier attempting the movement
+ *
+ * Returns:
+ *   1 if destination is reachable within movement point constraints
+ *   0 if destination cannot be reached or is blocked by constraints
+ *
+ * Side Effects:
+ *   - Allocates and frees dynamic memory for history_reachp[][] array
+ *   - Sets global variables (bx, by, moving_country, level) for pathfinding
+ *   - May call abrt() and exit program if movement points exceed limits
+ *   - Writes error messages to stderr for debugging purposes
+ *   - Initializes pathfinding state in history array
+ *
+ * Memory Management:
+ *   - Uses m2alloc() for 2D array allocation (MAPX × MAPY × sizeof(char))
+ *   - Initializes memory with bzero() (BSD) or memset() (POSIX)
+ *   - Guarantees memory cleanup via free() before function return
+ *   - History array tracks best movement points to each map sector
+ *
+ * Global State Dependencies:
+ *   - sct[][]: sector data for terrain and altitude validation
+ *   - MAPX, MAPY: world map dimensions for memory allocation
+ *   - MAX_MOVE_UNITS: safety limit for movement point validation
+ *   - Sets bx, by, moving_country, level for land_2reachp() consumption
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires memory management and map data
+ *   Approach: Integration testing with controlled map scenarios
+ *   Key Tests: [Basic reachability, terrain blocking, movement limits, memory management]
+ *   Dependencies: Map data (sct[][]), memory allocation functions (m2alloc, free)
+ *   Mock Requirements: Map setup, memory allocation mocking for failure testing
+ *   Complexity: Moderate - Wrapper function with memory management and validation
+ *
+ * Platform Compatibility:
+ *   - Conditional compilation for BSD vs POSIX memory initialization
+ *   - BSD: Uses bzero() for memory clearing
+ *   - Others: Uses memset() for POSIX compliance
+ *   - Administrative build only (ADMIN preprocessor flag required)
+ *
+ * Error Conditions:
+ *   - Movement points >= MAX_MOVE_UNITS: Triggers error message and abrt()
+ *   - Start/destination in WATER or PEAK altitude: Returns 0 (unreachable)
+ *   - Memory allocation failure: Undefined behavior (m2alloc dependency)
+ *
+ * Performance Notes:
+ *   - Memory allocation overhead for each pathfinding operation
+ *   - History array prevents redundant path exploration
+ *   - Clean separation of concerns from recursive pathfinding engine
  */
 #ifdef ADMIN
 int
@@ -315,9 +541,93 @@ int	movee;
 #endif /* ADMIN */
 #ifdef ADMIN
 /*
- *	water_2reachp()
+ * water_2reachp - Recursive water pathfinding algorithm for naval movement
+ *
+ * Core recursive pathfinding engine for naval units moving through water
+ * sectors. Implements simplified movement costs (1 per move), water-only
+ * movement constraints, and intelligent direction prioritization for
+ * efficient path exploration. Coordinates with land_2reachp() to provide
+ * complete movement analysis for different unit types.
+ *
+ * Algorithm:
+ *   1. Input validation and early termination conditions
+ *   2. History tracking to prevent redundant path exploration
+ *   3. Destination checking and water terrain validation
+ *   4. Direction prioritization based on target vector
+ *   5. 8-directional exploration with boundary validation
+ *   6. Recursive pathfinding with decremented movement points
+ *   7. Success propagation when destination reached
+ *
+ * Water Movement Constraints:
+ *   - Units must stay in WATER altitude sectors (no land movement)
+ *   - All water moves cost exactly 1 movement point (simplified model)
+ *   - No diplomatic restrictions (unlike land movement)
+ *   - No terrain-based movement cost variations
+ *
+ * Direction Priority Strategy:
+ *   - Primary axis movement (X or Y) prioritized based on distance comparison
+ *   - Longer axis distance determines prioritization order
+ *   - Diagonal and orthogonal moves ordered for efficient pathfinding
+ *   - Different from land pathfinding which handles three cases
+ *
+ * Parameters:
+ *   ax - Starting X coordinate on world map
+ *   ay - Starting Y coordinate on world map
+ *   move_points - Remaining movement points for pathfinding
+ *
+ * Returns:
+ *   1 if destination (bx,by) is reachable with given movement points
+ *   0 if destination cannot be reached or blocked by constraints
+ *
+ * Side Effects:
+ *   - Modifies global history_reachp[][] array for cycle detection
+ *   - Reads from global terrain data (sct[][]) for water validation
+ *   - Uses global destination coordinates (bx, by)
+ *   - Recursive function calls modify call stack
+ *
+ * Global Dependencies:
+ *   - bx, by: destination coordinates (must be set before calling)
+ *   - history_reachp[][]: 2D array tracking movement points to each sector
+ *   - sct[][]: sector data for altitude checking (WATER validation)
+ *   - MAPX, MAPY: world map dimensions for boundary checking
+ *
+ * Optimization Features:
+ *   - Early termination for negative movement points
+ *   - History comparison prevents worse paths
+ *   - Distance-based impossibility checking
+ *   - Simplified movement cost model (always 1 per move)
+ *
+ * Testing Notes:
+ *   Category: C (System) - Requires full map data and administrative build
+ *   Approach: System testing with complete water-based scenarios
+ *   Key Tests: [Basic water pathfinding, land blocking, movement limits]
+ *   Dependencies: Complete game world map with water/land sectors
+ *   Mock Requirements: Map data with proper water/land sector setup
+ *   Complexity: Complex - Recursive algorithm with global dependencies
+ *
+ * Known Issues:
+ *   - BUG: Does not test for enemy navy blocking (line 591 comment)
+ *   - No diplomatic considerations unlike land movement
+ *   - Assumes all water moves cost 1 (no varying water terrain costs)
+ *
+ * Differences from Land Pathfinding:
+ *   - Simplified movement costs (1 per move vs. variable costs)
+ *   - Water-only movement (altitude == WATER requirement)
+ *   - No diplomatic restrictions or army blocking
+ *   - Different direction prioritization logic (two cases vs. three)
+ *   - No special terrain handling beyond water/non-water
+ *
+ * Administrative Context:
+ *   - ADMIN build only (requires preprocessor flag)
+ *   - Designed for administrative pathfinding analysis
+ *   - Coordinates with land pathfinding for complete movement analysis
+ *
+ * Performance Notes:
+ *   - History tracking prevents exponential path explosion
+ *   - Simplified cost model reduces computational complexity
+ *   - Early termination optimizations for impossible paths
+ *   - Direction prioritization reduces search space
  */
-
 int
 water_2reachp( ax, ay, move_points )
 int	ax;
@@ -483,6 +793,65 @@ int	nation;
 } /* solds_in_sector() */
 #ifdef ADMIN
 
+/*
+ * score_one - Calculate total score for a nation based on class-specific weighting
+ *
+ * Calculates the comprehensive score for a nation by applying class-specific
+ * weightings to various national resources and statistics. Each nation class
+ * (King, Emperor, Wizard, etc.) has different scoring priorities that reflect
+ * their strategic goals and victory conditions.
+ *
+ * The scoring system uses two components:
+ * 1. Weighted resource totals (sectors, population, military, wealth, magic)
+ * 2. Class-specific bonus attributes (popularity, prestige, power, etc.)
+ *
+ * Resource weights are defined per class in the weights[] table:
+ * - Sectors: Per 2 sectors controlled
+ * - Civilians: Per 1000 population
+ * - Soldiers: Per 1000 military units
+ * - Gold: Per 100K gold pieces
+ * - Jewels: Per 100K jewel value
+ * - Metal: Per 100K metal value
+ * - Magic: Per magic power possessed
+ * - Ships: Per 10 naval vessels
+ *
+ * Class-specific bonuses reflect each class's unique victory conditions:
+ * - Kings: popularity + prestige - poverty (legitimacy focus)
+ * - Emperors: power + prestige - poverty (dominance focus)
+ * - Wizards: knowledge + power - 50 (magical mastery focus)
+ * - Priests: wealth + terror - poverty (religious authority focus)
+ * - Pirates: reputation + wealth - 50 (notoriety and plunder focus)
+ * - Traders: wealth + prestige - tax_rate*5 (economic efficiency focus)
+ * - Warlords: reputation + prestige - 50 (military honor focus)
+ * - Demons: knowledge + terror - 50 (dark knowledge focus)
+ * - Dragons: wealth + terror - 50 (hoarding and fear focus)
+ * - Shadows: power + terror - 50 (stealth and intimidation focus)
+ *
+ * Parameters:
+ *   nation - Nation ID number (0 to NTOTAL-1)
+ *
+ * Returns:
+ *   Total calculated score as long integer
+ *   Higher scores indicate more successful nations within their class paradigm
+ *
+ * Side Effects:
+ *   None - read-only calculation using nation statistics and magic powers
+ *
+ * Testing Notes:
+ *   Category: A (Unit) | Self-contained calculation with clear inputs/outputs
+ *   Approach: Unit tests with mock nation data for each class type
+ *   Key Tests: Each nation class bonus calculation, resource weighting accuracy
+ *   Dependencies: num_powers() function, ntn[] array, nation structure fields
+ *   Mock Requirements: Mock nation data with known values for verification
+ *   Complexity: Moderate - multiple class-specific calculations and magic queries
+ *
+ * Notes:
+ *   - Critical for determining victory conditions and game rankings
+ *   - Each class has different optimal strategies reflected in weighting
+ *   - Magic power calculation requires separate num_powers() calls
+ *   - Bonus calculations can be negative, affecting final score
+ *   - Score scaling allows fair comparison between different nation classes
+ */
 /* score_one()	*/
 struct wght {
 	int	sectors;
@@ -612,6 +981,60 @@ units_in_sector(int x,int y,int nation)
 }
 #endif /* CONQUER */
 
+/*
+ * num_powers - Count magic powers possessed by a nation in specific category
+ *
+ * Counts the total number of magic powers that a nation possesses within
+ * a specified category (Military, Civilian, Magical, or All). This function
+ * is essential for calculating nation scores, determining available abilities,
+ * and validating magical prerequisites for various game actions.
+ *
+ * The magic system is organized into three primary categories:
+ * - Military (M_MIL): Combat and warfare related powers (0-10)
+ * - Civilian (M_CIV): Economic and development powers (11-23)
+ * - Magical (M_MGK): Mystical and supernatural powers (24-30)
+ *
+ * Powers are stored as bitmask flags in the nation's powers field, and the
+ * magic() macro tests individual power possession using bitwise operations.
+ * Each power corresponds to a specific bit position in the powers array.
+ *
+ * Category ranges are defined by start/end constants:
+ * - S_MIL (0) to E_MIL (11): Military powers
+ * - S_CIV (11) to E_CIV (13): Civilian powers
+ * - S_MGK (24) to E_MGK (7): Magical powers
+ * - M_ALL: All categories combined (S_MIL to E_MGK)
+ *
+ * Parameters:
+ *   nation - Nation ID number (0 to NTOTAL-1)
+ *   type - Power category to count:
+ *          M_MIL (1) - Military powers only
+ *          M_CIV (2) - Civilian powers only
+ *          M_MGK (3) - Magical powers only
+ *          M_ALL (5) - All power categories
+ *
+ * Returns:
+ *   Number of powers possessed in the specified category
+ *   0 if nation has no powers in that category
+ *   Fatal error and abort if invalid type parameter
+ *
+ * Side Effects:
+ *   Calls abrt() and terminates program if invalid type specified
+ *
+ * Testing Notes:
+ *   Category: A (Unit) | Simple counting function with clear category logic
+ *   Approach: Unit tests with mock nation power bitmasks for each category
+ *   Key Tests: Each power category count, M_ALL comprehensive count, error handling
+ *   Dependencies: magic() macro, powers[] array, ntn[] nation data, abrt() function
+ *   Mock Requirements: Mock nations with known power bitmasks for verification
+ *   Complexity: Simple - straightforward counting loop with category selection
+ *
+ * Notes:
+ *   - Critical for score calculation and power validation systems
+ *   - Used extensively in score_one() for class-specific scoring
+ *   - Fatal error on invalid type ensures data integrity
+ *   - Powers bitmask allows efficient storage and testing of abilities
+ *   - Category system enables balanced scoring across nation classes
+ */
 int
 num_powers(nation,type)
 int nation,type;
@@ -645,6 +1068,55 @@ int nation,type;
 	return(count_magic);
 }
 
+/*
+ * tofood - Calculate food production value of a sector with race-specific bonuses
+ *
+ * Calculates the total food value that a sector can produce, incorporating
+ * base vegetation food values, race-specific terrain bonuses, magical enhancements,
+ * and trade good food bonuses. This function is critical for population support
+ * calculations and determining sector carrying capacity.
+ *
+ * Base food values are determined by vegetation type using the vegfood table:
+ * "0004697400000" where each character represents food value for corresponding
+ * vegetation types: volcano=0, desert=0, tundra=0, barren=4, light_veg=6,
+ * grassland=9, forest=7, etc.
+ *
+ * Race-specific bonuses provide cultural adaptations:
+ * - Elves: +3 food bonus in forests (natural forest affinity)
+ * - Elves: -1 food penalty in barren lands (forest dependency)
+ * - Dervish/Destroyer: Can survive in desert/ice with 6 food (magical adaptation)
+ *
+ * Trade goods in the "eatrate" range (communication < tradegood <= eatrate)
+ * provide additional food bonuses using the tg_value table. These represent
+ * food-related trade goods like spices, livestock, or agricultural products.
+ *
+ * Parameters:
+ *   sptr - Pointer to sector structure containing vegetation and trade good data
+ *   cntry - Nation ID for race-specific bonuses (0 for no race bonuses)
+ *
+ * Returns:
+ *   Total food production value for the sector
+ *   0 for completely barren/uninhabitable terrain
+ *   Enhanced values for race-appropriate terrain or trade goods
+ *
+ * Side Effects:
+ *   None - read-only calculation using sector and nation data
+ *
+ * Testing Notes:
+ *   Category: A (Unit) | Self-contained calculation with clear terrain logic
+ *   Approach: Unit tests with mock sectors for each vegetation/race combination
+ *   Key Tests: Base vegetation values, elf bonuses/penalties, trade good bonuses
+ *   Dependencies: vegfood table, tg_value table, magic() macro, ntn[] race data
+ *   Mock Requirements: Mock sectors with known vegetation and trade good values
+ *   Complexity: Moderate - multiple bonus systems and race-specific calculations
+ *
+ * Notes:
+ *   - Critical for population growth and carrying capacity calculations
+ *   - Race bonuses reflect cultural/biological adaptations to terrain
+ *   - Trade goods can significantly enhance marginal agricultural land
+ *   - Food value 4 is considered the minimum for sustainable habitation
+ *   - Special magical races can survive in otherwise uninhabitable terrain
+ */
 /* returns food value of sector */
 /* 4 is limit of livable land */
 int
@@ -683,6 +1155,69 @@ int	cntry;
 /*	humans -	100K		25K		50K		*/
 /*	orcs -		100K		50K		25K		*/
 
+/*
+ * getmgkcost - Calculate magic power acquisition cost with race and complexity scaling
+ *
+ * Calculates the cost in gold to acquire a new magic power for a nation.
+ * The cost system incorporates race-specific base costs and exponential scaling
+ * based on the total number of powers already possessed. This creates a
+ * balanced progression where early powers are affordable but advanced magical
+ * mastery becomes increasingly expensive.
+ *
+ * Race-specific base costs reflect cultural magical affinity:
+ *
+ * Magical Powers (M_MGK):
+ * - Dwarves: 80,000 gold (moderate magical affinity)
+ * - Humans: 100,000 gold (standard magical ability)
+ * - Orcs: 150,000 gold (limited magical aptitude)
+ * - Others: 50,000 gold (default/elves have natural magic)
+ *
+ * Civilian Powers (M_CIV):
+ * - Dwarves: 40,000 gold (excellent craftsmanship and construction)
+ * - Humans: 25,000 gold (natural civilian development ability)
+ * - Orcs: 75,000 gold (poor at peaceful development)
+ * - Others: 50,000 gold (default rate)
+ *
+ * Military Powers (M_MIL):
+ * - Dwarves: 40,000 gold (disciplined military tradition)
+ * - Orcs: 45,000 gold (natural warriors but disorganized)
+ * - Others: 50,000 gold (default, including humans)
+ *
+ * Complexity scaling formula:
+ * - Count powers with 2x weight for same category, 1x for others
+ * - Cost doubles for each effective power level: base * 2^(npowers-1)
+ * - Caps at BIG/2 (250M gold) to prevent overflow
+ *
+ * Parameters:
+ *   type - Magic power category:
+ *          M_MGK (3) - Magical/mystical powers
+ *          M_CIV (2) - Civilian/economic powers
+ *          M_MIL (1) - Military/combat powers
+ *   nation - Nation ID for race-specific base costs
+ *
+ * Returns:
+ *   Gold cost for acquiring next power in specified category
+ *   -1 if invalid power type specified
+ *   Capped at BIG/2 (250M gold) for very high power levels
+ *
+ * Side Effects:
+ *   None - read-only calculation using nation data and power counts
+ *
+ * Testing Notes:
+ *   Category: A (Unit) | Mathematical calculation with clear cost progression
+ *   Approach: Unit tests with mock nations at various power levels and races
+ *   Key Tests: Race-specific base costs, exponential scaling, overflow protection
+ *   Dependencies: num_powers() function, ntn[] race data, power category constants
+ *   Mock Requirements: Mock nations with known race and power combinations
+ *   Complexity: Moderate - exponential calculations with multiple race conditions
+ *
+ * Notes:
+ *   - Critical for magic system economic balance and progression
+ *   - Exponential scaling prevents unlimited power accumulation
+ *   - Race differences create strategic choices in nation building
+ *   - Same-category powers cost more due to 2x weighting (specialization penalty)
+ *   - Cost calculation uses bit shifting for efficient doubling
+ */
 /* returns cost of magic power - returns -1 if invalid */
 long
 getmgkcost(type,nation)
@@ -1080,8 +1615,102 @@ int cntry;
 
 #define ALPHA_SIZE	128
 
-/*movecost contains movement cost unless water  -1 or unenterable land (-2)*/
-/* if water and not ajacent to land will cost -4*/
+/*
+ * updmove - Movement cost calculation system with race-specific terrain preferences
+ *
+ * Comprehensive movement cost calculation engine that updates the global
+ * movecost[][] array based on racial preferences, terrain types, magical
+ * enhancements, and special designations. Provides the foundation for all
+ * pathfinding and movement systems by encoding terrain difficulty for
+ * different races and magical conditions.
+ *
+ * Algorithm:
+ *   1. Handle GOD race special case (zero cost movement everywhere)
+ *   2. Initialize race-specific vegetation cost table from global arrays
+ *   3. Initialize race-specific elevation cost table from global arrays
+ *   4. Apply magical modifications (DERVISH/DESTROYER ice/desert immunity)
+ *   5. Calculate movement costs for all map sectors using nested loops
+ *   6. Handle water sectors with adjacency checking for coastal access
+ *   7. Handle land sectors with vegetation + elevation cost summation
+ *   8. Apply road designation movement bonuses where applicable
+ *
+ * Movement Cost Encoding:
+ *   - Positive values: Actual movement cost for land sectors
+ *   - -1: Water adjacent to land (naval access possible)
+ *   - -2: Unenterable land (impassable terrain for this race)
+ *   - -4: Deep water not adjacent to land (pure naval zones)
+ *   - 0: GOD race has no movement restrictions
+ *
+ * Race-Specific Terrain Costs:
+ *   - HUMAN: Uses HVegcost[] and HElecost[] arrays (default)
+ *   - ELF: Uses EVegcost[] and EElecost[] arrays (forest bonuses)
+ *   - DWARF: Uses DVegcost[] and DElecost[] arrays (mountain bonuses)
+ *   - ORC: Uses OVegcost[] and OElecost[] arrays (wasteland bonuses)
+ *   - GOD: Zero cost movement (administrative override)
+ *
+ * Parameters:
+ *   race - Character code for racial movement preferences (ELF, DWARF, ORC, HUMAN, GOD)
+ *   cntry - Country index for magical ability checking
+ *
+ * Returns:
+ *   void (results stored in global movecost[][] array)
+ *
+ * Side Effects:
+ *   - Modifies global movecost[MAPX][MAPY] array for entire world map
+ *   - Reads from global terrain arrays (veg[], ele[], sct[][])
+ *   - Reads from global cost tables (HVegcost[], EVegcost[], etc.)
+ *   - Calls magic() function to check for magical abilities
+ *   - Extensive nested loops modify large amounts of global state
+ *
+ * Magical Enhancements:
+ *   - DERVISH magic: Sets ICE and DESERT movement costs to 0
+ *   - DESTROYER magic: Sets ICE and DESERT movement costs to 0
+ *   - Magic abilities override base racial terrain preferences
+ *   - Checked per country, not per race (nation-specific powers)
+ *
+ * Water Sector Processing:
+ *   - Initial assignment: -4 (deep water, no land access)
+ *   - Adjacency check: 3x3 grid around water sector
+ *   - If any adjacent sector is land: change to -1 (coastal water)
+ *   - Uses ONMAP() macro for boundary checking
+ *   - Early termination when land found (i=x+2, j=y+2 breaks)
+ *
+ * Land Sector Processing:
+ *   - Vegetation cost lookup: veg_cost[sptr->vegetation]
+ *   - Elevation cost lookup: ele_cost[sptr->altitude]
+ *   - Impassable check: Either cost table returns -1
+ *   - Final cost: Sum of vegetation and elevation costs
+ *   - Road bonus: Halve movement cost (rounded up) for DROAD designation
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires full game world and data tables
+ *   Approach: Integration testing with complete map and cost table setup
+ *   Key Tests: [Race-specific costs, water adjacency, magical bonuses, road effects]
+ *   Dependencies: Complete world map (sct[][]), cost tables, magic system
+ *   Mock Requirements: Full game world setup with all terrain and magic data
+ *   Complexity: Moderate - Complex data processing with multiple lookup tables
+ *
+ * Global Dependencies:
+ *   - movecost[][]: Output array for calculated movement costs
+ *   - sct[][]: World map with terrain data (vegetation, altitude, designation)
+ *   - veg[], ele[]: Terrain type identifier arrays
+ *   - HVegcost[], EVegcost[], DVegcost[], OVegcost[]: Race vegetation preferences
+ *   - HElecost[], EElecost[], DElecost[], OElecost[]: Race elevation preferences
+ *   - MAPX, MAPY: World map dimensions for iteration bounds
+ *   - magic(): Function to check magical abilities by country
+ *
+ * Performance Notes:
+ *   - O(MAPX * MAPY) complexity for full world map processing
+ *   - Additional O(9) water adjacency checking for each water sector
+ *   - Lookup table approach provides efficient cost calculation
+ *   - Called during game initialization and when movement rules change
+ *
+ * Terrain Encoding:
+ *   - Cost tables use character arithmetic (' - '0') for numeric conversion
+ *   - ALPHA_SIZE (128) provides ASCII character indexing capability
+ *   - Vegetation and elevation codes used as direct array indices
+ *   - Special terrain constants (ICE, DESERT, WATER, DROAD) for comparisons
+ */
 void
 updmove(race,cntry)
 int cntry;
@@ -1164,6 +1793,47 @@ char race;
 } /* updmove() */
 
 #ifdef CONQUER
+/*
+ * flightcost - Calculate movement cost for flying units through terrain
+ *
+ * Calculates the movement cost for flying units (like dragons, eagles, flying
+ * carpets) moving through a specific sector. Flight movement costs consider
+ * both altitude and vegetation but with different cost tables than ground
+ * movement, reflecting that flying units can cross water and are less affected
+ * by vegetation but more affected by altitude and wind patterns.
+ *
+ * The function looks up movement costs from global cost tables:
+ * - FElecost: Flight elevation costs - "16211/" (water=1, peak=6, etc.)
+ * - FVegcost: Flight vegetation costs - "410000001000/" (volcano=4, etc.)
+ *
+ * Cost calculation combines both elevation and vegetation factors.
+ * Flying units can cross water (cost 1) but face higher costs at peaks.
+ *
+ * Parameters:
+ *   i - X coordinate of sector (0 to world.mapx-1)
+ *   j - Y coordinate of sector (0 to world.mapy-1)
+ *
+ * Returns:
+ *   Combined movement cost (elevation + vegetation) for flying units
+ *   -1 if invalid terrain type or coordinates (indicates impassable)
+ *
+ * Side Effects:
+ *   None - read-only function that only queries global data
+ *
+ * Testing Notes:
+ *   Category: A (Unit) | Simple lookup function with clear inputs/outputs
+ *   Approach: Unit tests with mock sector data and known cost tables
+ *   Key Tests: Valid coordinates, invalid terrain, cost combinations
+ *   Dependencies: Global arrays (ele, veg, FElecost, FVegcost), sct structure
+ *   Mock Requirements: Mock sector data with known altitude/vegetation values
+ *   Complexity: Simple - straightforward table lookup with error handling
+ *
+ * Notes:
+ *   - Thread-safe as read-only operation on global immutable data
+ *   - Critical for flight pathfinding and movement validation
+ *   - Compare with land movement cost functions for balance verification
+ *   - Cost tables are string-based with character arithmetic ('0' offset)
+ */
 /* calculations for cost of movement during flight */
 int
 flightcost(i,j)
@@ -1207,6 +1877,87 @@ unsigned char typ;
 }
 #endif /* ADMIN */
 
+/*
+ * spreadsheet - Comprehensive economic calculation engine for nation production and revenue
+ *
+ * Performs complete economic calculations for a nation, computing total resource
+ * production, tax revenue, and population distribution across all sectors. This
+ * function serves as the core economic engine of the game, calculating the
+ * complex interactions between population, terrain, magic, seasonal effects,
+ * and taxation that determine national wealth and resource availability.
+ *
+ * The calculation system processes each owned sector by designation type:
+ *
+ * Mines (DMINE):
+ * - Production: metal_value * population (up to TOMANYPEOPLE=4000, half efficiency above)
+ * - Magic bonuses: 2x for MINER power, 2x for STEEL power (4x total possible)
+ * - Tax revenue: production * TAXMETAL(8) * tax_rate / 100
+ * - Requires trade good visibility validation via tg_ok()
+ *
+ * Farms (DFARM):
+ * - Production: tofood(sector) * population (efficiency scaling like mines)
+ * - Seasonal modifiers: Spring(/2), Summer(1x), Fall(2.5x), Winter(0x)
+ * - Mill bonus: +20% production if adjacent mill has 500+ people
+ * - Tax revenue: production * TAXFOOD(5) * tax_rate / 100
+ *
+ * Gold Mines (DGOLDMINE):
+ * - Production: jewel_value * population (efficiency scaling like mines)
+ * - Magic bonus: 2x for MINER power
+ * - Tax revenue: production * TAXGOLD(8) * tax_rate / 100
+ * - Requires trade good visibility validation
+ *
+ * Cities/Capitols (DCITY/DCAPITOL):
+ * - Base tax: population * TAXCITY(100) * tax_rate / 100
+ * - Magic bonus: 2x effective population with ARCHITECT power
+ * - No resource production, pure revenue generation
+ *
+ * Towns (DTOWN):
+ * - Base tax: population * TAXTOWN(80) * tax_rate / 100
+ * - Magic bonus: 2x effective population with ARCHITECT power
+ * - No resource production, pure revenue generation
+ *
+ * Special Magical Production (DERVISH/DESTROYER in desert/ice):
+ * - Fixed 6 food per person (3 food per person above 4000)
+ * - Seasonal effects: Desert harsh summer, good winter; Ice opposite
+ * - Tax revenue: production * TAXFOOD * tax_rate / 100
+ *
+ * Other Sectors:
+ * - Production: tofood(sector) * population (efficiency scaling)
+ * - Tax revenue: production * TAXOTHR(3) * tax_rate / 100
+ * - Covers all unspecialized sectors
+ *
+ * The global spread structure accumulates:
+ * - Total resources: food, gold, metal, jewels
+ * - Revenue by source: farms, mines, cities, etc.
+ * - Population distribution: by sector type
+ * - Final calculation: total gold = resources + all revenue sources
+ *
+ * Parameters:
+ *   nation - Nation ID for which to calculate economics
+ *
+ * Returns:
+ *   void - Results stored in global spread structure
+ *
+ * Side Effects:
+ *   Modifies global spread structure with calculated values
+ *   Reads from sct[][] sector array and ntn[] nation array
+ *
+ * Testing Notes:
+ *   Category: B (Integration) | Complex system with many interdependencies
+ *   Approach: Integration tests with complete game state scenarios
+ *   Key Tests: Each sector type calculation, magic bonuses, seasonal effects
+ *   Dependencies: tofood(), tg_ok(), magic(), sector/nation data, constants
+ *   Mock Requirements: Complete mock world with various sector types and populations
+ *   Complexity: Complex - comprehensive economic simulation with multiple systems
+ *
+ * Notes:
+ *   - Central economic engine critical for game balance and progression
+ *   - Efficiency scaling prevents unlimited growth from overpopulation
+ *   - Magic powers provide significant but balanced economic advantages
+ *   - Seasonal effects add strategic timing elements to food production
+ *   - Tax rate allows player control over revenue vs. population happiness
+ *   - Mill adjacency system encourages agricultural cluster development
+ */
 void
 spreadsheet(nation)
 int nation;
@@ -1365,7 +2116,69 @@ int nation;
 	spread.gold += spread.revfood + spread.revjewels + spread.revmetal + spread.revcity + spread.revcap + spread.revothr;
 }
 
-/* string inputing routine to allow deleting */
+/*
+ * get_nname - Interactive string input with live editing and length constraints
+ *
+ * Provides an interactive string input interface with real-time character
+ * display, backspace editing, and automatic length limiting. Designed for
+ * entering nation names and other string data with immediate visual feedback.
+ * Implements character-by-character processing for curses-based terminals.
+ *
+ * Algorithm:
+ *   - Character-by-character input loop using getch()
+ *   - Printable character validation with isprint()
+ *   - Real-time display updates with addch() and refresh()
+ *   - Length-bounded input with NAMELTH constraint
+ *   - Backspace handling with cursor repositioning and character removal
+ *   - Null termination for proper C string handling
+ *
+ * Input Processing:
+ *   - Printable characters: Add to string if within length limit, display immediately
+ *   - Backspace (\b, DEL \177): Remove last character, erase from display
+ *   - Enter/Return (\n, \r): Complete input and null-terminate string
+ *   - Non-printable characters: Ignored (no action taken)
+ *
+ * Parameters:
+ *   str - Output buffer for collected string (must be at least NAMELTH+1 bytes)
+ *
+ * Returns:
+ *   void (result returned via str parameter modification)
+ *
+ * Side Effects:
+ *   - Modifies str[] array with collected input characters
+ *   - Reads from stdin using curses getch()
+ *   - Updates screen display with addch(), move(), refresh()
+ *   - Changes cursor position during editing operations
+ *   - Requires curses library initialization (initscr, etc.)
+ *   - Guarantees null termination of output string
+ *
+ * Length Management:
+ *   - Maximum input length limited by NAMELTH constant
+ *   - Prevents buffer overflow by rejecting characters beyond limit
+ *   - Automatically null-terminates string at completion
+ *   - Count tracking ensures accurate length management
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires curses library and terminal interface
+ *   Approach: Integration testing with mock terminal/curses interface
+ *   Key Tests: [Character entry, backspace editing, length limits, string termination]
+ *   Dependencies: curses library (stdscr, getch, addch, refresh, move, getyx)
+ *   Mock Requirements: Terminal interface mocking for automated testing
+ *   Complexity: Moderate - User interface with state management and string handling
+ *
+ * Buffer Management:
+ *   - Caller responsible for providing adequate buffer size (NAMELTH+1)
+ *   - Function guarantees null termination within buffer bounds
+ *   - No buffer overflow protection beyond length checking
+ *   - Character count management prevents array bounds violations
+ *
+ * Notes:
+ *   - Similar to get_number() but handles string input instead of numeric
+ *   - Uses isprint() for comprehensive printable character validation
+ *   - Character 127 (\177) handles DEL key on some terminal types
+ *   - Real-time feedback provides immediate visual confirmation to user
+ *   - NAMELTH constant defines maximum string length for consistency
+ */
 void
 get_nname(str)
 char str[];
@@ -1401,8 +2214,83 @@ char str[];
 
 
 #ifdef CONQUER
-/* routine to find a nation number using name or number  */
-/* returns NTOTAL+1 if input is invalid; -1 for no input */
+/*
+ * get_country - Nation lookup by name or number with input validation
+ *
+ * Interactive function that prompts for nation identification and returns
+ * the corresponding nation index. Supports multiple input methods: exact
+ * nation name matching, special keywords ("god", "news"), and numeric
+ * nation IDs. Provides comprehensive error handling and input validation
+ * for robust nation selection in game interfaces.
+ *
+ * Algorithm:
+ *   1. Collect input string using get_nname() interface
+ *   2. Handle empty input (return -1 for no selection)
+ *   3. Attempt exact string match against all nation names
+ *   4. Check for special keywords ("god" -> 0, "news" -> NEWSMAIL)
+ *   5. If no name match, attempt numeric parsing with validation
+ *   6. Validate numeric range and return appropriate result
+ *
+ * Input Methods:
+ *   - Nation Name: Exact string match against ntn[].name array
+ *   - Special Keywords: "god" maps to nation 0, "news" maps to NEWSMAIL
+ *   - Numeric ID: Parse digits and validate against nation count (1-NTOTAL)
+ *   - Empty Input: Return -1 to indicate no selection made
+ *
+ * Parameters:
+ *   None (uses interactive input via get_nname())
+ *
+ * Returns:
+ *   0-NTOTAL: Valid nation index (0=god, 1-NTOTAL=player nations)
+ *   NEWSMAIL: Special news system identifier
+ *   NTOTAL: Invalid input error indicator
+ *   -1: No input provided (empty string)
+ *
+ * Side Effects:
+ *   - Calls get_nname() which performs interactive terminal input
+ *   - Displays error message via errormsg() for invalid nation names
+ *   - Reads from global nation array (ntn[]) for name matching
+ *   - May trigger curses display operations through get_nname()
+ *
+ * Input Validation:
+ *   - String length checking for empty input detection
+ *   - Exact name matching with case-sensitive comparison
+ *   - Numeric validation ensuring all characters are digits
+ *   - Range validation for numeric IDs (must be <= NTOTAL)
+ *   - Special keyword recognition for system functions
+ *
+ * Error Handling:
+ *   - Invalid nation name: Shows error message, returns NTOTAL
+ *   - Non-numeric characters in number: Error message, returns NTOTAL
+ *   - Number out of range: Automatically clamps to NTOTAL
+ *   - Empty input: Silent return of -1 (not an error condition)
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires nation data and terminal interface
+ *   Approach: Integration testing with mock nation database and terminal
+ *   Key Tests: [Name lookup, numeric lookup, special keywords, error cases]
+ *   Dependencies: Nation database (ntn[]), get_nname(), errormsg()
+ *   Mock Requirements: Nation data setup, terminal input mocking
+ *   Complexity: Moderate - Multiple input paths with validation logic
+ *
+ * Global Dependencies:
+ *   - ntn[]: Array of nation structures with .name field for matching
+ *   - NTOTAL: Total number of nations for bounds checking
+ *   - NEWSMAIL: Special identifier for news system
+ *   - NAMELTH: Maximum name length for buffer sizing
+ *
+ * Special Cases:
+ *   - "god": Always maps to nation 0 regardless of nation names
+ *   - "news": Always maps to NEWSMAIL constant
+ *   - Numeric input: Parsed digit-by-digit with overflow protection
+ *   - Empty input: Treated as user cancellation, not error
+ *
+ * Notes:
+ *   - Case-sensitive string matching for nation names
+ *   - Numeric parsing allows leading zeros without issues
+ *   - CONQUER build only (requires preprocessor flag)
+ *   - Function combines user interface and data lookup functionality
+ */
 int
 get_country()
 {
@@ -1443,7 +2331,88 @@ get_country()
 	return(hold);
 }
 
-/* finds a nation for god to be, returns 1 on failure */
+/*
+ * get_god - God nation selection interface with administrative privileges
+ *
+ * Interactive interface for super users (gods) to select which nation they
+ * want to control or observe. Provides screen prompting, input validation,
+ * and complete session state setup for administrative game oversight.
+ * Handles user cancellation and invalid input with appropriate error recovery.
+ *
+ * Algorithm:
+ *   1. Clear bottom screen area for clean interface presentation
+ *   2. Display "Super User; For what nation?" prompt at bottom of screen
+ *   3. Refresh display to ensure prompt visibility
+ *   4. Collect nation selection using get_country() interface
+ *   5. Validate input and handle cancellation/errors appropriately
+ *   6. Set global game state (country, curntn) for selected nation
+ *   7. Return success/failure status to caller
+ *
+ * User Interface Features:
+ *   - Clean screen presentation with bottom area clearing
+ *   - Prominent super user prompt for administrative context
+ *   - Immediate display refresh for responsive interface
+ *   - Error recovery with screen restoration on failure
+ *
+ * Parameters:
+ *   None (uses interactive terminal input)
+ *
+ * Returns:
+ *   0: Successfully selected nation and updated global state
+ *   1: Failed due to user cancellation or invalid input
+ *
+ * Side Effects:
+ *   - Modifies screen display via clear_bottom(), mvaddstr(), refresh()
+ *   - Sets global variable 'country' to selected nation index
+ *   - Sets global pointer 'curntn' to point to selected nation structure
+ *   - May set 'redraw' flag to DONE on failure for screen management
+ *   - Calls makebottom() to restore screen layout on failure
+ *   - Performs interactive input through get_country() chain
+ *
+ * Global State Management:
+ *   - country: Set to selected nation index (0 on failure)
+ *   - curntn: Set to &ntn[country] for direct nation access
+ *   - redraw: Set to DONE on failure to trigger screen refresh
+ *   - Screen state: Modified through curses display operations
+ *
+ * Input Validation and Error Handling:
+ *   - Empty input (-1 from get_country()): Treated as cancellation
+ *   - Invalid nation (NTOTAL from get_country()): Treated as error
+ *   - Both error conditions: Reset country to 0, restore screen, return 1
+ *   - Success: Update global state for selected nation, return 0
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires curses display and nation data
+ *   Approach: Integration testing with mock terminal and nation database
+ *   Key Tests: [Valid selection, cancellation, invalid input, screen management]
+ *   Dependencies: curses library, get_country(), nation database (ntn[])
+ *   Mock Requirements: Terminal display mocking, nation data setup
+ *   Complexity: Moderate - UI management with global state coordination
+ *
+ * Administrative Context:
+ *   - Designed specifically for super user/god mode operations
+ *   - Allows administrative oversight of any nation in the game
+ *   - Provides clean separation between normal and administrative interfaces
+ *   - Integrates with broader administrative command framework
+ *
+ * Screen Management:
+ *   - Uses bottom screen area (LINES-4) for prompting
+ *   - Coordinates with makebottom() for layout restoration
+ *   - Manages redraw flags for efficient screen updates
+ *   - Provides clean visual separation for administrative functions
+ *
+ * Global Dependencies:
+ *   - ntn[]: Nation database for curntn pointer assignment
+ *   - LINES: Screen height for prompt positioning
+ *   - NTOTAL: Maximum nation count for validation
+ *   - country, curntn, redraw: Global game state variables
+ *
+ * Notes:
+ *   - CONQUER build only (requires preprocessor flag)
+ *   - Integrates with get_country() for consistent nation selection
+ *   - Error recovery ensures clean state on all failure paths
+ *   - Administrative privilege context clearly indicated in prompt
+ */
 int
 get_god()
 {
@@ -1463,7 +2432,74 @@ get_god()
 	return(0);
 }
 
-/* quick routine to reassign god and gods nations */
+/*
+ * reset_god - God nation reset utility for administrative session management
+ *
+ * Simple utility function that resets the administrative god session back to
+ * the default god nation (nation 0). Provides a clean, centralized mechanism
+ * for returning to god mode after administrative operations on other nations.
+ * Designed for readability and consistent state management in god mode operations.
+ *
+ * Algorithm:
+ *   1. Set global country variable to 0 (god nation)
+ *   2. Set global curntn pointer to &ntn[0] for god nation access
+ *   3. Return (no error conditions possible)
+ *
+ * Administrative Purpose:
+ *   - Provides clean return to god mode after nation-specific operations
+ *   - Ensures consistent state management for administrative sessions
+ *   - Centralizes god nation assignment logic for maintainability
+ *   - Improves code readability by abstracting common operation
+ *
+ * Parameters:
+ *   None
+ *
+ * Returns:
+ *   void (always succeeds)
+ *
+ * Side Effects:
+ *   - Sets global variable 'country' to 0 (god nation index)
+ *   - Sets global pointer 'curntn' to &ntn[0] for god nation structure
+ *   - Changes current administrative context to god mode
+ *   - No screen or display modifications
+ *
+ * Global State Management:
+ *   - country: Reset to 0 for god nation
+ *   - curntn: Reset to point to god nation structure (&ntn[0])
+ *   - Coordinates with get_god() for consistent god mode handling
+ *   - Provides symmetric operation to god nation selection
+ *
+ * Testing Notes:
+ *   Category: A (Unit) - Simple global variable assignment
+ *   Approach: Unit testing with global state verification
+ *   Key Tests: [God nation assignment, pointer setup, state consistency]
+ *   Dependencies: Global variables (country, curntn), nation array (ntn[])
+ *   Mock Requirements: Minimal - global variable monitoring
+ *   Complexity: Simple - Straightforward assignment operations
+ *
+ * Usage Context:
+ *   - Called after administrative operations on specific nations
+ *   - Used to return to god oversight mode for general administration
+ *   - Provides clean separation between nation-specific and god operations
+ *   - Integrates with broader administrative command framework
+ *
+ * Design Rationale:
+ *   - Simple function improves code readability over inline assignments
+ *   - Centralizes god nation logic for consistent behavior
+ *   - Provides symmetric operation to get_god() nation selection
+ *   - Eliminates code duplication in administrative modules
+ *
+ * Global Dependencies:
+ *   - country: Global current nation identifier
+ *   - curntn: Global current nation structure pointer
+ *   - ntn[]: Nation database array (assumes ntn[0] is god nation)
+ *
+ * Notes:
+ *   - CONQUER build only (requires preprocessor flag)
+ *   - No error checking needed (god nation always exists)
+ *   - Function comment notes readability improvement as design goal
+ *   - Extremely simple but important for administrative state management
+ */
 void
 reset_god()
 {
@@ -1652,6 +2688,74 @@ int prtflag;	/* if true printf reason */
 }
 #endif /* ADMIN */
 
+/*
+ * defaultunit - Determine optimal default army type based on nation's magical abilities
+ *
+ * Selects the most advantageous army type for a nation based on their magical
+ * powers and racial characteristics. This function implements an intelligent
+ * army type selection system that maximizes the effectiveness of special
+ * abilities and racial bonuses, primarily used by NPC nations to optimize
+ * their military strategy automatically.
+ *
+ * The selection follows a priority hierarchy, checking for increasingly
+ * powerful magical abilities and selecting the strongest available option:
+ *
+ * Priority 1 - Undead Powers (Highest Priority):
+ * - VAMPIRE power → A_ZOMBIE (24): Undead armies with vampiric leadership
+ *   Creates fearsome undead legions immune to many effects
+ *
+ * Priority 2 - Advanced Monster Powers:
+ * - AV_MONST (Advanced Monsters) + BREEDER → A_OLOG (10): Elite troll units
+ *   Large, powerful creatures with breeding capabilities
+ * - AV_MONST alone → A_URUK (7): Advanced humanoid monsters
+ *   Superior warrior breeds with enhanced combat abilities
+ *
+ * Priority 3 - Specialized Combat Powers:
+ * - ARCHER power → A_ARCHER (6): Specialized ranged combat units
+ *   Elite marksmen with superior range and accuracy
+ *
+ * Priority 4 - Basic Monster Powers:
+ * - MI_MONST power → A_ORC (2): Basic monstrous humanoids
+ *   Crude but effective warrior creatures
+ *
+ * Priority 5 - Racial/Cultural Specialization:
+ * - NPC_NOMAD nations → A_LT_CAV (16): Light cavalry forces
+ *   Mobile horsemen suited to nomadic warfare tactics
+ *
+ * Default Fallback:
+ * - No special powers → A_INFANTRY (3): Standard human foot soldiers
+ *   Basic military units suitable for all nations
+ *
+ * The hierarchy ensures nations with multiple powers select the most powerful
+ * option available, while providing reasonable defaults for nations without
+ * special military abilities.
+ *
+ * Parameters:
+ *   nation - Nation ID for which to determine optimal army type
+ *
+ * Returns:
+ *   Army type constant (A_*) representing the optimal default unit
+ *   Higher-numbered types generally represent more powerful/specialized units
+ *
+ * Side Effects:
+ *   None - read-only analysis of nation's magical powers and characteristics
+ *
+ * Testing Notes:
+ *   Category: A (Unit) | Clear priority logic with magic power evaluation
+ *   Approach: Unit tests with mock nations having specific power combinations
+ *   Key Tests: Each magic power priority, combination effects, default fallback
+ *   Dependencies: magic() macro, ntn[] nation data, power/army type constants
+ *   Mock Requirements: Mock nations with known power combinations
+ *   Complexity: Simple - straightforward priority checking with clear hierarchy
+ *
+ * Notes:
+ *   - Critical for NPC military effectiveness and strategic balance
+ *   - Priority system ensures optimal use of available magical abilities
+ *   - Undead powers take absolute priority due to their overwhelming advantages
+ *   - Monster powers scale appropriately with advanced > basic
+ *   - Nomadic cultural adaptation provides mobility-focused army selection
+ *   - Default infantry ensures all nations have viable military options
+ */
 /*******************************************************************/
 /* DEFAULTUNIT() returns the default army type for a given country */
 /* this is mostly used by npc's to take advantage of their powers  */
@@ -1748,6 +2852,73 @@ struct s_sector *sptr;
 }
 #endif /* ADMIN */
 
+/*
+ * tg_ok - Trade good visibility and exploitation validation checker
+ *
+ * Determines whether a nation can detect, identify, and exploit the trade good
+ * present in a sector. This function implements the game's technology and
+ * knowledge progression system, where nations must develop sufficient expertise
+ * before they can benefit from advanced materials and luxury goods.
+ *
+ * The validation system operates on two levels:
+ * 1. Technology/Wealth Requirements: Advanced trade goods require sufficient
+ *    national development to be recognized and extracted
+ * 2. Sector Viability: The sector must have adequate food production to support
+ *    specialized economic activity (DESFOOD=4 minimum)
+ *
+ * Technology Requirements by Trade Good Category:
+ *
+ * Mining Technology (mine_ability threshold):
+ * - Lead: 8 (basic mining)
+ * - Tin: 11 (bronze age metals)
+ * - Bronze: 15 (alloy technology)
+ * - Iron: 25 (iron age smelting)
+ * - Steel: 30 (advanced metallurgy)
+ * - Mithral: 30 (magical metal recognition)
+ * - Adamantine: 40 (legendary material mastery)
+ *
+ * Wealth Requirements (luxury goods, wealth threshold):
+ * - Dye, Silk: 5 (basic luxury trade)
+ * - Gold, Rubys: 8 (precious materials)
+ * - Ivory: 15 (exotic luxury goods)
+ * - Diamonds: 20 (rare gemstone expertise)
+ * - Platinum: 25 (ultimate precious metal)
+ *
+ * Always Available (no requirements):
+ * - Spice, Silver, Pearls: Basic valuable commodities
+ * - All food, basic materials, and common trade goods
+ *
+ * Special Cases:
+ * - Nation 0 (unowned sectors): Always return TRUE for neutral access
+ * - Invalid nations (>=NTOTAL): Always return TRUE for system sectors
+ * - Final viability check: Sector must produce >=4 food to support development
+ *
+ * Parameters:
+ *   nation - Nation ID checking trade good access (0 for neutral)
+ *   sptr - Pointer to sector containing the trade good to validate
+ *
+ * Returns:
+ *   TRUE (1) if nation can exploit the trade good in this sector
+ *   FALSE (0) if insufficient technology/wealth or sector not viable
+ *
+ * Side Effects:
+ *   None - read-only validation using nation stats and sector data
+ *
+ * Testing Notes:
+ *   Category: A (Unit) | Clear logic with technology threshold validation
+ *   Approach: Unit tests with mock nations at various development levels
+ *   Key Tests: Each technology threshold, wealth requirements, food viability
+ *   Dependencies: tofood() function, ntn[] nation data, trade good constants
+ *   Mock Requirements: Mock nations with known ability/wealth, mock sectors
+ *   Complexity: Simple - straightforward threshold checking with clear logic
+ *
+ * Notes:
+ *   - Critical for economic balance and technology progression
+ *   - Prevents early game exploitation of advanced materials
+ *   - Encourages balanced national development (not just military focus)
+ *   - Food viability requirement prevents exploitation of barren sectors
+ *   - Technology trees create strategic choices in nation development
+ */
 /* tg_ok returns true if a trade good can be seen by the owner of sector */
 int
 tg_ok( nation, sptr )
@@ -1781,6 +2952,75 @@ struct	s_sector	*sptr;
 	return(FALSE);
 }
 
+/*
+ * fort_val - Calculate total defensive fortification value of a sector
+ *
+ * Computes the complete defensive value of a sector based on its designation
+ * type, fortification level, and any magical enhancements. This value is
+ * critical for combat calculations, determining how effectively defending
+ * forces can resist attacks and protect their positions.
+ *
+ * The fortification system uses a base defense value plus designation-specific
+ * multipliers applied to the sector's fortress level. Magic can double the
+ * effectiveness of constructed fortifications.
+ *
+ * Fortification Values by Designation:
+ *
+ * Stockades (DSTOCKADE):
+ * - Fixed value: DEF_BASE (10)
+ * - No fortress level scaling or magic bonuses
+ * - Basic wooden defensive structures
+ *
+ * Forts (DFORT):
+ * - Base: DEF_BASE (10) + FORTSTR (5) * fortress_level
+ * - With ARCHITECT magic: DEF_BASE + 2 * FORTSTR * fortress_level
+ * - Military-focused stone fortifications with scaling strength
+ *
+ * Towns (DTOWN):
+ * - Base: DEF_BASE (10) + TOWNSTR (5) * fortress_level
+ * - With ARCHITECT magic: DEF_BASE + 2 * TOWNSTR * fortress_level
+ * - Civilian defensive structures with moderate scaling
+ *
+ * Cities/Capitols (DCITY/DCAPITOL):
+ * - Base: 2 * DEF_BASE (20) + CITYSTR (8) * fortress_level
+ * - With ARCHITECT magic: 2 * DEF_BASE + 2 * CITYSTR * fortress_level
+ * - Major urban centers with doubled base defense and strongest scaling
+ *
+ * Other Sectors:
+ * - Return 0 (no defensive fortifications)
+ * - Includes farms, mines, and undesignated terrain
+ *
+ * Magic Enhancement:
+ * - ARCHITECT power doubles fortress level effectiveness
+ * - Represents superior engineering and construction techniques
+ * - Does not affect base defense values, only scaling multipliers
+ *
+ * Parameters:
+ *   sptr - Pointer to sector structure containing designation and fortress data
+ *
+ * Returns:
+ *   Total defensive value for the sector
+ *   0 for sectors without defensive fortifications
+ *   Enhanced values for sectors with ARCHITECT magic
+ *
+ * Side Effects:
+ *   None - read-only calculation using sector data and magic status
+ *
+ * Testing Notes:
+ *   Category: A (Unit) | Clear calculation with designation-based logic
+ *   Approach: Unit tests with mock sectors for each designation and fortress level
+ *   Key Tests: Each designation type, fortress scaling, ARCHITECT magic bonus
+ *   Dependencies: magic() macro, sector designation/fortress fields, constants
+ *   Mock Requirements: Mock sectors with known designations and fortress levels
+ *   Complexity: Simple - straightforward calculation with clear formula
+ *
+ * Notes:
+ *   - Critical for combat system balance and defensive strategy
+ *   - Cities/capitols have strongest defenses (2x base + best scaling)
+ *   - Magic provides significant but not overwhelming defensive advantage
+ *   - Fortress level investment creates meaningful strategic choices
+ *   - Stockades provide fixed basic defense regardless of investment level
+ */
 /* this routine computes the fortification value of a sector */
 int
 fort_val(sptr)
