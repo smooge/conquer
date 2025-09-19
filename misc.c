@@ -772,6 +772,56 @@ int	movee;
  */
 
 long
+/*
+ * solds_in_sector - Count total soldiers for a nation in a specific sector
+ *
+ * Calculates the total number of soldiers belonging to a specified nation
+ * that are currently located in a given map sector. Iterates through all
+ * army units for the nation and sums soldiers from armies positioned at
+ * the target coordinates.
+ *
+ * This function provides essential military intelligence for:
+ * - Combat preparation and threat assessment
+ * - Strategic planning and force distribution analysis
+ * - Diplomatic intelligence gathering
+ * - Administrative reporting and military census
+ * - AI decision-making for movement and engagement
+ *
+ * Algorithm:
+ *   1. Initialize nation structure pointer and accumulator
+ *   2. Iterate through all army slots (MAXARM limit)
+ *   3. Skip empty army units (sold == 0)
+ *   4. Check if army location matches target coordinates
+ *   5. Add army size to total count if location matches
+ *   6. Return aggregated soldier count
+ *
+ * Parameters:
+ *   x - Target sector X coordinate on world map
+ *   y - Target sector Y coordinate on world map
+ *   nation - Nation ID to count soldiers for (0 to NTOTAL-1)
+ *
+ * Returns:
+ *   Total number of soldiers from specified nation in target sector
+ *   Returns 0 if no armies present or nation has no forces at location
+ *
+ * Side Effects:
+ *   None - read-only operation using nation army data structures
+ *
+ * Testing Notes:
+ *   Category: A (Unit) | Pure calculation function with clear inputs/outputs
+ *   Approach: Unit tests with mock nation data and army configurations
+ *   Key Tests: Empty sector, single army, multiple armies, boundary conditions
+ *   Dependencies: ntn[] array, nation structure with arm[] array, MAXARM constant
+ *   Mock Requirements: Mock nation data with armies at known coordinates
+ *   Complexity: Simple - straightforward iteration and counting logic
+ *
+ * Notes:
+ *   - Returns long to handle large army concentrations without overflow
+ *   - Does not validate input coordinates (caller responsibility)
+ *   - Army location stored in xloc/yloc fields of army structure
+ *   - Critical for military planning and combat calculations
+ *   - Used by AI systems for threat assessment and tactical decisions
+ */
 solds_in_sector( x, y, nation )
 int	x;
 int	y;
@@ -963,6 +1013,61 @@ int	y;
 }
 
 #ifdef CONQUER
+/*
+ * units_in_sector - Count total military units for a nation in a specific sector
+ *
+ * Counts the total number of discrete military units (armies and navies) that
+ * belong to a specified nation and are positioned in a given map sector.
+ * Unlike solds_in_sector() which counts individual soldiers, this function
+ * counts unit formations regardless of their size.
+ *
+ * This function provides critical tactical intelligence for:
+ * - Unit density analysis and overcrowding detection
+ * - Strategic formation assessment and military planning
+ * - Sector control evaluation and territorial analysis
+ * - AI decision-making for movement and positioning
+ * - Administrative unit tracking and organizational planning
+ *
+ * The function counts two types of military units:
+ * 1. Army Units: Land-based military formations with soldiers (MAXARM limit)
+ * 2. Naval Units: Sea-based fleets with any ship types (MAXNAVY limit)
+ *
+ * Algorithm:
+ *   1. Initialize counters and save current nation pointer
+ *   2. Switch context to target nation for macro operations
+ *   3. Iterate through all army slots checking location and soldier count
+ *   4. Iterate through all navy slots checking location and ship count
+ *   5. Restore original nation context
+ *   6. Return total unit count
+ *
+ * Parameters:
+ *   x - Target sector X coordinate on world map
+ *   y - Target sector Y coordinate on world map
+ *   nation - Nation ID to count units for (0 to NTOTAL-1)
+ *
+ * Returns:
+ *   Total number of discrete military units in sector (armies + navies)
+ *   Returns 0 if no units present at location
+ *
+ * Side Effects:
+ *   - Temporarily modifies global curntn pointer (restored before return)
+ *   - Uses player-specific macros that depend on current nation context
+ *
+ * Testing Notes:
+ *   Category: B (Integration) | Requires nation context switching and global state
+ *   Approach: Integration tests with full nation data and military structures
+ *   Key Tests: Empty sector, mixed units, army-only, navy-only, context restoration
+ *   Dependencies: curntn global, ntn[] array, P_ASOLD/P_AXLOC/P_AYLOC/P_NXLOC/P_NYLOC macros
+ *   Mock Requirements: Full nation structures with army and navy data
+ *   Complexity: Moderate - global state manipulation and dual counting systems
+ *
+ * Notes:
+ *   - Counts unit formations, not individual soldiers or ships
+ *   - Requires CONQUER compilation flag for availability
+ *   - Uses player macros (P_*) that depend on curntn global state
+ *   - Context switching ensures correct macro behavior for target nation
+ *   - Essential for strategic planning and military organization
+ */
 int
 units_in_sector(int x,int y,int nation)
 {
@@ -1264,6 +1369,58 @@ int type, nation;
 }
 
 int
+/*
+ * todigit - Convert ASCII character to numeric digit value
+ *
+ * Converts a single ASCII character to its corresponding numeric digit value,
+ * providing safe character-to-integer conversion for input parsing and
+ * validation systems. This utility function ensures proper bounds checking
+ * and error handling for character-based numeric processing.
+ *
+ * This function provides essential input validation for:
+ * - User input parsing and command line processing
+ * - File parsing and data import operations
+ * - Numeric validation in forms and interfaces
+ * - Safe character conversion without undefined behavior
+ * - Consistent error handling across parsing systems
+ *
+ * Character Processing:
+ * - Valid digits ('0' through '9'): Return numeric value (0-9)
+ * - Invalid characters: Return -1 to indicate conversion failure
+ * - ASCII-based conversion using character arithmetic
+ * - No locale-dependent behavior or character set assumptions
+ *
+ * Algorithm:
+ *   1. Check if character is within valid digit range ('0' to '9')
+ *   2. If valid, subtract '0' ASCII value to get numeric equivalent
+ *   3. If invalid, return -1 to indicate conversion error
+ *   4. Caller responsible for error checking and handling
+ *
+ * Parameters:
+ *   character - ASCII character to convert (register int for efficiency)
+ *
+ * Returns:
+ *   0-9: Successful conversion to corresponding digit value
+ *   -1: Conversion failure (character not a valid digit)
+ *
+ * Side Effects:
+ *   None - pure conversion function with no state changes
+ *
+ * Testing Notes:
+ *   Category: A (Unit) | Simple conversion function with clear logic
+ *   Approach: Unit tests with valid digits, invalid characters, boundary conditions
+ *   Key Tests: All digits ('0'-'9'), letters, symbols, control characters, boundary values
+ *   Dependencies: ASCII character set assumptions
+ *   Mock Requirements: None - standalone conversion function
+ *   Complexity: Simple - character range checking and arithmetic conversion
+ *
+ * Notes:
+ *   - Assumes ASCII character encoding (standard for C)
+ *   - Uses register storage class for potential performance optimization
+ *   - Consistent error return value (-1) for standardized error handling
+ *   - Safe alternative to potentially unsafe conversion methods
+ *   - Critical utility for input parsing and validation systems
+ */
 todigit(character)
 register int	character;
 {
@@ -1277,6 +1434,71 @@ register int	character;
  * if leader==(-1), do not include ships on the sector search
  */
 void
+/*
+ * prep - Prepare occupation map showing territorial control and leadership zones
+ *
+ * Builds a comprehensive occupation map (occ[][]) that tracks territorial
+ * control by different nations across the game world. The function operates
+ * in two distinct modes based on the leader parameter: leadership communication
+ * zones or standard military occupation mapping.
+ *
+ * This function provides essential strategic intelligence for:
+ * - Territorial control visualization and boundary determination
+ * - Diplomatic relations and border conflict identification
+ * - Strategic planning and expansion target analysis
+ * - Leadership effectiveness and communication zone mapping
+ * - AI decision-making for territorial disputes and expansion
+ *
+ * Operating Modes:
+ * 1. Leader Mode (leader=TRUE): Maps communication zones around leader units
+ *    - Only processes specified nation and their leader units
+ *    - Creates communication radius zones around each leader
+ *    - Zone size determined by nation's communication attribute
+ *    - Excludes monsters and non-leader units from consideration
+ *
+ * 2. Occupation Mode (leader=FALSE): Maps direct military occupation
+ *    - Processes all active nations across the entire world
+ *    - Maps sectors directly occupied by armies and navies
+ *    - Handles contested sectors (multiple nations present)
+ *    - Excludes scout units from occupation calculations
+ *
+ * Algorithm:
+ *   1. Clear entire occupation map (set all sectors to 0)
+ *   2. Determine processing scope (single nation vs all nations)
+ *   3. For each active nation in scope:
+ *      a. Process all army units within nation's military structure
+ *      b. Apply leader communication zones or direct occupation
+ *      c. Handle contested sectors and conflict resolution
+ *      d. Process naval units (occupation mode only)
+ *   4. Restore original nation context and return
+ *
+ * Parameters:
+ *   nation - Target nation ID for leader mode, or starting context for occupation mode
+ *   leader - Operation mode flag (TRUE=leadership zones, FALSE=occupation mapping)
+ *
+ * Returns:
+ *   void - Results stored in global occ[][] array
+ *
+ * Side Effects:
+ *   - Completely rebuilds global occ[][] occupation map
+ *   - Temporarily modifies curntn global pointer (restored before return)
+ *   - Uses nation-specific macros that depend on current nation context
+ *
+ * Testing Notes:
+ *   Category: C (System) | Requires full game world state and global map arrays
+ *   Approach: System tests with complete nation data and map initialization
+ *   Key Tests: Leader vs occupation modes, contested sectors, communication zones
+ *   Dependencies: occ[][] global array, curntn pointer, P_* macros, full nation data
+ *   Mock Requirements: Complete game world with nations, armies, and territories
+ *   Complexity: Complex - dual operating modes and comprehensive world state analysis
+ *
+ * Notes:
+ *   - Critical for territorial analysis and diplomatic calculations
+ *   - Leader mode focuses on command and control effectiveness
+ *   - Occupation mode shows actual military presence and control
+ *   - Contested sectors marked with NTOTAL value for conflict indication
+ *   - Essential for strategic AI planning and territorial dispute resolution
+ */
 prep(nation,leader)
 int nation,leader;
 {
@@ -1335,7 +1557,68 @@ int nation,leader;
 }
 
 #ifdef ADMIN
-/*routine to depelete a nation without a capitol */
+/*
+ * deplete - Process nation depletion due to capitol loss
+ *
+ * Handles the systematic collapse and depletion of a nation that has lost
+ * its capitol city. This catastrophic event triggers widespread military
+ * disbanding, civilian unrest, territorial rebellion, and economic collapse
+ * as the nation loses central authority and administrative control.
+ *
+ * This function simulates the historical reality that nations without
+ * administrative capitals face severe legitimacy crises leading to:
+ * - Military unit desertion and mercenary abandonment
+ * - Monster departure due to lack of magical support (jewel dependency)
+ * - Territorial rebellion and sector independence movements
+ * - Economic disruption and population displacement
+ * - Administrative breakdown and communication failure
+ *
+ * Capitol Validation Process:
+ * 1. Checks if nation's designated capitol coordinates have valid capitol
+ * 2. Verifies capitol ownership (belongs to nation or is unowned)
+ * 3. Confirms capitol controller is active (not eliminated/inactive)
+ * 4. Returns early if capitol situation is valid (no depletion needed)
+ *
+ * Military Depletion (PDEPLETE% probability):
+ * - Regular Troops: Disband and return to civilian population
+ * - Mercenaries: Return to global mercenary pool (MERCMEN)
+ * - Monsters: Abandon nation entirely (require jewel support)
+ * - Leaders: Exempt from automatic disbanding
+ *
+ * Territorial Rebellion (PDEPLETE% probability per sector):
+ * - Riots: Sector devastation and population flight
+ * - Secession: Sectors join neighboring nations (NOTDONE feature)
+ * - Capitol Immunity: Home capitol exempt from rebellion
+ *
+ * Parameters:
+ *   nation - Nation ID experiencing capitol loss and depletion
+ *
+ * Returns:
+ *   void - Effects applied directly to game world state
+ *
+ * Side Effects:
+ *   - Disbands military units and returns soldiers to population
+ *   - Removes monster units from nation's service
+ *   - Devastates sectors through riots and rebellion
+ *   - Sends detailed mail notifications to affected players
+ *   - Modifies global MERCMEN pool with returning mercenaries
+ *   - Updates sector ownership and population distributions
+ *
+ * Testing Notes:
+ *   Category: C (System) | Requires full game world state and complex interactions
+ *   Approach: System tests with complete nation data and capitol scenarios
+ *   Key Tests: Valid capitol, missing capitol, military types, territorial effects
+ *   Dependencies: Capitol validation, military structures, territorial data, mail system
+ *   Mock Requirements: Complete game world with nations, capitols, military, territories
+ *   Complexity: Complex - multi-system interaction with probabilistic outcomes
+ *
+ * Notes:
+ *   - Requires ADMIN compilation flag for availability
+ *   - Uses PDEPLETE constant for probability calculations
+ *   - Critical event that can dramatically alter game balance
+ *   - Player notification through detailed mail system integration
+ *   - Some territorial features marked NOTDONE for future implementation
+ */
 void
 deplete(nation)
 int nation;
@@ -1430,6 +1713,74 @@ int nation;
 
 /*routine to sack a nation's captiol */
 void
+/*
+ * sackem - Process capitol sacking and nation conquest consequences
+ *
+ * Handles the critical event when a nation's capitol is captured and sacked
+ * by an enemy force. This catastrophic military defeat triggers immediate
+ * resource transfer, territorial reorganization, administrative collapse,
+ * and potential nation elimination depending on remaining holdings.
+ *
+ * This function simulates the historical reality of capitol capture:
+ * - Immediate treasure and resource plunder by conquerors
+ * - Administrative disruption and government relocations
+ * - Economic collapse and trade system disruption
+ * - Territory degradation and infrastructure damage
+ * - Potential complete nation elimination
+ *
+ * Capitol Sacking Process:
+ * 1. Validates sacking conditions (capitol owned by enemy)
+ * 2. Announces conquest through global news system
+ * 3. Transfers wealth and resources to conquering nation
+ * 4. Handles territorial designation changes
+ * 5. Attempts capitol relocation to remaining territories
+ * 6. Notifies affected players of consequences
+ *
+ * Resource Transfer (Immediate Plunder):
+ * - Gold: 100% transfer to conqueror
+ * - Jewels: 100% transfer to conqueror
+ * - Metals: 100% transfer to conqueror
+ * - Food: 20% transfer to conqueror (80% destroyed/lost)
+ *
+ * Capitol Relocation Priority:
+ * 1. Cities (DCITY designation) - highest priority
+ * 2. Towns (DTOWN designation) - medium priority
+ * 3. Any remaining owned sector - last resort
+ *
+ * Territorial Effects:
+ * - Original capitol becomes city or devastated depending on conqueror status
+ * - Trade board cleared of all nation's active trades
+ * - Administrative communications disrupted
+ *
+ * Parameters:
+ *   cntry - Nation ID whose capitol is being sacked
+ *
+ * Returns:
+ *   void - Effects applied directly to game world state
+ *
+ * Side Effects:
+ *   - Transfers all treasury resources to conquering nation
+ *   - Modifies sector designations and ownership
+ *   - Updates nation capitol coordinates
+ *   - Removes nation from trade board systems
+ *   - Sends detailed mail notifications to affected players
+ *   - Updates global news with conquest announcement
+ *
+ * Testing Notes:
+ *   Category: C (System) | Requires full game world state and complex interactions
+ *   Approach: System tests with complete nation data and capitol scenarios
+ *   Key Tests: Valid conquest, resource transfer, capitol relocation, elimination
+ *   Dependencies: Nation data, sector ownership, trade system, mail system, news
+ *   Mock Requirements: Complete game world with multiple nations and territories
+ *   Complexity: Complex - multi-system interaction with significant game impact
+ *
+ * Notes:
+ *   - Critical event that can eliminate nations from the game
+ *   - Resource transfer ratios designed to reward successful conquest
+ *   - Capitol relocation prevents immediate nation elimination
+ *   - Mail notifications provide detailed status updates to players
+ *   - Trade system integration prevents economic exploitation
+ */
 sackem(cntry)
 	int cntry;
 {
@@ -1522,6 +1873,85 @@ sackem(cntry)
 
 /*destroy nation--special case if capitol not owned by other nation*/
 void
+/*
+ * destroy - Process complete nation elimination and territorial dissolution
+ *
+ * Handles the ultimate fate of a nation that has been completely eliminated
+ * from the game. This terminal event triggers comprehensive cleanup of all
+ * nation assets, territorial holdings, diplomatic relationships, and
+ * administrative systems while redistributing resources and population
+ * according to conquest circumstances.
+ *
+ * This function simulates the complete collapse and dissolution of a nation:
+ * - Total military disbanding and population redistribution
+ * - Complete territorial transfer or abandonment
+ * - Diplomatic relationship termination
+ * - Administrative system shutdown and file cleanup
+ * - Resource redistribution based on conquest type
+ * - Victory bonus assignment to successful conquerors
+ *
+ * Nation Elimination Process:
+ * 1. Validates nation status and skips inactive/monster nations
+ * 2. Announces destruction through global news system
+ * 3. Marks nation as permanently inactive
+ * 4. Disbands all military forces and naval fleets
+ * 5. Resets all diplomatic relationships to default states
+ * 6. Transfers resources based on conquest circumstances
+ * 7. Handles territorial redistribution by conquest type
+ * 8. Cleans up administrative files and communications
+ *
+ * Resource Transfer Logic:
+ * - Capitol Controlled by Enemy: All resources transferred to capitol owner
+ * - Capitol Self-Owned: Resources lost (god destruction scenario)
+ * - Combat Bonus: +5% combat skill awarded to successful conqueror
+ *
+ * Territorial Handling by Conquest Type:
+ * 1. God Destruction (Self-Owned Capitol):
+ *    - All sectors completely depopulated and unowned
+ *    - Infrastructure returned to undesignated state
+ *    - Total territorial reset
+ *
+ * 2. Cross-Racial Conquest (Different Race):
+ *    - Population flees to neighboring territories
+ *    - Sectors depopulated and unowned
+ *    - Infrastructure degrades based on food production capability
+ *
+ * 3. Same-Race Conquest (Identical Race):
+ *    - Direct territorial transfer to conqueror
+ *    - Population integration and infrastructure preservation
+ *    - Seamless administrative transition
+ *
+ * Parameters:
+ *   cntry - Nation ID being completely eliminated from the game
+ *
+ * Returns:
+ *   void - Effects applied directly to game world state
+ *
+ * Side Effects:
+ *   - Permanently deactivates nation (INACTIVE status)
+ *   - Disbands all military units and returns soldiers to population
+ *   - Destroys all naval vessels
+ *   - Resets all diplomatic relationships for all nations
+ *   - Transfers all treasury resources to capitol controller
+ *   - Redistributes or eliminates all territorial holdings
+ *   - Removes nation mail files from system
+ *   - Updates global news with destruction announcement
+ *
+ * Testing Notes:
+ *   Category: C (System) | Requires complete game world state and file system access
+ *   Approach: System tests with full nation data and territorial scenarios
+ *   Key Tests: Different conquest types, resource transfer, territorial handling
+ *   Dependencies: Nation data, sector ownership, diplomatic arrays, file system
+ *   Mock Requirements: Complete game world with multiple nations and complex state
+ *   Complexity: Complex - comprehensive system shutdown with multiple redistribution paths
+ *
+ * Notes:
+ *   - Terminal event that permanently removes nations from active play
+ *   - Conquest type determines resource and territorial redistribution
+ *   - Combat skill bonus rewards successful military conquest
+ *   - Monster nations have different handling (skip news announcements)
+ *   - Critical for game balance and victory condition management
+ */
 destroy(cntry)
 int cntry;
 {
@@ -1860,6 +2290,61 @@ int i,j;
 #ifdef ADMIN
 /* determines whether or not a unit has the ability to fly */
 int
+/*
+ * avian - Identify flying unit types for movement and combat calculations
+ *
+ * Determines whether a specified unit type has flight capabilities, enabling
+ * special movement rules, combat modifiers, and terrain navigation that
+ * distinguish flying units from ground-based forces. This classification
+ * affects pathfinding algorithms, combat calculations, and strategic planning
+ * systems throughout the game.
+ *
+ * Flying units have special characteristics:
+ * - Can move over water and peak terrain without movement penalties
+ * - May have different combat effectiveness against ground units
+ * - Require different pathfinding algorithms (flightcost calculations)
+ * - Often have unique magical or supernatural properties
+ * - May require special resources (jewels) for maintenance
+ *
+ * Recognized Flying Unit Types:
+ * - A_ROC: Giant mythical bird with massive carrying capacity
+ * - A_GRIFFON: Eagle-lion hybrid with aerial superiority
+ * - SPIRIT: Ethereal beings unbound by physical terrain
+ * - DJINNI: Air elementals with magical flight capabilities
+ * - DEMON: Supernatural entities with inherent flight powers
+ * - DRAGON: Legendary creatures with powerful aerial dominance
+ *
+ * Non-Flying Units: All other army types return FALSE including:
+ * - Regular military units (infantry, cavalry, etc.)
+ * - Ground-based monsters and creatures
+ * - Naval units (ships are water-bound, not airborne)
+ * - Siege engines and mechanical units
+ *
+ * Parameters:
+ *   typ - Unit type identifier from army structure (unsigned char)
+ *
+ * Returns:
+ *   TRUE if unit type has flight capabilities
+ *   FALSE if unit is ground-bound or water-bound
+ *
+ * Side Effects:
+ *   None - pure classification function with no state changes
+ *
+ * Testing Notes:
+ *   Category: A (Unit) | Simple classification function with clear logic
+ *   Approach: Unit tests with all known unit types and boundary conditions
+ *   Key Tests: All flying types return TRUE, all ground types return FALSE
+ *   Dependencies: Unit type constants (A_ROC, A_GRIFFON, etc.)
+ *   Mock Requirements: None - standalone function with constant inputs
+ *   Complexity: Simple - switch statement with predefined classifications
+ *
+ * Notes:
+ *   - Critical for movement system and pathfinding algorithm selection
+ *   - Used by flightcost() and other movement calculation functions
+ *   - Flight capability affects combat effectiveness and tactical options
+ *   - Requires ADMIN compilation flag for availability
+ *   - Unit type constants must match definitions in header files
+ */
 avian(typ)
 unsigned char typ;
 {
@@ -2511,6 +2996,72 @@ reset_god()
 
 #ifdef ADMIN
 int
+/*
+ * getleader - Determine appropriate leader type for a nation class
+ *
+ * Maps nation classes to their corresponding leadership unit types, ensuring
+ * that each nation type recruits culturally and strategically appropriate
+ * leaders. This classification system reflects the different governmental
+ * structures, military traditions, and magical hierarchies of various
+ * nation types within the game world.
+ *
+ * This function provides essential class-specific mapping for:
+ * - Leader recruitment and unit generation systems
+ * - Cultural consistency and thematic world building
+ * - Strategic balance through class-specific leader capabilities
+ * - AI decision-making for optimal leader selection
+ * - Administrative and military hierarchy representation
+ *
+ * Nation Class to Leader Type Mapping:
+ * - C_NPC, C_KING, C_TRADER: L_BARON (Noble administrative leadership)
+ * - C_EMPEROR: L_PRINCE (Imperial hierarchical leadership)
+ * - C_WIZARD: L_MAGI (Magical scholarly leadership)
+ * - C_PRIEST: L_BISHOP (Religious spiritual leadership)
+ * - C_PIRATE: L_CAPTAIN (Maritime military leadership)
+ * - C_WARLORD: L_LORD (Feudal military leadership)
+ * - C_DEMON: L_DEVIL (Infernal supernatural leadership)
+ * - C_DRAGON: L_WYRM (Ancient draconic leadership)
+ * - C_SHADOW: L_NAZGUL (Dark ethereal leadership)
+ *
+ * Leadership Characteristics by Type:
+ * - Administrative Leaders (Baron, Prince): Economic and diplomatic focus
+ * - Magical Leaders (Magi): Spellcasting and research capabilities
+ * - Religious Leaders (Bishop): Spiritual powers and divine magic
+ * - Military Leaders (Captain, Lord): Combat effectiveness and tactics
+ * - Supernatural Leaders (Devil, Wyrm, Nazgul): Unique magical abilities
+ *
+ * Algorithm:
+ *   1. Check nation class against predefined mappings
+ *   2. Return appropriate leader type constant
+ *   3. Exit with error for undefined nation classes
+ *   4. Include lint suppression return for code analysis tools
+ *
+ * Parameters:
+ *   class - Nation class identifier (C_KING, C_WIZARD, etc.)
+ *
+ * Returns:
+ *   Leader type constant appropriate for the given nation class
+ *   Program exits with error message for undefined classes
+ *
+ * Side Effects:
+ *   - Prints error message and exits program for invalid nation classes
+ *   - Critical error handling prevents undefined behavior
+ *
+ * Testing Notes:
+ *   Category: A (Unit) | Simple mapping function with error handling
+ *   Approach: Unit tests for all valid nation classes and error cases
+ *   Key Tests: All defined nation classes, invalid classes, boundary conditions
+ *   Dependencies: Nation class constants (C_*) and leader type constants (L_*)
+ *   Mock Requirements: None - standalone mapping function
+ *   Complexity: Simple - switch statement with predefined mappings
+ *
+ * Notes:
+ *   - Critical for maintaining thematic consistency across nation types
+ *   - Error handling prevents undefined behavior with invalid classes
+ *   - Requires ADMIN compilation flag for availability
+ *   - Leader capabilities may vary significantly by type
+ *   - Used by nation initialization and leader recruitment systems
+ */
 getleader(class)
 int	class;
 {
@@ -2537,6 +3088,78 @@ int	class;
 /* name of the currently open mail file */
 char tmp_mail_name[LINELTH];
 
+/*
+ * mailopen - Open mail file for writing messages to specified recipient
+ *
+ * Establishes a secure mail writing session to a specified nation or news
+ * system, implementing comprehensive concurrency control and file locking
+ * to prevent mail corruption. This function handles both player-to-player
+ * communication and system-generated messages with proper conflict resolution
+ * and error reporting.
+ *
+ * This function provides essential communication infrastructure for:
+ * - Inter-player messaging and diplomatic communications
+ * - System-generated notifications and administrative messages
+ * - Game event reporting and status updates
+ * - Secure concurrent access to mail systems
+ * - Error handling and conflict resolution
+ *
+ * Concurrency Protection System:
+ * 1. Reader Lock Check: Prevents writing while recipient reads mail
+ * 2. Writer Lock Check: Prevents concurrent writing to same recipient
+ * 3. Timestamp Validation: Removes stale locks (TIME_DEAD timeout)
+ * 4. File Locking: Creates temporary files to signal active operations
+ * 5. Error Reporting: User-friendly messages for conflict resolution
+ *
+ * Mail System Components:
+ * - Player Mail: msgfile<nation_id> format for player communications
+ * - News Mail: Global news file for server-wide announcements
+ * - Temporary Files: Lock files with .tmp and send. prefixes
+ * - Concurrent Access: Multi-user safety with timeout mechanisms
+ *
+ * Lock File Management:
+ * - Read Lock: <msgfile><nation>.tmp (indicates player reading)
+ * - Write Lock: send.<msgfile><nation> (indicates active writing)
+ * - Timeout: TIME_DEAD seconds before stale locks are removed
+ * - Cleanup: Automatic removal of expired lock files
+ *
+ * Algorithm:
+ *   1. Close any existing mail session (cleanup previous state)
+ *   2. Check for active reader locks and validate timestamps
+ *   3. Check for active writer locks and validate timestamps
+ *   4. Remove stale lock files beyond timeout threshold
+ *   5. Create new mail file and establish write lock
+ *   6. Set global mail state and return success status
+ *
+ * Parameters:
+ *   to - Target nation ID for mail recipient, or NEWSMAIL for global news
+ *
+ * Returns:
+ *   0 or positive: Successful mail file opening
+ *   -1: Failure due to concurrent access conflicts or system errors
+ *
+ * Side Effects:
+ *   - Creates temporary lock files in file system
+ *   - Modifies global mailok status and tmp_mail_name
+ *   - Opens file handles for writing (stored in global fm)
+ *   - May remove stale lock files from previous sessions
+ *   - Displays error messages for user notification
+ *
+ * Testing Notes:
+ *   Category: C (System) | Requires file system access and concurrent operations
+ *   Approach: System tests with file operations and timing scenarios
+ *   Key Tests: Concurrent access, timeout handling, file system errors
+ *   Dependencies: File system, stat(), time(), nation data, global variables
+ *   Mock Requirements: File system simulation and concurrent access testing
+ *   Complexity: Complex - multi-user concurrency with file system operations
+ *
+ * Notes:
+ *   - Critical for preventing mail corruption in multi-user environment
+ *   - Timeout mechanism prevents permanent deadlocks from crashed sessions
+ *   - Error messages provide user guidance for conflict resolution
+ *   - Must be paired with mailclose() for proper cleanup
+ *   - File system dependencies require careful testing and error handling
+ */
 int
 mailopen(int to)
 {
@@ -2599,6 +3222,78 @@ mailopen(int to)
 }
 
 void
+/*
+ * mailclose - Close mail session and deliver message to recipient
+ *
+ * Completes a mail writing session by properly closing the mail file,
+ * delivering the message to the appropriate recipient, and cleaning up
+ * temporary files and lock mechanisms. This function ensures message
+ * integrity and proper concurrency control for the mail system.
+ *
+ * This function provides essential communication finalization for:
+ * - Secure message delivery to players and news systems
+ * - Proper file system cleanup and lock release
+ * - Message format validation and termination
+ * - Error recovery and abort handling
+ * - Concurrent access coordination and safety
+ *
+ * Mail Delivery Process:
+ * 1. Validates session state and handles already-closed sessions
+ * 2. Adds proper message termination marker ("END")
+ * 3. Closes temporary mail file to flush all content
+ * 4. Delivers message to final destination using system commands
+ * 5. Removes temporary files and releases file system locks
+ * 6. Resets global mail state for next session
+ *
+ * Delivery Mechanisms:
+ * - Player Mail: Appends to player's message file (msgfile<nation_id>)
+ * - News Mail: Appends to current turn's news file (news<turn>)
+ * - System Commands: Uses cat command for reliable file concatenation
+ * - Abort Handling: Discards message without delivery for error cases
+ *
+ * File System Operations:
+ * - Temporary File Cleanup: Removes send.<msgfile><nation> lock files
+ * - Message Appending: Concatenates temporary content to permanent files
+ * - Lock Release: Eliminates writer locks to allow other operations
+ * - Error Handling: Graceful cleanup even for aborted sessions
+ *
+ * Algorithm:
+ *   1. Check if mail session is already closed (DONEMAIL state)
+ *   2. Add message termination marker for valid recipients
+ *   3. Close file handle to ensure all data is written
+ *   4. For successful sessions, deliver message to final destination
+ *   5. Remove temporary files to clean up file system
+ *   6. Reset global mail state for future sessions
+ *
+ * Parameters:
+ *   to - Recipient nation ID, NEWSMAIL for news, or ABORTMAIL for cancellation
+ *
+ * Returns:
+ *   void - Operation status reflected in file system state and global variables
+ *
+ * Side Effects:
+ *   - Closes global fm file handle and flushes all pending writes
+ *   - Appends message content to recipient's permanent mail file
+ *   - Removes temporary lock files from file system
+ *   - Resets global mailok state to DONEMAIL
+ *   - Executes system commands for message delivery
+ *   - May generate error messages for failed deliveries
+ *
+ * Testing Notes:
+ *   Category: C (System) | Requires file system access and system command execution
+ *   Approach: System tests with file operations and delivery scenarios
+ *   Key Tests: Normal delivery, news delivery, abort handling, error conditions
+ *   Dependencies: File system, system() calls, global variables, temporary files
+ *   Mock Requirements: File system simulation and system command mocking
+ *   Complexity: Complex - file system operations with system command integration
+ *
+ * Notes:
+ *   - Must be called after successful mailopen() to prevent resource leaks
+ *   - ABORTMAIL parameter discards message without delivery
+ *   - System command usage requires shell environment and cat command
+ *   - Critical for maintaining mail system integrity and preventing corruption
+ *   - Error handling ensures cleanup even for failed delivery attempts
+ */
 mailclose(int to)
 {
 	if(mailok==DONEMAIL) return;
@@ -2628,7 +3323,79 @@ mailclose(int to)
 }
 
 #ifdef ADMIN
-/* markok returns TRUE if mark is ok as a nation mark */
+/*
+ * markok - Validate nation mark character for uniqueness and compatibility
+ *
+ * Validates whether a proposed character can be used as a nation mark,
+ * ensuring visual distinctiveness on maps and preventing conflicts with
+ * existing game symbols. This function enforces comprehensive character
+ * restrictions to maintain map readability and prevent user confusion
+ * in visual display systems.
+ *
+ * This function provides essential validation for:
+ * - Nation identification and map visualization systems
+ * - User interface consistency and readability
+ * - Administrative setup and nation registration
+ * - Conflict prevention with existing game symbols
+ * - Error reporting and user guidance for mark selection
+ *
+ * Validation Rules and Restrictions:
+ * 1. Printable Characters: Must be visible and printable (isprint() == TRUE)
+ * 2. Non-Whitespace: Cannot be space, tab, or other whitespace characters
+ * 3. Elevation Conflicts: Cannot match terrain elevation symbols
+ * 4. Vegetation Conflicts: Cannot match terrain vegetation symbols
+ * 5. Nation Uniqueness: Cannot duplicate existing active nation marks
+ * 6. Monster Reserved: Cannot use '*' character (reserved for monsters)
+ *
+ * Character Conflict Categories:
+ * - Whitespace Characters: Spaces, tabs, newlines (display problems)
+ * - Elevation Characters: Terrain height symbols from ele[] array
+ * - Vegetation Characters: Plant life symbols from veg[] array
+ * - Active Nation Marks: Characters already assigned to existing nations
+ * - System Reserved: '*' character reserved for monster units
+ *
+ * Error Reporting System:
+ * - Optional error messages controlled by prtflag parameter
+ * - Descriptive error messages explain specific validation failure
+ * - newerror() function integration for user interface feedback
+ * - Consistent error message formatting across validation categories
+ *
+ * Algorithm:
+ *   1. Check printability and whitespace restrictions
+ *   2. Validate against elevation character conflicts (ele[] array)
+ *   3. Validate against vegetation character conflicts (veg[] array)
+ *   4. Check uniqueness against all active nation marks
+ *   5. Enforce monster character reservation ('*' symbol)
+ *   6. Return validation result with optional error reporting
+ *
+ * Parameters:
+ *   mark - Character to validate as potential nation mark
+ *   prtflag - Boolean flag to enable error message reporting
+ *
+ * Returns:
+ *   TRUE if character is valid and available for use as nation mark
+ *   FALSE if character violates any validation rules
+ *
+ * Side Effects:
+ *   - May display error messages through newerror() if prtflag is TRUE
+ *   - Uses global terrain arrays (ele[], veg[]) for conflict checking
+ *   - Accesses nation database (ntn[]) for uniqueness validation
+ *
+ * Testing Notes:
+ *   Category: B (Integration) | Requires terrain data and nation database access
+ *   Approach: Integration tests with full game data and character sets
+ *   Key Tests: Valid marks, terrain conflicts, nation conflicts, reserved characters
+ *   Dependencies: ele[] array, veg[] array, ntn[] database, newerror() function
+ *   Mock Requirements: Complete terrain data and nation database for validation
+ *   Complexity: Moderate - multiple validation categories with database access
+ *
+ * Notes:
+ *   - Critical for preventing map display conflicts and user confusion
+ *   - Requires ADMIN compilation flag for availability
+ *   - Must be called during nation creation and mark modification
+ *   - Error reporting helps users select appropriate characters
+ *   - Validation ensures long-term map readability and game playability
+ */
 int
 markok(mark,prtflag)
 char mark;
@@ -2778,6 +3545,74 @@ int	nation;
 
 #ifdef ADMIN
 void
+/*
+ * getmetal - Generate random metal trade good for sector during world creation
+ *
+ * Assigns a randomly selected metal trade good and production value to a
+ * sector during world generation, creating diverse economic opportunities
+ * and strategic resource distribution. This function implements a weighted
+ * probability system that reflects the relative rarity and value of
+ * different metal types in the game world.
+ *
+ * This function provides essential world generation features for:
+ * - Economic diversity and strategic resource placement
+ * - Balanced trade good distribution across the game world
+ * - Realistic metal rarity and value progression
+ * - Mining sector development and specialization
+ * - Trade network foundation and economic gameplay
+ *
+ * Metal Trade Good Probability Distribution (per 100 sectors):
+ * - Copper (20%): Common base metal, low value (1-2 units)
+ * - Lead (10%): Industrial metal, moderate availability (1-4 units)
+ * - Tin (10%): Alloy component, moderate availability (2-5 units)
+ * - Bronze (15%): Alloy metal, good availability (2-5 units)
+ * - Iron (25%): Primary construction metal, high availability (2-8 units)
+ * - Steel (15%): Advanced alloy, limited availability (3-10 units)
+ * - Mithral (4%): Magical metal, rare availability (5-15 units)
+ * - Adamantine (1%): Legendary metal, extremely rare (8-20 units)
+ *
+ * Economic Balance Features:
+ * - Value Progression: Higher-tier metals have greater production values
+ * - Rarity System: More valuable metals are significantly less common
+ * - Production Scaling: Base production values scaled by sector population
+ * - Magic Integration: Rare metals often associated with magical properties
+ * - Trade Network: Distribution encourages inter-sector commerce
+ *
+ * Algorithm:
+ *   1. Check if sector already has trade good assigned (prevent overwriting)
+ *   2. Generate random probability value (0-99)
+ *   3. Select metal type based on probability thresholds
+ *   4. Assign random production value within metal's range
+ *   5. Set sector's trade good type and metal production value
+ *   6. Return without assignment if sector already has trade good
+ *
+ * Parameters:
+ *   sptr - Pointer to sector structure to modify with metal trade good
+ *
+ * Returns:
+ *   void - Results stored directly in sector structure
+ *
+ * Side Effects:
+ *   - Modifies sector's tradegood field with metal type identifier
+ *   - Sets sector's metal production value within appropriate range
+ *   - Uses rand() function which affects global random number state
+ *   - No changes made if sector already has assigned trade good
+ *
+ * Testing Notes:
+ *   Category: B (Integration) | Requires sector data structures and random number generation
+ *   Approach: Statistical tests with large samples to verify probability distribution
+ *   Key Tests: Probability distribution accuracy, production value ranges, existing trade good protection
+ *   Dependencies: rand() function, sector structure, trade good constants
+ *   Mock Requirements: Random number generation and sector structure simulation
+ *   Complexity: Moderate - probability-based generation with multiple metal types
+ *
+ * Notes:
+ *   - Critical for world generation and economic balance
+ *   - Probability system designed to create realistic metal distribution
+ *   - Higher-value metals intentionally rare to maintain game balance
+ *   - Protection against overwriting existing trade goods preserves world integrity
+ *   - Used during initial world creation and potentially for new sector development
+ */
 getmetal( sptr )
 struct s_sector *sptr;
 {
@@ -2812,6 +3647,77 @@ struct s_sector *sptr;
 }
 
 void
+/*
+ * getjewel - Generate random jewel trade good for sector during world creation
+ *
+ * Assigns a randomly selected jewel trade good and production value to a
+ * sector during world generation, creating diverse luxury economic opportunities
+ * and high-value resource distribution. This function implements a weighted
+ * probability system that reflects the relative rarity and magical significance
+ * of different precious materials in the game world.
+ *
+ * This function provides essential world generation features for:
+ * - Luxury economy and high-value trade establishment
+ * - Balanced precious resource distribution across the game world
+ * - Magical component availability for spellcasting systems
+ * - Wealth accumulation and economic inequality dynamics
+ * - Strategic objective creation for territorial expansion
+ *
+ * Jewel Trade Good Probability Distribution (per 100 sectors):
+ * - Spice (20%): Common luxury trade good, low value (1-2 units)
+ * - Silver (20%): Precious metal, moderate value (1-3 units)
+ * - Pearls (8%): Marine luxury, moderate value (1-3 units)
+ * - Dye (8%): Textile luxury, moderate value (1-5 units)
+ * - Silk (8%): Fabric luxury, moderate value (1-5 units)
+ * - Gold (20%): Primary precious metal, high value (1-6 units)
+ * - Rubies (7%): Precious gemstone, high value (1-6 units)
+ * - Ivory (5%): Exotic luxury, very high value (2-8 units)
+ * - Diamonds (3%): Ultimate gemstone, extremely high value (2-12 units)
+ * - Platinum (1%): Legendary metal, maximum value (4-20 units)
+ *
+ * Economic and Magical Balance:
+ * - Value Progression: Higher-tier jewels have greater production values
+ * - Rarity System: Most valuable materials are extremely uncommon
+ * - Magic Integration: Jewels often required for magical spell components
+ * - Wealth Concentration: Creates economic centers and trade route focus
+ * - Strategic Value: High-value sectors become military objectives
+ *
+ * Algorithm:
+ *   1. Check if sector already has trade good assigned (prevent overwriting)
+ *   2. Generate random probability value (0-99)
+ *   3. Select jewel type based on probability thresholds
+ *   4. Assign random production value within jewel's range
+ *   5. Set sector's trade good type and jewel production value
+ *   6. Return without assignment if sector already has trade good
+ *
+ * Parameters:
+ *   sptr - Pointer to sector structure to modify with jewel trade good
+ *
+ * Returns:
+ *   void - Results stored directly in sector structure
+ *
+ * Side Effects:
+ *   - Modifies sector's tradegood field with jewel type identifier
+ *   - Sets sector's jewels production value within appropriate range
+ *   - Uses rand() function which affects global random number state
+ *   - No changes made if sector already has assigned trade good
+ *
+ * Testing Notes:
+ *   Category: B (Integration) | Requires sector data structures and random number generation
+ *   Approach: Statistical tests with large samples to verify probability distribution
+ *   Key Tests: Probability distribution accuracy, production value ranges, existing trade good protection
+ *   Dependencies: rand() function, sector structure, trade good constants (TG_*)
+ *   Mock Requirements: Random number generation and sector structure simulation
+ *   Complexity: Moderate - probability-based generation with multiple luxury types
+ *
+ * Notes:
+ *   - Critical for luxury economy and magical system balance
+ *   - Requires ADMIN compilation flag for availability
+ *   - Probability system creates realistic scarcity for high-value items
+ *   - Protection against overwriting existing trade goods preserves world integrity
+ *   - Complements getmetal() function for complete trade good generation
+ *   - Higher production ranges for rare items compensate for their scarcity
+ */
 getjewel( sptr )
 struct s_sector *sptr;
 {
@@ -3052,6 +3958,77 @@ fort_val(sptr)
 
 /* routine to determine compass direction of x1,y1 from x0,y0 */
 int
+/*
+ * compass - Calculate compass direction from one point to another
+ *
+ * Determines the compass direction from a starting coordinate to a destination
+ * coordinate, providing directional guidance for movement, navigation, and
+ * user interface systems. This function implements a sophisticated directional
+ * algorithm that distinguishes between cardinal directions, diagonal directions,
+ * and centered positions for precise navigation assistance.
+ *
+ * This function provides essential navigation features for:
+ * - Movement guidance and pathfinding assistance
+ * - User interface directional indicators and arrow displays
+ * - AI navigation and movement decision-making
+ * - Map exploration and coordinate relationship analysis
+ * - Strategic planning and tactical movement coordination
+ *
+ * Direction Classification System:
+ * - Cardinal Directions: NORTH, SOUTH, EAST, WEST (primary axes)
+ * - Diagonal Directions: NORTHEAST, NORTHWEST, SOUTHEAST, SOUTHWEST
+ * - Special Case: CENTERED (same point, no movement needed)
+ * - Priority System: Favors cardinal directions when displacement is unclear
+ *
+ * Algorithm Logic:
+ * 1. Calculate displacement vectors (dx = x1-x0, dy = y1-y0)
+ * 2. Apply proportional comparison to determine dominant axis
+ * 3. Use 10:1 ratio threshold for directional discrimination
+ * 4. Primary check: If horizontal displacement is 10x greater than vertical
+ * 5. Secondary check: If vertical displacement is 10x greater than horizontal
+ * 6. Determine cardinal vs diagonal direction based on displacement ratios
+ * 7. Handle special case of identical coordinates (CENTERED)
+ *
+ * Directional Priority Rules:
+ * - Strong horizontal bias (10x): Return EAST or WEST
+ * - Strong vertical bias (10x): Return NORTH or SOUTH
+ * - Balanced displacement: Return appropriate diagonal direction
+ * - Zero displacement: Return CENTERED
+ *
+ * Displacement Threshold Logic:
+ * - 10:1 ratio ensures clear directional preference
+ * - Prevents ambiguous directions for small movements
+ * - Provides stable directional guidance for navigation systems
+ * - Handles edge cases with consistent behavior
+ *
+ * Parameters:
+ *   x0, y0 - Starting coordinates (origin point)
+ *   x1, y1 - Destination coordinates (target point)
+ *
+ * Returns:
+ *   Compass direction constant:
+ *   NORTH, SOUTH, EAST, WEST (cardinal directions)
+ *   NORTHEAST, NORTHWEST, SOUTHEAST, SOUTHWEST (diagonal directions)
+ *   CENTERED (same point, no movement required)
+ *
+ * Side Effects:
+ *   None - pure calculation function with no state changes
+ *
+ * Testing Notes:
+ *   Category: A (Unit) | Pure mathematical calculation with clear inputs/outputs
+ *   Approach: Unit tests with comprehensive coordinate combinations and edge cases
+ *   Key Tests: All direction types, threshold boundaries, identical coordinates
+ *   Dependencies: Direction constants (NORTH, SOUTH, etc.), abs() function
+ *   Mock Requirements: None - standalone mathematical function
+ *   Complexity: Simple - coordinate mathematics with directional logic
+ *
+ * Notes:
+ *   - Critical for navigation systems and user interface guidance
+ *   - Threshold system prevents ambiguous directional guidance
+ *   - Consistent behavior across all coordinate combinations
+ *   - Used by movement systems, AI pathfinding, and user interface indicators
+ *   - Mathematical approach ensures predictable and reliable results
+ */
 compass(x0,y0,x1,y1)
 	int x0,y0,x1,y1;
 {
@@ -3089,6 +4066,82 @@ off_t conq_mail_size=0;
 #ifdef SYSMAIL
 static off_t sys_mail_size=0;
 #endif /* SYSMAIL */
+/*
+ * check_mail - Monitor mail status and detect new message arrivals
+ *
+ * Monitors mail file status for both game-specific and system mail to detect
+ * new message arrivals and update mail status indicators for user interface
+ * notification systems. This function provides real-time mail monitoring
+ * capabilities essential for interactive gameplay and communication systems.
+ *
+ * This function provides essential mail monitoring features for:
+ * - Real-time new mail detection and notification systems
+ * - User interface status indicator updates and alerts
+ * - Mail file size tracking for change detection
+ * - System mail integration and monitoring (optional SYSMAIL)
+ * - Interactive gameplay communication and responsiveness
+ *
+ * Mail Monitoring System:
+ * 1. Conquer Mail: Game-specific messages from other players and system
+ * 2. System Mail: Optional system-level mail integration (SYSMAIL flag)
+ * 3. Size-Based Detection: File size changes indicate new or read messages
+ * 4. Status Tracking: Maintains persistent mail status between checks
+ * 5. Error Handling: Graceful handling of missing or inaccessible mail files
+ *
+ * Mail Status States:
+ * - NEW_MAIL: New messages detected (file size increased)
+ * - NO_MAIL: No unread messages (file missing, empty, or read)
+ * - Size tracking prevents duplicate notifications for same messages
+ *
+ * Conquer Mail Detection Algorithm:
+ * 1. Check if conquer mail file exists and is accessible
+ * 2. Compare current file size with previously recorded size
+ * 3. If size increased: Set NEW_MAIL status and update size
+ * 4. If size decreased: Set NO_MAIL status (messages were read/deleted)
+ * 5. If file missing: Set NO_MAIL status and reset size to zero
+ *
+ * System Mail Detection (SYSMAIL compilation flag):
+ * 1. Check if system mail file exists and is accessible
+ * 2. Compare access time vs modification time (atime > mtime = read)
+ * 3. Compare file size changes similar to conquer mail
+ * 4. Integrated status tracking with game mail system
+ *
+ * Algorithm:
+ *   1. Save previous mail status for comparison
+ *   2. Use stat() to get current mail file information
+ *   3. Analyze size changes to determine new mail presence
+ *   4. Update global mail status variables for UI systems
+ *   5. Handle both conquer mail and optional system mail
+ *   6. Provide error handling for missing or inaccessible files
+ *
+ * Parameters:
+ *   None - operates on global mail file paths and status variables
+ *
+ * Returns:
+ *   void - Results stored in global mail status variables
+ *
+ * Side Effects:
+ *   - Updates global conq_mail_status and conq_mail_size variables
+ *   - Updates global sys_mail_status and sys_mail_size (if SYSMAIL enabled)
+ *   - Uses stat() system call to access file system information
+ *   - May trigger user interface updates based on status changes
+ *
+ * Testing Notes:
+ *   Category: C (System) | Requires file system access and status monitoring
+ *   Approach: System tests with file manipulation and status change scenarios
+ *   Key Tests: New mail detection, file deletion, size changes, system integration
+ *   Dependencies: stat() system call, mail file paths, global status variables
+ *   Mock Requirements: File system simulation and mail file manipulation
+ *   Complexity: Moderate - file system monitoring with dual mail system support
+ *
+ * Notes:
+ *   - Requires CONQUER compilation flag for availability
+ *   - Optional SYSMAIL support for system mail integration
+ *   - Critical for interactive user experience and responsiveness
+ *   - Must be called periodically to maintain current mail status
+ *   - File size tracking prevents repeated notifications for same messages
+ *   - Graceful error handling ensures stability with missing mail files
+ */
 void
 check_mail()
 {
