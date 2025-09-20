@@ -989,21 +989,58 @@ char *argv[];
 
     }
 
-/*********************************************************************
-*                                                                    *
-* put the character c at (xx, yy) in pr, using font pf. Highlight    *
-* means bold ( not very good at the moment, anyone want to improve   *
-* it? ).                                                             *
-*                                                                    *
-* This works by first blacking out an area around the character and  *
-* then printing the character.                                       *
-*                                                                    *
-* Bolding is done by smearing ( yeuch ).                             *
-*                                                                    *
-* If c is the null character then str is a string to display in the  *
-* same way.                                                          *
-*                                                                    *
-*********************************************************************/
+/*
+ * put_txt - Text rendering with highlighting and outline effects
+ *
+ * Renders text characters or strings onto bitmaps with sophisticated
+ * visual effects including outline (shadow) and bold highlighting.
+ * The function implements a multi-pass rendering technique to create
+ * readable text that stands out against complex map backgrounds.
+ *
+ * Rendering technique:
+ * 1. Black outline pass: Renders black text in 3x3 (or 4x4 if highlighted)
+ *    grid around the target position for outline effect
+ * 2. White text pass: Renders white text at target position for contrast
+ * 3. Bold effect: Achieved by "smearing" (rendering multiple offset copies)
+ *
+ * The function supports both single character and string rendering modes
+ * determined by the character parameter. When c is '\0', the str parameter
+ * is rendered as a complete string.
+ *
+ * Parameters:
+ *   pr        - Bitmap to render text onto
+ *   xx        - X coordinate for text placement (adjusted internally)
+ *   yy        - Y coordinate for text placement (adjusted internally)
+ *   pf        - Font to use for rendering
+ *   c         - Character to render ('\0' means use str parameter instead)
+ *   highlight - Non-zero enables bold/highlighting effect
+ *   str       - String to render (used when c is '\0')
+ *
+ * Returns:
+ *   void
+ *
+ * Side Effects:
+ *   - Modifies the bitmap by drawing text with outline effects
+ *   - Uses static buffer for single character to string conversion
+ *   - Calls bitmap_text() multiple times for layered rendering
+ *   - Adjusts coordinates internally for proper outline positioning
+ *
+ * Testing Notes:
+ *   Category: D (Mock Intensive) - Requires graphics system and bitmap operations
+ *   Approach: Mock bitmap_text(), create test bitmaps, verify rendering calls
+ *   Key Tests: Single char vs string, highlight effects, coordinate adjustment
+ *   Dependencies: Graphics system, bitmap operations, font system
+ *   Mock Requirements: bitmap_text(), font system, coordinate calculations
+ *   Complexity: Moderate - Multi-pass rendering with coordinate manipulation
+ *
+ * Notes:
+ *   - 1989 graphics technique for readable text on complex backgrounds
+ *   - Bold effect described as "smearing" by original author
+ *   - Outline technique creates drop-shadow effect for visibility
+ *   - Dual-mode operation (character vs string) for flexibility
+ *   - Part of sophisticated map labeling system
+ */
+
 /*VARARGS6*/
 put_txt(pr,xx,yy,pf,c,highlight,str)
 
