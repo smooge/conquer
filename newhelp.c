@@ -1,10 +1,10 @@
 /*
- * newhelp.c - Help system generation
- * 
+ * newhelp.c - Help system configuration script generator
+ *
  * This file is part of Conquer.
  * Originally Copyright (C) 1988-1989 by Edward M. Barlow and Adam Bryant
  * Copyright (C) 2025 Juan Manuel Méndez Rey (Vejeta) - Licensed under GPL v3 with permission from original authors
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,6 +17,34 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * SYSTEM OVERVIEW - Help System Template Processing
+ *
+ * This standalone utility generates sed script files that process help file templates
+ * by substituting configuration macros with actual game values. The help system uses
+ * a template-based approach where help files contain placeholder tokens (like XOWNER,
+ * XVERSION, XMAXPTS) that are replaced with compile-time configuration values.
+ *
+ * ARCHITECTURE:
+ * - Reads compile-time configuration from header.h, data.h, and patchlevel.h
+ * - Generates two sed script files (sed.1 and sed.2) with substitution commands
+ * - Supports both numeric constants and conditional compilation features
+ * - Handles map symbols, cost values, racial attributes, and magical power costs
+ * - Enables dynamic help content that reflects actual game configuration
+ *
+ * WORKFLOW:
+ * 1. Open output files (sed.1 and sed.2) for sed script generation
+ * 2. Generate substitution commands for basic configuration values
+ * 3. Process conditional compilation flags to generate feature descriptions
+ * 4. Generate map terrain and designation symbol mappings
+ * 5. Output extensive numeric configuration parameters
+ * 6. Handle race-specific magical and combat attributes
+ *
+ * INTEGRATION:
+ * - Build Process: Executed during help file generation phase
+ * - Help System: Scripts used by make/build system to process help templates
+ * - Configuration: Automatically reflects current compile-time settings
+ * - Documentation: Enables self-documenting help system
  */
 
 #include <stdio.h>
@@ -24,6 +52,82 @@
 #include "data.h"
 #include "patchlevel.h"
 
+/*
+ * main - Generate sed script files for help system template processing
+ *
+ * This utility function creates two sed script files (sed.1 and sed.2) that contain
+ * substitution commands for processing help file templates. The help system uses a
+ * template-based approach where help files contain placeholder tokens that are
+ * replaced with actual compile-time configuration values, game parameters, and
+ * feature settings.
+ *
+ * The function processes multiple categories of configuration data:
+ * - Basic game parameters (version, owner, limits, costs)
+ * - Conditional compilation features (OGOD, MONSTER, NPC, etc.)
+ * - Map terrain and designation symbols with their character representations
+ * - Economic values (taxes, costs, maintenance, capacity)
+ * - Race-specific attributes for combat effectiveness and magical power costs
+ * - Military, civilian, and magical power costs for all four races
+ *
+ * The sed scripts are split into two files due to sed's command limit constraints.
+ * The first file (sed.1) handles basic configuration, features, and map symbols.
+ * The second file (sed.2) handles extensive numeric parameters and racial attributes.
+ *
+ * ALGORITHM:
+ * 1. Open sed.1 and sed.2 files for writing with error checking
+ * 2. Generate basic configuration substitutions (owner, version, game limits)
+ * 3. Process conditional compilation flags and generate appropriate feature text
+ * 4. Create map terrain symbol substitutions showing character representations
+ * 5. Generate designation symbol substitutions with formatting
+ * 6. Output extensive game parameter substitutions to both files
+ * 7. Process race-specific attributes for four races (Elf, Dwarf, Human, Orc)
+ * 8. Generate magical power cost substitutions for military, civilian, and general magic
+ * 9. Close files and exit with success status
+ *
+ * OUTPUT FILES:
+ * - sed.1: Basic configuration, features, map symbols, and core game parameters
+ * - sed.2: Extended numeric parameters, racial attributes, and magical power costs
+ *
+ * TEMPLATE TOKENS:
+ * - XOWNER, XLOGIN, XVERSION: Basic game identification and version information
+ * - XMAXPTS, XMAXARM, XMAXNAVY: Game limits and capacity constraints
+ * - XOGOD, XMONSTER, XNPC: Feature availability flags (True/False)
+ * - ZMOUNTAIN, ZHILL, ZCLEAR: Map terrain symbols with character display
+ * - ZMINE, ZFARM, ZFORT: Designation symbols with character display
+ * - XTAXFOOD, XTAXMETAL, XTAXGOLD: Economic parameters and costs
+ * - XEMNTNATTR, XDMNTNATTR: Race-specific combat effectiveness attributes
+ * - XEMMAG, XDMMAG, XHMMAG, XOMMAG: Magical power costs by race
+ *
+ * ERROR HANDLING:
+ * - File creation failures result in error messages and program termination
+ * - Uses FAIL exit code for file operation errors
+ * - Uses SUCCESS exit code for normal completion
+ *
+ * INTEGRATION:
+ * - Build System: Called during help file generation process
+ * - Help Templates: Processed by generated sed scripts to create final help files
+ * - Configuration: Automatically reflects current compile-time settings
+ * - Documentation: Enables dynamic help content matching game configuration
+ *
+ * Parameters: None (reads from compile-time configuration headers)
+ *
+ * Returns: Does not return (calls exit with status code)
+ *   SUCCESS (0) - Sed scripts generated successfully
+ *   FAIL (-1) - File creation or writing error occurred
+ *
+ * Side Effects:
+ *   - Creates sed.1 and sed.2 files in current working directory
+ *   - Overwrites existing sed script files if present
+ *   - Exits program with status code (does not return to caller)
+ *
+ * Testing Notes:
+ *   Category: C (System) - Requires build environment and file system access
+ *   Approach: System testing with mock build environment and file verification
+ *   Key Tests: File creation, content verification, error handling
+ *   Dependencies: Compile-time headers, file system permissions, build environment
+ *   Mock Requirements: Controlled build environment with known configuration values
+ *   Complexity: Moderate - straightforward file generation but extensive configuration
+ */
 void
 main()
 {
