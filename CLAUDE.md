@@ -37,10 +37,10 @@ gcc -std=c2x -D_POSIX_C_SOURCE=200809L -Wall -Wextra -Wpedantic -g -O2 *.c -o pr
 gcc -std=c2x -D_POSIX_C_SOURCE=200809L -Wall -Wextra -Wpedantic -Werror -g -O2 -fsanitize=address -fsanitize=undefined *.c -o program
 
 # INTENSIVE ANALYSIS - Comprehensive warning detection (use for thorough analysis)
-gcc -O2 -g -Wall -Wextra -Wformat -Wformat=2 -Wconversion -Wimplicit-fallthrough -Wsign-conversion -fanalyzer -std=c2x -D_POSIX_C_SOURCE=200809L *.c -o program
+gcc -O2 -g -Wall -Wextra -Wformat -Wformat=2 -Wtraditional -Wstrict-prototypes -Wold-style-definition -Wold-style-declaration -Wconversion -Wimplicit-fallthrough -Wsign-conversion -fanalyzer -std=c2x -D_POSIX_C_SOURCE=200809L *.c -o program
 
 # INTENSIVE ANALYSIS - Single file testing (recommended for initial analysis)
-gcc -O2 -g -Wall -Wextra -Wformat -Wformat=2 -Wconversion -Wimplicit-fallthrough -Wsign-conversion -fanalyzer -std=c2x -D_POSIX_C_SOURCE=200809L -c filename.c
+gcc -O2 -g -Wall -Wextra -Wformat -Wformat=2 -Wtraditional -Wstrict-prototypes -Wold-style-definition -Wold-style-declaration -Wconversion -Wimplicit-fallthrough -Wsign-conversion -fanalyzer -std=c2x -D_POSIX_C_SOURCE=200809L -c filename.c
 
 # Static analysis with clang
 clang --analyze -std=c2x -D_POSIX_C_SOURCE=200809L -Wall -Wextra *.c
