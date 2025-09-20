@@ -1,10 +1,47 @@
 /*
- * cexecute.c - Game functionality module
- * 
+ * cexecute.c - Command execution engine and emergency cleanup system
+ *
+ * Core command processing system that reads and executes nation command files,
+ * applying state changes to armies, navies, sectors, and nation data. Provides
+ * the central execution engine for processing player commands and updating
+ * game state during both regular gameplay and turn updates.
+ *
+ * KEY SYSTEMS:
+ * - Command file parsing and execution (execute function)
+ * - Game state modification and validation
+ * - Resource management (gold, metals, jewels)
+ * - Emergency cleanup and termination handling
+ * - File locking and temporary file management
+ *
+ * EXECUTION MODEL:
+ * The execute() function processes nation-specific command files containing
+ * serialized game commands. Each command modifies specific aspects of game
+ * state (army positions, sector ownership, resource levels, etc.). The system
+ * supports both regular integer and long integer commands with L_ prefix.
+ *
+ * COMMAND TYPES SUPPORTED:
+ * - Army adjustments (position, status, movement)
+ * - Navy modifications (ships, crew, cargo)
+ * - Sector changes (ownership, designation, population)
+ * - Nation updates (resources, attributes, diplomacy)
+ * - Magic system modifications
+ * - Administrative functions
+ *
+ * ERROR HANDLING:
+ * The system includes comprehensive error checking for ownership violations,
+ * invalid commands, and resource conflicts. Emergency cleanup via hangup()
+ * ensures data integrity during unexpected termination.
+ *
+ * CRITICAL DEPENDENCIES:
+ * - Global game state (sectors, nations, armies, navies)
+ * - File system access for execution files
+ * - Mail system for administrative notifications
+ * - Lock file management for concurrency control
+ *
  * This file is part of Conquer.
  * Originally Copyright (C) 1988-1989 by Edward M. Barlow and Adam Bryant
  * Copyright (C) 2025 Juan Manuel Méndez Rey (Vejeta) - Licensed under GPL v3 with permission from original authors
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -37,6 +74,47 @@ extern int roads_this_turn;
 extern int terror_adj;
 #endif
 
+/*
+ * execute - Process nation command execution file and apply game state changes
+ *
+ * Core command execution engine that reads and processes nation command files,
+ * applying requested state changes to armies, navies, sectors, and nation data.
+ * Handles parsing of execution commands and updates game state accordingly.
+ * Used both during regular gameplay and update processing.
+ *
+ * Parameters:
+ *   isupdate - Execution mode flag (0 = regular play, 1 = update processing)
+ *
+ * Returns:
+ *   1 if commands were executed and state was modified
+ *   0 if no execution file exists or no commands processed
+ *
+ * Side Effects:
+ *   - Modifies global game state (armies, navies, sectors, nations)
+ *   - Updates nation resources (gold, metals, jewels)
+ *   - Changes sector ownership and designation
+ *   - Modifies army and navy positions and attributes
+ *   - Updates nation attributes (popularity, terror, reputation)
+ *   - May trigger destruction of nations
+ *   - Initializes startgold for non-update executions
+ *   - Scales i_people for sectors to handle values >= 32K
+ *
+ * Testing Notes:
+ *   Category: C (System) - Requires full game state initialization
+ *   Approach: System testing with mock execution files and game state
+ *   Key Tests: Command parsing, state updates, file handling, error cases
+ *   Dependencies: Global game state, file system, nation data structures
+ *   Mock Requirements: Execution files, game state, nation structures
+ *   Complexity: Complex - Central game logic with extensive state management
+ *
+ * Notes:
+ *   - Processes commands from nation-specific execution files
+ *   - Supports both regular integers and long integers (L_ prefix)
+ *   - Contains extensive switch statement for ~30 command types
+ *   - Critical for maintaining game state consistency
+ *   - Handles edge cases for sector ownership conflicts
+ *   - Debug output available for bribe operations
+ */
 int
 execute(isupdate)
 int	isupdate;	/* 0 if not update, 1 if update */
@@ -297,6 +375,44 @@ int	isupdate;	/* 0 if not update, 1 if update */
 	else return(0);
 }
 #ifdef CONQUER
+/*
+ * hangup - Emergency cleanup and program termination handler
+ *
+ * Performs critical cleanup operations when the program terminates unexpectedly
+ * or when a player disconnects. Ensures game state consistency by saving current
+ * nation resources, cleaning up temporary files, and notifying administrators.
+ * Called on signal interrupts or emergency shutdowns.
+ *
+ * Parameters:
+ *   None
+ *
+ * Returns:
+ *   Does not return - calls exit(FAIL) to terminate program
+ *
+ * Side Effects:
+ *   - Writes current nation resources to execution file (gold, metals, jewels)
+ *   - Closes execution file to ensure data persistence
+ *   - Removes temporary mail files to clean up resources
+ *   - Removes lock files to allow other processes access
+ *   - Removes temporary message files
+ *   - Sends notification message to game administrator (God)
+ *   - Terminates program with failure exit code
+ *
+ * Testing Notes:
+ *   Category: D (Mock) - Emergency handler requiring signal simulation
+ *   Approach: Unit testing with mocked file operations and signal handling
+ *   Key Tests: Resource saving, file cleanup, notification sending, exit handling
+ *   Dependencies: File system, global variables, mail system
+ *   Mock Requirements: File operations, signal handling, mail system
+ *   Complexity: Moderate - Critical cleanup with multiple file operations
+ *
+ * Notes:
+ *   - Only compiled when CONQUER is defined
+ *   - Critical for preventing data loss during unexpected termination
+ *   - Ensures proper cleanup of system resources
+ *   - Maintains file locking integrity
+ *   - Thread safety not required (single-threaded emergency handler)
+ */
 void
 hangup()
 {
