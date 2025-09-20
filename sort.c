@@ -70,6 +70,50 @@ FILE *infile, *outfile;
 /* macros */
 #define UPPER(x) ((islower(x))?(toupper(x)):(x))
 
+/*
+ * main - Text sorting utility with configurable options
+ *
+ * Command-line text sorting program that reads input lines and outputs them
+ * in sorted order based on the first N characters. Supports case-insensitive
+ * sorting and flexible input/output file handling. Uses insertion sort with
+ * linked list data structure for in-memory sorting.
+ *
+ * Parameters:
+ *   argc - Number of command-line arguments
+ *   argv - Array of command-line argument strings
+ *          Format: program [-num -i -h] [infile] [outfile]
+ *          -num: Sort on first num characters (default 2)
+ *          -i: Case-insensitive comparison
+ *          -h: Display help and exit
+ *
+ * Returns:
+ *   EX_OK (0) - Successful completion
+ *   EX_USAGE (64) - Invalid command line arguments
+ *   EX_NOINPUT (66) - Cannot open input file
+ *   EX_CANTCREAT (73) - Cannot create output file
+ *   EX_SOFTWARE (70) - Memory allocation failure
+ *
+ * Side Effects:
+ *   - Reads from stdin or specified input file
+ *   - Writes to stdout or specified output file
+ *   - Allocates memory for linked list of input lines
+ *   - Sets global variables: compnum, iflag, infile, outfile
+ *   - May exit program with error codes on failure
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires file I/O and command-line processing
+ *   Approach: Integration testing with mock files and argument arrays
+ *   Key Tests: Valid/invalid arguments, file operations, sorting accuracy
+ *   Dependencies: File system access, memory allocation, global variables
+ *   Mock Requirements: File I/O operations, memory allocation functions
+ *   Complexity: Complex - Multiple responsibilities and error paths
+ *
+ * Notes:
+ *   - Main orchestrator function handling argument parsing and program flow
+ *   - Uses global variables for configuration (not thread-safe)
+ *   - Memory allocated by build_node() is never freed (acceptable for utility)
+ *   - Processes input incrementally to handle large files efficiently
+ */
 int
 main(int argc, char *argv[])
 {
@@ -196,7 +240,43 @@ main(int argc, char *argv[])
 	exit(EX_OK);
 }
 
-/* routine to read all characters in until carriage returns */
+/*
+ * get_line - Read and filter input line from file stream
+ *
+ * Reads characters from the global input file stream until newline or EOF,
+ * filtering out invalid characters and enforcing maximum line length.
+ * Only accepts printable ASCII characters, spaces, and tabs while
+ * discarding exceptionally long lines to prevent buffer overflow.
+ *
+ * Parameters:
+ *   data - Character array buffer to store filtered line (size MAX_STR)
+ *          Must be allocated by caller with sufficient space
+ *
+ * Returns:
+ *   Number of valid characters read and stored in data buffer
+ *   0 for empty lines or lines with only invalid characters
+ *   Always null-terminates the output string
+ *
+ * Side Effects:
+ *   - Reads from global infile stream until newline or EOF
+ *   - Modifies data array with filtered input characters
+ *   - Advances file pointer position in infile
+ *   - Discards characters beyond MAX_STR-1 limit
+ *
+ * Testing Notes:
+ *   Category: A (Unit) - Testable with mock file streams
+ *   Approach: Unit tests with controlled input streams and buffers
+ *   Key Tests: Valid chars, invalid chars, long lines, EOF conditions
+ *   Dependencies: Global infile stream, MAX_STR constant
+ *   Mock Requirements: FILE stream operations (getc, feof)
+ *   Complexity: Moderate - Character filtering with boundary conditions
+ *
+ * Notes:
+ *   - Silently truncates lines longer than MAX_STR-1 characters
+ *   - Character filtering: printable ASCII (0x20-0x7E), tabs, spaces
+ *   - Input validation prevents buffer overflows in downstream processing
+ *   - Essential preprocessing step for reliable sorting operations
+ */
 int
 get_line(char data[])
 {
@@ -217,7 +297,39 @@ get_line(char data[])
 	return(in);
 }
 
-/* routine to output entire sorted file to outfile */
+/*
+ * send_out - Output sorted lines to destination file stream
+ *
+ * Traverses the sorted linked list of lines and outputs each line to the
+ * global output file stream. Provides the final output phase of the sorting
+ * process, writing all accumulated and sorted lines in order.
+ *
+ * Parameters:
+ *   None (uses global variables)
+ *
+ * Returns:
+ *   None (void function)
+ *
+ * Side Effects:
+ *   - Writes all lines from sorted linked list to global outfile stream
+ *   - Adds newline character after each line for proper formatting
+ *   - Traverses linked list from head to end without modification
+ *   - May cause I/O errors if outfile stream is invalid
+ *
+ * Testing Notes:
+ *   Category: A (Unit) - Testable with mock linked list and output stream
+ *   Approach: Unit tests with controlled linked list and mock FILE streams
+ *   Key Tests: Empty list, single item, multiple items, I/O error handling
+ *   Dependencies: Global head pointer, global outfile stream
+ *   Mock Requirements: FILE stream operations (fprintf), linked list nodes
+ *   Complexity: Simple - Straightforward linked list traversal and output
+ *
+ * Notes:
+ *   - Assumes linked list is already properly sorted by place() function
+ *   - No error checking on fprintf operations (relies on system buffering)
+ *   - Memory allocated for linked list nodes is not freed (utility exits)
+ *   - Essential final phase of sorting pipeline after all input processed
+ */
 void
 send_out(void)
 {
@@ -229,7 +341,41 @@ send_out(void)
 	}
 }
 
-/* routine to sort list as it comes in */
+/*
+ * place - Insert line into sorted linked list using insertion sort
+ *
+ * Implements insertion sort algorithm by finding the correct position for
+ * a new line in the existing sorted linked list and inserting it there.
+ * Maintains sorted order throughout the input processing phase, enabling
+ * efficient incremental sorting as lines are read.
+ *
+ * Parameters:
+ *   data - Input line string to be inserted into sorted list
+ *          Must be null-terminated string with valid content
+ *
+ * Returns:
+ *   None (void function)
+ *
+ * Side Effects:
+ *   - Modifies global linked list by inserting new node
+ *   - Updates head pointer if inserting at beginning of list
+ *   - Allocates memory for new node via build_node() function
+ *   - Maintains sorted order of entire linked list
+ *
+ * Testing Notes:
+ *   Category: A (Unit) - Testable with controlled input and list states
+ *   Approach: Unit tests with various list states and input combinations
+ *   Key Tests: Empty list, insert at start, middle, end, duplicate entries
+ *   Dependencies: Global head pointer, comp_line(), build_node()
+ *   Mock Requirements: String comparison, memory allocation, linked list
+ *   Complexity: Moderate - Insertion sort logic with linked list manipulation
+ *
+ * Notes:
+ *   - Uses comp_line() for configurable string comparison (case, length)
+ *   - Insertion sort has O(n) average case for partially sorted data
+ *   - Memory allocation handled by build_node() with error checking
+ *   - Core sorting algorithm that maintains list order incrementally
+ */
 void
 place(char data[])
 {
@@ -254,11 +400,42 @@ place(char data[])
 	}
 }
 
-/* routine to compare two lines through N characters */
-/* where N is given by the variable compnum          */
-/*    returns:  0 on equal                           */
-/*             -1 on a preceding b                   */
-/*              1 on a following b                   */
+/*
+ * comp_line - Compare two strings with configurable options
+ *
+ * Compares two strings character by character up to the specified number
+ * of characters (compnum) with optional case-insensitive comparison.
+ * Provides the core comparison logic for the sorting algorithm with
+ * configurable behavior based on global flags.
+ *
+ * Parameters:
+ *   a - First string to compare (null-terminated)
+ *   b - Second string to compare (null-terminated)
+ *
+ * Returns:
+ *   -1 if string a precedes string b in sort order
+ *    0 if strings are equal within comparison parameters
+ *    1 if string a follows string b in sort order
+ *
+ * Side Effects:
+ *   - Reads global compnum variable for character count limit
+ *   - Reads global iflag variable for case sensitivity mode
+ *   - No modification of input strings or global state
+ *
+ * Testing Notes:
+ *   Category: A (Unit) - Highly testable with controlled string inputs
+ *   Approach: Unit tests with various string combinations and flag states
+ *   Key Tests: Equal strings, different cases, length variations, edge cases
+ *   Dependencies: Global compnum, iflag variables, UPPER macro
+ *   Mock Requirements: None (pure function with global config)
+ *   Complexity: Simple - Straightforward string comparison with options
+ *
+ * Notes:
+ *   - Honors global compnum setting for partial string comparison
+ *   - Case sensitivity controlled by global iflag (TRUE = ignore case)
+ *   - Stops comparison at first null character in either string
+ *   - Essential component for customizable sorting behavior
+ */
 int
 comp_line(char *a, char *b)
 {
@@ -278,8 +455,43 @@ comp_line(char *a, char *b)
 	return(0);
 }
 
-/* create L_DATA structure containing a line of data */
-/* and the next value set to the given location      */
+/*
+ * build_node - Create new linked list node with string data
+ *
+ * Allocates memory for a new linked list node and copies the provided
+ * string data into it. Handles both structure and string memory allocation
+ * with comprehensive error checking. Sets up proper linkage for insertion
+ * into the sorted linked list.
+ *
+ * Parameters:
+ *   data - String data to store in the new node (null-terminated)
+ *   nptr - Pointer to the next node in the linked list (may be NULL)
+ *
+ * Returns:
+ *   Pointer to newly allocated and initialized L_DATA node
+ *   Program exits with EX_SOFTWARE if memory allocation fails
+ *
+ * Side Effects:
+ *   - Allocates memory for L_DATA structure using malloc()
+ *   - Allocates memory for string copy using malloc()
+ *   - Copies input string data to allocated memory
+ *   - Sets next pointer to provided nptr value
+ *   - Exits program on allocation failure with error message
+ *
+ * Testing Notes:
+ *   Category: A (Unit) - Testable with controlled inputs and mock allocation
+ *   Approach: Unit tests with various string lengths and mock malloc
+ *   Key Tests: Normal allocation, allocation failures, string copying, linkage
+ *   Dependencies: malloc(), strcpy(), strlen(), exit()
+ *   Mock Requirements: Memory allocation functions, error handling
+ *   Complexity: Simple - Straightforward allocation with error checking
+ *
+ * Notes:
+ *   - Memory allocated is never freed (acceptable for short-lived utility)
+ *   - Uses exit() on allocation failure rather than returning error code
+ *   - Essential memory management component for linked list construction
+ *   - Copies string data to prevent external modification issues
+ */
 L_PTR
 build_node(char data[], L_PTR nptr)
 {
