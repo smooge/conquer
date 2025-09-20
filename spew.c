@@ -1068,8 +1068,113 @@ static void generate_text(const char *class_spec, char default_variant, FILE *ou
     }
 }
 
-/**
- * Read a line from the rules file, skipping comments and empty lines
+/*
+ * read_line - Read rules file lines with comment processing and whitespace cleanup
+ *
+ * This function provides intelligent line reading for the rules file parser,
+ * implementing comment filtering, whitespace normalization, and empty line
+ * skipping. It serves as the foundation for clean rules file processing by
+ * ensuring that only meaningful content lines are presented to the parser.
+ *
+ * The function handles the complete line preprocessing pipeline, including
+ * comment removal, trailing whitespace cleanup, and automatic empty line
+ * filtering. This preprocessing simplifies the parsing logic in higher-level
+ * functions by providing clean, normalized input lines.
+ *
+ * COMMENT PROCESSING SYSTEM:
+ * ========================
+ * - Comment marker: \* (backslash followed by asterisk)
+ * - Comment removal: Everything from \* to end of line is discarded
+ * - Line preservation: Comments are removed without affecting line structure
+ * - Comment position: Can appear anywhere within a line
+ * - Parser integration: Allows inline documentation within rules files
+ *
+ * WHITESPACE NORMALIZATION:
+ * =======================
+ * - Trailing whitespace: Removed from end of all lines
+ * - Newline handling: Automatic removal of line termination characters
+ * - Empty line detection: Lines containing only whitespace are considered empty
+ * - Blank line skipping: Continues reading until non-empty line found
+ * - Buffer management: Uses global input_line buffer for processed content
+ *
+ * LINE PROCESSING ALGORITHM:
+ * ========================
+ * 1. Read raw line from rules file using fgets()
+ * 2. Remove newline character if present (typically '\n')
+ * 3. Locate and remove comment marker and following text
+ * 4. Trim trailing whitespace from processed line
+ * 5. Check if line is empty after processing
+ * 6. Repeat cycle until non-empty line found or EOF reached
+ * 7. Return success/failure indication to caller
+ *
+ * EOF HANDLING STRATEGY:
+ * ====================
+ * - End of file detection: fgets() returns NULL
+ * - EOF marker generation: Sets input_line to "%%" double percent
+ * - Parser compatibility: EOF marker recognized by load_rules_file()
+ * - Clean termination: Ensures parser can detect file completion
+ * - Return value: 0 indicates EOF reached, 1 indicates valid line read
+ *
+ * BUFFER MANAGEMENT:
+ * ================
+ * - Global buffer: Uses static input_line array for line storage
+ * - Length limitation: Lines truncated at MAX_LINE_LEN boundary
+ * - Null termination: Ensures proper string termination after processing
+ * - Memory safety: Buffer bounds respected throughout processing
+ * - Reusable storage: Buffer reused for each line read operation
+ *
+ * ERROR HANDLING APPROACH:
+ * ======================
+ * - File read failures: Treated as EOF condition with marker generation
+ * - Oversized lines: Truncated at buffer boundary (fgets behavior)
+ * - Comment processing: Malformed comments processed safely
+ * - Memory safety: No dynamic allocation, uses static buffer
+ * - Graceful degradation: Invalid content filtered out automatically
+ *
+ * INTEGRATION CONTEXT:
+ * ==================
+ * - Called exclusively by load_rules_file() during parsing
+ * - Provides clean input for parse_class_header() and parse_definition()
+ * - Maintains global input_line buffer for parser access
+ * - Critical component of rules file processing pipeline
+ * - Enables robust parsing in presence of comments and formatting variations
+ *
+ * PERFORMANCE CHARACTERISTICS:
+ * ==========================
+ * - I/O efficiency: Single character read per line via fgets()
+ * - Memory usage: Constant space with static buffer reuse
+ * - Processing speed: Linear scan for comment and whitespace removal
+ * - Loop efficiency: Minimal overhead for empty line skipping
+ * - String operations: Efficient in-place modification approach
+ *
+ * FILE FORMAT COMPATIBILITY:
+ * =========================
+ * - Line ending types: Handles standard '\n' line termination
+ * - Comment syntax: Compatible with \* comment marker convention
+ * - Whitespace tolerance: Accepts various indentation and spacing patterns
+ * - Empty line handling: Flexible with respect to blank line presence
+ * - Cross-platform: Works with different text file formats
+ *
+ * Parameters:
+ *   void (operates on global rules_file and input_line buffer)
+ *
+ * Returns:
+ *   1 on successful line read, 0 on EOF or file read failure
+ *
+ * Side Effects:
+ *   - Modifies global input_line buffer with processed line content
+ *   - Advances rules_file stream position past processed lines
+ *   - May skip multiple lines if they are empty or comment-only
+ *   - Sets input_line to "%%" marker on EOF condition
+ *   - No error messages output (silent processing)
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires file stream and global state
+ *   Approach: Integration testing with various line formats and edge cases
+ *   Key Tests: Comment removal, whitespace handling, EOF detection, empty line skipping
+ *   Dependencies: Global rules_file stream, input_line buffer, MAX_LINE_LEN constant
+ *   Mock Requirements: File stream mocking, controlled input content
+ *   Complexity: Moderate - String processing with multiple filtering stages
  */
 static int read_line(void)
 {
@@ -1102,8 +1207,105 @@ static int read_line(void)
     return 1;
 }
 
-/**
- * Compare function for sorting classes by name
+/*
+ * compare_classes - Comparison function for alphabetical class sorting
+ *
+ * This function provides a standard comparison interface for qsort() to enable
+ * alphabetical sorting of message classes by name. Proper class sorting is
+ * essential for the binary search optimization used during class lookup in
+ * the message generation process.
+ *
+ * The function implements a straightforward lexicographic comparison using
+ * strcmp(), ensuring consistent alphabetical ordering that supports efficient
+ * O(log n) class resolution during message generation. This optimization is
+ * critical for system performance when processing large rules files with
+ * many class definitions.
+ *
+ * SORTING ALGORITHM INTEGRATION:
+ * ============================
+ * - Standard qsort() compatibility: Follows void* parameter convention
+ * - Consistent ordering: Provides stable alphabetical sort results
+ * - Case sensitivity: Maintains case-sensitive comparison for distinctness
+ * - Performance optimization: Enables binary search after sorting
+ * - Memory efficiency: No additional memory allocation during comparison
+ *
+ * COMPARISON SEMANTICS:
+ * ===================
+ * - Alphabetical ordering: Uses standard string comparison semantics
+ * - Return value convention: <0, 0, >0 for less-than, equal, greater-than
+ * - String handling: Depends on null-terminated class name strings
+ * - Unicode compatibility: Works with standard ASCII and extended character sets
+ * - Collation consistency: Provides reproducible sort ordering
+ *
+ * PERFORMANCE CHARACTERISTICS:
+ * ==========================
+ * - Time complexity: O(k) where k is average class name length
+ * - Space complexity: O(1) - no additional memory allocation
+ * - String comparison: Optimized strcmp() implementation
+ * - Call frequency: Invoked O(n log n) times during qsort() execution
+ * - Cache efficiency: Simple comparison with predictable memory access
+ *
+ * QSORT INTEGRATION:
+ * ================
+ * - Function signature: Compatible with qsort() comparison function requirements
+ * - Type safety: Handles void* parameters with proper casting
+ * - Pointer validation: Assumes valid text_class pointers (caller responsibility)
+ * - Structure access: Accesses name field of text_class structures
+ * - Sorting context: Used during load_rules_file() post-processing phase
+ *
+ * BINARY SEARCH ENABLEMENT:
+ * =========================
+ * The primary purpose of this comparison function is to enable efficient
+ * class lookup during message generation:
+ * - Sorted array: Creates alphabetically ordered class array
+ * - Search optimization: Enables O(log n) find_class() performance
+ * - Consistency requirement: Must produce stable ordering for search correctness
+ * - Performance impact: Dramatically improves lookup speed for large rule sets
+ *
+ * ERROR HANDLING STRATEGY:
+ * ======================
+ * - Null pointer handling: Assumes caller provides valid pointers
+ * - String validation: Assumes properly null-terminated class names
+ * - No error return: Standard comparison interface doesn't support error codes
+ * - Defensive programming: Relies on load_rules_file() validation
+ * - Failure mode: Invalid pointers would cause segmentation fault
+ *
+ * INTEGRATION CONTEXT:
+ * ==================
+ * - Called by: qsort() during load_rules_file() completion
+ * - Operates on: Global classes array elements
+ * - Enables: Efficient find_class() binary search implementation
+ * - Performance target: Fast class resolution during message generation
+ * - Critical path: Essential for message system scalability
+ *
+ * THREAD SAFETY:
+ * =============
+ * - Read-only operation: No modification of compared structures
+ * - Stateless function: No global state access or modification
+ * - Concurrent safe: Multiple threads could safely call comparison
+ * - qsort dependency: Thread safety depends on qsort() implementation
+ * - Local variables only: No shared state between invocations
+ *
+ * Parameters:
+ *   a - Pointer to first text_class structure for comparison (must not be NULL)
+ *   b - Pointer to second text_class structure for comparison (must not be NULL)
+ *
+ * Returns:
+ *   Integer indicating comparison result: <0 if a<b, 0 if a==b, >0 if a>b
+ *
+ * Side Effects:
+ *   - No side effects - pure comparison function
+ *   - No global state modification
+ *   - No memory allocation or deallocation
+ *   - No I/O operations performed
+ *
+ * Testing Notes:
+ *   Category: A (Unit) - Pure function with deterministic behavior
+ *   Approach: Unit tests with various class name combinations
+ *   Key Tests: Alphabetical ordering, equal names, case sensitivity, edge cases
+ *   Dependencies: strcmp() standard library function
+ *   Mock Requirements: Test text_class structures with known names
+ *   Complexity: Simple - Standard string comparison wrapper
  */
 static int compare_classes(const void *a, const void *b)
 {
@@ -1112,8 +1314,111 @@ static int compare_classes(const void *a, const void *b)
     return strcmp(cls_a->name, cls_b->name);
 }
 
-/**
- * Duplicate a string
+/*
+ * duplicate_string - Create dynamic copy of string with memory allocation
+ *
+ * This function provides safe string duplication with dynamic memory allocation,
+ * serving as a foundation for text storage throughout the message generation
+ * system. It handles the complete duplication process including length calculation,
+ * memory allocation, and content copying while providing proper error handling
+ * for memory allocation failures.
+ *
+ * The function implements a robust string cloning mechanism that ensures
+ * independent memory ownership for duplicated strings. This is essential
+ * for the message class system where string content must persist beyond
+ * the scope of parsing operations and be safely deallocated during cleanup.
+ *
+ * MEMORY ALLOCATION STRATEGY:
+ * =========================
+ * - Dynamic allocation: Uses malloc() for scalable memory management
+ * - Exact sizing: Allocates precisely strlen(str) + 1 bytes
+ * - Null termination: Ensures proper string termination in allocated memory
+ * - Ownership transfer: Caller assumes responsibility for freeing allocated memory
+ * - Failure handling: Returns NULL on allocation failure (graceful degradation)
+ *
+ * STRING PROCESSING ALGORITHM:
+ * ==========================
+ * 1. Input validation: Check for NULL input pointer
+ * 2. Length calculation: Determine string length using strlen()
+ * 3. Memory allocation: Allocate buffer for content plus null terminator
+ * 4. Content copying: Transfer string content using strcpy()
+ * 5. Return management: Provide allocated pointer or NULL on failure
+ *
+ * ERROR HANDLING APPROACH:
+ * ======================
+ * - Null input handling: Returns NULL immediately for NULL input
+ * - Allocation failure: Returns NULL when malloc() fails
+ * - No error messages: Silent failure allows caller to handle gracefully
+ * - Memory safety: No partial allocation or corruption on failure
+ * - Consistent behavior: Always returns valid pointer or NULL
+ *
+ * INTEGRATION CONTEXT:
+ * ==================
+ * - Used by parse_class_header(): Duplicates class names and variant strings
+ * - Used by parse_definition(): Duplicates processed definition text
+ * - Critical for data persistence: Ensures text survives parsing completion
+ * - Memory lifecycle: Allocated strings freed during cleanup_memory()
+ * - Performance impact: Significant memory allocation during rules loading
+ *
+ * MEMORY LIFECYCLE MANAGEMENT:
+ * ===========================
+ * - Allocation phase: Called during rules file parsing
+ * - Usage phase: Strings accessed during message generation
+ * - Cleanup phase: Deallocated by cleanup_memory() function
+ * - Ownership model: Caller owns allocated memory until cleanup
+ * - Leak prevention: Systematic cleanup ensures no memory leaks
+ *
+ * PERFORMANCE CHARACTERISTICS:
+ * ==========================
+ * - Time complexity: O(n) where n is string length (strlen + strcpy)
+ * - Space complexity: O(n) additional memory allocation per call
+ * - Memory overhead: One allocation per string with minimal waste
+ * - Fragmentation impact: May contribute to heap fragmentation
+ * - Call frequency: High during rules file loading phase
+ *
+ * THREAD SAFETY CONSIDERATIONS:
+ * ===========================
+ * - Malloc dependency: Thread safety depends on malloc() implementation
+ * - Local variables: No shared state between function calls
+ * - Input immutability: Does not modify input string
+ * - Concurrent usage: Safe for concurrent calls with different inputs
+ * - Global state: No global state access or modification
+ *
+ * ALTERNATIVE IMPLEMENTATIONS:
+ * ==========================
+ * - strdup() availability: Could use POSIX strdup() where available
+ * - Memory pool: Could be optimized with string pool allocation
+ * - Static buffers: Could use fixed buffers for bounded strings
+ * - Reference counting: Could implement shared string references
+ * - Current choice: Simple malloc/free for clarity and portability
+ *
+ * USAGE PATTERNS:
+ * =============
+ * - Class names: Persistent storage for class identification
+ * - Variant strings: Storage for variant tag sequences
+ * - Definition text: Processed message template storage
+ * - Configuration strings: Various system string parameters
+ * - Memory ownership: Caller must free returned pointers
+ *
+ * Parameters:
+ *   str - Source string to duplicate (NULL input returns NULL)
+ *
+ * Returns:
+ *   Pointer to allocated string copy on success, NULL on failure or NULL input
+ *
+ * Side Effects:
+ *   - Allocates memory via malloc() that caller must free
+ *   - No modification of input string or global state
+ *   - No error message output (silent operation)
+ *   - Memory allocation affects heap state
+ *
+ * Testing Notes:
+ *   Category: A (Unit) - Simple utility function with clear behavior
+ *   Approach: Unit tests with various string inputs and memory conditions
+ *   Key Tests: Normal strings, empty strings, NULL input, allocation failures
+ *   Dependencies: malloc(), strlen(), strcpy() standard library functions
+ *   Mock Requirements: malloc failure injection for error path testing
+ *   Complexity: Simple - Standard string duplication with error handling
  */
 static char *duplicate_string(const char *str)
 {
@@ -1127,8 +1432,128 @@ static char *duplicate_string(const char *str)
     return copy;
 }
 
-/**
- * Clean up allocated memory
+/*
+ * cleanup_memory - Comprehensive memory deallocation and system reset
+ *
+ * This function provides complete cleanup of all dynamically allocated memory
+ * used by the message generation system, ensuring no memory leaks and proper
+ * system reset for subsequent operations. It handles the systematic deallocation
+ * of all data structures including classes, definitions, names, variants, and
+ * associated text content.
+ *
+ * The function implements a comprehensive cleanup strategy that visits every
+ * allocated structure in the message system and safely deallocates memory
+ * while maintaining proper order to avoid accessing freed memory. This is
+ * essential for system reliability and resource management in long-running
+ * applications.
+ *
+ * CLEANUP ALGORITHM:
+ * ================
+ * 1. Input validation: Check if global classes array exists
+ * 2. Class iteration: Process each class in the global classes array
+ * 3. Name deallocation: Free dynamically allocated class names
+ * 4. Variant cleanup: Free variant strings (excluding static defaults)
+ * 5. Definition chain traversal: Walk and free all definition linked lists
+ * 6. Text deallocation: Free all definition text content
+ * 7. Structure cleanup: Free definition structures themselves
+ * 8. Array deallocation: Free global classes array
+ * 9. State reset: Reset global counters and pointers to initial state
+ *
+ * MEMORY HIERARCHY CLEANUP:
+ * =======================
+ * The cleanup follows the memory hierarchy from leaf nodes to root:
+ * - Definition text strings (deepest level)
+ * - Definition structures containing text pointers
+ * - Definition linked lists within each class
+ * - Class variant strings (when not using default static string)
+ * - Class name strings
+ * - Global classes array (root level)
+ * - Global state variables reset
+ *
+ * LINKED LIST TRAVERSAL SAFETY:
+ * ============================
+ * - Safe iteration: Saves next pointer before freeing current node
+ * - Order dependency: Frees text before structure to avoid dangling pointers
+ * - Null termination: Properly handles null-terminated definition chains
+ * - Memory corruption prevention: No access to freed memory during traversal
+ * - Complete traversal: Ensures all definitions in chain are processed
+ *
+ * VARIANT STRING HANDLING:
+ * ======================
+ * - Static string detection: Checks if variant pointer equals default_variants
+ * - Conditional deallocation: Only frees dynamically allocated variant strings
+ * - Memory safety: Avoids freeing static storage for default variants
+ * - Pointer comparison: Uses direct pointer comparison for static detection
+ * - Default preservation: Maintains static default_variants string unchanged
+ *
+ * GLOBAL STATE RESET:
+ * =================
+ * - Array pointer: Sets classes to NULL to indicate uninitialized state
+ * - Counter reset: Resets num_classes to 0 for accurate state tracking
+ * - Ready for reuse: System prepared for subsequent load_rules_file() calls
+ * - Clean slate: No residual state from previous operations
+ * - Error prevention: Prevents double-free or use-after-free errors
+ *
+ * ERROR PREVENTION STRATEGY:
+ * =========================
+ * - Null check protection: Returns immediately if classes array is NULL
+ * - Double-free prevention: Resets global pointers after deallocation
+ * - Use-after-free prevention: Systematic order of deallocation
+ * - Memory corruption avoidance: No access to freed memory
+ * - Safe reentry: Function can be called multiple times safely
+ *
+ * INTEGRATION CONTEXT:
+ * ==================
+ * - Called by makemess(): Cleanup after message generation completion
+ * - System lifecycle: Essential part of proper system shutdown
+ * - Memory management: Critical for preventing memory leaks
+ * - Reusability: Prepares system for subsequent rules file loading
+ * - Error recovery: Can be called during error conditions for cleanup
+ *
+ * PERFORMANCE CHARACTERISTICS:
+ * ==========================
+ * - Time complexity: O(n + m) where n=classes, m=total definitions
+ * - Space complexity: O(1) - no additional memory allocation
+ * - I/O impact: No file operations performed
+ * - Memory system: May trigger heap consolidation in malloc implementation
+ * - Call frequency: Once per makemess() invocation
+ *
+ * THREAD SAFETY CONSIDERATIONS:
+ * ===========================
+ * - Global state modification: Not thread-safe due to global variable access
+ * - Free operations: Depends on thread safety of free() implementation
+ * - Concurrent access: Unsafe if other threads accessing global structures
+ * - Single-threaded design: Assumes single-threaded message generation
+ * - Synchronization required: Needs external synchronization for concurrent use
+ *
+ * DEBUGGING AND VALIDATION:
+ * ========================
+ * - Memory leak detection: Essential for memory debugging tools
+ * - Valgrind compatibility: Proper cleanup enables clean valgrind runs
+ * - Address sanitizer: Supports AddressSanitizer leak detection
+ * - Test validation: Enables memory leak testing in unit tests
+ * - Production reliability: Prevents memory exhaustion in long-running systems
+ *
+ * Parameters:
+ *   void (operates on global state variables)
+ *
+ * Returns:
+ *   void (no return value, success indicated by clean global state)
+ *
+ * Side Effects:
+ *   - Deallocates all memory allocated by message generation system
+ *   - Resets global classes pointer to NULL
+ *   - Resets global num_classes counter to 0
+ *   - Modifies heap state through extensive free() operations
+ *   - Prepares system for clean reinitialization
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires loaded message system state
+ *   Approach: Integration testing with memory leak detection tools
+ *   Key Tests: Complete cleanup verification, multiple call safety, memory tools
+ *   Dependencies: Global classes array, loaded message data, malloc/free
+ *   Mock Requirements: Memory allocation tracking, leak detection integration
+ *   Complexity: Moderate - Multi-level deallocation with ordering requirements
  */
 static void cleanup_memory(void)
 {
