@@ -1695,6 +1695,114 @@ newlogin(realuser)
 /*****************************************************************/
 /* PLACE(): put nation on the map.  Fill out army structures too */
 /*****************************************************************/
+/*
+ * place - Place a new nation on the game map with location strategy handling
+ *
+ * This is a comprehensive nation placement system that handles multiple placement
+ * strategies (OOPS, RANDOM, FAIR, GREAT) with increasing quality requirements.
+ * The function not only finds a suitable map location but also initializes the
+ * complete nation state including armies, territories, and diplomatic relations.
+ *
+ * The placement algorithm implements a multi-tier system:
+ * - OOPS: Emergency placement with minimal constraints
+ * - RANDOM: Basic placement avoiding immediate conflicts
+ * - FAIR: Quality placement with food and spacing requirements
+ * - GREAT: Premium placement with extensive buffer zones and terrain quality
+ *
+ * Parameters:
+ *   xloc - Specific X coordinate for placement, or -1 for algorithm-determined
+ *   yloc - Specific Y coordinate for placement, or -1 for algorithm-determined
+ *        If both are not -1 and location is habitable, forces placement there
+ *
+ * Returns:
+ *   void - Modifies global game state (curntn, sct, ntn arrays)
+ *
+ * Side Effects:
+ *   - Sets nation capital coordinates (curntn->capx, curntn->capy)
+ *   - Establishes initial territory ownership and designation
+ *   - Creates and positions all starting armies and leaders
+ *   - Distributes population across acquired territories
+ *   - Initializes diplomatic status with all other nations
+ *   - Calls teraform() to improve terrain around capital
+ *   - May recursively call itself on placement failure with degraded strategy
+ *   - Modifies map sectors (sct array) for ownership, designation, resources
+ *
+ * Placement Strategy Details:
+ *   OOPS Strategy:
+ *   - Last resort placement with minimal constraints
+ *   - PC nations: 4-sector border from map edge
+ *   - NPC nations: 1-sector border from map edge
+ *   - Requires habitable terrain and no adjacent owners
+ *   - Rejects locations with 7+ water sectors in 3x3 area
+ *   - Applies 25% terraform improvement on success
+ *
+ *   RANDOM Strategy:
+ *   - Basic quality placement for standard nations
+ *   - PC nations: 6-12 sector border depending on map size
+ *   - NPC nations: 3-sector border from map edge
+ *   - Enforces 2-sector buffer from existing nations
+ *   - Rejects locations with 7+ water sectors in 3x3 area
+ *   - Applies 40% terraform improvement on success
+ *
+ *   FAIR Strategy:
+ *   - Quality placement requiring food production capability
+ *   - PC nations: 7-24 sector border depending on map size
+ *   - NPC nations: 5-sector border from map edge
+ *   - Requires minimum DESFOOD production at capital location
+ *   - Enforces 3-sector buffer from existing nations
+ *   - Water tolerance varies by world water percentage (>50%: 7+ water rejected, ≤50%: 5+ water rejected)
+ *   - Applies 65% terraform improvement on success
+ *
+ *   GREAT Strategy:
+ *   - Premium placement with extensive quality requirements
+ *   - PC nations: 9-40 sector border depending on map size
+ *   - NPC nations: 6-24 sector border depending on map size
+ *   - Enforces 4-sector buffer from existing nations
+ *   - Requires no water within 2 sectors of capital
+ *   - Complex food production requirements in 5x5 area around capital
+ *   - Rejection thresholds: >50% water worlds: 18+ poor sectors, ≤50% water: 15+ poor sectors
+ *   - Applies 100% terraform improvement on success
+ *
+ * Army Initialization System:
+ *   - Creates garrison army at capital with portion of total military
+ *   - Generates national leader with enhanced movement and defensive positioning
+ *   - Creates additional leaders up to class-determined limit (5-7 leaders)
+ *   - Distributes remaining military across standard armies with optimal sizing
+ *   - All armies initially positioned at capital with appropriate combat status
+ *   - Leader armies get 2x normal movement, regular armies get standard movement
+ *
+ * Territory Expansion System:
+ *   - Capital automatically designated and assigned trade good
+ *   - Additional territories granted based on placement quality:
+ *     * OOPS/RANDOM: No additional territories
+ *     * FAIR: 1-sector radius expansion with population distribution
+ *     * GREAT: 2-sector radius expansion with population distribution
+ *   - Territory acquisition requires: sufficient food production, habitable, unowned, unpopulated
+ *   - Acquired territories automatically designated as farms with distributed population
+ *
+ * Failure Recovery System:
+ *   - Each strategy attempts placement up to 2000 times before failure
+ *   - On failure, system degrades to next lower strategy with compensation:
+ *     * GREAT → FAIR: Grants population compensation for lost quality
+ *     * FAIR → RANDOM: Grants population compensation for lost quality
+ *     * RANDOM → OOPS: Recursive placement attempt with emergency parameters
+ *     * OOPS: Reports major error - indicates severe map constraints
+ *
+ * Testing Notes:
+ *   Category: C (System) - Requires full game state initialization
+ *   Approach: System testing with various map configurations and nation settings
+ *   Key Tests: [Placement success rates, territory allocation, army distribution, failure recovery]
+ *   Dependencies: [Global game state, map data, terrain functions, curses display, nation arrays]
+ *   Mock Requirements: [Complete game world with various terrain types and existing nations]
+ *   Complexity: Complex - Full system integration with multiple subsystems and failure handling
+ *
+ * Notes:
+ *   - Thread safety: Not thread-safe due to global state modifications
+ *   - Performance: O(n) where n is placement attempts, can be expensive on crowded maps
+ *   - Memory safety: Uses global arrays, assumes proper bounds in supporting functions
+ *   - Historical context: Core game mechanic determining nation starting conditions
+ *   - Critical for game balance: Placement quality directly affects nation viability
+ */
 void
 place(xloc,yloc)
 int	xloc,yloc;	/* if not -1,-1 should place in this spot */
@@ -2016,6 +2124,77 @@ int	xloc,yloc;	/* if not -1,-1 should place in this spot */
 	}
 }
 
+/*
+ * getclass - Interactive class selection interface for nation creation
+ *
+ * Presents a curses-based menu system allowing players to select their nation's
+ * class from available options based on their chosen race. Each class provides
+ * different magical abilities, leader counts, and costs, fundamentally affecting
+ * gameplay strategy and nation capabilities.
+ *
+ * The function displays a formatted table showing class names, racial restrictions,
+ * magical powers, and costs. It validates user selection against race compatibility
+ * and handles special pricing for race/class combinations (e.g., Human Warlords
+ * receive a cost discount).
+ *
+ * Parameters:
+ *   race - The player's chosen race (DWARF, ELF, HUMAN, ORC)
+ *          Used to filter available classes and apply race-specific bonuses
+ *
+ * Returns:
+ *   int - The cost in points required for the selected class
+ *         This value is returned from doclass() after configuration
+ *
+ * Side Effects:
+ *   - Displays interactive curses menu with class options and details
+ *   - Modifies current nation's class (curntn->class)
+ *   - Calls doclass() which configures class powers and leader counts
+ *   - Updates screen with formatted class table and selection prompt
+ *   - Clears display area after selection is made
+ *   - May display error messages for invalid selections
+ *
+ * Display Format:
+ *   Shows formatted table with columns:
+ *   - class: Class name (e.g., "TRADER", "WIZARD", "WARLORD")
+ *   - who: Racial eligibility codes (D=Dwarf, E=Elf, H=Human, O=Orc)
+ *   - magic: Magical abilities granted (displayed with dotted formatting)
+ *   - cost: Point cost (with Human Warlord discount: 2/3 normal cost)
+ *
+ * Class System Integration:
+ *   - Filters available classes using in_str() for race compatibility
+ *   - Applies special Human Warlord pricing (2/3 cost reduction)
+ *   - Displays magical powers from CPowlist array with formatted alignment
+ *   - Validates selection range (1 to NUMCLASS) and race eligibility
+ *   - Integrates with doclass() for power assignment and leader configuration
+ *
+ * Input Validation:
+ *   - Checks selection is within valid class number range (1-NUMCLASS)
+ *   - Verifies selected class is available for player's race
+ *   - Continues prompt loop until valid selection is made
+ *   - Displays appropriate error messages for invalid choices
+ *
+ * Screen Management:
+ *   - Uses curses positioning starting at line 4
+ *   - Dynamically tracks ypos for proper line spacing
+ *   - Clears input area after each attempt
+ *   - Cleans up display area after successful selection
+ *   - Refreshes screen for user input visibility
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires curses display and class configuration systems
+ *   Approach: Integration testing with various race/class combinations
+ *   Key Tests: [Race eligibility filtering, special pricing, input validation, display formatting]
+ *   Dependencies: [Curses display system, class configuration arrays, doclass() function]
+ *   Mock Requirements: [Curses environment, class data arrays, user input simulation]
+ *   Complexity: Moderate - Interactive menu with validation and formatting requirements
+ *
+ * Notes:
+ *   - Thread safety: Not thread-safe due to curses display and global state access
+ *   - Performance: Interactive function, speed not critical
+ *   - Memory safety: Uses global arrays, string length calculations for formatting
+ *   - Historical context: Core character creation mechanic affecting gameplay balance
+ *   - User experience: Critical for player understanding of class capabilities and costs
+ */
 /*get class routine*/
 /* return the number of points needed */
 int
@@ -2070,6 +2249,77 @@ getclass(race)
 	return( doclass( curntn->class, TRUE ) );
 }
 
+/*
+ * doclass - Configure nation class powers and determine point cost
+ *
+ * This function applies the selected nation class configuration to the current
+ * nation, assigning magical powers, determining leader counts, and calculating
+ * the final point cost. It handles special cases like Human Warlord bonuses
+ * and integrates with the magic system for power updates.
+ *
+ * The function implements the core class system logic, translating class
+ * selections into concrete gameplay effects including magical abilities,
+ * military leadership capacity, and resource costs.
+ *
+ * Parameters:
+ *   tmp - The selected class ID (e.g., C_TRADER, C_WIZARD, C_WARLORD)
+ *         Used to look up class-specific powers, costs, and leader counts
+ *   isupd - Update flag: TRUE for interactive mode with magic system updates,
+ *           FALSE for non-interactive calculation only
+ *
+ * Returns:
+ *   int - The final point cost for the selected class after any modifiers
+ *         (e.g., Human Warlord receives 2/3 cost reduction)
+ *
+ * Side Effects:
+ *   - Sets global numleaders and spent[CH_LEADERS] based on class type
+ *   - Modifies current nation's powers (curntn->powers) with class abilities
+ *   - Calls CHGMGK macro if isupd is TRUE to update magic system
+ *   - Updates global spent array to track leader allocation
+ *
+ * Class-Specific Logic:
+ *   Leader Count Assignment:
+ *   - Trader class and classes <= C_WIZARD: 5 leaders
+ *   - All other classes (including military classes): 7 leaders
+ *   - Leaders directly affect army command capacity and strategic options
+ *
+ *   Power Assignment:
+ *   - Retrieves base powers from Classpow[tmp] lookup table
+ *   - Powers are applied using bitwise OR to curntn->powers
+ *   - Each power bit represents a different magical or special ability
+ *
+ *   Special Case Handling:
+ *   - Human Warlord Bonus: Toggles WARRIOR power bit and reduces cost to 2/3
+ *   - Cost reduction reflects Human affinity for military leadership
+ *   - XOR operation (^=) toggles the WARRIOR power specifically
+ *
+ * Magic System Integration:
+ *   - CHGMGK macro called when isupd is TRUE
+ *   - Updates magic system to reflect new nation powers
+ *   - Essential for maintaining consistency in interactive mode
+ *   - Skipped in calculation-only mode for efficiency
+ *
+ * Cost Calculation:
+ *   - Base cost retrieved from Classcost[tmp] array
+ *   - Human Warlord special case: cost = (Classcost[tmp] * 2) / 3
+ *   - Cost represents point expenditure in nation creation system
+ *   - Returned value used by getclass() and newlogin() for budgeting
+ *
+ * Testing Notes:
+ *   Category: A (Unit) - Isolated logic with clear inputs and outputs
+ *   Approach: Unit testing with various class/race combinations
+ *   Key Tests: [Leader count assignment, power configuration, cost calculation, Human Warlord special case]
+ *   Dependencies: [Class configuration arrays, current nation structure, magic system macros]
+ *   Mock Requirements: [Class data arrays, nation structure, CHGMGK macro]
+ *   Complexity: Simple - Straightforward configuration logic with minimal branching
+ *
+ * Notes:
+ *   - Thread safety: Not thread-safe due to global variable modifications
+ *   - Performance: Very fast, simple lookup and assignment operations
+ *   - Memory safety: Uses array indexing, assumes valid tmp parameter
+ *   - Historical context: Core RPG class system determining nation capabilities
+ *   - Design pattern: Configuration function separating UI from logic
+ */
 int
 doclass( tmp, isupd )
 short	tmp;
@@ -2101,6 +2351,77 @@ int	isupd;	/* true if update, false if interactive */
 	return(cost);
 }
 
+/*
+ * nstartcst - Calculate total point cost for new nation creation method
+ *
+ * This function implements the "new method" for calculating nation creation
+ * point costs based on the modern spending allocation system. It totals the
+ * costs of all allocated resources using the current spending arrays and
+ * applies late-start bonuses for players joining ongoing games.
+ *
+ * The function provides a more modular and flexible cost calculation compared
+ * to the legacy startcost() method, using configurable cost tables and
+ * standardized calculation formulas across all nation attributes.
+ *
+ * Parameters:
+ *   None - Uses global spent[] array and configuration tables
+ *
+ * Returns:
+ *   int - Total point cost for the nation configuration, rounded up
+ *         Includes late-start bonus calculations and base adjustments
+ *
+ * Side Effects:
+ *   - May display error message showing late-start bonus information
+ *   - Uses newerror() to communicate bonus details to player
+ *   - Accesses global configuration arrays and game state
+ *
+ * Cost Calculation Algorithm:
+ *   Base Cost Calculation:
+ *   - Iterates through all allocation categories (CH_NUMBER total)
+ *   - For each category: cost += Mcost[i] * spent[i] / Munits[i]
+ *   - Uses floating-point arithmetic for precise calculations
+ *   - Handles fractional allocations and scaling factors
+ *
+ *   Late-Start Bonus System:
+ *   - Bonus = (TURN - 1) / LATESTART
+ *   - Reduces total cost for players joining mid-game
+ *   - Compensates for missed early-game development opportunities
+ *   - Displays bonus amount if applicable using formatted message
+ *
+ *   Final Processing:
+ *   - Adds 1.0 for rounding up to ensure minimum cost coverage
+ *   - Converts final floating-point result to integer
+ *   - Ensures consistent point allocation across all players
+ *
+ * Configuration Dependencies:
+ *   - spent[]: Current resource allocation array (CH_NUMBER elements)
+ *   - Mcost[]: Point cost per unit for each resource category
+ *   - Munits[]: Unit scaling factors for cost calculations
+ *   - TURN: Current game turn number
+ *   - LATESTART: Late-start bonus divisor constant
+ *
+ * Comparison with Legacy Method:
+ *   - More modular: Uses configuration tables instead of hardcoded values
+ *   - More flexible: Handles arbitrary allocation categories
+ *   - More precise: Floating-point calculations with proper rounding
+ *   - More maintainable: Centralized cost configuration
+ *   - Same late-start logic: Maintains game balance compatibility
+ *
+ * Testing Notes:
+ *   Category: A (Unit) - Isolated calculation with clear dependencies
+ *   Approach: Unit testing with various allocation scenarios and game turns
+ *   Key Tests: [Cost calculation accuracy, late-start bonus, rounding behavior, edge cases]
+ *   Dependencies: [Global spent array, cost configuration tables, game turn state]
+ *   Mock Requirements: [Allocation arrays, cost tables, turn counter]
+ *   Complexity: Simple - Straightforward mathematical calculation with minimal branching
+ *
+ * Notes:
+ *   - Thread safety: Read-only access to global state, generally safe
+ *   - Performance: O(CH_NUMBER) iteration, very fast
+ *   - Memory safety: Uses array bounds from CH_NUMBER constant
+ *   - Historical context: Modern evolution of nation creation cost system
+ *   - Design pattern: Data-driven calculation using configuration tables
+ */
 int
 nstartcst()	/* to be used for new method */
 {
@@ -2124,6 +2445,96 @@ nstartcst()	/* to be used for new method */
 	return((int)points);
 }
 
+/*
+ * startcost - Calculate total point cost using legacy nation creation method
+ *
+ * This function implements the original "legacy method" for calculating nation
+ * creation point costs by directly examining final nation attributes. It uses
+ * hardcoded cost constants and race-specific formulas to determine the total
+ * point expenditure required for the current nation configuration.
+ *
+ * Unlike the modern nstartcst() method which uses allocation arrays, this
+ * function calculates costs from the final nation state, making it suitable
+ * for validation and legacy compatibility but not for NPC nation generation.
+ *
+ * Parameters:
+ *   None - Uses current nation (curntn) attributes and global constants
+ *
+ * Returns:
+ *   int - Total point cost for the nation configuration, rounded up
+ *         Includes race-specific calculations and late-start bonuses
+ *
+ * Side Effects:
+ *   - Prints detailed cost breakdown to stdout if TURN > 1
+ *   - Shows point cost and late-start bonus for debugging/validation
+ *   - Accesses global nation state and game turn information
+ *
+ * Cost Calculation Components:
+ *   Population Cost:
+ *   - points += curntn->tciv / ONLPOP
+ *   - Direct conversion of civilian population to point cost
+ *
+ *   Economic Cost:
+ *   - points += curntn->tgold / ONLGOLD
+ *   - Treasury size converted to point equivalent
+ *
+ *   Military Cost:
+ *   - points += curntn->tmil / ONLSOLD
+ *   - Standing army size converted to point cost
+ *
+ *   Race-Specific Attribute Costs:
+ *   ORC Nations:
+ *   - Reproduction: curntn->repro * ONLREPCOST / ONLREPRO_ORC
+ *   - Attack bonus: curntn->aplus * 2 / ONLATTACK (double weighting)
+ *   - Defense bonus: curntn->dplus * 2 / ONLDEFENCE (double weighting)
+ *
+ *   Non-ORC Nations:
+ *   - Attack bonus: curntn->aplus / ONLATTACK
+ *   - Defense bonus: curntn->dplus / ONLDEFENCE
+ *   - Reproduction: curntn->repro * ONLREPCOST / ONLREPRO
+ *
+ *   Movement Cost:
+ *   - points += curntn->maxmove / ONLMOVE
+ *   - Maximum movement range converted to point cost
+ *
+ *   Location Quality Cost:
+ *   - FAIR placement: +ONLLOCCOST points
+ *   - GREAT placement: +2*ONLLOCCOST points
+ *   - RANDOM/OOPS: No additional cost
+ *
+ * Late-Start Bonus System:
+ *   - Bonus = (TURN - 1) / LATESTART
+ *   - Identical to nstartcst() for game balance consistency
+ *   - Compensates players joining ongoing games
+ *   - Shows detailed breakdown when TURN > 1
+ *
+ * Race-Specific Balance:
+ *   - ORC nations get different reproduction and combat cost scaling
+ *   - ORC combat bonuses weighted at 2x for balance purposes
+ *   - Reflects racial strengths and weaknesses in point economy
+ *   - Maintains strategic diversity between race choices
+ *
+ * NPC Limitation:
+ *   - Comment indicates this cannot be used for NPC nations
+ *   - Legacy method assumes player-controlled nation attributes
+ *   - NPC generation requires different cost calculation approach
+ *   - Modern method (nstartcst) preferred for new implementations
+ *
+ * Testing Notes:
+ *   Category: A (Unit) - Direct calculation from nation attributes
+ *   Approach: Unit testing with various nation configurations and races
+ *   Key Tests: [Race-specific calculations, location costs, late-start bonus, ORC special cases]
+ *   Dependencies: [Current nation structure, cost constants, game turn state]
+ *   Mock Requirements: [Nation with various attribute combinations, cost constants]
+ *   Complexity: Simple - Direct attribute-to-cost conversion with race branching
+ *
+ * Notes:
+ *   - Thread safety: Read-only access to global state, generally safe
+ *   - Performance: Very fast, direct calculation with minimal computation
+ *   - Memory safety: Uses global nation structure, no array bounds issues
+ *   - Historical context: Original nation creation cost system
+ *   - Deprecation status: Legacy method, nstartcst() preferred for new code
+ */
 int
 startcost()	/* cant be used for npc nations yet!!! see below */
 {
