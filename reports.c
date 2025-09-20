@@ -1,10 +1,10 @@
 /*
  * reports.c - Game reports and statistics
- * 
+ *
  * This file is part of Conquer.
  * Originally Copyright (C) 1988-1989 by Edward M. Barlow and Adam Bryant
  * Copyright (C) 2025 Juan Manuel Méndez Rey (Vejeta) - Licensed under GPL v3 with permission from original authors
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,6 +17,91 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/*
+ * REPORTS SYSTEM - Game Statistics and Unit Management Interface
+ *
+ * This file implements the comprehensive reporting system for Conquer, providing
+ * interactive displays and management interfaces for armies, navies, finances,
+ * and production. The reporting system serves as the primary information and
+ * control center for players to monitor and manage their empire.
+ *
+ * KEY REPORTING SYSTEMS:
+ *
+ * 1. ARMY REPORTS (armyrpt):
+ *    - Comprehensive army statistics and status display
+ *    - Interactive army modification (disband, merge, split, group)
+ *    - Support for both full army reports and group-specific reports
+ *    - God mode capabilities for administrative army management
+ *    - Handles special unit types (spies, mercenaries, zombies, monsters)
+ *
+ * 2. FINANCIAL REPORTS (budget):
+ *    - Complete treasury and economic status overview
+ *    - Income/expense analysis with detailed breakdowns
+ *    - Population distribution and revenue calculations
+ *    - Military maintenance cost projections
+ *    - Charity and inflation impact modeling
+ *    - Integration with production and nation management screens
+ *
+ * 3. PRODUCTION REPORTS (produce):
+ *    - Resource production estimates and planning
+ *    - Food production vs consumption analysis
+ *    - Jewel and metal ore production tracking
+ *    - Population allocation efficiency assessment
+ *    - Monster maintenance cost calculations
+ *    - Cross-linked navigation to budget and nation screens
+ *
+ * 4. FLEET REPORTS (fleetrpt):
+ *    - Naval unit inventory and status monitoring
+ *    - Ship management (warships, merchants, galleys by size class)
+ *    - Fleet operations (merge, split, disband navies)
+ *    - Cargo and crew capacity management
+ *    - Army transport status and coordination
+ *    - God mode naval administrative controls
+ *
+ * ARCHITECTURAL FEATURES:
+ *
+ * Screen Layout Management:
+ * - Multi-column display system with configurable grid layouts
+ * - Dynamic screen pagination for large datasets
+ * - Consistent header/footer navigation interface
+ * - Responsive formatting based on terminal dimensions
+ *
+ * Interactive Navigation:
+ * - Cross-linked report navigation (budget <-> production <-> nation)
+ * - Context-sensitive option menus based on unit types and permissions
+ * - God mode administrative interfaces with extended capabilities
+ * - Error handling and validation for all user inputs
+ *
+ * Data Integration:
+ * - Real-time calculation of maintenance costs and resource consumption
+ * - Integration with spreadsheet() economic calculations
+ * - Coordination with army/navy management systems
+ * - Support for trade system constraints and validations
+ *
+ * Permission System:
+ * - Country-specific data filtering and access control
+ * - God mode privilege escalation with comprehensive administrative tools
+ * - Trade system integration preventing modification of traded units
+ * - Validation of ownership and location constraints
+ *
+ * DISPLAY CONSTANTS:
+ * - RPT_LINES/RPT_COLS: Column spacing for army reports (11x10)
+ * - Fleet reports use 13x11 grid for naval unit display
+ * - BUF_LINES/BUF_COLS: Buffer zones for screen formatting (10x15)
+ * - MAXINROW/MAXINSCR: Dynamic calculation of display capacity
+ *
+ * CROSS-SYSTEM DEPENDENCIES:
+ * - Integrates with spreadsheet() for economic calculations
+ * - Uses ext_cmd() for army command dispatch
+ * - Coordinates with army/navy management functions
+ * - Supports trade system constraints and notifications
+ * - Leverages god mode functions for administrative capabilities
+ *
+ * The reporting system is essential for strategic decision-making, providing
+ * players with comprehensive visibility into their empire's status while
+ * offering direct management capabilities for military and economic assets.
  */
 
 #include <stdio.h>
@@ -40,7 +125,87 @@ extern short redraw;
 #define BUF_COLS 15
 #define MAXINROW ((COLS-BUF_COLS)/RPT_COLS)
 #define MAXINSCR (((LINES-BUF_LINES)/RPT_LINES)*MAXINROW)
-/*report on armies and allow changes*/
+
+/*
+ * armyrpt - Interactive army statistics report and modification system
+ *
+ * Provides a comprehensive interface for viewing and managing army units,
+ * displaying detailed statistics in a multi-column grid layout with full
+ * interactive modification capabilities. Supports both complete army
+ * inventories and location-filtered group reports.
+ *
+ * Parameters:
+ *   repnum - Report type selector:
+ *            0 = Full army report (all armies regardless of location)
+ *            1 = Group report (only armies at current cursor location)
+ *
+ * Returns:
+ *   void - Function controls its own screen display and user interaction
+ *
+ * Side Effects:
+ *   - Completely takes over screen display with curses interface
+ *   - May modify army data through interactive commands
+ *   - Updates army statistics, locations, groupings, and compositions
+ *   - Can disband armies, affecting sector populations and treasury
+ *   - May invoke ext_cmd() for extended army command processing
+ *   - In god mode, provides unrestricted army modification capabilities
+ *
+ * Display Architecture:
+ *   - Multi-column grid layout with configurable RPT_LINES/RPT_COLS spacing
+ *   - Dynamic pagination supporting large army inventories
+ *   - Column headers: soldiers, location, movement, status, type, costs
+ *   - Interactive navigation with space/return/other key controls
+ *   - Context-sensitive option menus based on unit types and permissions
+ *
+ * Army Management Operations:
+ *   1. Command Execution - Dispatches to ext_cmd() for tactical operations
+ *   2. Army Merging - Combines armies at same location with validation
+ *   3. Army Splitting - Divides armies with interactive soldier allocation
+ *   4. Army Disbanding - Complex dissolution with type-specific handling:
+ *      - Regular troops: 15% become mercenaries, rest return to population
+ *      - Spies: Require "shut up fee" payment to prevent exposure
+ *      - Mercenaries: Demand severance pay for peaceful dissolution
+ *      - Zombies: Cannot be disbanded (permanent units)
+ *      - Monsters: Standard disbanding without population effects
+ *   5. Group Management - Assigns armies to leader-based formations
+ *
+ * God Mode Administrative Features:
+ *   - Unrestricted location modification (teleportation)
+ *   - Direct soldier count adjustment
+ *   - Movement point manipulation
+ *   - Unit type transformation (normal/leader/monster)
+ *   - Status modification with group assignment validation
+ *   - Bypasses ownership and trade restrictions
+ *
+ * Permission and Validation Systems:
+ *   - Country ownership verification for non-god users
+ *   - Trade system integration (prevents modification of traded armies)
+ *   - Location-based constraints (sector ownership for disbanding)
+ *   - Unit type restrictions (no disbanding zombies, no merging monsters)
+ *   - Army status validation (prevents modifying onboard units)
+ *
+ * Economic Integration:
+ *   - Calculates and displays maintenance costs per turn
+ *   - Handles enlistment cost display (talons vs points for monsters)
+ *   - Processes disbanding payments (spy fees, mercenary severance)
+ *   - Updates treasury and population statistics
+ *   - Integrates with sector adjustment macros (AADJMEN, SADJCIV2)
+ *
+ * Testing Notes:
+ *   Category: C (System) - Requires full game state initialization
+ *   Approach: System testing with mock armies and god mode validation
+ *   Key Tests: Army creation/modification, disbanding economics, god privileges
+ *   Dependencies: Curses display, army data structures, economic systems
+ *   Mock Requirements: Game state, army inventories, sector ownership
+ *   Complexity: Complex - Full-featured management interface with economics
+ *
+ * Notes:
+ *   - Function manages its own screen lifecycle (clear/refresh/restore)
+ *   - Extensive use of curses positioning and formatting
+ *   - Complex state machine for interactive command processing
+ *   - Critical for empire management and military strategy
+ *   - Integration point for multiple game systems (economy, military, trade)
+ */
 void
 armyrpt(repnum)
 	int repnum;
@@ -348,6 +513,92 @@ armyrpt(repnum)
 	if(isgod==TRUE) reset_god();
 }
 
+/*
+ * budget - Next season's budget estimates and financial overview
+ *
+ * Displays comprehensive financial projections showing current treasury status,
+ * population distribution, income sources, military expenses, and projected
+ * treasury after inflation and charity. Provides cross-navigation to production
+ * and nation management screens for complete economic planning.
+ *
+ * Parameters:
+ *   None
+ *
+ * Returns:
+ *   void - Function manages its own screen display and navigation
+ *
+ * Side Effects:
+ *   - Takes over full screen display with financial dashboard
+ *   - Calls spreadsheet() to calculate economic data and population distribution
+ *   - May launch produce() or change() functions based on user navigation
+ *   - In god mode, temporarily adjusts startgold to current treasury for calculations
+ *
+ * Financial Calculations and Display:
+ *   - Starting treasury vs current treasury comparison
+ *   - Sector count and population distribution analysis
+ *   - Food storage with starvation warning (red highlight if insufficient)
+ *   - Resource holdings (jewels, metals) with current inventory
+ *   - Detailed income breakdown by population sector:
+ *     * Gold mines (people + revenue)
+ *     * Metal mines (people + revenue)
+ *     * Farms (people + food production)
+ *     * Capitals (people + revenue)
+ *     * Cities (people + revenue)
+ *     * Other sectors (people + revenue)
+ *   - Total population and net income calculation
+ *
+ * Military Cost Analysis:
+ *   - Army maintenance: Counts soldiers and calculates per-turn costs
+ *   - Monster maintenance: Special 5x multiplier for monster unit costs
+ *   - Naval maintenance: Ship holds × SHIPMAINT constant
+ *   - Other expenses: Difference between starting and current treasury
+ *   - Total expense summary with highlighted totals
+ *
+ * Economic Projections:
+ *   - Charity calculation: Based on nation's charity percentage setting
+ *   - Net income: Total income minus all expenses and charity
+ *   - Inflation impact: Complex calculation based on treasury size:
+ *     * Large treasuries (>1M): Divided by inflation factor, then scaled
+ *     * Smaller treasuries: Inverse scaling to reduce inflation damage
+ *   - Next season's projected treasury: Final economic forecast
+ *
+ * Interactive Navigation:
+ *   - 'P': Launch production screen (produce()) for resource planning
+ *   - 'C': Launch change nation screen (change()) for policy adjustments
+ *   - Other keys: Return to calling context
+ *
+ * God Mode Features:
+ *   - Bypasses country restrictions for administrative budget analysis
+ *   - Temporarily sets startgold to current treasury for accurate projections
+ *   - Provides economic oversight capabilities for any nation
+ *
+ * Screen Layout:
+ *   - Left side: Nation status, treasury, resources, sector information
+ *   - Right side: Population distribution with corresponding revenue streams
+ *   - Bottom section: Military costs, projections, navigation options
+ *   - Strategic highlighting for critical information (food shortages, totals)
+ *
+ * Integration Points:
+ *   - spreadsheet(): Core economic calculation engine
+ *   - produce(): Resource production planning
+ *   - change(): Nation policy and charity adjustment
+ *   - Army/navy data structures for maintenance cost calculations
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires economic system and army/navy data
+ *   Approach: Integration testing with mock nations and military units
+ *   Key Tests: Economic calculations, inflation modeling, cross-navigation
+ *   Dependencies: Spreadsheet calculations, army/navy inventories, display system
+ *   Mock Requirements: Nation data, military units, economic parameters
+ *   Complexity: Moderate - Economic calculations with cross-system integration
+ *
+ * Notes:
+ *   - Critical for strategic economic planning and empire management
+ *   - Complex inflation modeling affects long-term economic strategy
+ *   - Integration hub connecting economic, military, and policy systems
+ *   - Red highlighting warns of potential food shortages
+ *   - Supports both player and administrative (god mode) perspectives
+ */
 void
 budget()
 {
@@ -441,6 +692,102 @@ budget()
 	if(isgod==TRUE) reset_god();
 }
 
+/*
+ * produce - Next season's production estimates and resource planning
+ *
+ * Displays detailed production forecasts for food, jewels, and metals,
+ * comparing current resource levels with projected production and consumption.
+ * Provides critical planning information for resource management and includes
+ * cross-navigation to budget and nation management screens.
+ *
+ * Parameters:
+ *   None
+ *
+ * Returns:
+ *   void - Function manages its own screen display and navigation
+ *
+ * Side Effects:
+ *   - Takes over full screen display with production dashboard
+ *   - Creates temporary debug file "temp" with line tracing information
+ *   - Calls spreadsheet() to calculate production data and population allocation
+ *   - May launch budget() or change() functions based on user navigation
+ *   - In god mode, bypasses country restrictions for administrative analysis
+ *
+ * Food Production Analysis (Left Side):
+ *   - Current granary holdings (tons of food stored)
+ *   - Farm production: Population assigned to farms + tons produced
+ *   - Consumption calculations with precise eat rate modeling:
+ *     * Civilian consumption: population × P_EATRATE per person
+ *     * Military consumption: soldiers × 2 × P_EATRATE (double military ration)
+ *   - Net food projection: Production minus total consumption
+ *   - Food supply estimate: Available food after consumption
+ *   - Critical starvation warnings if consumption exceeds production
+ *
+ * Resource Production Analysis (Right Side):
+ *   - Jewel Production System:
+ *     * Current jewel inventory
+ *     * Gold mine population assignment + jewel production
+ *     * Monster jewel consumption (maintenance costs)
+ *     * Net jewel supply after monster upkeep
+ *   - Metal Production System:
+ *     * Current metal ore inventory
+ *     * Mining population assignment + ore production
+ *     * Net metal supply projections
+ *
+ * Military Resource Impact:
+ *   - Military food consumption: Doubled eat rate for soldiers
+ *   - Monster maintenance: Jewel costs for magical creature upkeep
+ *   - Comprehensive cost/benefit analysis for military vs production balance
+ *
+ * Production Debugging and Validation:
+ *   - Writes line trace information to temporary debug file
+ *   - Enables production calculation verification and troubleshooting
+ *   - Tracks complex floating-point calculations for accuracy validation
+ *
+ * Interactive Navigation:
+ *   - 'B': Launch budget screen (budget()) for financial analysis
+ *   - 'C': Launch change nation screen (change()) for policy adjustments
+ *   - Other keys: Return to calling context
+ *   - Seamless integration between production, budget, and policy management
+ *
+ * God Mode Features:
+ *   - Administrative production analysis for any nation
+ *   - Bypasses country ownership restrictions
+ *   - Enables economic oversight and game balance analysis
+ *
+ * Screen Layout and Formatting:
+ *   - Split-screen design: Food production (left) + Resource production (right)
+ *   - Strategic highlighting for critical projections and estimates
+ *   - Detailed population allocation breakdown with corresponding output
+ *   - Clear separation between current holdings and projected changes
+ *
+ * Economic Integration:
+ *   - Coordinates with spreadsheet() for accurate production calculations
+ *   - Integrates military data for consumption modeling
+ *   - Supports strategic resource allocation decision-making
+ *   - Links production planning with budgetary and policy systems
+ *
+ * Critical Planning Information:
+ *   - Food shortage warnings for starvation prevention
+ *   - Resource allocation efficiency analysis
+ *   - Military sustainability assessment
+ *   - Strategic balance between military strength and economic production
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires economic system and production data
+ *   Approach: Integration testing with mock nations and resource scenarios
+ *   Key Tests: Production calculations, consumption modeling, starvation scenarios
+ *   Dependencies: Spreadsheet calculations, army inventories, economic data
+ *   Mock Requirements: Nation data, population distribution, military units
+ *   Complexity: Moderate - Resource planning with military integration
+ *
+ * Notes:
+ *   - Essential for long-term empire sustainability and strategic planning
+ *   - Complex eat rate calculations require careful floating-point handling
+ *   - Debug file creation aids in production calculation verification
+ *   - Critical for preventing empire collapse due to resource shortages
+ *   - Integration hub connecting production, military, and economic systems
+ */
 void
 produce()
 {
@@ -532,7 +879,126 @@ produce()
 #define BUF_LINES 10
 #define BUF_COLS 15
 char *fltstr[]= {"Light", "Medium", "Heavy"};
-/*report on ships and allow changes */
+
+/*
+ * fleetrpt - Interactive naval fleet statistics report and management system
+ *
+ * Provides comprehensive interface for viewing and managing naval fleets,
+ * displaying detailed ship inventories in multi-column grid layout with full
+ * interactive modification capabilities. Handles complex naval operations
+ * including fleet merging, splitting, and disbanding with sophisticated
+ * ship type management across three size classes.
+ *
+ * Parameters:
+ *   None
+ *
+ * Returns:
+ *   void - Function controls its own screen display and user interaction
+ *
+ * Side Effects:
+ *   - Completely takes over screen display with curses naval interface
+ *   - May modify naval fleet data through interactive commands
+ *   - Updates ship inventories, crew assignments, and cargo allocations
+ *   - Can disband fleets, affecting sector populations and army deployments
+ *   - Handles complex ship transfers and fleet reorganization
+ *   - In god mode, provides unrestricted naval modification capabilities
+ *
+ * Naval Display Architecture:
+ *   - Multi-column grid layout using 13x11 spacing (RPT_LINES/RPT_COLS)
+ *   - Three ship types per size class: Warships, Merchants, Galleys
+ *   - Size classes: Light, Medium, Heavy (N_LIGHT, N_MEDIUM, N_HEAVY)
+ *   - Column headers: ship counts, location, crew, movement, cargo, civilians
+ *   - Dynamic pagination supporting large fleet inventories
+ *   - Interactive navigation with space/return/other key controls
+ *
+ * Ship Type Management System:
+ *   - Warships: Combat vessels with attack capabilities
+ *   - Merchants: Cargo vessels for resource and civilian transport
+ *   - Galleys: Specialized vessels with unique movement characteristics
+ *   - Size Classes: Light (fast, small), Medium (balanced), Heavy (large, slow)
+ *   - Each navy can contain combinations across all types and sizes
+ *
+ * Fleet Management Operations:
+ *   1. Fleet Transfer/Merge - Combines fleets at same location with validation:
+ *      - Location verification (fleets must be co-located)
+ *      - Ship type limits (maximum ships per type using N_MASK)
+ *      - Crew and cargo redistribution calculations
+ *      - Army transfer coordination (only one fleet can carry army)
+ *      - Movement point synchronization (slower fleet determines new speed)
+ *
+ *   2. Fleet Splitting - Divides fleets with interactive ship allocation:
+ *      - Finds available empty navy slot
+ *      - Individual ship type/size allocation interface
+ *      - Crew and cargo distribution between split fleets
+ *      - Army handling (must be unloaded before splitting)
+ *      - Movement point and location inheritance
+ *
+ *   3. Fleet Disbanding - Complex dissolution with constraints:
+ *      - Location validation (must be on land or in harbor, not open water)
+ *      - Ownership verification (must own the land for disbanding)
+ *      - Crew return to sector population
+ *      - Civilian passenger integration into local population
+ *      - Army unloading and status reset to DEFEND
+ *      - Complete fleet data structure cleanup
+ *
+ * God Mode Administrative Features:
+ *   - Ship Adjustment: Direct modification of ship counts by type and size
+ *   - Location Modification: Teleportation of fleets to any coordinates
+ *   - Crew Manipulation: Direct crew/ship ratio adjustment
+ *   - Movement Control: Movement point modification
+ *   - Bypasses ownership, location, and trade restrictions
+ *
+ * Cargo and Crew Management:
+ *   - Crew calculations: flthold() determines total ship holding capacity
+ *   - Civilian transport: fltmhold() calculates merchant vessel capacity
+ *   - Army transport: Single army per fleet with coordination validation
+ *   - Capacity distribution: Automatic crew/cargo rebalancing during operations
+ *   - Hold calculations: Total capacity across all ship types and sizes
+ *
+ * Permission and Validation Systems:
+ *   - Country ownership verification for non-god users
+ *   - Trade system integration (prevents modification of traded fleets)
+ *   - Location-based constraints (harbor/land requirements for disbanding)
+ *   - Ship capacity limits (N_MASK maximum per ship type)
+ *   - Army coordination rules (single army per fleet, unloading requirements)
+ *
+ * Ship Calculation Functions:
+ *   - P_NWAR(size): Warship count for specific size class
+ *   - P_NMER(size): Merchant count for specific size class
+ *   - P_NGAL(size): Galley count for specific size class
+ *   - SHIPS(data, size): Extracts ship count from packed data structure
+ *   - addwships(), addmships(), addgships(): Ship addition functions
+ *   - NADD_WAR, NSUB_WAR: Warship modification macros
+ *
+ * Complex State Management:
+ *   - Fleet location coordination (P_NXLOC, P_NYLOC)
+ *   - Movement synchronization (P_NMOVE, slowest fleet determines speed)
+ *   - Army transport status (P_NARMY, MAXARM for empty)
+ *   - Crew and passenger counts (P_NCREW, P_NPEOP)
+ *   - Ship type packed storage (warships, merchant, galleys data structures)
+ *
+ * Adjustment Macro Integration:
+ *   - NADJWAR, NADJMER, NADJGAL: Ship count updates
+ *   - NADJCRW, NADJHLD: Crew and cargo capacity updates
+ *   - NADJMOV, NADJLOC: Movement and location updates
+ *   - AADJSTAT: Army status coordination for transported units
+ *
+ * Testing Notes:
+ *   Category: C (System) - Requires full naval system and game state
+ *   Approach: System testing with mock fleets and god mode validation
+ *   Key Tests: Fleet operations, ship transfers, capacity calculations, god privileges
+ *   Dependencies: Naval data structures, army coordination, display system
+ *   Mock Requirements: Fleet inventories, army units, sector ownership
+ *   Complexity: Complex - Full naval management with cargo/crew coordination
+ *
+ * Notes:
+ *   - Most complex naval interface in the game system
+ *   - Handles intricate ship type and size class management
+ *   - Critical for maritime strategy and logistics
+ *   - Complex validation ensures game balance and logical constraints
+ *   - Integration point for naval, military, and economic systems
+ *   - Extensive use of packed data structures for efficient ship storage
+ */
 void
 fleetrpt()
 {
