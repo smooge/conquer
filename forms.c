@@ -1,10 +1,76 @@
 /*
- * forms.c - User interface forms and screens
- * 
+ * forms.c - User interface forms and interactive screens
+ *
+ * USER INTERFACE FORMS MODULE
+ *
+ * This module provides the comprehensive user interface framework for the Conquer game,
+ * implementing interactive screens, data display forms, and user input processing.
+ * It serves as the primary interface between players and the game data, offering
+ * sophisticated screen layouts, pagination systems, help functionality, and real-time
+ * information management with advanced curses-based display capabilities.
+ *
+ * Core Interface Components:
+ * 1. Nation Score Display - Comprehensive ranking and statistics presentation
+ * 2. Diplomacy Management - Interactive diplomatic status control system
+ * 3. Nation Statistics Editor - Real-time attribute modification interface
+ * 4. Help System - Context-sensitive documentation and assistance
+ * 5. News Display - Multi-page newspaper reading with navigation
+ * 6. String Highlighting - Advanced text display with emphasis features
+ * 7. Screen Layout Management - Multi-column and paginated display systems
+ * 8. Input Processing - Secure user input validation and processing
+ *
+ * Interface Architecture:
+ * - Score Display System: Multi-column nation ranking with conditional information
+ * - Diplomacy Interface: Real-time diplomatic status management with bribery
+ * - Statistics Management: Interactive nation attribute editing with validation
+ * - Help Framework: File-based help system with topic organization
+ * - News System: Paginated newspaper display with navigation controls
+ * - Display Engine: Advanced curses integration with highlighting and formatting
+ * - Input Validation: Secure password handling and data entry processing
+ * - Screen Management: Dynamic layout calculation and responsive design
+ *
+ * Display Features:
+ * - Multi-Column Layouts: Automatic column calculation based on screen dimensions
+ * - Pagination System: Efficient navigation through large data sets
+ * - Conditional Display: Content varies based on user permissions and game state
+ * - Text Highlighting: Nation name emphasis and standout text formatting
+ * - Responsive Design: Automatic layout adjustment for different terminal sizes
+ * - Interactive Navigation: Keyboard-driven menu and form navigation
+ * - Status Indicators: Visual feedback for user actions and system state
+ * - Error Messaging: Integrated error display and user notification system
+ *
+ * Integration Points:
+ * - Display System: Advanced screen rendering and layout management
+ * - I/O System: File operations for help content and news articles
+ * - Command System: User input processing and command validation
+ * - Data Structures: Real-time manipulation of nation and game data
+ * - Security System: Password validation and access control
+ * - Magic System: Conditional feature access based on magical powers
+ * - Admin System: Privileged operations and debugging interfaces
+ * - News System: Integration with game event reporting and communication
+ *
+ * Screen Management:
+ * - Dynamic Layout Calculation: Screen size detection and responsive formatting
+ * - Multi-Page Navigation: Forward/backward pagination with page jumping
+ * - Interactive Menus: Keyboard-driven selection and navigation systems
+ * - Data Entry Forms: Secure input processing with validation and confirmation
+ * - Status Displays: Real-time information presentation with formatting
+ * - Error Handling: User-friendly error messages and recovery options
+ * - Context Sensitivity: Screen behavior adapts to user role and game state
+ * - Performance Optimization: Efficient screen updates and memory management
+ *
+ * Security Features:
+ * - Password Management: Secure password entry with character masking
+ * - Access Control: Role-based feature availability and operation restrictions
+ * - Input Validation: Comprehensive data validation and bounds checking
+ * - Permission Verification: User authorization before sensitive operations
+ * - Audit Trail: Action logging for administrative and debugging purposes
+ * - Error Containment: Safe handling of invalid input and system errors
+ *
  * This file is part of Conquer.
  * Originally Copyright (C) 1988-1989 by Edward M. Barlow and Adam Bryant
  * Copyright (C) 2025 Juan Manuel Méndez Rey (Vejeta) - Licensed under GPL v3 with permission from original authors
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -42,6 +108,88 @@ static char helplist[MAXHELP][20]={"Commands", "General Info",
 #define BUF_COLS 15
 #define MAXINROW ((COLS-BUF_COLS)/RPT_COLS)
 #define MAXINSCR (((LINES-BUF_LINES)/RPT_LINES)*MAXINROW)
+
+/*
+ * showscore - Display comprehensive nation score and statistics screen
+ *
+ * Presents a multi-column, paginated display of all active nations showing
+ * detailed statistics including demographics, economics, military strength,
+ * and political information. Features responsive layout calculation, pagination
+ * system, conditional information display based on user privileges, and
+ * interactive navigation. Supports both standard scoring and no-score modes
+ * with different information visibility levels.
+ *
+ * Parameters:
+ *   None
+ *
+ * Returns:
+ *   None (void function)
+ *
+ * Side Effects:
+ *   - Clears screen and displays nation score information
+ *   - Displays multi-column layout with automatic column calculation
+ *   - Provides pagination through all active nations
+ *   - Shows different information based on NOSCORE compilation flag
+ *   - Highlights nation names with standout text formatting
+ *   - Waits for user input to continue or exit
+ *   - Uses curses library for screen management and formatting
+ *
+ * Display Layout:
+ *   Multi-column format with responsive column calculation:
+ *   - MAXINROW: Maximum nations per row (screen width dependent)
+ *   - MAXINSCR: Maximum nations per screen (screen height dependent)
+ *   - Automatic header repetition for each column
+ *   - Dynamic positioning based on terminal dimensions
+ *
+ * Information Displayed:
+ *   Basic Information (Always):
+ *     - Nation ID, name (highlighted), leader, race, class, alignment
+ *     - Score, military count, civilian count, sector count
+ *
+ *   Conditional Information:
+ *     NOSCORE mode: NPC status shown first, financial data requires admin
+ *     Standard mode: Financial data shown first, NPC status at bottom
+ *     Admin mode (country==0): Complete access to all information
+ *
+ *   Economic Data:
+ *     - Total gold (talons), military forces, civilian population
+ *     - Territory control (sectors), NPC/PC status
+ *
+ * Navigation Features:
+ *   - Space bar: Exit display and return to game
+ *   - Any other key: Continue to next page of nations
+ *   - Automatic pagination when nations exceed screen capacity
+ *   - Seamless wraparound to beginning when all nations displayed
+ *
+ * Screen Management:
+ *   - Dynamic layout calculation based on terminal size
+ *   - Responsive column width and positioning
+ *   - Automatic header repetition for readability
+ *   - Standout formatting for titles and nation names
+ *   - Food shortage highlighting (red text for low food)
+ *   - Professional status bar with navigation instructions
+ *
+ * Data Processing:
+ *   - Scans all nations (1 to NTOTAL-1) for active status
+ *   - Filters display to only active nations (isntn() check)
+ *   - Race lookup through races array for proper display names
+ *   - Class translation through Class array for readable names
+ *   - Alignment determination through npctype() function
+ *
+ * Performance Considerations:
+ *   - Efficient nation scanning with active status filtering
+ *   - Optimized screen updates using curses functions
+ *   - Memory-efficient string operations and formatting
+ *   - Minimal recalculation during pagination
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires complete nation data and display system
+ *   Approach: Integration testing with mock nation data and screen simulation
+ *   Key Tests: Multi-column layout, pagination, conditional display, navigation
+ *   Dependencies: Nation data, curses library, display constants, active status
+ *   Mock Requirements: Mock nation database, mock screen dimensions, mock user input
+ *   Complexity: Moderate - Multi-column layout with responsive design and pagination
+ */
 void
 showscore()
 {
@@ -152,6 +300,113 @@ showscore()
 
 #define	MAXINCOL	(LINES-10)
 #define	MAXONSCR	(MAXINCOL*(COLS/40))
+
+/*
+ * diploscrn - Interactive diplomacy management and nation relationship interface
+ *
+ * Comprehensive diplomatic interface providing real-time management of inter-nation
+ * relationships, bribery systems, and diplomatic status modification. Features
+ * multi-column nation listing, bilateral relationship display, secure transaction
+ * processing, and administrative override capabilities. Includes sophisticated
+ * validation, cost calculation, and automatic notification systems for diplomatic
+ * changes and treaty implications.
+ *
+ * Parameters:
+ *   None
+ *
+ * Returns:
+ *   None (void function)
+ *
+ * Side Effects:
+ *   - Displays interactive diplomacy screen with nation relationships
+ *   - Modifies diplomatic status between nations (curntn->dstatus[])
+ *   - Processes bribery transactions with gold deduction
+ *   - Sends automatic diplomatic notifications via mail system
+ *   - Enforces treaty obligations and cascade effects
+ *   - Updates nation financial resources and diplomatic standings
+ *   - Calls get_god()/reset_god() for administrative access control
+ *   - Writes diplomatic events to execution files for processing
+ *
+ * Display Features:
+ *   Multi-column layout showing bilateral relationships:
+ *   - Nation ID, name, and diplomatic status in both directions
+ *   - "BY YOU" column: Current nation's stance toward others
+ *   - "TO YOU" column: Other nations' stance toward current nation
+ *   - War/Jihad status highlighted with standout formatting
+ *   - Pagination system for large numbers of nations
+ *   - Responsive column calculation based on screen dimensions
+ *
+ * Diplomatic Operations:
+ *   Status Modification:
+ *     - Interactive selection of target nation
+ *     - Menu-driven status selection (TREATY through JIHAD)
+ *     - Cost calculation and validation for status changes
+ *     - Automatic treaty cascade effects and alliance enforcement
+ *     - Administrative override capabilities for god mode
+ *
+ *   Bribery System:
+ *     - NPC nation bribery with dynamic cost calculation
+ *     - Military strength-based pricing (BRIBE * military/1000)
+ *     - Gold validation and transaction processing
+ *     - Diplomatic status improvement (status--)
+ *     - Bribery notification logging to execution files
+ *
+ * Security and Validation:
+ *   Access Control:
+ *     - God mode authentication and privilege escalation
+ *     - Player vs NPC operation restrictions
+ *     - Unmet nation interaction prevention
+ *     - Invalid status change blocking
+ *
+ *   Transaction Validation:
+ *     - Gold sufficiency checking for all operations
+ *     - Treaty breaking cost enforcement (BREAKJIHAD)
+ *     - Jihad/Treaty special status validation
+ *     - Military threshold validation for bribery
+ *
+ * Automated Consequences:
+ *   Treaty Obligations:
+ *     - Allied nation automatic war declaration
+ *     - Treaty partner notification and involvement
+ *     - Cascade diplomatic status changes
+ *     - Multi-nation alliance activation
+ *
+ *   Messaging System:
+ *     - Automatic war declaration notifications
+ *     - Treaty alliance activation messages
+ *     - Randomized alliance support messages (4 variants)
+ *     - Diplomatic event logging and communication
+ *
+ * Navigation and Interface:
+ *   - Space: Exit diplomacy screen
+ *   - Return/Enter: Modify diplomatic status
+ *   - 'B': Initiate bribery transaction
+ *   - Any other key: Scroll to next nation page
+ *   - Interactive nation selection and status menus
+ *   - Error messaging and user feedback systems
+ *
+ * Cost Structure:
+ *   - Standard diplomacy changes: Free for most operations
+ *   - Treaty breaking: BREAKJIHAD gold cost
+ *   - Jihad termination: BREAKJIHAD gold cost
+ *   - Bribery: BRIBE base cost * (military strength / 1000)
+ *   - Administrative override: No costs for god mode
+ *
+ * Integration Points:
+ *   - Mail system: Automatic diplomatic notifications
+ *   - File system: Execution file logging for bribery events
+ *   - Administrative system: God mode access and overrides
+ *   - Nation data: Real-time diplomatic status modification
+ *   - Economic system: Gold transaction processing and validation
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires complete nation data and diplomatic system
+ *   Approach: Integration testing with mock nation relationships and mail system
+ *   Key Tests: Status changes, bribery transactions, treaty cascades, notifications
+ *   Dependencies: Nation data, diplomatic arrays, mail system, file operations, gold
+ *   Mock Requirements: Mock diplomatic state, mock mail system, mock file operations
+ *   Complexity: Complex - Multi-system integration with financial transactions and cascading effects
+ */
 void
 diploscrn()
 {
@@ -391,6 +646,99 @@ diploscrn()
 
 int terror_adj=0;
 void
+/*
+ * change - Interactive nation statistics editor and administrative control panel
+ *
+ * Provides a comprehensive interface for modifying nation attributes, administrative
+ * controls, and system management. Features real-time display of all nation statistics
+ * with interactive menus for modification. Supports both player and god mode operations
+ * with secure password verification and extensive validation.
+ *
+ * Key Features:
+ * - Real-time nation statistics display with two-column layout
+ * - Interactive modification menus with input validation
+ * - Password management with secure entry and encryption
+ * - Administrative controls for god mode operations
+ * - Economic transaction processing with cost validation
+ * - PC/NPC status toggling and nation management
+ * - Resource management (gold, jewels, metals, food)
+ * - Combat bonus adjustments with class-based modifiers
+ * - Nation destruction capabilities (god mode only)
+ * - Integration with budget and production systems
+ *
+ * Display Layout:
+ * - Left column: Basic nation info (name, alignment, location, class, race)
+ * - Center column: Social statistics (terror, popularity, prestige, wealth)
+ * - Right column: Resources and military (gold, food, soldiers, ships)
+ * - Bottom: Interactive menu options and system controls
+ *
+ * Interactive Options:
+ * 1) Nation name modification with duplicate checking
+ * 2) Password change with verification and encryption
+ * 3) Tax rate adjustment with revolt calculations
+ * 4) Charity percentage with popularity effects
+ * 5) Terror increase with reputation consequences
+ * 6) Combat bonus enhancement with resource costs
+ * 7) PC/NPC status toggle with notification system
+ * 8) Nation destruction (administrative only)
+ * 9) Resource modification (god mode with OGOD)
+ * 0) Demigod password change (administrative)
+ * B) Budget screen access with integration
+ * P) Production screen access with integration
+ *
+ * Security Features:
+ * - God mode authentication with password verification
+ * - Current password validation for changes
+ * - Encrypted password storage using crypt() with salt
+ * - Administrative privilege checking for sensitive operations
+ * - Input validation and bounds checking for all modifications
+ *
+ * Economic Integration:
+ * - Cost calculations for combat bonus improvements
+ * - Resource validation for transactions
+ * - Class-based modifiers (WARLORD, CAPTAIN, WARRIOR effects)
+ * - Race-specific cost multipliers (ORC penalty)
+ * - Budget and production system integration
+ *
+ * Administrative Controls:
+ * - Nation destruction with news file logging
+ * - Resource modification with execution file logging
+ * - Demigod password management
+ * - PC/NPC conversion with mail notification effects
+ * - System integration with external sorting utilities
+ *
+ * Parameters:
+ *   None - Operates on global nation data and user interaction
+ *
+ * Returns:
+ *   void - Function exits on user completion or administrative reset
+ *
+ * Side Effects:
+ *   - Modifies current nation statistics based on user selections
+ *   - Updates global nation array with validated changes
+ *   - Writes to execution files for administrative changes
+ *   - Logs nation destruction events to news files
+ *   - Triggers external sort utilities for news processing
+ *   - May reset god mode status on completion
+ *   - Integrates with budget() and produce() subsystems
+ *
+ * Testing Notes:
+ *   Category: C (System) - Requires full game state and file system
+ *   Approach: System testing with mock file operations and user input simulation
+ *   Key Tests: Interactive menu navigation, password validation, resource transactions,
+ *             administrative controls, god mode operations, economic calculations
+ *   Dependencies: Global nation data, file system access, user input, external utilities
+ *   Mock Requirements: File operations, user input simulation, external command execution
+ *   Complexity: Complex - Interactive UI with extensive validation and system integration
+ *
+ * Notes:
+ *   - Main interactive interface for nation management and administration
+ *   - Continuous loop design allows multiple operations per session
+ *   - Extensive input validation prevents invalid state modifications
+ *   - Integration with budget and production systems provides seamless workflow
+ *   - Administrative features require careful privilege checking and logging
+ *   - Performance optimized for real-time display updates and user interaction
+ */
 change()
 {
 	float temp;
@@ -818,6 +1166,71 @@ change()
 }
 
 void
+/*
+ * help - Interactive help system with topic selection and pagination
+ *
+ * Provides a file-based help system with interactive topic selection and
+ * paginated screen display. Displays available help topics in a grid layout,
+ * allows user selection, and presents help content with highlighted headers
+ * and navigation controls.
+ *
+ * Key Features:
+ * - Dynamic topic listing from helplist array
+ * - Grid-based topic display with responsive layout
+ * - File-based help content with structured format
+ * - Page-by-page help content display with navigation
+ * - Highlighted topic headers with standout formatting
+ * - Interactive navigation with space key termination
+ * - Error handling for missing or invalid help files
+ *
+ * Help File Format:
+ * - Files named as helpfile + topic number (e.g., help0, help1)
+ * - Content organized by screens with END markers
+ * - DONE marker indicates end of help file
+ * - First line of each screen serves as highlighted header
+ * - Maximum line length of 80 characters for compatibility
+ *
+ * Display Layout:
+ * - Topic selection: Grid format with numbered options
+ * - Help content: Full screen display with highlighted headers
+ * - Navigation: Bottom screen prompts for continuation/exit
+ * - Error handling: Clear error messages for file issues
+ *
+ * Navigation Controls:
+ * - Number keys (0-MAXHELP): Select help topic
+ * - Any key (except space): Continue to next help screen
+ * - Space key: Exit help system at any point
+ * - Invalid topic numbers: Safe exit without error
+ *
+ * Parameters:
+ *   None - Operates through interactive user input
+ *
+ * Returns:
+ *   void - Function exits on completion or user termination
+ *
+ * Side Effects:
+ *   - Clears bottom portion of screen for topic display
+ *   - Modifies global redraw flag for screen refresh coordination
+ *   - Opens and closes help files based on topic selection
+ *   - Temporarily takes over full screen for help display
+ *   - Restores screen state through makebottom() integration
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires file system and screen management
+ *   Approach: Integration testing with mock files and input simulation
+ *   Key Tests: Topic selection validation, file error handling, pagination navigation,
+ *             screen formatting, user input processing, file format compliance
+ *   Dependencies: Help files, screen management, user input, file system access
+ *   Mock Requirements: File system operations, user input simulation, screen state
+ *   Complexity: Moderate - File processing with interactive navigation
+ *
+ * Notes:
+ *   - Help content must follow specific file format with END/DONE markers
+ *   - Topic selection uses grid layout optimized for readability
+ *   - Error handling gracefully manages missing help files
+ *   - Integration with screen management system for proper display restoration
+ *   - Performance optimized for responsive user interaction
+ */
 help()
 {
 	int lineno;
@@ -894,6 +1307,65 @@ help()
 
 /* routine to highlight a line for news display */
 /* if country name is mentioned.  By T. Kivinen */
+/*
+ * mvaddstrnahil - Display string with highlighted nation name occurrences
+ *
+ * Displays a string at the specified screen position while automatically
+ * highlighting any occurrences of the current nation's name. Used primarily
+ * for news display and text formatting where the player's nation name should
+ * be emphasized for easy identification.
+ *
+ * Key Features:
+ * - Automatic nation name detection within text strings
+ * - Standout formatting for highlighted nation names
+ * - Character-by-character processing for accurate highlighting
+ * - Integration with curses display system
+ * - Boundary checking to prevent partial name matches
+ *
+ * Highlighting Logic:
+ * - Scans input string character by character
+ * - Compares against current nation name at each position
+ * - Activates standout mode when complete name match found
+ * - Ensures name boundaries (not followed by hyphen character)
+ * - Continues normal display for non-matching text
+ *
+ * Display Processing:
+ * - Moves cursor to specified screen coordinates
+ * - Processes each character of input string sequentially
+ * - Applies standout formatting for nation name matches
+ * - Uses normal character display for remaining text
+ * - Maintains proper cursor positioning throughout
+ *
+ * Parameters:
+ *   li  - Line number (row) for text display
+ *   col - Column number for text display start position
+ *   p   - Pointer to string to display with potential highlighting
+ *
+ * Returns:
+ *   void - Function performs display operation only
+ *
+ * Side Effects:
+ *   - Moves cursor to specified screen position
+ *   - Displays text with selective highlighting at cursor location
+ *   - Modifies screen appearance with standout formatting
+ *   - Updates cursor position based on text length
+ *
+ * Testing Notes:
+ *   Category: A (Unit) - Simple text processing and display function
+ *   Approach: Unit testing with mock strings and nation name variations
+ *   Key Tests: Nation name detection accuracy, boundary checking, standout formatting,
+ *             cursor positioning, character-by-character processing
+ *   Dependencies: Global nation data (current nation name), curses display system
+ *   Mock Requirements: Nation name data, screen coordinate validation
+ *   Complexity: Simple - String processing with highlighting logic
+ *
+ * Notes:
+ *   - Used primarily in newspaper() and news display functions
+ *   - Enables easy identification of player nation in text content
+ *   - Hyphen boundary checking prevents false positive highlighting
+ *   - Performance optimized for real-time news and text display
+ *   - Maintains display formatting consistency with game interface
+ */
 void mvaddstrnahil(int li,int col,char *p)
 {
 	int i,j;
@@ -911,6 +1383,89 @@ void mvaddstrnahil(int li,int col,char *p)
 	}
 }
 
+/*
+ * newspaper - Interactive newspaper reading system with multi-page navigation
+ *
+ * Provides a comprehensive newspaper reading interface with historical news
+ * access, page navigation, and interactive controls. Displays available
+ * newspapers from recent turns, allows selection, and provides paginated
+ * reading with forward/backward navigation and direct page jumping.
+ *
+ * Key Features:
+ * - Historical newspaper access up to MAXNEWS previous turns
+ * - Interactive newspaper selection with turn/year display
+ * - Multi-page navigation with forward/backward controls
+ * - Direct page jumping (pages 1-5) for quick access
+ * - Subpage handling for content overflow management
+ * - Optional nation name highlighting with Gaudy mode
+ * - Seamless switching between different newspaper editions
+ *
+ * Newspaper Selection:
+ * - Displays available newspapers with descriptive labels
+ * - Shows season and year information for each edition
+ * - Grid layout with responsive formatting for readability
+ * - Input validation for newspaper selection range
+ * - Graceful error handling for invalid selections
+ *
+ * Page Navigation System:
+ * - Automatic page detection from news file format
+ * - Forward/backward page navigation with boundary checking
+ * - Direct page jumping with range validation (1-5)
+ * - Subpage management for content that exceeds screen limits
+ * - Page and subpage numbering in header display
+ *
+ * Content Display:
+ * - Formatted header with page numbers and date information
+ * - Highlighted newspaper titles with centering
+ * - Optional nation name highlighting for player relevance
+ * - Automatic line wrapping and screen management
+ * - Standout formatting for headers and navigation prompts
+ *
+ * Navigation Controls:
+ * - N/n: Next page navigation
+ * - P/p: Previous page navigation
+ * - 1-5: Direct page jumping
+ * - O/o: Return to newspaper selection
+ * - Space: Exit newspaper system
+ * - Other keys: Advance within current page/subpage
+ *
+ * File Format Support:
+ * - News files named with turn numbers (newsfile + turn)
+ * - Page markers using numeric prefixes (1:, 2:, etc.)
+ * - Content lines with text markers (1., 2., etc.)
+ * - Automatic page boundary detection and handling
+ * - Error recovery for missing or corrupted news files
+ *
+ * Parameters:
+ *   None - Operates through interactive user input and file system
+ *
+ * Returns:
+ *   void - Function exits on user completion or error conditions
+ *
+ * Side Effects:
+ *   - Clears and controls full screen for newspaper display
+ *   - Opens and closes news files based on user navigation
+ *   - Modifies global redraw flag for screen coordination
+ *   - Uses mvaddstrnahil() for optional nation name highlighting
+ *   - Integrates with screen management through makebottom()
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires file system and complex user interaction
+ *   Approach: Integration testing with mock news files and navigation simulation
+ *   Key Tests: File error handling, page navigation logic, user input processing,
+ *             content formatting, boundary checking, newspaper selection
+ *   Dependencies: News files, file system access, screen management, user input
+ *   Mock Requirements: News file system, user input simulation, file format compliance
+ *   Complexity: Moderate - Complex navigation with file processing and state management
+ *
+ * Notes:
+ *   - Central component of game's information distribution system
+ *   - Uses goto statements for complex navigation flow control
+ *   - Integration with Gaudy mode for enhanced visual experience
+ *   - Optimized for 80-column display format compatibility
+ *   - Robust error handling for missing or corrupted news files
+ *   - Performance considerations for large news archives
+ */
 void
 newspaper()
 {
