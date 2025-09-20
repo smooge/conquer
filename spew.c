@@ -1,10 +1,105 @@
 /*
- * spew.c - NPC message generation system
- * 
+ * spew.c - Advanced NPC Message Generation System
+ *
+ * This file implements a sophisticated text generation engine for creating dynamic
+ * NPC messages in the Conquer game. The system uses a rules-based approach with
+ * weighted random selection, recursive text expansion, and variant handling to
+ * generate contextually appropriate messages for game events, NPC interactions,
+ * and random occurrences.
+ *
+ * SYSTEM ARCHITECTURE:
+ * ==================
+ * The message generation system consists of several interconnected components:
+ *
+ * 1. RULES FILE PARSING ENGINE
+ *    - Loads and parses external rules files containing message templates
+ *    - Supports class-based organization with hierarchical text definitions
+ *    - Handles weighted probability distributions for message selection
+ *    - Implements variant systems for context-sensitive message variations
+ *
+ * 2. TEXT CLASS MANAGEMENT SYSTEM
+ *    - Organizes message templates into named classes for easy reference
+ *    - Supports binary search optimization for fast class lookup
+ *    - Manages variant tags for context-dependent message customization
+ *    - Handles cumulative weight calculation for probability distributions
+ *
+ * 3. RECURSIVE TEXT GENERATION ENGINE
+ *    - Processes embedded class references within message templates
+ *    - Supports recursive expansion for complex message hierarchies
+ *    - Handles escape sequences and special formatting directives
+ *    - Implements variant selection based on context propagation
+ *
+ * 4. MEMORY MANAGEMENT SUBSYSTEM
+ *    - Dynamic allocation for scalable class and definition storage
+ *    - Linked list management for definition chains within classes
+ *    - Comprehensive cleanup routines for leak-free operation
+ *    - String duplication utilities for safe text storage
+ *
+ * RULES FILE FORMAT:
+ * ================
+ * The system uses a specialized text format for defining message templates:
+ *
+ * - Class Headers: %CLASSNAME {variants}
+ *   Example: %GREETING {formal casual}
+ *
+ * - Weighted Definitions: (weight) message template
+ *   Example: (3) Hello there, \TITLE/& \NAME/!
+ *
+ * - Class References: \CLASSNAME/variant
+ *   Example: \GREETING/formal or \TITLE/& (inherit variant)
+ *
+ * - Variant Blocks: {option1|option2|option3}
+ *   Example: {Your Majesty|Sir|Friend}
+ *
+ * - Escape Sequences: \! (newline), \\ (literal backslash)
+ *
+ * INTEGRATION POINTS:
+ * =================
+ * The spew system integrates with several game subsystems:
+ *
+ * - NPC System (npc.c): Provides dynamic messages for AI character interactions
+ * - Random Events (randeven.c): Generates descriptive text for special occurrences
+ * - Combat System (combat.c): Creates battle descriptions and outcome messages
+ * - Administrative Functions: Supports message generation for game management
+ *
+ * CONDITIONAL COMPILATION:
+ * ======================
+ * The entire system is conditionally compiled based on the SPEW preprocessor
+ * definition. When SPEW is not defined, a stub implementation is provided to
+ * maintain API compatibility while disabling message generation functionality.
+ *
+ * CONFIGURATION PARAMETERS:
+ * =======================
+ * - MAX_CLASSES: Maximum number of message classes (300)
+ * - MAX_LINE_LEN: Maximum line length for file I/O (256 bytes)
+ * - MAX_DEF_LEN: Maximum definition text length (1000 bytes)
+ * - DEFFILE: Default rules filename ("rules")
+ * - DEFAULTDIR: Directory containing rules files
+ *
+ * PERFORMANCE CHARACTERISTICS:
+ * ==========================
+ * - Class lookup: O(log n) via binary search after initial sort
+ * - Memory usage: Dynamic allocation scales with rules file size
+ * - Text generation: Linear in output length with recursive expansion
+ * - File parsing: Single-pass with efficient line-by-line processing
+ *
+ * ERROR HANDLING STRATEGY:
+ * ======================
+ * - Graceful degradation with placeholder text for missing classes
+ * - Comprehensive validation during rules file parsing
+ * - Memory allocation failure handling with cleanup
+ * - Invalid format detection with informative error messages
+ *
+ * THREAD SAFETY CONSIDERATIONS:
+ * ============================
+ * The current implementation uses static global variables and is NOT thread-safe.
+ * Multiple simultaneous calls to makemess() would cause data corruption.
+ * Future modernization should consider thread-local storage or instance-based design.
+ *
  * This file is part of Conquer.
  * Originally Copyright (C) 1988-1989 by Edward M. Barlow and Adam Bryant
  * Copyright (C) 2025 Juan Manuel Méndez Rey (Vejeta) - Licensed under GPL v3 with permission from original authors
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -76,10 +171,83 @@ static char *duplicate_string(const char *str);
 static int read_line(void);
 static int compare_classes(const void *a, const void *b);
 
-/**
- * Main entry point for message generation
- * @param count Number of messages to generate
- * @param output File to write messages to
+/*
+ * makemess - Generate dynamic NPC messages using rules-based text generation
+ *
+ * This function serves as the primary entry point for the message generation
+ * system, orchestrating the loading of rules files and the creation of
+ * contextually appropriate messages for game events. It handles the complete
+ * lifecycle from rules file initialization to message output and cleanup.
+ *
+ * The function implements a batch processing approach, generating multiple
+ * messages in a single invocation to amortize the cost of rules file loading
+ * and parsing. Each generated message follows the template structures defined
+ * in the external rules file, with random selection providing variability.
+ *
+ * PROCESSING WORKFLOW:
+ * ==================
+ * 1. Input validation to ensure output destination is available
+ * 2. Rules file path construction using DEFAULTDIR and DEFFILE macros
+ * 3. Rules file loading and parsing into internal class structures
+ * 4. Iterative message generation using "MAIN" class as entry point
+ * 5. Memory cleanup to prevent resource leaks
+ *
+ * RULES FILE INTEGRATION:
+ * =====================
+ * The function expects a rules file at {DEFAULTDIR}/{DEFFILE} containing
+ * class definitions starting with "MAIN" as the root class. The MAIN class
+ * serves as the entry point for message generation, typically containing
+ * references to more specific message classes.
+ *
+ * MESSAGE SEPARATION:
+ * =================
+ * Multiple messages are separated by newlines, with the final message not
+ * followed by a newline to allow caller control over output formatting.
+ * This approach supports both file output and direct console display.
+ *
+ * ERROR HANDLING STRATEGY:
+ * ======================
+ * - Null output validation prevents segmentation faults
+ * - Rules file loading failures result in graceful exit with error message
+ * - Memory allocation failures during rules parsing are handled internally
+ * - Cleanup is guaranteed even in error conditions
+ *
+ * PERFORMANCE CONSIDERATIONS:
+ * =========================
+ * - Rules file is loaded once per function call, not per message
+ * - Binary search optimization for class lookup during generation
+ * - Memory is allocated in blocks to minimize fragmentation
+ * - Cleanup occurs after all messages to avoid repeated allocations
+ *
+ * INTEGRATION CONTEXT:
+ * ==================
+ * This function is typically called by:
+ * - NPC interaction systems for dynamic dialogue generation
+ * - Random event processors for descriptive text creation
+ * - Administrative tools for bulk message generation
+ * - Testing frameworks for system validation
+ *
+ * Parameters:
+ *   count - Number of messages to generate (must be > 0 for meaningful output)
+ *   output - File stream for message output (must not be NULL)
+ *
+ * Returns:
+ *   void (errors reported via stderr, successful operation produces messages)
+ *
+ * Side Effects:
+ *   - Loads and parses external rules file from filesystem
+ *   - Allocates substantial memory for class and definition storage
+ *   - Writes formatted text messages to output stream
+ *   - May generate error messages to stderr on failure
+ *   - Modifies global random number generator state
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires external rules file and filesystem access
+ *   Approach: Integration testing with mock rules files and output capture
+ *   Key Tests: Valid rules file processing, invalid file handling, output formatting
+ *   Dependencies: Filesystem access, DEFAULTDIR/DEFFILE configuration, random generator
+ *   Mock Requirements: Filesystem mocking, rules file fixtures, output stream capture
+ *   Complexity: Moderate - File I/O and text processing with multiple error paths
  */
 void makemess(int count, FILE *output)
 {
@@ -112,8 +280,92 @@ void makemess(int count, FILE *output)
     cleanup_memory();
 }
 
-/**
- * Load and parse the rules file
+/*
+ * load_rules_file - Parse and load message class definitions from external rules file
+ *
+ * This function implements a comprehensive rules file parser that reads external
+ * message template definitions and constructs an in-memory representation for
+ * efficient message generation. The parser handles the complete rules file format
+ * including class headers, weighted definitions, and proper error validation.
+ *
+ * The function performs a single-pass parse of the rules file, building linked
+ * lists of message definitions organized into named classes. After parsing,
+ * classes are sorted alphabetically to enable efficient binary search during
+ * message generation.
+ *
+ * PARSING ALGORITHM:
+ * ================
+ * 1. File opening and initial validation (must start with '%' class marker)
+ * 2. Memory allocation for maximum number of classes (MAX_CLASSES)
+ * 3. Iterative parsing of class headers and their associated definitions
+ * 4. Cumulative weight calculation for probability distribution setup
+ * 5. Post-processing sort for optimized lookup performance
+ *
+ * RULES FILE FORMAT REQUIREMENTS:
+ * =============================
+ * - File must begin with a class definition line starting with '%'
+ * - Class headers: %CLASSNAME {optional_variants}
+ * - Definitions follow class headers until next '%' or end of file
+ * - File ending marked by '%%' (double percent) line
+ * - Comments supported via '\*' marker (line remainder ignored)
+ * - Empty lines and whitespace-only lines are skipped
+ *
+ * MEMORY ORGANIZATION:
+ * ==================
+ * - Classes stored in array for fast access and sorting
+ * - Definitions within each class stored as linked lists
+ * - All text content dynamically allocated for memory efficiency
+ * - Cumulative weights calculated to support O(1) random selection
+ *
+ * ERROR HANDLING STRATEGY:
+ * ======================
+ * - File access failures return -1 with errno preserved
+ * - Memory allocation failures cleanup partial data and return -1
+ * - Invalid format detection produces stderr messages and exits gracefully
+ * - Partial success is not allowed - either complete success or total failure
+ *
+ * PERFORMANCE OPTIMIZATIONS:
+ * =========================
+ * - Single-pass parsing minimizes file I/O operations
+ * - Block memory allocation reduces fragmentation
+ * - Post-parse sorting enables O(log n) class lookup
+ * - Weight accumulation during parse eliminates post-processing
+ *
+ * DATA STRUCTURE CONSISTENCY:
+ * =========================
+ * After successful completion, the following invariants are maintained:
+ * - All classes have valid names and properly initialized structures
+ * - Definition weights are cumulative within each class
+ * - Classes are sorted alphabetically by name
+ * - All dynamically allocated memory is properly referenced
+ *
+ * INTEGRATION DEPENDENCIES:
+ * =======================
+ * - Requires read_line() for comment-aware line processing
+ * - Uses parse_class_header() for class definition parsing
+ * - Uses parse_definition() for individual message template processing
+ * - Depends on compare_classes() for post-parse sorting
+ *
+ * Parameters:
+ *   filename - Path to rules file for parsing (must be readable)
+ *
+ * Returns:
+ *   0 on successful parse and load, -1 on any error condition
+ *
+ * Side Effects:
+ *   - Opens and reads specified file from filesystem
+ *   - Allocates global classes array and associated memory
+ *   - Sets global num_classes to reflect loaded class count
+ *   - Modifies global classes array with sorted class data
+ *   - May output error messages to stderr on parsing failures
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires filesystem access and file fixtures
+ *   Approach: Integration testing with various rules file formats and error conditions
+ *   Key Tests: Valid format parsing, invalid format handling, memory allocation failures
+ *   Dependencies: Filesystem access, rules file fixtures, error message capture
+ *   Mock Requirements: File system mocking, malloc failure injection, stderr capture
+ *   Complexity: Complex - Multi-stage parsing with dynamic memory management
  */
 static int load_rules_file(const char *filename)
 {
@@ -175,8 +427,86 @@ static int load_rules_file(const char *filename)
     return 0;
 }
 
-/**
- * Parse a class header line
+/*
+ * parse_class_header - Parse rules file class definition header lines
+ *
+ * This function analyzes class header lines from the rules file and extracts
+ * the class name and optional variant specifications. Class headers define
+ * the organizational structure for message templates, establishing named
+ * categories with optional variant tags for context-sensitive generation.
+ *
+ * The function performs comprehensive parsing and validation of the class
+ * header format, handling whitespace normalization, name extraction, and
+ * variant tag processing. It initializes the provided text_class structure
+ * with the parsed information and prepares it for definition attachment.
+ *
+ * HEADER FORMAT REQUIREMENTS:
+ * =========================
+ * - Must start with '%' character (already stripped by caller)
+ * - Class name must begin with alphanumeric character
+ * - Class name consists only of alphanumeric characters
+ * - Optional variant tags enclosed in curly braces: {variant1 variant2}
+ * - Whitespace allowed between elements
+ * - Example: "%GREETING {formal casual}" or "%MESSAGE"
+ *
+ * PARSING ALGORITHM:
+ * ================
+ * 1. Skip leading whitespace after '%' marker
+ * 2. Validate class name starts with alphanumeric character
+ * 3. Extract class name using alphanumeric character set
+ * 4. Search for optional variant specification in curly braces
+ * 5. Parse variant tags and construct variant string
+ * 6. Allocate memory for extracted strings and initialize structure
+ *
+ * VARIANT TAG PROCESSING:
+ * =====================
+ * - Default variant is always space character (' ') at position 0
+ * - Additional variants extracted from {tag1 tag2} specification
+ * - Variants stored as continuous string for efficient lookup
+ * - Variant characters used as indices during message generation
+ * - Missing variant specification defaults to single space variant
+ *
+ * MEMORY MANAGEMENT:
+ * ================
+ * - Class name string dynamically allocated via duplicate_string()
+ * - Variant string allocated if non-default variants specified
+ * - Default variants use static string to avoid unnecessary allocation
+ * - All dynamic allocations must be freed during cleanup phase
+ *
+ * ERROR HANDLING STRATEGY:
+ * ======================
+ * - Invalid class names (non-alphanumeric start) return -1 with stderr message
+ * - Malformed variant syntax returns -1 with informative error message
+ * - Memory allocation failures handled by duplicate_string() returning NULL
+ * - Partial initialization cleaned up by caller on error return
+ *
+ * INTEGRATION CONTEXT:
+ * ==================
+ * - Called exclusively by load_rules_file() during rules file parsing
+ * - Operates on single line extracted by read_line() function
+ * - Initializes text_class structure for subsequent definition attachment
+ * - Error return aborts entire rules file loading process
+ *
+ * Parameters:
+ *   line - Class header line with '%' prefix already removed (must not be NULL)
+ *   cls - Text class structure to initialize with parsed data (must not be NULL)
+ *
+ * Returns:
+ *   0 on successful parsing and initialization, -1 on any error condition
+ *
+ * Side Effects:
+ *   - Modifies all fields of provided text_class structure
+ *   - Allocates memory for class name and optionally variant strings
+ *   - May output error messages to stderr on parsing failures
+ *   - Uses static buffers for temporary string processing
+ *
+ * Testing Notes:
+ *   Category: A (Unit) - Isolated parsing logic with clear input/output
+ *   Approach: Unit tests with various header format combinations
+ *   Key Tests: Valid formats, invalid names, malformed variants, memory allocation
+ *   Dependencies: duplicate_string() function, stderr output capture
+ *   Mock Requirements: malloc failure injection for duplicate_string()
+ *   Complexity: Moderate - String parsing with multiple validation paths
  */
 static int parse_class_header(const char *line, struct text_class *cls)
 {
@@ -236,8 +566,92 @@ static int parse_class_header(const char *line, struct text_class *cls)
     return 0;
 }
 
-/**
- * Parse a definition line
+/*
+ * parse_definition - Parse individual message template definitions from rules file
+ *
+ * This function processes individual definition lines within message classes,
+ * extracting the optional weight specification and the message template text.
+ * Definitions form the actual content pool for message generation, with
+ * weights controlling the probability of selection during random generation.
+ *
+ * The function handles the complete definition syntax including weight parsing,
+ * escape sequence processing, and class reference normalization. It constructs
+ * a definition structure suitable for integration into the class's linked list
+ * of available message templates.
+ *
+ * DEFINITION FORMAT REQUIREMENTS:
+ * =============================
+ * - Optional weight: (number) at line beginning
+ * - Message template text following weight specification
+ * - Escape sequences: \CLASSNAME/variant for references
+ * - Special escapes: \! (newline), \\ (literal backslash)
+ * - Class references: \GREETING/formal or \TITLE/&
+ * - Default weight is 1 if not specified
+ *
+ * WEIGHT PROCESSING:
+ * ================
+ * - Weight specification format: (digits) message text
+ * - Extracted weight becomes probability factor for random selection
+ * - Higher weights increase selection probability
+ * - Default weight of 1 used for unspecified weights
+ * - Weight validation ensures positive integer values
+ *
+ * ESCAPE SEQUENCE HANDLING:
+ * =======================
+ * The function processes several types of escape sequences:
+ * - Class references: \CLASSNAME/variant becomes \CLASSNAME/v format
+ * - Newline escape: \! preserved for output formatting
+ * - Literal escapes: \\ and other backslash sequences
+ * - Variant inheritance: /& converted to / (space) for default variant
+ * - Alphanumeric class names: Only valid characters in class references
+ *
+ * TEXT NORMALIZATION:
+ * =================
+ * - Class references normalized to standard \NAME/v format
+ * - Escape sequences preserved in processed text
+ * - Text length limited by MAX_DEF_LEN for memory safety
+ * - Input text copied with escape processing applied
+ *
+ * MEMORY ALLOCATION:
+ * ================
+ * - Definition structure allocated dynamically
+ * - Processed text string allocated via duplicate_string()
+ * - Memory allocation failures return NULL
+ * - Caller responsible for linking into class definition list
+ *
+ * ERROR HANDLING STRATEGY:
+ * ======================
+ * - Memory allocation failures return NULL (graceful degradation)
+ * - Invalid weight syntax defaults to weight 1
+ * - Text overflow truncated at MAX_DEF_LEN boundary
+ * - Malformed escape sequences processed as literal text
+ *
+ * INTEGRATION CONTEXT:
+ * ==================
+ * - Called by load_rules_file() for each definition line
+ * - Returns structure for linking into class definition chain
+ * - NULL return indicates memory allocation failure or empty line
+ * - Weight used for cumulative probability calculation by caller
+ *
+ * Parameters:
+ *   line - Definition line text to parse (must not be NULL)
+ *
+ * Returns:
+ *   Pointer to allocated definition structure on success, NULL on failure
+ *
+ * Side Effects:
+ *   - Allocates memory for definition structure and text content
+ *   - Processes escape sequences in static buffer
+ *   - No global state modification
+ *   - No error messages output (graceful failure handling)
+ *
+ * Testing Notes:
+ *   Category: A (Unit) - Isolated parsing with clear input/output
+ *   Approach: Unit tests with various definition formats and edge cases
+ *   Key Tests: Weight parsing, escape sequences, memory allocation, text limits
+ *   Dependencies: duplicate_string() function, malloc availability
+ *   Mock Requirements: malloc failure injection, MAX_DEF_LEN boundary testing
+ *   Complexity: Moderate - Text processing with multiple parsing states
  */
 static struct definition *parse_definition(const char *line)
 {
@@ -314,8 +728,92 @@ static struct definition *parse_definition(const char *line)
     return def;
 }
 
-/**
- * Find a class by name using binary search
+/*
+ * find_class - Locate message class by name using optimized binary search
+ *
+ * This function implements an efficient binary search algorithm to locate
+ * a message class by name within the sorted global classes array. The search
+ * operates on a name prefix of specified length, enabling efficient lookup
+ * during class reference resolution in message generation.
+ *
+ * The function leverages the alphabetically sorted class array established
+ * during rules file loading to achieve O(log n) lookup performance. This
+ * optimization is critical for message generation performance, as class
+ * references are resolved repeatedly during recursive text expansion.
+ *
+ * SEARCH ALGORITHM:
+ * ===============
+ * 1. Initialize low and high bounds for binary search range
+ * 2. Calculate midpoint and compare target name with midpoint class name
+ * 3. Use strncmp() for prefix comparison with exact length matching
+ * 4. Adjust search bounds based on comparison result
+ * 5. Verify exact match by checking null termination at name_len
+ * 6. Return class pointer on match, NULL on search failure
+ *
+ * NAME MATCHING STRATEGY:
+ * =====================
+ * - Uses strncmp() for length-limited prefix comparison
+ * - Requires exact match: prefix matches AND name ends at name_len
+ * - Case-sensitive matching to preserve class name distinctness
+ * - Handles variable-length class names efficiently
+ * - Validates complete name boundary to avoid partial matches
+ *
+ * PERFORMANCE CHARACTERISTICS:
+ * ==========================
+ * - Time complexity: O(log n) where n is number of classes
+ * - Space complexity: O(1) - no additional memory allocation
+ * - Cache-friendly: operates on contiguous sorted array
+ * - String comparison optimized with length limitation
+ * - No dynamic memory allocation during search
+ *
+ * PREREQUISITE CONDITIONS:
+ * =====================
+ * - Global classes array must be alphabetically sorted (by qsort)
+ * - num_classes must accurately reflect array size
+ * - All class names must be null-terminated strings
+ * - Classes array must be properly initialized
+ *
+ * ERROR HANDLING:
+ * =============
+ * - Returns NULL for class not found (normal operation case)
+ * - Handles empty classes array gracefully (returns NULL)
+ * - No error messages generated (expected failure mode)
+ * - Safe with invalid name_len values (strncmp handles boundary)
+ *
+ * INTEGRATION CONTEXT:
+ * ==================
+ * - Called by generate_text() during class reference resolution
+ * - Used for all \CLASSNAME/ references in message templates
+ * - Critical path function for message generation performance
+ * - Returns class pointer for weight-based definition selection
+ *
+ * THREAD SAFETY:
+ * ============
+ * - Read-only operation on global data structures
+ * - Safe for concurrent calls if classes array is immutable
+ * - No modification of global state during search
+ * - Depends on stable sorted order of classes array
+ *
+ * Parameters:
+ *   name - Class name to search for (must not be NULL)
+ *   name_len - Length of name prefix to match (must be > 0)
+ *
+ * Returns:
+ *   Pointer to matching text_class structure, NULL if not found
+ *
+ * Side Effects:
+ *   - No side effects - pure read-only operation
+ *   - No global state modification
+ *   - No memory allocation or deallocation
+ *   - No error message output
+ *
+ * Testing Notes:
+ *   Category: A (Unit) - Isolated search algorithm with predictable behavior
+ *   Approach: Unit tests with various class arrays and search targets
+ *   Key Tests: Found/not found cases, boundary conditions, empty arrays
+ *   Dependencies: Sorted classes array, accurate num_classes value
+ *   Mock Requirements: Test class arrays with known sort order
+ *   Complexity: Simple - Standard binary search with string comparison
  */
 static struct text_class *find_class(const char *name, int name_len)
 {
@@ -337,8 +835,117 @@ static struct text_class *find_class(const char *name, int name_len)
     return NULL;
 }
 
-/**
- * Generate text from a class specification
+/*
+ * generate_text - Core recursive text generation engine with variant processing
+ *
+ * This function implements the heart of the message generation system, processing
+ * class specifications and recursively expanding message templates to produce
+ * final output text. It handles the complete text generation pipeline including
+ * class resolution, random definition selection, variant processing, and
+ * recursive expansion of embedded class references.
+ *
+ * The function operates as a recursive engine, capable of expanding nested
+ * class references to arbitrary depth while maintaining variant context
+ * propagation and proper escape sequence handling. This design enables
+ * complex hierarchical message structures with context-sensitive variations.
+ *
+ * CLASS SPECIFICATION FORMAT:
+ * =========================
+ * - Input format: CLASSNAME/variant (e.g., "GREETING/formal")
+ * - Variant inheritance: /& inherits default_variant from parent context
+ * - Default variant: / (space) used when no specific variant requested
+ * - Class name extraction: everything before first '/' character
+ * - Variant tag: single character following '/' delimiter
+ *
+ * TEXT GENERATION ALGORITHM:
+ * ========================
+ * 1. Parse class specification to extract name and variant
+ * 2. Locate class using binary search (find_class)
+ * 3. Calculate variant index for context-sensitive selection
+ * 4. Perform weighted random selection from available definitions
+ * 5. Process definition text with escape sequence and variant handling
+ * 6. Recursively expand embedded class references
+ * 7. Output final processed text to specified stream
+ *
+ * VARIANT PROCESSING SYSTEM:
+ * =========================
+ * - Variant characters mapped to indices in class variant string
+ * - Variant blocks: {option1|option2|option3} with positional selection
+ * - Context propagation: variants passed to recursive calls
+ * - Default inheritance: & variant inherits from calling context
+ * - Variant scope: limited to single definition expansion
+ *
+ * RECURSIVE EXPANSION:
+ * ==================
+ * - Embedded references: \CLASSNAME/variant within definitions
+ * - Depth control: relies on well-formed rules file structure
+ * - Context preservation: variant tags propagated through call chain
+ * - Memory safety: bounded by definition text length limits
+ * - Infinite recursion protection: depends on rules file design
+ *
+ * ESCAPE SEQUENCE PROCESSING:
+ * ==========================
+ * The function handles multiple escape sequence types:
+ * - Class references: \CLASSNAME/v → recursive generate_text() call
+ * - Newline escape: \! → literal newline in output
+ * - Literal escapes: \\ and other backslash sequences
+ * - Variant blocks: {opt1|opt2} → conditional output based on variant
+ * - Error markers: ??? for unresolved class references
+ *
+ * WEIGHTED RANDOM SELECTION:
+ * =========================
+ * - Uses cumulative weights for O(1) selection
+ * - Random value generated within total weight range
+ * - Linear scan through definitions until weight threshold exceeded
+ * - Ensures proper probability distribution across definitions
+ * - Handles zero-weight classes gracefully (no output)
+ *
+ * ERROR HANDLING STRATEGY:
+ * ======================
+ * - Unknown classes: Output ???CLASSNAME??? error marker
+ * - Missing definitions: Silent return (no output)
+ * - Malformed specifications: Output error markers
+ * - File output errors: Handled by fprintf() return values
+ * - No exceptions thrown: graceful degradation approach
+ *
+ * PERFORMANCE CONSIDERATIONS:
+ * =========================
+ * - Binary search for class lookup: O(log n)
+ * - Random selection: O(1) with cumulative weights
+ * - Text processing: Linear in definition length
+ * - Memory usage: Stack depth proportional to recursion depth
+ * - I/O efficiency: Direct character output without buffering
+ *
+ * INTEGRATION CONTEXT:
+ * ==================
+ * - Called by makemess() for root "MAIN/ " expansion
+ * - Self-recursive for embedded class reference processing
+ * - Uses find_class() for efficient class resolution
+ * - Outputs directly to provided FILE stream
+ * - Maintains variant context across recursive calls
+ *
+ * Parameters:
+ *   class_spec - Class specification string "NAME/variant" (must not be NULL)
+ *   default_variant - Variant character to use for & inheritance
+ *   output - File stream for text output (must not be NULL)
+ *
+ * Returns:
+ *   void (success indicated by text output, errors via ??? markers)
+ *
+ * Side Effects:
+ *   - Writes generated text to output stream
+ *   - May output error markers for unresolved references
+ *   - Modifies random number generator state
+ *   - Recursively calls itself for embedded references
+ *   - No global state modification beyond RNG
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires classes array and random number generator
+ *   Approach: Integration testing with mock classes and output stream capture
+ *   Key Tests: Class resolution, variant processing, recursive expansion, error handling
+ *   Dependencies: find_class(), classes array, random generator, FILE stream
+ *   Mock Requirements: Controlled classes array, deterministic random values, output capture
+ *   Complexity: Complex - Recursive engine with multiple processing modes
  */
 static void generate_text(const char *class_spec, char default_variant, FILE *output)
 {
