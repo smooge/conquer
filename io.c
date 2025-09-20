@@ -1,10 +1,10 @@
 /*
  * io.c - Input/output and file handling functions
- * 
+ *
  * This file is part of Conquer.
  * Originally Copyright (C) 1988-1989 by Edward M. Barlow and Adam Bryant
  * Copyright (C) 2025 Juan Manuel Méndez Rey (Vejeta) - Licensed under GPL v3 with permission from original authors
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,6 +17,98 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * =====================================================================================
+ *
+ * INPUT/OUTPUT AND FILE HANDLING SYSTEM
+ *
+ * This module provides comprehensive I/O capabilities for the Conquer game system,
+ * serving as the primary interface between the game engine and external data storage,
+ * map rendering, and user interface operations. The system handles both binary game
+ * state persistence and formatted map output generation.
+ *
+ * CORE ARCHITECTURAL COMPONENTS:
+ *
+ * 1. MEMORY MANAGEMENT SUBSYSTEM
+ *    - Dynamic allocation for core game data structures (sectors, movement costs)
+ *    - Automatic cleanup and reallocation for different map sizes
+ *    - Integration with custom 2D array allocator (m2alloc)
+ *
+ * 2. GAME STATE PERSISTENCE
+ *    - Binary serialization/deserialization of complete world state
+ *    - Atomic file operations with comprehensive error checking
+ *    - Version-aware data format handling and validation
+ *
+ * 3. MAP VISIBILITY AND PREPARATION SYSTEM
+ *    - Nation-based visibility calculation for fog-of-war mechanics
+ *    - Multi-source sight integration (land ownership, armies, navies)
+ *    - Magic system integration for enhanced/concealed visibility
+ *
+ * 4. MAP OUTPUT GENERATION ENGINE
+ *    - Multiple map view generation (altitude, nations, designations, vegetation)
+ *    - Visibility-aware rendering with conditional information display
+ *    - Formatted text output with standardized headers and layouts
+ *
+ * 5. DISPLAY CONTROL AND NAVIGATION
+ *    - Screen positioning and cursor management for interactive display
+ *    - Map centering and coordinate translation services
+ *    - Location jumping and capitol navigation functionality
+ *
+ * 6. GAME REPORTING SYSTEM
+ *    - Comprehensive score and statistics reporting
+ *    - Multi-nation status displays with race/class/alignment information
+ *    - Optional time logging and update tracking
+ *
+ * 7. SPECIALIZED GAME MECHANICS
+ *    - Civilian population evacuation and relocation algorithms
+ *    - Slavery mechanics and population survival calculations
+ *    - Sector devastation and fortress destruction on population loss
+ *
+ * 8. ADMINISTRATIVE TOOLS
+ *    - Scenario map loading from external elevation/vegetation files
+ *    - Development and testing support functionality
+ *    - Map generation pipeline integration
+ *
+ * 9. UTILITY INFRASTRUCTURE
+ *    - 2D array memory allocation with optimized layout
+ *    - Secure password input with character masking
+ *    - Cross-platform file handling and path management
+ *
+ * INTEGRATION WITH CORE SYSTEMS:
+ * - Display System (display.c): Provides visibility calculation for map rendering
+ * - Magic System (magic.c): Visibility modifiers (KNOWALL, NINJA, THE_VOID)
+ * - Combat System (combat.c): Population evacuation during conflicts
+ * - Command System (commands.c): User interface for navigation and reports
+ * - Data Structures (data.h): Direct manipulation of all core game entities
+ *
+ * CRITICAL DEPENDENCIES:
+ * - Global game state variables (world, sct, ntn arrays)
+ * - Display coordinates and offset management (xcurs, ycurs, xoffset, yoffset)
+ * - Magic system query functions for visibility modifiers
+ * - File path configuration (datafile, scenario paths)
+ *
+ * MODERNIZATION CONSIDERATIONS:
+ * - Binary file I/O could benefit from endianness handling
+ * - Error handling could be enhanced with proper errno usage
+ * - Memory allocation lacks NULL pointer safety checks
+ * - File operations need atomic transaction support
+ * - Magic number constants should be replaced with named definitions
+ *
+ * PERFORMANCE CHARACTERISTICS:
+ * - Memory allocation is front-loaded during initialization
+ * - File I/O operations are synchronous and blocking
+ * - Map generation scales O(MAPX*MAPY) with map size
+ * - Visibility calculations are cached in mapseen array
+ *
+ * FUNCTION ORGANIZATION:
+ * - Memory Management: getspace(), m2alloc()
+ * - Data Persistence: readdata(), writedata(), readmap()
+ * - Visibility: mapprep()
+ * - Map Output: printele(), pr_ntns(), pr_desg(), printveg()
+ * - Navigation: centermap(), jump_to(), offmap()
+ * - Reporting: printscore()
+ * - Game Mechanics: flee()
+ * - Utilities: get_pass()
  */
 
 #include <stdio.h>
@@ -40,9 +132,47 @@ extern short redraw; 		/*redraw map in this turn if redraw is a 1*/
 extern short hilmode,dismode;			/*display state*/
 extern short country;			/* nation id of owner*/
 
-/************************************************************************/
-/*	GETSPACE() - malloc all space needed	 			*/
-/************************************************************************/
+/*
+ * getspace - Allocate memory for core game data structures
+ *
+ * Manages dynamic memory allocation for the three primary 2D arrays that store
+ * the complete game world state. Handles cleanup of existing allocations and
+ * creates new arrays sized for the current map dimensions. This function is
+ * essential for map loading, game initialization, and handling different
+ * scenario sizes.
+ *
+ * The function allocates memory for:
+ * - sct: Complete sector information (terrain, ownership, population, etc.)
+ * - occ: Sector occupation markers for display and game logic
+ * - movecost: Movement cost calculations for pathfinding algorithms
+ *
+ * Parameters:
+ *   None (uses global MAPX, MAPY dimensions)
+ *
+ * Returns:
+ *   void (calls abrt() on allocation failure)
+ *
+ * Side Effects:
+ *   - Frees existing memory for sct, occ, movecost arrays if non-NULL
+ *   - Allocates new 2D arrays using custom m2alloc() allocator
+ *   - Updates global pointers to point to newly allocated memory
+ *   - Program termination on allocation failure via m2alloc()
+ *
+ * Testing Notes:
+ *   Category: A (Unit) - Memory allocation with clear inputs/outputs
+ *   Approach: Unit tests with mock allocator and memory tracking
+ *   Key Tests: NULL pointer handling, reallocation scenarios, size variations
+ *   Dependencies: Global MAPX/MAPY constants, m2alloc() allocator
+ *   Mock Requirements: Memory allocation tracking, failure simulation
+ *   Complexity: Simple - Direct allocation pattern with error handling
+ *
+ * Notes:
+ *   - Function assumes MAPX and MAPY are valid positive integers
+ *   - Memory is allocated contiguously for cache efficiency
+ *   - No return value checking needed as m2alloc() handles failures internally
+ *   - Safe to call multiple times for reallocation scenarios
+ *   - Critical for game initialization and scenario loading operations
+ */
 void
 getspace()
 {
@@ -57,9 +187,49 @@ getspace()
 #ifdef CONQUER
 char **mapseen;
 
-/************************************************************************/
-/*	MAPPREP() - initialize map with what can be seen by nation.	*/
-/************************************************************************/
+/*
+ * mapprep - Initialize visibility map based on nation perspective
+ *
+ * Creates and populates the global mapseen array that determines which sectors
+ * are visible to a specific nation for map rendering and information display.
+ * Implements fog-of-war mechanics by calculating visibility from multiple sources:
+ * owned land, armies, navies, and magical abilities. This function is fundamental
+ * to the game's information warfare and strategic visibility systems.
+ *
+ * The visibility calculation follows a hierarchical approach:
+ * 1. KNOWALL magic or country=0 (deity view) provides complete visibility
+ * 2. Land ownership provides LANDSEE radius visibility around each sector
+ * 3. Active armies provide ARMYSEE radius visibility around their positions
+ * 4. Active navies provide NAVYSEE radius visibility around their positions
+ *
+ * Parameters:
+ *   None (uses global country variable for nation perspective)
+ *
+ * Returns:
+ *   void
+ *
+ * Side Effects:
+ *   - Allocates memory for global mapseen array using m2alloc()
+ *   - Populates mapseen with visibility information (TRUE/FALSE per sector)
+ *   - Early return optimization for omniscient visibility (KNOWALL/deity)
+ *   - Iterates through all armies and navies belonging to current nation
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires nation/army/navy game state
+ *   Approach: Integration tests with mock game state and visibility verification
+ *   Key Tests: KNOWALL magic, deity view, land visibility, army/navy sight ranges
+ *   Dependencies: Global country, sct array, army/navy data, magic() function
+ *   Mock Requirements: Game state setup, magic system mocking, coordinate validation
+ *   Complexity: Moderate - Multi-source visibility with range calculations
+ *
+ * Notes:
+ *   - mapseen array is not freed; caller responsible for memory management
+ *   - Visibility ranges (LANDSEE, ARMYSEE, NAVYSEE) are compile-time constants
+ *   - ONMAP() macro prevents out-of-bounds array access
+ *   - Navy condition checks for any ship type (merchant, war, gunboat)
+ *   - Performance scales with map size and number of military units
+ *   - Critical for map printing functions and strategic game balance
+ */
 void
 mapprep()
 {
@@ -114,9 +284,49 @@ mapprep()
 	}
 }
 
-/************************************************************************/
-/*	PRINTELE() - print a sector.altitude map 			*/
-/************************************************************************/
+/*
+ * printele - Generate altitude map output for printing
+ *
+ * Produces a formatted text representation of the world altitude map, showing
+ * terrain elevation characters for all sectors visible to the current nation.
+ * Uses the visibility information calculated by mapprep() to implement fog-of-war
+ * mechanics, displaying only sectors that should be known to the player. This
+ * function is part of the map output generation suite used for reports and
+ * external map printing.
+ *
+ * The output format includes a standardized header with version information
+ * and turn number, followed by a grid representation where each character
+ * represents the altitude/terrain type of a sector. Invisible sectors are
+ * rendered as spaces to maintain map formatting and visual structure.
+ *
+ * Parameters:
+ *   None (uses global game state and mapseen visibility array)
+ *
+ * Returns:
+ *   void
+ *
+ * Side Effects:
+ *   - Writes formatted output to stdout (complete altitude map)
+ *   - Writes status message to stderr for operation tracking
+ *   - Uses current nation name for personalized headers (if not deity view)
+ *   - Reads from global mapseen array for visibility determination
+ *
+ * Testing Notes:
+ *   Category: C (System) - Requires complete game state and I/O redirection
+ *   Approach: System testing with output capture and comparison
+ *   Key Tests: Deity view vs nation view, visibility boundaries, header formatting
+ *   Dependencies: Global country, curntn, sct array, mapseen array, VERSION/TURN
+ *   Mock Requirements: I/O redirection, game state setup, visibility array
+ *   Complexity: Simple - Direct iteration with conditional output
+ *
+ * Notes:
+ *   - Requires mapprep() to be called first to populate mapseen array
+ *   - Output is suitable for text-based map printing and external processing
+ *   - stderr logging helps with debugging and operation tracking
+ *   - Deity view (country==0) shows "World" instead of nation name
+ *   - Map dimensions are fixed by compile-time MAPX/MAPY constants
+ *   - Performance is O(MAPX*MAPY) with simple character output per sector
+ */
 void
 printele()
 {
@@ -138,9 +348,52 @@ printele()
 	}
 }
 
-/************************************************************************/
-/*	PR_NTNS() - print nation marks					*/
-/************************************************************************/
+/*
+ * pr_ntns - Generate nation ownership map for printing
+ *
+ * Produces a formatted text representation of national territorial control,
+ * displaying nation marks for owned sectors and terrain characters for
+ * unowned wilderness areas. This function provides strategic intelligence
+ * about territorial distribution and political boundaries across the game
+ * world, essential for diplomatic and military planning.
+ *
+ * The output distinguishes between owned and unowned territory:
+ * - Owned sectors display the nation's identifying mark character
+ * - Unowned sectors (owner==0) display the natural terrain altitude character
+ * - Invisible sectors are shown as spaces for fog-of-war implementation
+ *
+ * The function follows the standard map output format with version headers
+ * and turn information, making it suitable for external processing and
+ * record keeping.
+ *
+ * Parameters:
+ *   None (uses global game state and mapseen visibility array)
+ *
+ * Returns:
+ *   void
+ *
+ * Side Effects:
+ *   - Writes formatted nation map to stdout
+ *   - Writes status message to stderr for operation tracking
+ *   - Reads from global sct array for ownership and terrain information
+ *   - Uses nation marks from ntn array for territorial identification
+ *
+ * Testing Notes:
+ *   Category: C (System) - Requires complete game state and nation configuration
+ *   Approach: System testing with output capture and ownership verification
+ *   Key Tests: Mixed ownership, unowned wilderness, nation mark characters
+ *   Dependencies: Global sct array, ntn array, mapseen, country, curntn
+ *   Mock Requirements: Nation setup, territory assignment, visibility array
+ *   Complexity: Simple - Direct iteration with ownership-based character selection
+ *
+ * Notes:
+ *   - Requires mapprep() to be called first for visibility information
+ *   - Nation marks are single characters defined in nation configuration
+ *   - Unowned sectors show natural terrain for geographic reference
+ *   - Useful for territorial analysis and diplomatic intelligence
+ *   - Output format matches other map printing functions for consistency
+ *   - Performance is O(MAPX*MAPY) with simple character output logic
+ */
 void
 pr_ntns()
 {
@@ -165,9 +418,56 @@ pr_ntns()
 	}
 }
 
-/************************************************************************/
-/*	PR_DESG() - print designations					*/
-/************************************************************************/
+/*
+ * pr_desg - Generate sector designation map with visibility rules
+ *
+ * Produces a formatted text representation of sector designations (improvements
+ * and infrastructure), implementing sophisticated intelligence and security
+ * mechanics through the magic system. This function reveals the strategic
+ * development status of sectors while respecting information warfare constraints
+ * and national security considerations.
+ *
+ * The function implements a complex visibility system:
+ * - Deity view (country==0): Complete designation visibility
+ * - Own sectors: Full designation information always visible
+ * - NINJA magic: Penetrates enemy security to reveal designations
+ * - THE_VOID magic: Conceals designation information from enemies
+ * - Default: Shows '?' for hidden enemy designations
+ * - DNODESIG sectors: Display natural terrain instead of designation
+ *
+ * This creates a sophisticated intelligence warfare system where nations can
+ * conceal their infrastructure development and spy on enemy territories based
+ * on magical abilities and ownership patterns.
+ *
+ * Parameters:
+ *   None (uses global game state, mapseen visibility, and magic system)
+ *
+ * Returns:
+ *   void
+ *
+ * Side Effects:
+ *   - Writes formatted designation map to stdout
+ *   - Writes status message to stderr for operation tracking
+ *   - Queries magic system for NINJA and THE_VOID abilities
+ *   - Reads sector designation and ownership information
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires magic system and game state integration
+ *   Approach: Integration tests with magic combinations and ownership scenarios
+ *   Key Tests: NINJA penetration, THE_VOID concealment, ownership visibility
+ *   Dependencies: Magic system, sct array, mapseen, country, ownership data
+ *   Mock Requirements: Magic system mocking, complex game state scenarios
+ *   Complexity: Moderate - Complex visibility rules with magic system integration
+ *
+ * Notes:
+ *   - Most sophisticated visibility function in the map output suite
+ *   - Critical for strategic intelligence and counter-intelligence gameplay
+ *   - Magic abilities override normal visibility restrictions
+ *   - THE_VOID provides defensive concealment against espionage
+ *   - NINJA enables offensive intelligence gathering capabilities
+ *   - Undesignated sectors show natural terrain for reference
+ *   - Information warfare balance between concealment and revelation
+ */
 void
 pr_desg()
 {
@@ -197,9 +497,54 @@ pr_desg()
 	}
 }
 
-/************************************************************************/
-/*	PRINTVEG() -	print a vegetation map subroutine		*/
-/************************************************************************/
+/*
+ * printveg - Generate vegetation map for printing
+ *
+ * Produces a formatted text representation of the world vegetation map, showing
+ * the natural plant life and ecological characteristics of each sector visible
+ * to the current nation. This function provides important strategic information
+ * about resource availability, terrain mobility, and environmental conditions
+ * across the game world.
+ *
+ * Vegetation information is crucial for:
+ * - Agricultural potential and food production planning
+ * - Movement cost calculations and tactical positioning
+ * - Resource harvesting and economic development
+ * - Environmental awareness for military operations
+ *
+ * The output follows the standard visibility rules using the mapseen array,
+ * displaying vegetation characters for visible sectors and spaces for unknown
+ * areas. Unlike designation maps, vegetation visibility is not affected by
+ * magic systems since it represents observable natural features.
+ *
+ * Parameters:
+ *   None (uses global game state and mapseen visibility array)
+ *
+ * Returns:
+ *   void
+ *
+ * Side Effects:
+ *   - Writes formatted vegetation map to stdout
+ *   - Writes status message to stderr for operation tracking
+ *   - Reads vegetation data from global sct array
+ *   - Uses standard map output formatting with headers
+ *
+ * Testing Notes:
+ *   Category: C (System) - Requires complete game state and vegetation data
+ *   Approach: System testing with output capture and vegetation verification
+ *   Key Tests: Vegetation character display, visibility boundaries, header formatting
+ *   Dependencies: Global sct array, mapseen array, country, curntn, VERSION/TURN
+ *   Mock Requirements: Vegetation data setup, visibility array, I/O redirection
+ *   Complexity: Simple - Direct iteration with basic visibility checking
+ *
+ * Notes:
+ *   - Requires mapprep() to be called first for visibility information
+ *   - Vegetation characters represent different biome and plant types
+ *   - No magic system interference unlike designation maps
+ *   - Important for strategic planning and resource management
+ *   - Simplest of the map printing functions in terms of visibility rules
+ *   - Performance is O(MAPX*MAPY) with straightforward character output
+ */
 void
 printveg()
 {
@@ -223,10 +568,58 @@ printveg()
 }
 #endif /* CONQUER */
 
-/************************************************************************/
-/*	WRITEDATA() - write data to datafile 				*/
-/*	trashes/creates datafile in the process				*/
-/************************************************************************/
+/*
+ * writedata - Write complete game state to binary data file
+ *
+ * Performs a comprehensive save operation by writing the entire game state
+ * to a binary data file, enabling game persistence across sessions. This
+ * function handles the critical task of serializing complex game data
+ * structures including world configuration, sector arrays, and nation data
+ * into a binary format for reliable storage and subsequent restoration.
+ *
+ * The function operates by creating a new data file (destroying any existing
+ * file) and writing three primary data structures in sequence:
+ * 1. World structure (s_world) - Global game configuration and metadata
+ * 2. Sector array (sct) - Complete map state with all terrain and improvements
+ * 3. Nation array (ntn) - All nation data including diplomacy and statistics
+ *
+ * Each write operation includes comprehensive error checking to ensure data
+ * integrity and provides detailed diagnostic information if corruption is
+ * detected. The function uses low-level file operations for performance
+ * and exact control over binary layout, ensuring consistent data format
+ * across different systems and sessions.
+ *
+ * Parameters:
+ *   None (operates on global game state: world, sct, ntn arrays, datafile path)
+ *
+ * Returns:
+ *   void (terminates program via abrt() on any failure)
+ *
+ * Side Effects:
+ *   - Creates new binary data file, destroying existing file if present
+ *   - Writes status messages to stdout for operation progress tracking
+ *   - Terminates program execution on write errors or permission problems
+ *   - Uses global datafile path for output destination
+ *   - Sets file permissions to 0666 (read/write for owner/group/world)
+ *
+ * Testing Notes:
+ *   Category: C (System) - Requires full game state and file system access
+ *   Approach: System testing with complete game state and file I/O validation
+ *   Key Tests: Full write sequence, error handling, byte count verification
+ *   Dependencies: Complete game state (world, sct, ntn), datafile path, file system
+ *   Mock Requirements: File system operations, complete game data structures
+ *   Complexity: Moderate - Binary I/O with comprehensive error handling
+ *
+ * Notes:
+ *   - Critical for game persistence and save/restore functionality
+ *   - Binary format ensures exact data preservation and fast I/O
+ *   - Destructive operation - existing save files are overwritten
+ *   - File permissions allow broad access for multi-user systems
+ *   - Each data structure write includes size validation for corruption detection
+ *   - Uses creat() which creates file with specified permissions
+ *   - Terminates on any error to prevent partial/corrupted saves
+ *   - Essential counterpart to readdata() for complete persistence system
+ */
 void
 writedata()
 {
@@ -262,9 +655,59 @@ writedata()
 	close(fd);
 }
 
-/************************************************************************/
-/*	READDATA()	-	read data & malloc space		*/
-/************************************************************************/
+/*
+ * readdata - Read and load complete game state from binary data file
+ *
+ * Performs comprehensive game state restoration by reading a binary data file
+ * and reconstructing the complete game environment. This function handles the
+ * critical task of deserializing game data structures from persistent storage,
+ * enabling players to resume games from previous sessions with full state
+ * preservation including world configuration, terrain, and nation data.
+ *
+ * The function operates in a specific sequence to ensure proper data loading:
+ * 1. Opens the binary data file with read-only access
+ * 2. Reads world structure (s_world) - Global game configuration and metadata
+ * 3. Allocates dynamic memory for game arrays via getspace()
+ * 4. Reads sector array (sct) - Complete map state with terrain and improvements
+ * 5. Reads nation array (ntn) - All nation data including diplomacy and statistics
+ *
+ * Each read operation includes comprehensive error checking and size validation
+ * to detect corruption or version mismatches. The function provides detailed
+ * diagnostic information for troubleshooting and uses DEBUG conditionals for
+ * development-time verification of proper data loading.
+ *
+ * Parameters:
+ *   None (reads into global game state: world, sct, ntn arrays from datafile path)
+ *
+ * Returns:
+ *   void (terminates program via exit(FAIL) or abrt() on any failure)
+ *
+ * Side Effects:
+ *   - Opens binary data file for reading (read-only mode)
+ *   - Reads status messages to stderr for operation tracking
+ *   - Terminates program execution on read errors or data corruption
+ *   - Calls getspace() to allocate memory for dynamic game arrays
+ *   - Uses global datafile path for input source
+ *   - Provides DEBUG output for development verification
+ *
+ * Testing Notes:
+ *   Category: C (System) - Requires file system access and memory allocation
+ *   Approach: System testing with valid data files and corruption scenarios
+ *   Key Tests: Full read sequence, error detection, memory allocation integration
+ *   Dependencies: Valid data file, datafile path, getspace() function, memory system
+ *   Mock Requirements: File system operations, memory allocation, data file creation
+ *   Complexity: Moderate - Binary I/O with error handling and memory management
+ *
+ * Notes:
+ *   - Essential counterpart to writedata() for complete persistence system
+ *   - Memory allocation via getspace() must succeed before sector/nation data loading
+ *   - Binary format requires exact structure size matching for compatibility
+ *   - Uses low-level read operations for performance and format control
+ *   - DEBUG conditionals provide detailed byte count verification during development
+ *   - Comprehensive error reporting helps diagnose save file corruption or version issues
+ *   - Critical for game initialization and session restoration functionality
+ *   - File format must match writedata() output exactly for successful loading
+ */
 void
 readdata()
 {
@@ -319,9 +762,63 @@ readdata()
 
 #ifdef CONQUER
 #ifdef XYZZY
-/************************************************************************/
-/*	OFFMAP()	deal if cursor is off the map			*/
-/************************************************************************/
+/*
+ * offmap - Handle cursor movement outside visible map boundaries
+ *
+ * Manages cursor positioning and display scrolling when the user attempts to
+ * move the cursor beyond the currently visible portion of the map display.
+ * This function implements sophisticated viewport management with automatic
+ * scrolling and boundary checking to ensure the cursor remains within valid
+ * map coordinates while providing smooth navigation across large game worlds.
+ *
+ * The function operates on both X and Y axes independently, handling four
+ * primary scenarios for each dimension:
+ * 1. Cursor moves past the left/top edge - scroll viewport backward if possible
+ * 2. Cursor moves past the right/bottom edge - scroll viewport forward if possible
+ * 3. Viewport reaches world boundaries - clamp cursor to valid coordinates
+ * 4. Offset corrections - ensure consistent cursor and viewport relationship
+ *
+ * Key navigation mechanics:
+ * - Uses 15-unit scrolling increments for smooth viewport transitions
+ * - Triggers PART redraw when viewport changes to update display
+ * - Maintains cursor position relative to viewport offset
+ * - Prevents navigation beyond world boundaries (0 to MAPX-1, 0 to MAPY-1)
+ * - Calls whatcansee() to update visibility after position changes
+ *
+ * This function is conditionally compiled under XYZZY, indicating it's part
+ * of an enhanced display system that may not be available in all builds.
+ *
+ * Parameters:
+ *   None (operates on global cursor and viewport state: xcurs, ycurs, xoffset, yoffset)
+ *
+ * Returns:
+ *   void
+ *
+ * Side Effects:
+ *   - Modifies global cursor coordinates (xcurs, ycurs)
+ *   - Adjusts viewport offsets (xoffset, yoffset) for scrolling
+ *   - Sets redraw flag to PART when viewport changes
+ *   - Calls whatcansee() to update visibility calculations
+ *   - Ensures cursor remains within valid map boundaries
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires display system and coordinate management
+ *   Approach: Integration tests with cursor movement and boundary scenarios
+ *   Key Tests: Edge scrolling, boundary clamping, viewport consistency, redraw triggers
+ *   Dependencies: Display system, cursor state, viewport management, whatcansee()
+ *   Mock Requirements: Display system mocking, coordinate state management
+ *   Complexity: Moderate - Complex coordinate calculations with multiple edge cases
+ *
+ * Notes:
+ *   - Critical for interactive map navigation and user experience
+ *   - XYZZY conditional suggests advanced display features
+ *   - Scrolling in 15-unit increments provides smooth navigation feel
+ *   - Maintains consistency between cursor position and viewport offset
+ *   - Prevents cursor from moving outside valid world coordinates
+ *   - Automatically triggers visibility updates after position changes
+ *   - Essential for large world navigation where map exceeds screen size
+ *   - Coordinates with display system for efficient partial redraws
+ */
 void
 offmap()
 {
@@ -395,9 +892,57 @@ offmap()
 }
 #endif /* XYZZY */
 
-/************************************************************************/
-/*	CENTERMAP()	- redraws screen so that cursor is centered	*/
-/************************************************************************/
+/*
+ * centermap - Center map display around current cursor position
+ *
+ * Recalculates and adjusts the viewport to center the map display around
+ * the current cursor coordinates, providing optimal navigation and orientation
+ * for the player. This function implements intelligent viewport positioning
+ * that maximizes the visible area around the cursor while respecting map
+ * boundaries and screen size constraints.
+ *
+ * The centering algorithm operates by:
+ * 1. Calculating ideal offsets to center cursor on screen
+ * 2. Applying boundary constraints to prevent invalid negative offsets
+ * 3. Updating cursor position relative to new viewport
+ * 4. Triggering visibility recalculation for the new view
+ *
+ * This provides immediate visual feedback and optimal positioning for
+ * strategic decision-making, particularly useful after jumping to distant
+ * locations or when the current view doesn't provide sufficient context
+ * around the cursor position.
+ *
+ * Parameters:
+ *   None (operates on global cursor state: xcurs, ycurs via XREAL, YREAL macros)
+ *
+ * Returns:
+ *   void
+ *
+ * Side Effects:
+ *   - Recalculates viewport offsets (xoffset, yoffset) for centering
+ *   - Updates cursor coordinates (xcurs, ycurs) relative to new viewport
+ *   - Calls whatcansee() to recalculate visibility for new map view
+ *   - Ensures offsets remain non-negative (clamps to zero at boundaries)
+ *   - Triggers full map redraw through offset changes
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires display system and coordinate management
+ *   Approach: Integration tests with various cursor positions and screen sizes
+ *   Key Tests: Center calculation, boundary handling, cursor positioning, visibility updates
+ *   Dependencies: Display system, cursor state, XREAL/YREAL macros, whatcansee()
+ *   Mock Requirements: Display coordinates, screen size constants, viewport management
+ *   Complexity: Simple - Straightforward coordinate calculations with boundary checks
+ *
+ * Notes:
+ *   - Essential for user experience and navigation comfort
+ *   - Works with XREAL/YREAL macros to get absolute cursor coordinates
+ *   - Automatically handles map boundaries by clamping negative offsets
+ *   - Screen size division by 2 centers cursor in the middle of display
+ *   - Coordinates with display system for optimal visual layout
+ *   - Commonly used after jump commands or when context is needed
+ *   - Provides immediate visual feedback for player orientation
+ *   - Part of the XYZZY enhanced display system
+ */
 void
 centermap()
 {
@@ -415,10 +960,65 @@ centermap()
 	whatcansee();
 }
 
-/************************************************************************/
-/*   JUMP_TO()      - move screen position to a specific location       */
-/*                    home indicates just go to capitol sector.         */
-/************************************************************************/
+/*
+ * jump_to - Move display to specific map coordinates or nation capitals
+ *
+ * Provides rapid navigation functionality allowing players to quickly move
+ * the display to specific locations on the map. This function supports two
+ * primary modes of operation: jumping to nation capitals (home mode) and
+ * jumping to user-specified coordinates (manual mode), enabling efficient
+ * exploration and management of large game worlds.
+ *
+ * Home Mode Operation (home != 0):
+ * - Deity view (country==0): Cycles through all active nation capitals in sequence
+ * - Player view: Jumps directly to player's own capital city
+ * - Maintains cycling state to enable sequential capital tours for deities
+ * - Uses next_ntn static variable to track position in capital sequence
+ * - Falls back to world center (MAPX/2, MAPY/2) if no capitals available
+ *
+ * Manual Mode Operation (home == 0):
+ * - Prompts user for X and Y coordinates via interactive input
+ * - Validates coordinates against world boundaries (0 to MAPX-1, 0 to MAPY-1)
+ * - Provides clear error messages for invalid locations
+ * - Uses get_number() for reliable numeric input with cancellation support
+ *
+ * Navigation Implementation:
+ * - Sets cursor to target coordinates and resets viewport offsets
+ * - Calls centermap() to optimally position the display around target
+ * - Ensures immediate visual feedback and proper viewport adjustment
+ *
+ * Parameters:
+ *   home - Navigation mode flag (non-zero for capital mode, zero for manual coordinates)
+ *
+ * Returns:
+ *   void (early return on user cancellation or invalid coordinates)
+ *
+ * Side Effects:
+ *   - Modifies global cursor coordinates (xcurs, ycurs)
+ *   - Resets viewport offsets (xoffset, yoffset) to zero
+ *   - Updates static next_ntn for capital cycling sequence
+ *   - Displays interactive prompts and error messages to user
+ *   - Calls centermap() to adjust display viewport
+ *   - May call errormsg() for coordinate validation failures
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires user interface, nation data, and display system
+ *   Approach: Integration tests with various nation states and coordinate scenarios
+ *   Key Tests: Capital cycling, coordinate validation, boundary checking, user interaction
+ *   Dependencies: Nation data (ntn array), display system, user input (get_number), centermap()
+ *   Mock Requirements: User input simulation, nation data setup, error message system
+ *   Complexity: Moderate - Multiple modes with complex capital cycling logic
+ *
+ * Notes:
+ *   - Essential for efficient navigation in large game worlds
+ *   - Static next_ntn variable maintains state between deity capital cycles
+ *   - Coordinate validation prevents crashes from invalid user input
+ *   - Capital cycling provides systematic exploration for game administrators
+ *   - Integration with centermap() ensures optimal display positioning
+ *   - Error handling provides clear feedback for boundary violations
+ *   - Supports both automated (capitals) and manual (coordinates) navigation
+ *   - Critical for game management and strategic oversight functionality
+ */
 void
 jump_to(home)
 	int home;
@@ -493,9 +1093,65 @@ jump_to(home)
 	centermap();
 }
 
-/************************************************************************/
-/*	PRINTSCORE()	- like it says					*/
-/************************************************************************/
+/*
+ * printscore - Generate comprehensive game score report
+ *
+ * Produces a detailed tabular report of all active nations in the game,
+ * displaying critical information including demographics, resources, military
+ * strength, and territorial control. This function serves as the primary
+ * game status overview, enabling players and administrators to assess the
+ * current state of world power dynamics and national development.
+ *
+ * The report includes a header with game version, season, year, and turn
+ * information, followed by optional timestamp data from the last update.
+ * The main table displays nation statistics in a standardized format with
+ * columns for identification, demographics, military assets, and territorial
+ * holdings.
+ *
+ * Report Format:
+ * - Header: Game version, current season/year/turn information
+ * - Timestamp: Last update time (TIMELOG conditional)
+ * - Column Headers: ID, name, race, class, alignment, score, resources
+ * - Nation Data: All active nations with complete statistics
+ * - Inactive Nations: Marked with dashes to indicate unavailable data
+ *
+ * Information Display Logic:
+ * - Active nations (isntn): Full statistics including sensitive data
+ * - NOSCORE builds: Hide detailed resources for competitive balance
+ * - Inactive nations: Display basic info with hidden sensitive data
+ * - Race compatibility: Handle legacy 'B' barbarian designation
+ * - Alignment display: NPC type-based alignment classification
+ *
+ * Parameters:
+ *   None (operates on global game state: ntn array, world data, turn information)
+ *
+ * Returns:
+ *   void
+ *
+ * Side Effects:
+ *   - Writes formatted report to stdout for display or redirection
+ *   - Reads optional timestamp file (TIMELOG conditional)
+ *   - Accesses nation arrays and global turn/season information
+ *   - May open/close timefile for last update information
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires complete nation data and formatting system
+ *   Approach: Integration tests with various nation states and conditional builds
+ *   Key Tests: Report formatting, conditional compilation, data accuracy, inactive handling
+ *   Dependencies: Nation data (ntn array), races/Class/alignment arrays, turn system
+ *   Mock Requirements: Nation data setup, conditional flag testing, output capture
+ *   Complexity: Moderate - Complex formatting with multiple conditional compilation paths
+ *
+ * Notes:
+ *   - Critical for game monitoring and competitive balance assessment
+ *   - NOSCORE conditional hides sensitive economic/military data in competitive games
+ *   - TIMELOG integration provides update tracking for administrators
+ *   - Handles legacy race designations for backward compatibility
+ *   - Formatted for both human readability and automated parsing
+ *   - Essential for diplomatic intelligence and strategic planning
+ *   - Provides comprehensive overview of world power structure
+ *   - Used by both players and administrators for game state assessment
+ */
 void
 printscore()
 {
@@ -549,11 +1205,73 @@ printscore()
 }
 #endif /* CONQUER */
 
-/************************************************************************/
-/*	FLEE() - civilains in x,y flee from somebody			*/
-/*	slaver means 25% of populace stays				*/
-/* 	isupd is TRUE if it is update					*/
-/************************************************************************/
+/*
+ * flee - Handle civilian population evacuation mechanics
+ *
+ * Implements sophisticated population displacement simulation when civilians
+ * are forced to abandon their sector due to military action, natural disaster,
+ * or other catastrophic events. This function manages the complex logistics
+ * of population movement, including racial affinity patterns, survival rates,
+ * slavery mechanics, and the cascading effects on regional demographics.
+ *
+ * Population Evacuation Process:
+ * 1. Slavery capture: 25% of population may be enslaved if slaver==TRUE
+ * 2. Initial population reduction: 40% of remaining civilians flee immediately
+ * 3. Destination search: Find sectors owned by same racial group within range
+ * 4. Distribution algorithm: Divide fleeing population among available destinations
+ * 5. Distance-based survival: Closer destinations have better survival rates
+ * 6. Fortress destruction: Military installations are abandoned and destroyed
+ *
+ * Search Pattern and Survival Logic:
+ * - First attempt: 2-sector radius search for same-race destinations
+ * - If successful: Full population redistribution with high survival rate
+ * - Second attempt: 4-sector radius search with 50% mortality penalty
+ * - If no destinations: Complete population loss (death in wilderness)
+ *
+ * Racial Affinity System:
+ * - Fleeing populations seek sectors owned by their own racial group
+ * - Cross-racial refuge is not implemented (historical/cultural barriers)
+ * - Same-race nations provide automatic sanctuary and integration
+ *
+ * The function includes sophisticated user feedback mechanisms and integrates
+ * with the display system to provide immediate notification of population
+ * movements and casualties during interactive gameplay.
+ *
+ * Parameters:
+ *   x, y - Coordinates of the sector being evacuated
+ *   isupd - Update mode flag (TRUE during automated updates, FALSE during player moves)
+ *   slaver - Slavery flag (TRUE enables population capture mechanics)
+ *
+ * Returns:
+ *   void
+ *
+ * Side Effects:
+ *   - Modifies population counts in origin and destination sectors
+ *   - Destroys fortress installations in abandoned sector
+ *   - May trigger sector devastation if food production fails
+ *   - Displays status messages during interactive gameplay (CONQUER conditional)
+ *   - Updates display system with population changes (SADJCIV macros)
+ *   - Temporarily modifies global country variable for racial calculations
+ *   - Calls DEVASTATE() for ecological collapse in extreme cases
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires population system, racial data, and map state
+ *   Approach: Integration tests with various population scenarios and racial configurations
+ *   Key Tests: Population distribution, racial affinity, survival rates, slavery mechanics
+ *   Dependencies: Sector arrays, nation data, racial system, display updates, map bounds
+ *   Mock Requirements: Population data, racial configurations, map state, display system
+ *   Complexity: Complex - Sophisticated population mechanics with multiple survival scenarios
+ *
+ * Notes:
+ *   - Critical for realistic warfare and demographic simulation
+ *   - Slavery mechanics reflect historical conquest patterns
+ *   - Racial affinity system creates strategic population dynamics
+ *   - Distance-based survival rates encourage regional population clusters
+ *   - Fortress destruction represents infrastructure collapse during evacuation
+ *   - Integration with food system prevents impossible population concentrations
+ *   - Essential for preventing unrealistic population invulnerability
+ *   - Provides dramatic feedback for major military and economic disruptions
+ */
 void
 flee(x,y,isupd,slaver)
 int x,y,isupd,slaver;
@@ -630,10 +1348,68 @@ int x,y,isupd,slaver;
 	country=svcountry;
 }
 #ifdef ADMIN
-/************************************************************************/
-/*	READMAP()	- read a map in from map files 			*/
-/*	returns TRUE for success, FALSE for fail			*/
-/************************************************************************/
+/*
+ * readmap - Load elevation and vegetation maps from scenario files
+ *
+ * Performs scenario initialization by reading terrain data from external
+ * map files and populating the game world with elevation and vegetation
+ * information. This function enables dynamic world creation by loading
+ * pre-designed scenarios from standardized map files, supporting flexible
+ * game world configuration without requiring code recompilation.
+ *
+ * File Loading Process:
+ * 1. Elevation Map: Reads {scenario}.ele file containing altitude data
+ * 2. Vegetation Map: Reads {scenario}.veg file containing vegetation data
+ * 3. Sequential Processing: Loads map data line-by-line into sector arrays
+ * 4. Boundary Enforcement: Respects MAPX/MAPY world size constraints
+ * 5. Error Handling: Reports file access problems and continues operation
+ *
+ * Map File Format:
+ * - Text-based format with one character per map cell
+ * - Each line represents one row of the world map
+ * - Characters directly correspond to altitude/vegetation types
+ * - Files must contain at least MAPY lines of MAPX characters each
+ * - Excess data beyond world boundaries is ignored
+ *
+ * The function provides comprehensive logging to stderr for debugging
+ * and administrative monitoring, including file names, line counts,
+ * and character counts for verification of proper map loading.
+ *
+ * This function is conditionally compiled under ADMIN, indicating it's
+ * restricted to administrative builds and not available to regular players,
+ * maintaining separation between game administration and player functions.
+ *
+ * Parameters:
+ *   None (uses global scenario name and MAPX/MAPY world dimensions)
+ *
+ * Returns:
+ *   int - TRUE for successful completion, FALSE for critical failures
+ *
+ * Side Effects:
+ *   - Modifies sector altitude and vegetation data across entire world map
+ *   - Opens and closes scenario map files (.ele and .veg extensions)
+ *   - Writes detailed progress and error messages to stderr
+ *   - Uses global scenario variable for filename construction
+ *   - Accesses and modifies global sct sector array
+ *
+ * Testing Notes:
+ *   Category: C (System) - Requires file system access and complete map arrays
+ *   Approach: System testing with various scenario files and map configurations
+ *   Key Tests: File loading, boundary handling, error recovery, data integrity
+ *   Dependencies: File system, scenario files, sct array, global scenario variable
+ *   Mock Requirements: File system operations, scenario file creation, map data validation
+ *   Complexity: Moderate - File I/O with sequential processing and error handling
+ *
+ * Notes:
+ *   - Essential for scenario-based gameplay and world variety
+ *   - ADMIN conditional restricts access to administrative functions
+ *   - Robust error handling allows graceful degradation on file problems
+ *   - Text-based format enables easy scenario creation and modification
+ *   - Sequential loading ensures consistent world state initialization
+ *   - Logging output assists in scenario debugging and verification
+ *   - Critical for dynamic world generation and campaign management
+ *   - Enables separation of game logic from world data configuration
+ */
 int
 readmap()
 {
@@ -678,9 +1454,66 @@ readmap()
 }
 #endif /* ADMIN */
 
-/*********************************************************************/
-/* M2ALLOC() - two dimensional array allocator (because C is stupid) */
-/*********************************************************************/
+/*
+ * m2alloc - Two-dimensional array memory allocator utility
+ *
+ * Provides a convenient interface for allocating contiguous two-dimensional
+ * arrays in C, overcoming the language's limitations in dynamic multi-dimensional
+ * array allocation. This function creates properly aligned arrays that can be
+ * accessed using standard array notation (array[row][col]) while ensuring
+ * memory efficiency through contiguous allocation patterns.
+ *
+ * Allocation Strategy:
+ * 1. Single malloc() call for all required memory (pointers + data)
+ * 2. Pointer array construction for row indexing
+ * 3. Contiguous data layout for cache efficiency
+ * 4. Proper alignment for all data types through entrysize parameter
+ * 5. Error handling with program termination on allocation failure
+ *
+ * Memory Layout:
+ * - First section: Array of row pointers (nrows * sizeof(char*))
+ * - Second section: Actual data storage (nrows * ncols * entrysize)
+ * - Row pointers calculated to point into data section
+ * - Enables standard array[i][j] syntax for access
+ *
+ * The function includes comprehensive error reporting and terminates the
+ * program if memory allocation fails, ensuring that allocation failures
+ * are immediately detected rather than causing silent corruption later.
+ * This aggressive error handling is appropriate for game systems where
+ * memory allocation failure indicates a fundamental system problem.
+ *
+ * Parameters:
+ *   nrows - Number of rows in the two-dimensional array
+ *   ncols - Number of columns in each row
+ *   entrysize - Size in bytes of each individual array element
+ *
+ * Returns:
+ *   char** - Pointer to allocated array (can be cast to appropriate type)
+ *
+ * Side Effects:
+ *   - Allocates memory using malloc() that must be freed by caller
+ *   - Terminates program via abrt() if allocation fails
+ *   - Writes error message to stdout on allocation failure
+ *   - Modifies allocated memory to construct pointer array structure
+ *
+ * Testing Notes:
+ *   Category: A (Unit) - Self-contained memory allocation utility
+ *   Approach: Unit tests with various array sizes and element types
+ *   Key Tests: Allocation success, pointer arithmetic, error handling, memory layout
+ *   Dependencies: Standard library malloc(), program termination functions
+ *   Mock Requirements: Memory allocation mocking, error condition simulation
+ *   Complexity: Simple - Straightforward allocation with pointer arithmetic
+ *
+ * Notes:
+ *   - Essential utility for dynamic game world arrays (sct, occ, movecost)
+ *   - Contiguous allocation improves cache performance for large arrays
+ *   - Single allocation/free cycle simplifies memory management
+ *   - Generic interface supports any data type through entrysize parameter
+ *   - Error handling prevents silent allocation failures
+ *   - Widely used throughout game system for dynamic data structures
+ *   - Critical infrastructure for scalable world sizes
+ *   - Enables efficient two-dimensional array access patterns
+ */
 char **m2alloc(nrows, ncols, entrysize)
 int	nrows;		/* row dimension */
 int	ncols;		/* column dimension */
@@ -704,8 +1537,67 @@ int	entrysize;	/* # bytes in items to be stored */
 	return(baseaddr);
 }
 
-/* If the string entered is too long, then a truncated */
-/* string is returned.  Length entered is returned.    */
+/*
+ * get_pass - Secure password input with character masking
+ *
+ * Provides secure password input functionality by reading characters from
+ * the user without echoing them to the screen, preventing shoulder surfing
+ * and maintaining password confidentiality during authentication. This
+ * function implements comprehensive input handling including backspace
+ * correction, line clearing, and proper string termination for reliable
+ * password entry in interactive game sessions.
+ *
+ * Input Processing Features:
+ * - Character masking: No screen echo for entered characters
+ * - Backspace support: Both '\b' and '\177' (DEL) for character deletion
+ * - Line clearing: Ctrl+U ('\025') clears entire input line
+ * - Length limiting: Prevents buffer overflow through PASSLTH bounds checking
+ * - Termination handling: Enter or carriage return completes input
+ * - Null character filtering: Ignores null bytes from input stream
+ *
+ * Security Implementation:
+ * - No visual feedback for password characters (prevents observation)
+ * - Immediate character processing (no intermediate buffers)
+ * - Proper string termination to prevent buffer issues
+ * - Length validation with truncation for oversized input
+ * - Return value indicates actual characters entered (including truncated)
+ *
+ * The function handles various terminal input scenarios gracefully,
+ * supporting common editing operations while maintaining security through
+ * character masking. Truncation logic ensures that overly long passwords
+ * are handled safely without buffer overflows.
+ *
+ * Parameters:
+ *   str - Character buffer to store the entered password (must be PASSLTH+1 or larger)
+ *
+ * Returns:
+ *   int - Number of characters actually entered (before truncation)
+ *
+ * Side Effects:
+ *   - Modifies the provided string buffer with entered password
+ *   - Reads characters directly from terminal input (getch())
+ *   - No screen output (maintains character masking for security)
+ *   - Null-terminates the resulting string for safe usage
+ *   - May truncate input that exceeds PASSLTH limit
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires terminal input system and character handling
+ *   Approach: Integration tests with simulated input and various scenarios
+ *   Key Tests: Password masking, backspace handling, truncation, termination
+ *   Dependencies: Terminal input (getch()), PASSLTH constant, string handling
+ *   Mock Requirements: Input simulation, terminal behavior mocking
+ *   Complexity: Moderate - Character-by-character processing with multiple input modes
+ *
+ * Notes:
+ *   - Critical for authentication security and user privacy
+ *   - Supports standard terminal editing conventions (backspace, Ctrl+U)
+ *   - Prevents password disclosure through screen observation
+ *   - Robust length handling prevents security vulnerabilities
+ *   - Compatible with various terminal types and input methods
+ *   - Essential for multi-user game system authentication
+ *   - Return value enables password length validation by callers
+ *   - Proper string handling ensures safe integration with authentication systems
+ */
 int
 get_pass(str)
 	char *str;
