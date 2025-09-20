@@ -607,6 +607,44 @@ newmsg(str)
 
 /* message with wait for keystroke */
 void
+/*
+ * newerror - Display error message and wait for user acknowledgment
+ *
+ * Displays an error message on the bottom line of the screen and waits
+ * for the user to press any key before continuing. Provides visual and
+ * audio feedback (beep) to ensure the user notices the error condition.
+ * Clears the message line after user acknowledgment.
+ *
+ * Parameters:
+ *   str - Error message string to display (must not be NULL)
+ *
+ * Returns:
+ *   void
+ *
+ * Side Effects:
+ *   - Displays message on bottom line of screen (LINES-1)
+ *   - Clears to end of line to prevent display artifacts
+ *   - Shows "PRESS ANY KEY" prompt on right side of screen
+ *   - Produces audible beep to alert user
+ *   - Blocks execution until user presses any key
+ *   - Clears bottom line after user acknowledgment
+ *   - Refreshes screen display twice (before and after input)
+ *
+ * Testing Notes:
+ *   Category: C (System) - Requires curses initialization and terminal interaction
+ *   Approach: System testing with mock terminal and user input simulation
+ *   Key Tests: [Message display positioning, beep functionality, key press handling, screen cleanup]
+ *   Dependencies: [Curses library initialization, LINES/COLS globals, terminal capabilities]
+ *   Mock Requirements: [Terminal screen, user input simulation, beep capability testing]
+ *   Complexity: Simple - basic curses UI interaction with standard pattern
+ *
+ * Notes:
+ *   - Assumes curses has been initialized via newinit()
+ *   - Uses standard curses functions: mvaddstr, clrtoeol, beep, refresh, getch
+ *   - Message positioning depends on LINES and COLS terminal dimensions
+ *   - Blocking function - suspends program execution until user input
+ *   - Essential for error reporting in interactive registration process
+ */
 newerror(str)
 	char *str;
 {
@@ -621,7 +659,39 @@ newerror(str)
 	refresh();
 }
 
-/* function to check if a character is in a character array */
+/*
+ * in_str - Check if a character exists in a string
+ *
+ * Searches through a string to determine if a specific character is present.
+ * This utility function provides case-sensitive character matching for input
+ * validation and menu choice processing in the registration system.
+ *
+ * Parameters:
+ *   ch  - Character to search for
+ *   str - Null-terminated string to search in (must not be NULL)
+ *
+ * Returns:
+ *   TRUE if character is found in the string
+ *   FALSE if character is not found or string is empty
+ *
+ * Side Effects:
+ *   None - read-only operation
+ *
+ * Testing Notes:
+ *   Category: A (Unit) - Simple string search with minimal dependencies
+ *   Approach: Unit tests with various character and string combinations
+ *   Key Tests: [Character found, character not found, empty string, single character, NULL handling]
+ *   Dependencies: [strlen() function from string.h, TRUE/FALSE constants]
+ *   Mock Requirements: None - pure function with standard library dependencies
+ *   Complexity: Simple - straightforward linear search algorithm
+ *
+ * Notes:
+ *   - Case-sensitive comparison using direct character equality
+ *   - Linear time complexity O(n) where n is string length
+ *   - Uses strlen() to determine search bounds
+ *   - Essential for validating user menu choices and input characters
+ *   - Could be optimized with strchr() but current implementation is clear
+ */
 int
 in_str(ch,str)
 	char ch, *str;
@@ -633,7 +703,43 @@ in_str(ch,str)
 	return(FALSE);
 }
 
-/* function to display the comment and error window */
+/*
+ * errorbar - Display formatted comment and error window
+ *
+ * Creates a visually distinctive window at the bottom of the screen to display
+ * informational or error messages. Uses inverse video highlighting and a
+ * horizontal separator line to draw attention to important messages during
+ * the registration process.
+ *
+ * Parameters:
+ *   str1 - Primary message content (displayed after version info)
+ *   str2 - Secondary message (right-aligned on the information line)
+ *
+ * Returns:
+ *   void
+ *
+ * Side Effects:
+ *   - Creates highlighted bar on line LINES-4 using standout/standend
+ *   - Displays "Conquer [VERSION].[PATCHLEVEL]: [str1]" on line LINES-3
+ *   - Right-aligns str2 on the same line as version info
+ *   - Draws horizontal separator line of dashes on line LINES-2
+ *   - Modifies cursor position to end of separator line
+ *
+ * Testing Notes:
+ *   Category: C (System) - Requires curses initialization and terminal dimensions
+ *   Approach: System testing with mock terminal and display verification
+ *   Key Tests: [Highlighting display, text positioning, line drawing, version formatting]
+ *   Dependencies: [Curses library, LINES/COLS globals, VERSION/PATCHLEVEL constants]
+ *   Mock Requirements: [Terminal screen, version constants, curses standout capability]
+ *   Complexity: Moderate - multi-line formatting with alignment and highlighting
+ *
+ * Notes:
+ *   - Uses curses standout mode for visual emphasis (reverse video)
+ *   - Calculates right-alignment based on string length and COLS width
+ *   - Creates professional-looking information display consistent with UI
+ *   - Essential for user feedback during registration validation
+ *   - Assumes VERSION and PATCHLEVEL are defined string constants
+ */
 void
 errorbar(str1,str2)
 	char *str1,*str2;
@@ -651,7 +757,44 @@ errorbar(str1,str2)
 		addch('-');
 }
 
-/* display amount string at current location */
+/*
+ * dispitem - Display formatted item amount string at current cursor location
+ *
+ * Displays a formatted string showing the amount and type of a specific item
+ * at the current cursor position. Handles special formatting for location items
+ * and provides detailed breakdown for raw materials including derived jewel
+ * and metal amounts.
+ *
+ * Parameters:
+ *   item   - Item type identifier (CH_LOCATE, CH_RAWGOODS, or other item types)
+ *   amount - Quantity of the item to display
+ *
+ * Returns:
+ *   void
+ *
+ * Side Effects:
+ *   - Prints formatted text at current cursor position using printw()
+ *   - For location items: displays location type and item name
+ *   - For other items: displays numeric amount and item name
+ *   - For raw materials: adds calculated jewel and metal amounts
+ *   - Adds period terminator for non-raw-goods items
+ *
+ * Testing Notes:
+ *   Category: C (System) - Requires curses initialization and global arrays
+ *   Approach: System testing with mock item arrays and cursor positioning
+ *   Key Tests: [Location formatting, numeric formatting, raw materials calculation, period termination]
+ *   Dependencies: [Curses library, LType[] array, Mitems[] array, NLJEWELS/NLMETAL/Mvalues constants]
+ *   Mock Requirements: [Terminal screen, global item arrays, calculation constants]
+ *   Complexity: Moderate - conditional formatting with calculation logic
+ *
+ * Notes:
+ *   - Uses global arrays LType[] and Mitems[] for item name lookup
+ *   - Special handling for CH_LOCATE uses amount as index into LType[]
+ *   - Raw materials calculation uses ratio formulas with floating-point conversion
+ *   - NLJEWELS/Mvalues[CH_RAWGOODS] ratio determines jewel conversion
+ *   - NLMETAL/Mvalues[CH_RAWGOODS] ratio determines metal conversion
+ *   - Essential for displaying resource allocation in registration interface
+ */
 void
 dispitem(item, amount)
 	int item;
@@ -675,7 +818,46 @@ dispitem(item, amount)
 		((float)NLMETAL/Mvalues[CH_RAWGOODS])));
 }
 
-/* show the current amount for country item */
+/*
+ * showitem - Display current allocated amount for a country item
+ *
+ * Shows the currently allocated amount for a specific country item at a
+ * specified line position. Handles special formatting for location items
+ * and provides detailed breakdown for raw materials showing derived jewel
+ * and metal amounts. Uses right-aligned formatting for consistent display.
+ *
+ * Parameters:
+ *   line - Screen line number where to display the information
+ *   item - Item type identifier (CH_LOCATE, CH_RAWGOODS, or other item types)
+ *
+ * Returns:
+ *   void
+ *
+ * Side Effects:
+ *   - Moves cursor to specified line, column 15
+ *   - Displays right-aligned (23 characters) formatted item information
+ *   - For location items: shows location type and item name from spent[] array
+ *   - For other items: shows calculated amount (spent[item] * Mvalues[item])
+ *   - For raw materials: adds additional line showing jewel/metal breakdown
+ *   - Uses conditional compilation for equal vs. separate jewel/metal display
+ *
+ * Testing Notes:
+ *   Category: C (System) - Requires curses initialization and global arrays
+ *   Approach: System testing with mock spent[] array and screen positioning
+ *   Key Tests: [Location formatting, amount calculation, raw materials display, alignment]
+ *   Dependencies: [Curses library, spent[] array, LType/Mitems arrays, Mvalues constants, NLJEWELS/NLMETAL]
+ *   Mock Requirements: [Terminal screen, global allocation arrays, calculation constants]
+ *   Complexity: Moderate - conditional formatting with preprocessor compilation paths
+ *
+ * Notes:
+ *   - Uses global spent[] array to track current resource allocations
+ *   - Mvalues[item] provides cost multiplier for amount calculation
+ *   - LINELTH constant defines temporary string buffer size
+ *   - Conditional compilation (#if NLJEWELS==NLMETAL) handles display variants
+ *   - Right-aligned formatting ensures consistent column alignment
+ *   - Essential for displaying current allocation state during registration
+ *   - Note: nsprintf on line 851 appears to be typo for sprintf
+ */
 void
 showitem(line,item)
 	int line, item;
@@ -712,7 +894,50 @@ showitem(line,item)
 #endif
 }
 
-/* convert the stored information into the nation statistics */
+/*
+ * convert - Convert stored allocation information into nation statistics
+ *
+ * Transforms the temporary spent[] array values into actual nation
+ * statistics by applying appropriate multipliers and conversions.
+ * Handles location type conversion, magic acquisition, and resource
+ * calculations to finalize the new nation's starting attributes.
+ *
+ * Parameters:
+ *   None (operates on global spent[] array and curntn structure)
+ *
+ * Returns:
+ *   void
+ *
+ * Side Effects:
+ *   - Sets curntn->tciv (total civilians) from people allocation
+ *   - Sets curntn->tgold (treasury) from treasury allocation
+ *   - Converts location preference to actual location type (GREAT/FAIR/RANDOM)
+ *   - Sets curntn->tmil (total military) from soldier allocation
+ *   - Sets combat bonuses (aplus/dplus) from attack/defense allocations
+ *   - Sets curntn->repro (reproduction rate) from reproduction allocation
+ *   - Sets curntn->maxmove (movement points) from movement allocation
+ *   - Purchases random magic spells based on magic allocation
+ *   - Sets numleaders global from leaders allocation
+ *   - Calculates raw resources (tfood, jewels, metals) from raw goods
+ *   - Uses random number generation for magic spell acquisition
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires nation structure and magic system integration
+ *   Approach: Integration testing with mock spent[] array and nation structure
+ *   Key Tests: [Multiplier calculations, location conversion, magic acquisition, resource allocation]
+ *   Dependencies: [Global spent[] array, curntn nation pointer, Mvalues[] constants, magic system]
+ *   Mock Requirements: [Nation structure, magic functions, random number generator]
+ *   Complexity: Moderate - multiple conversions with magic system integration
+ *
+ * Notes:
+ *   - Uses Mvalues[] array as cost-to-benefit multipliers for each resource type
+ *   - Location conversion: 2=GREAT, 1=FAIR, 0/default=RANDOM placement
+ *   - Magic acquisition uses random selection from military magic range (M_MIL to M_MGK)
+ *   - getmagic() function returns magic type, 0 indicates failure/retry needed
+ *   - CHGMGK macro likely updates magic-related nation statistics
+ *   - Raw goods generate both food and derived jewel/metal resources
+ *   - Critical function that finalizes nation creation from user choices
+ */
 void
 convert()
 {
