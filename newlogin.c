@@ -1,10 +1,10 @@
 /*
- * newlogin.c - New player registration and login
- * 
+ * newlogin.c - New player registration and login system
+ *
  * This file is part of Conquer.
  * Originally Copyright (C) 1988-1989 by Edward M. Barlow and Adam Bryant
  * Copyright (C) 2025 Juan Manuel Méndez Rey (Vejeta) - Licensed under GPL v3 with permission from original authors
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,6 +17,109 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * =============================================================================
+ * NEW PLAYER REGISTRATION AND LOGIN SYSTEM
+ * =============================================================================
+ *
+ * This module implements the complete new player registration system for
+ * Conquer, providing interactive nation creation, placement, and initialization.
+ * It handles the entire workflow from initial nation setup through world
+ * placement and army allocation.
+ *
+ * SYSTEM ARCHITECTURE:
+ *
+ * 1. INTERACTIVE NATION BUILDER
+ *    - Curses-based user interface for nation creation
+ *    - Point-based resource allocation system (MAXPTS total points)
+ *    - Comprehensive input validation and error handling
+ *    - Support for multiple races (Human, Elf, Dwarf, Orc) with unique abilities
+ *    - Class selection system with race-specific restrictions
+ *    - Password encryption and validation
+ *
+ * 2. WORLD PLACEMENT SYSTEM
+ *    - Intelligent nation placement with multiple location quality levels
+ *    - Terrain modification around capitals based on racial preferences
+ *    - Collision avoidance with existing nations
+ *    - Automatic fallback placement algorithms
+ *
+ * 3. MILITARY ALLOCATION
+ *    - Automatic army structure creation and leader assignment
+ *    - Capital fortification and sector ownership assignment
+ *    - Resource distribution across starting territories
+ *
+ * CORE COMPONENTS:
+ *
+ * Nation Creation Flow:
+ * newlogin() -> Nation Builder Interface -> convert() -> place() -> Army Setup
+ *
+ * Placement System:
+ * place() -> Location Selection -> teraform() -> Territory Assignment
+ *
+ * UI Management:
+ * newinit() -> Interactive Menus -> newreset() / newbye()
+ *
+ * DATA STRUCTURES:
+ *
+ * - Nation configuration arrays (Mlabels[], Mitems[], Mhelp[])
+ * - Race/class power mappings (Classpow[], Classcost[], CPowlist[])
+ * - Resource allocation tracking (spent[] array)
+ * - Location quality types (LType[]: Random, Fair, Great)
+ *
+ * POINT ALLOCATION SYSTEM:
+ *
+ * Players start with MAXPTS points to distribute across:
+ * - CH_PEOPLE: Population size
+ * - CH_TREASURY: Starting gold
+ * - CH_LOCATE: Location quality (Random/Fair/Great)
+ * - CH_SOLDIERS: Military strength
+ * - CH_ATTACK/CH_DEFEND: Combat bonuses
+ * - CH_REPRO: Population growth rate
+ * - CH_MOVEMENT: Army mobility
+ * - CH_MAGIC: Magical power acquisition
+ * - CH_LEADERS: Officer count
+ * - CH_RAWGOODS: Food, jewels, and metal resources
+ *
+ * RACE-SPECIFIC FEATURES:
+ *
+ * Each race has unique starting bonuses and terrain preferences:
+ * - DWARF: Mining abilities, mountain/hill terrain, metal resources
+ * - ELF: Void cloaking magic, forest terrain, jewel resources
+ * - ORC: Monster leadership, mountain terrain, mixed resources, always evil
+ * - HUMAN: Warrior skills, clear/farmland terrain, balanced resources
+ *
+ * LOCATION QUALITY SYSTEM:
+ *
+ * - RANDOM: Basic placement with minimal collision avoidance
+ * - FAIR: Enhanced placement with better food production requirements
+ * - GREAT: Premium placement with maximum spacing and resource quality
+ * Each level provides increasing terrain modification chances and territory bonuses.
+ *
+ * ERROR HANDLING AND VALIDATION:
+ *
+ * - Comprehensive input validation for names, passwords, choices
+ * - Automatic fallback placement if preferred location fails
+ * - Resource constraint enforcement during point allocation
+ * - Terminal size validation and compatibility checking
+ *
+ * INTEGRATION POINTS:
+ *
+ * - World data structures (sct[][], ntn[])
+ * - Mail system integration (mailtopc() for notifications)
+ * - Army and leader management systems
+ * - Magic power assignment and class abilities
+ * - Terrain generation and resource allocation
+ *
+ * SECURITY FEATURES:
+ *
+ * - Password encryption using crypt() with salt
+ * - User ID validation (CHECKUSER compilation flag)
+ * - Nation limit enforcement per user
+ * - Input sanitization and bounds checking
+ *
+ * This system provides a complete player onboarding experience, from initial
+ * registration through world integration, ensuring balanced gameplay and
+ * proper resource distribution while maintaining security and data integrity.
  */
 
 #include <stdio.h>
@@ -69,8 +172,62 @@ extern short country;
 int	numleaders;
 int spent[CH_NUMBER];
 
-/* Teraform the area around somebodies capitol */
-/* this gives everybody some chance of success */
+/*
+ * teraform - Modify terrain around a nation's capital based on racial preferences
+ *
+ * Creates race-appropriate terrain within a specified range of a nation's capital
+ * to give new players favorable starting conditions. Each race modifies terrain
+ * to match their cultural and strategic preferences, while adding appropriate
+ * resource deposits based on probability.
+ *
+ * Parameters:
+ *   x - X coordinate of the nation's capital (center of terraforming)
+ *   y - Y coordinate of the nation's capital (center of terraforming)
+ *   range - Radius of terrain modification around the capital
+ *   chance - Percentage probability (0-100) of resource deposit placement
+ *
+ * Returns:
+ *   None (void function)
+ *
+ * Side Effects:
+ *   - Modifies world terrain (sct[][] altitude and vegetation)
+ *   - Adds resource deposits (metal/jewels) based on racial preferences
+ *   - Sets capital sector to race-appropriate terrain type
+ *   - Uses random number generation for terrain variation and resource placement
+ *
+ * Racial Terrain Modifications:
+ *   DWARF: Creates mountain capitals with surrounding hills/mountains + metal deposits
+ *   ELF: Creates forest capitals with surrounding woods/forests + jewel deposits
+ *   ORC: Creates mountain capitals with hills/mountains + mixed metal/jewel deposits
+ *   HUMAN: Creates clear farmland with woods/good vegetation + balanced resources
+ *
+ * Algorithm:
+ *   1. Set capital sector to race-specific terrain type
+ *   2. Iterate through range × range area around capital
+ *   3. Skip water sectors and the capital itself
+ *   4. Apply race-specific terrain patterns with randomization
+ *   5. Add resource deposits based on chance percentage and racial preferences
+ *
+ * Resource Distribution:
+ *   - DWARF: 100% metal deposits (mining specialization)
+ *   - ELF: 100% jewel deposits (magical affinity)
+ *   - ORC: 50% metal, 50% jewels (aggressive expansion)
+ *   - HUMAN: 50% metal, 50% jewels (balanced development)
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires world data structures and race definitions
+ *   Approach: Integration testing with mock world state and race configurations
+ *   Key Tests: [Terrain modification per race, resource placement probability, range boundaries]
+ *   Dependencies: [Global world array sct[][], race constants, resource functions]
+ *   Mock Requirements: [World sectors, race configuration, random number generator]
+ *   Complexity: Moderate - race-specific logic with probabilistic resource placement
+ *
+ * Notes:
+ *   - Uses global curntn->race to determine modification pattern
+ *   - Relies on getmetal() and getjewel() functions for resource placement
+ *   - Terrain modification is permanent and affects starting nation advantages
+ *   - Critical for game balance as it determines starting resource availability
+ */
 void
 teraform( x,y,range, chance )
 int x,y;
@@ -143,6 +300,57 @@ int range,chance;
 	}
 }
 
+/*
+ * mailtopc - Send notification message to all player character nations
+ *
+ * Broadcasts a system notification to all active player-controlled nations
+ * in the game world. Used primarily to announce significant events such as
+ * new player arrivals, system messages, or world updates that affect all
+ * players.
+ *
+ * Parameters:
+ *   string - Message text to send to all PC nations (null-terminated string)
+ *
+ * Returns:
+ *   None (void function)
+ *
+ * Side Effects:
+ *   - Opens mail files for all active PC nations
+ *   - Writes standardized message format to each nation's mailbox
+ *   - Closes mail files after writing
+ *   - May generate file I/O operations for each active nation
+ *
+ * Message Format:
+ *   "Message from Conquer\n\n[user-provided string]\n"
+ *
+ * Algorithm:
+ *   1. Iterate through all nation slots (0 to NTOTAL-1)
+ *   2. Check if nation 0 (special) or any PC-controlled nation (ispc())
+ *   3. Attempt to open mail file for each qualifying nation
+ *   4. Write standardized header and user message
+ *   5. Close mail file and continue to next nation
+ *   6. Silently skip nations where mail file cannot be opened
+ *
+ * Error Handling:
+ *   - Gracefully handles mail file open failures (continues to next nation)
+ *   - No error reporting for failed mail operations
+ *   - Does not interrupt processing if individual mail operations fail
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires mail system and nation data structures
+ *   Approach: Integration testing with mock mail system and nation configurations
+ *   Key Tests: [PC nation filtering, mail file operations, message formatting]
+ *   Dependencies: [Nation array ntn[], mail functions mailopen/mailclose, file pointer fm]
+ *   Mock Requirements: [Nation status data, mail file system, file I/O operations]
+ *   Complexity: Simple - straightforward iteration with mail system integration
+ *
+ * Notes:
+ *   - Uses global mail file pointer fm for writing
+ *   - Relies on mailopen() and mailclose() for file management
+ *   - Nation 0 always receives messages regardless of PC status
+ *   - Critical for multiplayer communication and event notification
+ *   - Message delivery is best-effort (no delivery confirmation)
+ */
 void
 mailtopc(string)
 char	*string;
@@ -159,7 +367,59 @@ char	*string;
 	}
 }
 
-/* function  to initialize the curses display */
+/*
+ * newinit - Initialize curses display system for interactive nation building
+ *
+ * Sets up the curses-based terminal interface for the new player registration
+ * system. Validates terminal capabilities and enforces minimum size requirements
+ * to ensure proper display of the nation builder interface.
+ *
+ * Parameters:
+ *   None
+ *
+ * Returns:
+ *   None (void function, but may exit program on terminal size failure)
+ *
+ * Side Effects:
+ *   - Initializes curses display system (initscr())
+ *   - Enables character-at-a-time input mode (crmode())
+ *   - Disables automatic echo of typed characters (noecho())
+ *   - May terminate program if terminal size is insufficient
+ *   - Displays error messages and sounds alert for terminal size issues
+ *
+ * Terminal Requirements:
+ *   - Minimum 80 columns by 24 lines
+ *   - Supports curses/ncurses terminal capabilities
+ *   - Compatible with standard terminal control sequences
+ *
+ * Error Handling:
+ *   - Validates terminal size after initialization
+ *   - Displays helpful error message if terminal too small
+ *   - Provides specific size requirements in error display
+ *   - Sounds audible alert (beep()) for user attention
+ *   - Waits for user acknowledgment before clean exit
+ *   - Calls newbye(SUCCESS) for graceful program termination
+ *
+ * Display Configuration:
+ *   - crmode(): Enables immediate character input without buffering
+ *   - noecho(): Prevents automatic display of typed characters (for password input)
+ *   - Both settings essential for interactive menu navigation and security
+ *
+ * Testing Notes:
+ *   Category: C (System) - Requires actual terminal/curses environment
+ *   Approach: System testing with various terminal sizes and configurations
+ *   Key Tests: [Terminal size validation, curses initialization, input mode setup]
+ *   Dependencies: [Curses library, terminal environment, COLS/LINES globals]
+ *   Mock Requirements: [Terminal emulator, curses system, display hardware]
+ *   Complexity: Simple - standard curses initialization with size validation
+ *
+ * Notes:
+ *   - Must be called before any curses display operations
+ *   - Paired with newreset() for proper curses cleanup
+ *   - Critical for proper interactive interface functionality
+ *   - Terminal size check prevents interface corruption on small displays
+ *   - Required for secure password input handling in registration
+ */
 void
 newinit()
 {
@@ -176,7 +436,53 @@ newinit()
 	noecho();
 }
 
-/* function to end the curses display */
+/*
+ * newreset - Clean up and terminate curses display system
+ *
+ * Properly shuts down the curses display interface and restores the terminal
+ * to its normal state. This function ensures clean terminal cleanup before
+ * program termination or when switching between curses and non-curses modes.
+ *
+ * Parameters:
+ *   None
+ *
+ * Returns:
+ *   None (void function)
+ *
+ * Side Effects:
+ *   - Clears the entire screen display
+ *   - Forces refresh to ensure clean visual state
+ *   - Disables character-at-a-time input mode (nocrmode())
+ *   - Terminates curses session and restores normal terminal mode (endwin())
+ *   - Returns terminal to pre-curses state
+ *
+ * Cleanup Sequence:
+ *   1. clear(): Erases all content from the screen
+ *   2. refresh(): Forces immediate display update to show cleared screen
+ *   3. nocrmode(): Restores normal line-buffered input mode
+ *   4. endwin(): Properly terminates curses and restores terminal settings
+ *
+ * Terminal Restoration:
+ *   - Restores original terminal attributes (echo, buffering, special chars)
+ *   - Releases curses resources and memory
+ *   - Ensures cursor is visible and positioned appropriately
+ *   - Returns terminal to shell-compatible state
+ *
+ * Testing Notes:
+ *   Category: C (System) - Requires actual terminal/curses environment
+ *   Approach: System testing with terminal state verification before/after
+ *   Key Tests: [Screen clearing, terminal restoration, input mode reset]
+ *   Dependencies: [Active curses session, terminal environment, curses library]
+ *   Mock Requirements: [Terminal emulator, curses system, display hardware]
+ *   Complexity: Simple - standard curses cleanup sequence
+ *
+ * Notes:
+ *   - Must be paired with newinit() for proper curses lifecycle management
+ *   - Essential for clean program termination to prevent terminal corruption
+ *   - Can be called multiple times safely (endwin() handles redundant calls)
+ *   - Critical for proper shell prompt restoration after program exit
+ *   - Used by newbye() for complete program termination sequence
+ */
 void
 newreset()
 {
@@ -186,7 +492,51 @@ newreset()
 	endwin();
 }
 
-/* function to leave the program completely */
+/*
+ * newbye - Gracefully terminate the new player registration program
+ *
+ * Performs complete program shutdown including proper curses cleanup and
+ * system exit with specified status code. Ensures clean terminal restoration
+ * and proper resource cleanup before program termination.
+ *
+ * Parameters:
+ *   status - Exit status code to return to the operating system
+ *            SUCCESS (0) for normal termination
+ *            FAIL (non-zero) for error conditions
+ *
+ * Returns:
+ *   Does not return (calls exit() which terminates the program)
+ *
+ * Side Effects:
+ *   - Calls newreset() to clean up curses display system
+ *   - Restores terminal to normal state
+ *   - Terminates program execution with specified exit code
+ *   - Returns control to operating system/shell
+ *
+ * Exit Sequence:
+ *   1. Call newreset() for complete curses cleanup
+ *   2. Call exit(status) to terminate program with given status
+ *
+ * Status Code Usage:
+ *   - SUCCESS: Normal program completion (successful registration or clean exit)
+ *   - FAIL: Error conditions (file errors, system problems, user cancellation)
+ *   - Other codes: Specific error conditions as defined by system constants
+ *
+ * Testing Notes:
+ *   Category: C (System) - Requires actual program execution environment
+ *   Approach: System testing with exit status verification and terminal state
+ *   Key Tests: [Proper exit status codes, terminal cleanup verification, resource release]
+ *   Dependencies: [Curses system, terminal environment, system exit() function]
+ *   Mock Requirements: [Process execution environment, terminal emulator, exit monitoring]
+ *   Complexity: Simple - standard cleanup and exit sequence
+ *
+ * Notes:
+ *   - This function never returns to caller (exit() terminates process)
+ *   - Essential for proper terminal restoration in error conditions
+ *   - Used throughout newlogin system for both normal and error exits
+ *   - Prevents terminal corruption that could occur with abrupt termination
+ *   - Critical for clean integration with shell environment
+ */
 void
 newbye(status)
 	int status;
@@ -195,7 +545,57 @@ newbye(status)
 	exit(status);
 }
 
-/* message without wait for keystroke */
+/*
+ * newmsg - Display status message without waiting for user input
+ *
+ * Shows a status message on the bottom line of the screen and immediately
+ * refreshes the display. Used for providing real-time feedback during nation
+ * creation without interrupting the user's workflow or requiring acknowledgment.
+ *
+ * Parameters:
+ *   str - Message string to display (null-terminated)
+ *
+ * Returns:
+ *   None (void function)
+ *
+ * Side Effects:
+ *   - Displays message on the last line of the screen (LINES-1)
+ *   - Clears any existing content on the message line
+ *   - Forces immediate screen refresh to show the message
+ *   - Does not wait for user input (non-blocking)
+ *
+ * Display Behavior:
+ *   - Message appears at screen position (LINES-1, 0)
+ *   - clrtoeol() removes any previous message content
+ *   - refresh() ensures immediate visual update
+ *   - Message remains visible until next screen update or message
+ *
+ * Usage Context:
+ *   - Status updates during nation building process
+ *   - Confirmation messages for user actions
+ *   - Progress indicators during point allocation
+ *   - Non-critical informational messages
+ *   - Temporary feedback that doesn't require user response
+ *
+ * Comparison with newerror():
+ *   - newmsg(): Non-blocking, immediate feedback, temporary display
+ *   - newerror(): Blocking, requires keystroke, persistent until acknowledged
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires curses environment and display testing
+ *   Approach: Integration testing with curses display verification
+ *   Key Tests: [Message display positioning, line clearing, immediate refresh]
+ *   Dependencies: [Active curses session, LINES global, screen display]
+ *   Mock Requirements: [Curses display system, terminal emulator, screen buffer]
+ *   Complexity: Simple - basic curses message display without blocking
+ *
+ * Notes:
+ *   - Requires active curses session (newinit() must be called first)
+ *   - Message positioning depends on LINES global variable
+ *   - Essential for providing responsive user interface feedback
+ *   - Complements blocking error display functions for complete UI messaging
+ *   - Critical for user experience during interactive nation building
+ */
 void
 newmsg(str)
 	char *str;
