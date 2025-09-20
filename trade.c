@@ -64,6 +64,53 @@ char *buylist[NUMPRODUCTS] = { "Bid how much gold? ", "Bid how much food? ",
 	"Bid how much metal? ", "Bid how many jewels? ", "What X location? ",
 	"Bid what army? ", "Bid what navy? "};
 
+/*
+ * trade - Main interactive trading interface for commodity exchange
+ *
+ * Implements the complete commodities exchange interface where players can buy,
+ * sell, and unsell various commodities including gold, food, metal, jewels, land,
+ * armies, and ships. The function provides a full-screen interface displaying
+ * available commodities from all nations and enables real-time trading operations.
+ *
+ * The interface displays:
+ * - God/NPC merchant offerings (food, metal, jewels) at fixed prices
+ * - Player-offered commodities with minimum bid requirements
+ * - Interactive menu for buy/sell/unsell operations
+ * - Comprehensive validation and error handling
+ *
+ * Trading Features:
+ * - Buy from god merchants using gold at fixed exchange rates
+ * - Buy from other players by meeting minimum bid requirements
+ * - Sell commodities to marketplace with minimum price requirements
+ * - Unsell (remove) own commodities from marketplace
+ * - Real-time display updates showing market changes
+ * - File-based persistent trade data storage
+ *
+ * Parameters: None (uses global state)
+ *
+ * Returns: void
+ *
+ * Side Effects:
+ *   - Modifies nation resources (gold, food, metal, jewels, armies, ships)
+ *   - Updates trade file with new transactions
+ *   - Modifies army/navy status for traded units
+ *   - Updates screen display with commodity listings
+ *   - May block for user input during interactive operations
+ *
+ * Testing Notes:
+ *   Category: C (System) - Requires full game initialization and file system
+ *   Approach: System testing with mock nations and trade file
+ *   Key Tests: Buy/sell operations, validation, error handling, file I/O
+ *   Dependencies: Game state, nation data, trade file, display system
+ *   Mock Requirements: File system, display functions, nation initialization
+ *   Complexity: Complex - Multi-branch UI with extensive validation and file operations
+ *
+ * Notes:
+ *   - Interactive function requiring full curses display system
+ *   - File operations may fail requiring error handling
+ *   - Complex state management with trade reservations
+ *   - Uses goto-style control flow with while loops and switch statements
+ */
 void
 trade()
 {
@@ -508,6 +555,43 @@ trade()
 	}
 }
 
+/*
+ * tradeerr - Display trade error message with user acknowledgment
+ *
+ * Displays error messages during trading operations in a standardized format
+ * at the bottom of the screen. Clears the bottom area, displays the error message
+ * in standout (reverse video) mode, and waits for user acknowledgment before
+ * returning control to the calling function.
+ *
+ * Error Display Format:
+ * - Clears bottom portion of screen for clean message area
+ * - Displays error message in standout mode (line 21)
+ * - Shows "Hit any key to continue" prompt (line 22)
+ * - Waits for single keypress before continuing
+ *
+ * Parameters:
+ *   mesg - Error message string to display (must not be NULL)
+ *
+ * Returns: void
+ *
+ * Side Effects:
+ *   - Modifies screen display (clears bottom, shows error message)
+ *   - Blocks execution waiting for user keypress
+ *   - Uses curses standout mode for emphasis
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires curses display system
+ *   Approach: Integration testing with mock display functions
+ *   Key Tests: Message display, screen formatting, user input handling
+ *   Dependencies: Curses library, display state
+ *   Mock Requirements: Curses functions (mvaddstr, standout, getch)
+ *   Complexity: Simple - Basic display function with minimal logic
+ *
+ * Notes:
+ *   - Used by all trade functions for consistent error reporting
+ *   - Hardcoded screen positions (lines 21-22) assume standard terminal size
+ *   - Blocking function that pauses game until user acknowledgment
+ */
 void
 tradeerr(mesg)
 char *mesg;
@@ -521,6 +605,52 @@ char *mesg;
 	getch();
 }
 
+/*
+ * checkland - Validate land sector for trading operations
+ *
+ * Performs comprehensive validation of a land sector to determine if it can
+ * be legally traded. Checks map boundaries, ownership, special designations,
+ * and capital restrictions to ensure only valid land can be bought or sold
+ * in the commodities exchange.
+ *
+ * Validation Checks:
+ * - Map boundaries: Coordinates must be within valid map area
+ * - Ownership: Current player must own the sector for selling
+ * - Capital protection: Capital sector cannot be traded
+ * - Town/city protection: Towns and cities cannot be sold
+ * - All restrictions applied regardless of trade direction
+ *
+ * Error Handling:
+ * - Each validation failure displays specific error message
+ * - Returns NODEAL status for any validation failure
+ * - Preserves original status if all validations pass
+ *
+ * Parameters:
+ *   tradestat - Current trade operation status (BUY, SELL, etc.)
+ *   xspot - X coordinate of land sector to validate
+ *   yspot - Y coordinate of land sector to validate
+ *
+ * Returns:
+ *   Original tradestat if sector is valid for trading
+ *   NODEAL if sector fails any validation check
+ *
+ * Side Effects:
+ *   - May display error messages via tradeerr() for validation failures
+ *   - No game state modifications
+ *
+ * Testing Notes:
+ *   Category: A (Unit) - Testable with mock sector data
+ *   Approach: Unit testing with various sector configurations
+ *   Key Tests: Boundary checks, ownership validation, designation restrictions
+ *   Dependencies: Global sector array, nation data, current player
+ *   Mock Requirements: Sector data, nation capital coordinates
+ *   Complexity: Simple - Sequential validation with clear error conditions
+ *
+ * Notes:
+ *   - Core validation function for land trading system
+ *   - Prevents exploitation of capital and city trading
+ *   - Used by both buy and sell operations
+ */
 int
 checkland(tradestat,xspot,yspot)
 int tradestat,xspot,yspot;
@@ -549,7 +679,52 @@ int tradestat,xspot,yspot;
 	return(newstat);
 }
 
-/* get minimum foodvalue for land */
+/*
+ * getland - Interactive land vegetation selection for minimum trade value
+ *
+ * Provides interactive interface for players to specify minimum vegetation
+ * requirements when trading land. Displays all available vegetation types,
+ * accepts user selection, and calculates the corresponding food value for
+ * that vegetation type to establish minimum trade requirements.
+ *
+ * Vegetation Types Supported:
+ * - Natural: Volcano, Desert, Tundra, Barren, Light Vegetation
+ * - Productive: Good land, Wood, Forest, Jungle, Swamp
+ * - Special: Ice, None (empty land)
+ * - Each type has different food production values
+ *
+ * Selection Process:
+ * - Displays prompt with all valid vegetation characters
+ * - Accepts single character input from user
+ * - Validates input against known vegetation types
+ * - Finds first sector with matching vegetation
+ * - Calculates food value for that vegetation/nation combination
+ * - Displays selected vegetation and calculated food value
+ *
+ * Parameters:
+ *   count - Pointer to current line counter for display positioning
+ *
+ * Returns:
+ *   Food value for selected vegetation type, or -1 if invalid selection
+ *
+ * Side Effects:
+ *   - Increments count for display line positioning
+ *   - Displays vegetation selection prompt and confirmation
+ *   - Scans entire map to find vegetation example
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires map data and display system
+ *   Approach: Integration testing with mock map and vegetation data
+ *   Key Tests: Vegetation validation, food calculation, input handling
+ *   Dependencies: Global map array, tofood() function, curses display
+ *   Mock Requirements: Map data, vegetation constants, display functions
+ *   Complexity: Moderate - Input validation with map scanning algorithm
+ *
+ * Notes:
+ *   - Used for land trading to establish minimum food value requirements
+ *   - Breaks out of nested loops using i=MAPX+1, j=MAPY+1 technique
+ *   - Food value depends on both vegetation type and nation context
+ */
 int
 getland(count)
 int *count;
@@ -583,6 +758,55 @@ int *count;
 	return(temp);
 }
 
+/*
+ * gettrade - Interactive commodity type selection for trading operations
+ *
+ * Provides a standardized interface for players to select commodity types
+ * during trading operations. Displays available commodity options and accepts
+ * single-character input to determine which type of resource the player wants
+ * to trade (buy, sell, or specify as payment).
+ *
+ * Supported Commodities:
+ * - (G)old: Primary currency for most transactions
+ * - (F)ood: Basic resource for population sustenance
+ * - (I)ron: Metal resource for equipment and construction
+ * - (J)ewels: Luxury commodity for high-value trades
+ * - (L)and: Territory sectors with varying productivity
+ * - (A)rmy: Military units (mercenaries, siege engines, etc.)
+ * - (S)hips: Naval units (merchants, warships, galleys)
+ *
+ * Interface Operation:
+ * - Displays customizable prompt with commodity options
+ * - Accepts case-insensitive single character input
+ * - Maps character input to internal commodity constants
+ * - Returns appropriate TD* constant for selected commodity
+ *
+ * Parameters:
+ *   saletype - Context string describing the operation ("Selling", "In Trade For", etc.)
+ *   count - Pointer to current line counter for display positioning
+ *
+ * Returns:
+ *   Commodity type constant (TDGOLD, TDFOOD, TDMETAL, TDJEWL, TDLAND, TDARMY, TDSHIP)
+ *   -1 if invalid or unrecognized input
+ *
+ * Side Effects:
+ *   - Increments count for display line positioning
+ *   - Displays commodity selection prompt
+ *   - Waits for user input
+ *
+ * Testing Notes:
+ *   Category: A (Unit) - Simple input mapping function
+ *   Approach: Unit testing with various input characters
+ *   Key Tests: Valid inputs, invalid inputs, case sensitivity
+ *   Dependencies: Display system for prompts
+ *   Mock Requirements: getch() function for input
+ *   Complexity: Simple - Direct character to constant mapping
+ *
+ * Notes:
+ *   - Used by multiple trading functions for consistent commodity selection
+ *   - Case-insensitive input handling for user convenience
+ *   - Returns -1 for any unrecognized input to signal error condition
+ */
 int
 gettrade(saletype,count)
 char *saletype;
@@ -628,7 +852,53 @@ int *count;
 }
 #endif /* CONQUER */
 
-/* set aside things that are up for bid */
+/*
+ * setaside - Reserve commodities for active trading operations
+ *
+ * Temporarily removes commodities from a nation's available resources when
+ * they are placed up for sale or offered as bids in trading operations.
+ * This prevents double-spending and ensures committed resources cannot be
+ * used elsewhere while trade is pending.
+ *
+ * Commodity Handling by Type:
+ * - Gold/Metal/Jewels: Deducted from nation totals (conditional on isup flag)
+ * - Food: Always deducted regardless of isup flag
+ * - Land: No reservation needed (ownership transfer handled elsewhere)
+ * - Army: Sets movement to 0 and status to TRADED
+ * - Ships: Sets movement to 0 and commodity flag to TRADED
+ *
+ * Status Management:
+ * - Armies marked as TRADED cannot move or be used in combat
+ * - Ships marked as TRADED cannot move or participate in naval operations
+ * - Resources are held in "escrow" until trade completes or is cancelled
+ *
+ * Parameters:
+ *   cntry - Nation index whose commodities are being reserved
+ *   item - Commodity type constant (TDGOLD, TDFOOD, etc.)
+ *   longval - Quantity/amount of commodity to reserve
+ *   extint - Unit index for armies/ships, unused for other commodities
+ *   isup - Flag indicating if this is an "up for trade" operation (affects gold/metal/jewels)
+ *
+ * Returns: void
+ *
+ * Side Effects:
+ *   - Modifies nation resource totals (gold, food, metal, jewels)
+ *   - Changes army/ship status and movement allowances
+ *   - Affects game state until commodity is returned via takeback()
+ *
+ * Testing Notes:
+ *   Category: A (Unit) - Testable with mock nation data
+ *   Approach: Unit testing with various commodity types and amounts
+ *   Key Tests: Resource deduction, unit status changes, isup flag behavior
+ *   Dependencies: Nation array structure, commodity constants
+ *   Mock Requirements: Nation data structure, army/ship arrays
+ *   Complexity: Simple - Switch statement with direct state modifications
+ *
+ * Notes:
+ *   - Paired with takeback() to implement trade reservation system
+ *   - isup flag creates conditional behavior for some commodity types
+ *   - TRADED status prevents units from being used while reserved
+ */
 void
 setaside(cntry,item,longval,extint,isup)
 int cntry,item,isup,extint;
@@ -662,7 +932,54 @@ long longval;
 	}
 }
 
-/* regain things that are up for bid */
+/*
+ * takeback - Return reserved commodities to nation's available resources
+ *
+ * Reverses the effects of setaside() by returning previously reserved commodities
+ * back to a nation's available resources when trades are cancelled, fail, or
+ * when unselling items from the marketplace. This restores normal access to
+ * resources and units that were temporarily locked for trading.
+ *
+ * Commodity Restoration by Type:
+ * - Gold/Metal/Jewels: Added back to nation totals (conditional on isup flag)
+ * - Food: Always restored regardless of isup flag
+ * - Land: No restoration needed (handled by ownership transfer)
+ * - Army: Status reset to DEFEND, remains immobilized
+ * - Ships: Commodity flag cleared to 0, remains immobilized
+ *
+ * Error Handling:
+ * - Early return if cntry == -1 (invalid nation)
+ * - Graceful handling of restoration for all commodity types
+ * - Maintains consistency with setaside() parameter patterns
+ *
+ * Parameters:
+ *   cntry - Nation index receiving back the commodities (-1 for none)
+ *   item - Commodity type constant (TDGOLD, TDFOOD, etc.)
+ *   longval - Quantity/amount of commodity to restore
+ *   extint - Unit index for armies/ships, unused for other commodities
+ *   isup - Flag indicating operation type (affects gold/metal/jewels restoration)
+ *
+ * Returns: void
+ *
+ * Side Effects:
+ *   - Restores nation resource totals (gold, food, metal, jewels)
+ *   - Resets army status from TRADED to DEFEND
+ *   - Clears ship commodity trading flag
+ *   - Makes resources available for other operations
+ *
+ * Testing Notes:
+ *   Category: A (Unit) - Testable with mock nation data
+ *   Approach: Unit testing with various commodity types and restoration scenarios
+ *   Key Tests: Resource restoration, unit status reset, isup flag behavior, error handling
+ *   Dependencies: Nation array structure, commodity constants
+ *   Mock Requirements: Nation data structure, army/ship arrays
+ *   Complexity: Simple - Mirror logic of setaside() with inverse operations
+ *
+ * Notes:
+ *   - Paired with setaside() to implement complete trade reservation system
+ *   - Essential for trade cancellation and marketplace unselling operations
+ *   - Units remain immobilized until next turn despite status restoration
+ */
 void
 takeback(cntry,item,longval,extint,isup)
 int cntry,item,isup,extint;
@@ -696,7 +1013,61 @@ long longval;
 }
 
 #ifdef ADMIN
-/* give things that were purchased from cntry1 to cntry2 */
+/*
+ * tradeit - Execute actual commodity transfer between nations (ADMIN only)
+ *
+ * Implements the core commodity transfer mechanics for completed trades by
+ * moving resources, units, or land ownership from seller (cntry1) to buyer
+ * (cntry2). Applies trading costs/fees and handles all commodity types with
+ * appropriate validation and unit management.
+ *
+ * Transfer Operations by Commodity:
+ * - Gold/Food/Metal/Jewels: Direct transfer with 20% trading cost applied
+ * - Land: Ownership transfer with validation checks
+ * - Army: Unit transfer with capital placement and validation
+ * - Ships: Fleet transfer with location preservation and validation
+ *
+ * Trading Economics:
+ * - TRADECOST(20) macro applies 80% efficiency (20% trading fee)
+ * - Fee represents market transaction costs and intermediary charges
+ * - Buyer receives reduced quantity due to trading overhead
+ *
+ * Unit Transfer Management:
+ * - Armies: Transferred to buyer's capital, status reset to DEFEND
+ * - Ships: Transferred with original location, commodity flag cleared
+ * - Finds first available unit slot for buyer
+ * - Clears original unit from seller's roster
+ *
+ * Parameters:
+ *   cntry1 - Selling nation index
+ *   cntry2 - Buying nation index
+ *   item - Commodity type constant (TDGOLD, TDFOOD, etc.)
+ *   longval - Quantity/amount being transferred
+ *   extra - Additional data (unit index for armies/ships, Y coord for land)
+ *
+ * Returns:
+ *   Assigned unit number for armies/ships transfers, or longval for other commodities
+ *   -1 if transfer fails due to validation or availability issues
+ *
+ * Side Effects:
+ *   - Modifies nation resource totals with trading costs applied
+ *   - Transfers land ownership between nations
+ *   - Moves military/naval units between nation rosters
+ *   - Updates unit status and location data
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires nation data and complex state management
+ *   Approach: Integration testing with mock nation and unit data
+ *   Key Tests: All commodity transfers, cost calculations, unit management, error conditions
+ *   Dependencies: Nation arrays, map data, unit management system
+ *   Mock Requirements: Complete nation state, army/ship data structures
+ *   Complexity: Complex - Multi-branch logic with extensive state modifications
+ *
+ * Notes:
+ *   - ADMIN-only function for turn processing and administrative operations
+ *   - Critical for maintaining game economy balance with trading costs
+ *   - Handles complex unit roster management for military transfers
+ */
 long
 tradeit(cntry1,cntry2,item,longval,extra)
 int cntry1,cntry2,item,extra;
@@ -785,6 +1156,58 @@ long longval;
 	return(returnval);
 }
 
+/*
+ * gettval - Calculate actual trade value for commodities in transactions
+ *
+ * Evaluates the real trade value of commodities during trade processing,
+ * taking into account current ownership, unit status, and contextual factors.
+ * Used to determine if bids meet minimum requirements and to establish
+ * actual transfer values for completed trades.
+ *
+ * Value Calculation by Commodity Type:
+ * - Gold/Food/Metal/Jewels: Direct value passthrough (longval)
+ * - Land: Food production value based on current ownership and nation context
+ * - Army: Military value calculation if unit exists and has positive value
+ * - Ships: Fleet cargo capacity if unit exists and has positive capacity
+ *
+ * Ownership Validation:
+ * - Land: Must be owned by cntry2 to have valid trade value
+ * - Army: Must belong to cntry2 and have positive armyvalue()
+ * - Ships: Must belong to cntry2 and have positive flthold() capacity
+ * - Prevents trading of invalid or non-existent assets
+ *
+ * Context Switching:
+ * - Temporarily switches curntn for ship capacity calculations
+ * - Ensures calculations use correct nation context
+ * - Restores original context after calculation
+ *
+ * Parameters:
+ *   cntry1 - Source nation (seller) for context
+ *   cntry2 - Target nation (owner) for ownership validation
+ *   type - Commodity type constant (TDGOLD, TDFOOD, etc.)
+ *   longval - Base value or coordinate for calculation
+ *   extint - Unit index or additional coordinate data
+ *
+ * Returns:
+ *   Calculated trade value for the commodity, or -1 if invalid/unavailable
+ *
+ * Side Effects:
+ *   - Temporarily modifies curntn global for ship calculations
+ *   - No permanent state changes
+ *
+ * Testing Notes:
+ *   Category: A (Unit) - Testable with mock nation and unit data
+ *   Approach: Unit testing with various commodity types and ownership scenarios
+ *   Key Tests: Value calculations, ownership validation, context switching
+ *   Dependencies: Nation data, unit arrays, tofood(), armyvalue(), flthold()
+ *   Mock Requirements: Nation state, army/ship data, map data for land
+ *   Complexity: Moderate - Multi-branch logic with context management
+ *
+ * Notes:
+ *   - Essential for trade validation and bid comparison
+ *   - Handles edge cases where units/land may not exist or be invalid
+ *   - Used by both trade processing and marketplace bid evaluation
+ */
 long
 gettval(int cntry1,int cntry2,int type,long longval,int extint)
 {
@@ -815,8 +1238,64 @@ gettval(int cntry1,int cntry2,int type,long longval,int extint)
 	return(returnval);
 }
 
-/* this function sends detailed message to players */
-/* upon completion of a trade */
+/*
+ * trademail - Send detailed trade completion notifications to both parties (ADMIN only)
+ *
+ * Generates and sends comprehensive trade completion messages to both the seller
+ * and buyer nations when a trade transaction is successfully completed. Creates
+ * formal notification files with transaction details, timestamps, and complete
+ * commodity transfer information for both parties.
+ *
+ * Message Content Structure:
+ * - Official header from "Conquer Commerce Commission"
+ * - Date stamp with current season and year
+ * - Complete transaction details for both sides
+ * - Commodity descriptions with quantities/locations
+ * - Standardized formatting for all trade types
+ *
+ * File Management:
+ * - Creates separate message files for each nation
+ * - Appends to existing message files if present
+ * - Uses nation-specific filenames (msgfile + nation number)
+ * - Handles file creation errors with program termination
+ *
+ * Commodity Display Formatting:
+ * - Basic resources: Shows quantity and commodity name
+ * - Land: Shows sector coordinates (X, Y format)
+ * - Military units: Shows assigned unit numbers
+ * - Consistent formatting across all transaction types
+ *
+ * Parameters:
+ *   cntry1 - Seller nation index
+ *   cntry2 - Buyer nation index
+ *   item1 - Commodity type sold by cntry1
+ *   item2 - Commodity type received by cntry1 (payment)
+ *   lvar1 - Amount/unit number received by cntry2
+ *   lvar2 - Extra data for item1 (coordinates, etc.)
+ *   lvar3 - Amount/unit number received by cntry1
+ *   lvar4 - Extra data for item2 (coordinates, etc.)
+ *
+ * Returns: void
+ *
+ * Side Effects:
+ *   - Creates/modifies nation message files
+ *   - May terminate program on file I/O errors
+ *   - Generates permanent trade records
+ *
+ * Testing Notes:
+ *   Category: C (System) - Requires file system and message infrastructure
+ *   Approach: System testing with mock file system and trade data
+ *   Key Tests: File creation, message formatting, error handling, all commodity types
+ *   Dependencies: File system, nation data, message file system
+ *   Mock Requirements: File I/O functions, nation arrays, global constants
+ *   Complexity: Moderate - File handling with formatted output generation
+ *
+ * Notes:
+ *   - ADMIN-only function for turn processing
+ *   - Provides audit trail for all completed trades
+ *   - Critical for player communication and game transparency
+ *   - Terminates program on file errors to prevent silent failures
+ */
 void
 trademail(cntry1,cntry2,item1,item2,lvar1,lvar2,lvar3,lvar4)
 int cntry1,cntry2,item1,item2;
@@ -868,7 +1347,57 @@ long lvar1,lvar2,lvar3,lvar4;
 #endif /* ADMIN */
 
 #ifdef CONQUER
-/* routine to determine whether or not an army type is tradable */
+/*
+ * tradable - Determine if an army unit is eligible for trading operations
+ *
+ * Evaluates whether a specific army unit can be legally traded in the
+ * commodities exchange based on unit type, status, and trading restrictions.
+ * Only certain unit types are allowed to be traded, and units must not be
+ * in special states that prevent trading.
+ *
+ * Tradable Unit Types:
+ * - A_MERCENARY: Professional soldiers available for hire
+ * - A_SIEGE: Siege engines and equipment
+ * - A_CATAPULT: Artillery and bombardment units
+ * - A_ELEPHANT: War elephants and exotic units
+ * - MINMONSTER and higher: Special creatures and monsters
+ *
+ * Trading Restrictions:
+ * - Unit must not be in TRADED status (already reserved)
+ * - Unit must not be ONBOARD ships (cannot trade loaded units)
+ * - Regular troops and militia cannot be traded
+ * - Special units and creatures are tradable
+ *
+ * Context Switching:
+ * - Temporarily switches global country to specified nation
+ * - Uses ASTAT and ATYPE macros for current context
+ * - Restores original country context after evaluation
+ * - Ensures evaluation uses correct nation's unit data
+ *
+ * Parameters:
+ *   cntry - Nation index that owns the army unit
+ *   armynum - Army unit index to evaluate for tradability
+ *
+ * Returns:
+ *   TRUE if unit is eligible for trading, FALSE otherwise
+ *
+ * Side Effects:
+ *   - Temporarily modifies global country variable
+ *   - Restores original country context before returning
+ *
+ * Testing Notes:
+ *   Category: A (Unit) - Testable with mock army data
+ *   Approach: Unit testing with various unit types and statuses
+ *   Key Tests: Tradable types, restricted statuses, context switching
+ *   Dependencies: Global country variable, army data structures
+ *   Mock Requirements: Army data, unit type constants, status constants
+ *   Complexity: Simple - Status checks with context management
+ *
+ * Notes:
+ *   - Used by trading interface to validate unit availability
+ *   - Prevents trading of regular troops to maintain game balance
+ *   - Context switching ensures accurate unit status evaluation
+ */
 int
 tradable(cntry,armynum)
 int cntry,armynum;
@@ -883,7 +1412,55 @@ int cntry,armynum;
 }
 #endif /* CONQUER */
 
-/* routine to determine commercial value of army */
+/*
+ * armyvalue - Calculate commercial trading value of army units
+ *
+ * Determines the market value of army units for trading purposes by
+ * combining base unit count with combat effectiveness and special
+ * bonuses. The calculation factors in unit size, attack strength,
+ * and special creature bonuses to establish fair trading values.
+ *
+ * Value Calculation Formula:
+ * 1. Base value: unit_count * 100 (size factor)
+ * 2. Combat bonus: unit_count * attack_strength (effectiveness factor)
+ * 3. Monster bonus: unit_count * 10 (if unit >= MINMONSTER)
+ * 4. Final value: (base + combat + monster) / 100 (scaling factor)
+ *
+ * Unit Value Factors:
+ * - sold: Number of soldiers/creatures in the unit
+ * - unitattack[unittyp%UTYPE]: Attack strength from unit type table
+ * - MINMONSTER threshold: Special creatures get additional value
+ * - 100-based scaling: Prevents excessive inflation of unit values
+ *
+ * Monster Premium:
+ * - Units with type >= MINMONSTER receive 10% bonus per soldier
+ * - Reflects rarity and special abilities of monster units
+ * - Dragons, demons, and other creatures command premium prices
+ *
+ * Parameters:
+ *   cntry - Nation index that owns the army unit
+ *   unit - Army unit index to evaluate for trading value
+ *
+ * Returns:
+ *   Calculated commercial value of the army unit for trading
+ *
+ * Side Effects:
+ *   - No game state modifications
+ *   - Read-only evaluation of unit data
+ *
+ * Testing Notes:
+ *   Category: A (Unit) - Testable with mock army data
+ *   Approach: Unit testing with various unit types and sizes
+ *   Key Tests: Value calculations, monster bonuses, scaling factors
+ *   Dependencies: Nation army arrays, unitattack table, unit type constants
+ *   Mock Requirements: Army data structures, unit attack values
+ *   Complexity: Simple - Mathematical calculation with table lookup
+ *
+ * Notes:
+ *   - Used for both bid validation and trade completion
+ *   - Essential for establishing fair market prices for military units
+ *   - Scaling factor prevents unrealistic unit values in trading
+ */
 long armyvalue(cntry,unit)
 int cntry,unit;
 {
@@ -896,6 +1473,55 @@ int cntry,unit;
 	return(returnval);
 }
 
+/*
+ * checktrade - Update current player's trade status from trade file
+ *
+ * Reads the trade file and updates the current player's game state to reflect
+ * their active trading operations. Processes trade file entries to restore
+ * reserved commodities for items the player has for sale and to apply
+ * purchases from god merchants. Essential for maintaining consistent trade
+ * state across game sessions.
+ *
+ * Trade File Processing:
+ * - NOSALE entries: Return reserved commodities to player if they own them
+ * - SELL entries: Reserve commodities that player has listed for sale
+ * - BUY entries: Apply god merchant purchases or reserve bid commodities
+ * - Processes only entries belonging to current player (country)
+ *
+ * State Synchronization:
+ * - Restores commodity reservations for active sales
+ * - Updates food totals from god merchant purchases
+ * - Maintains consistency between file and game state
+ * - Handles missing or corrupted trade file gracefully
+ *
+ * File Format:
+ * - Seven fields per line: deal, nation, type1, type2, lvar1, lvar2, extra
+ * - Processes until EOF or format error encountered
+ * - Initializes deal array to prevent processing garbage data
+ *
+ * Parameters: None (uses global country and game state)
+ *
+ * Returns: void
+ *
+ * Side Effects:
+ *   - Modifies player resource totals and unit status
+ *   - Updates commodity reservations via setaside()/takeback()
+ *   - May update food totals from god purchases
+ *   - No effect if trade file doesn't exist
+ *
+ * Testing Notes:
+ *   Category: C (System) - Requires file system and full game state
+ *   Approach: System testing with mock trade files and nation data
+ *   Key Tests: File processing, state updates, error handling, all trade types
+ *   Dependencies: Trade file, nation data, setaside()/takeback() functions
+ *   Mock Requirements: File system, complete game state, trade file format
+ *   Complexity: Moderate - File parsing with conditional state updates
+ *
+ * Notes:
+ *   - Called during player login to restore trade state
+ *   - Essential for persistent trading across game sessions
+ *   - Gracefully handles missing trade file (no operations active)
+ */
 void
 checktrade()
 {
@@ -936,6 +1562,69 @@ checktrade()
 }
 
 #ifdef ADMIN
+/*
+ * uptrade - Process all trading transactions during turn update (ADMIN only)
+ *
+ * Core trade processing function that handles all pending trading operations
+ * during turn update. Reads trade file, processes bids, executes trades,
+ * handles failures, and updates marketplace. Implements complete auction
+ * system with bid comparison, trade execution, and comprehensive error
+ * handling and reporting.
+ *
+ * Trade Processing Phases:
+ * 1. Read all trade file entries (sales, bids, cancellations)
+ * 2. Process NOSALE entries to remove cancelled items
+ * 3. Evaluate BUY entries against SELL items for highest bids
+ * 4. Execute successful trades with commodity transfers
+ * 5. Handle trade failures with appropriate reversals
+ * 6. Update marketplace with unsold items for next turn
+ * 7. Generate news reports and mail notifications
+ *
+ * Auction System Logic:
+ * - Highest bid wins for each commodity
+ * - Bids compared using gettval() for accurate valuation
+ * - Failed bids returned to losing bidders
+ * - Successful trades execute both sides of transaction
+ * - Trade failures revert successful side and generate news
+ *
+ * Error Handling:
+ * - Trade failures due to seller's commodity unavailability
+ * - Trade failures due to buyer's bid commodity unavailability
+ * - Automatic reversal of partial transactions
+ * - News generation for failed trades with specific failure reasons
+ * - Marketplace cleanup for next turn
+ *
+ * File Management:
+ * - Removes old trade file and creates new one
+ * - Preserves unsold items for continued marketplace listing
+ * - Updates displayed values using gettval() for accuracy
+ * - Handles file I/O errors with program termination
+ *
+ * Parameters: None (uses global game state and files)
+ *
+ * Returns: void
+ *
+ * Side Effects:
+ *   - Executes all pending trades with resource transfers
+ *   - Modifies trade file for next turn marketplace
+ *   - Generates news reports for trade outcomes
+ *   - Sends mail notifications to trading parties
+ *   - Updates all nation resources and unit rosters
+ *
+ * Testing Notes:
+ *   Category: C (System) - Requires complete game infrastructure
+ *   Approach: System testing with full game state and file system
+ *   Key Tests: Auction logic, trade execution, error handling, file management
+ *   Dependencies: Complete trading system, file I/O, news system, mail system
+ *   Mock Requirements: Full game state, file system, news/mail infrastructure
+ *   Complexity: Complex - Multi-phase processing with extensive error handling
+ *
+ * Notes:
+ *   - ADMIN-only function for automated turn processing
+ *   - Central function for entire trading economy
+ *   - Critical for maintaining game balance and fairness
+ *   - Handles complex auction mechanics with multiple bidders
+ */
 void
 uptrade()
 {
@@ -1045,8 +1734,60 @@ uptrade()
 	fclose(tfile);
 }
 
-/* remove a nations items from the trading board */
-void 
+/*
+ * fixtrade - Remove all trade items belonging to specified nation (ADMIN only)
+ *
+ * Administrative function to remove all commodities that a nation has listed
+ * for sale from the trading marketplace. Used when a nation is eliminated,
+ * goes inactive, or requires administrative cleanup of their trade presence.
+ * Ensures marketplace integrity by removing invalid or unavailable items.
+ *
+ * Cleanup Operations:
+ * - Reads current trade file to identify nation's active sales
+ * - Processes only SELL entries belonging to specified nation
+ * - Generates NOSALE entries to cancel each item
+ * - Returns reserved commodities to nation via takeback()
+ * - Maintains trade file consistency for other nations
+ *
+ * Trade File Processing:
+ * - Reads all trade entries to build current marketplace state
+ * - Identifies items owned by target nation (natn[holdint] == cntry)
+ * - Appends NOSALE cancellation entries for each owned item
+ * - Preserves other nations' trade entries unchanged
+ * - Handles missing trade file gracefully (no operations needed)
+ *
+ * Commodity Restoration:
+ * - Returns all reserved resources to nation's available totals
+ * - Restores army/ship status from TRADED back to normal
+ * - Ensures nation retains access to previously committed resources
+ * - Prevents resource loss during administrative cleanup
+ *
+ * Parameters:
+ *   cntry - Nation index whose trade items should be removed
+ *
+ * Returns: void
+ *
+ * Side Effects:
+ *   - Modifies trade file with NOSALE entries for nation's items
+ *   - Returns reserved commodities to nation via takeback()
+ *   - Removes nation's presence from active marketplace
+ *   - May terminate program on file I/O errors
+ *
+ * Testing Notes:
+ *   Category: C (System) - Requires file system and complete game state
+ *   Approach: System testing with mock trade files and nation data
+ *   Key Tests: Item identification, file updates, commodity restoration
+ *   Dependencies: Trade file, nation data, takeback() function
+ *   Mock Requirements: File system, trade file format, complete nation state
+ *   Complexity: Moderate - File processing with selective updates
+ *
+ * Notes:
+ *   - ADMIN-only function for administrative and cleanup operations
+ *   - Essential for maintaining marketplace integrity
+ *   - Used during nation elimination or administrative intervention
+ *   - Prevents orphaned trade entries from inactive nations
+ */
+void
 fixtrade (int cntry)
 {
 	FILE *tfile;
