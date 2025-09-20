@@ -1,10 +1,52 @@
 /*
  * admin.c - Administrative functions and game management
- * 
+ *
+ * ADMINISTRATIVE CORE MODULE
+ *
+ * This module provides the primary administrative interface for the Conquer game system,
+ * including world creation, player management, game execution, and comprehensive nation
+ * attribute calculations. It serves as the central control point for all game
+ * administration operations and implements the complete attribute calculation system.
+ *
+ * Core Administrative Functions:
+ * 1. Game Lifecycle Management - World creation, updates, and execution control
+ * 2. Player Administration - New player addition with security validation
+ * 3. Attribute Calculation System - Complete nation attribute computation framework
+ * 4. Security and Access Control - User authentication and permission management
+ * 5. Command-Line Interface - Comprehensive argument processing and option handling
+ * 6. Environment Integration - Data directory management and configuration
+ * 7. File System Operations - Lock management and data persistence coordination
+ * 8. Trade Good Processing - Exotic resource bonuses and economic calculations
+ *
+ * Administrative Components:
+ * - World Creation Engine: New game initialization with optional scenario loading
+ * - Player Management System: Secure new player addition with permission validation
+ * - Update Execution Framework: Game turn processing with concurrency control
+ * - Nation Attribute Calculator: Complete statistical computation for all nations
+ * - Trade Good Processor: Economic bonus calculation from exotic resources
+ * - Security Framework: Multi-level user authentication and access control
+ * - Lock Management System: File-based concurrency control for multi-user safety
+ * - Configuration System: Environment variable and command-line option processing
+ *
+ * Integration Points:
+ * - Magic System: Magic power bonuses in attribute calculations
+ * - Combat System: Military statistics and terror calculation
+ * - Display System: Score reporting and information presentation
+ * - I/O System: Data file operations and persistence management
+ * - Command System: Administrative command processing framework
+ * - Data Structures: Complete game state manipulation and validation
+ *
+ * Security Considerations:
+ * - Multi-level authentication (game admin, nation leader, standard user)
+ * - Conditional compilation flags for feature access control
+ * - File lock management for concurrent operation safety
+ * - Password validation and secure input handling
+ * - Permission verification before destructive operations
+ *
  * This file is part of Conquer.
  * Originally Copyright (C) 1988-1989 by Edward M. Barlow and Adam Bryant
  * Copyright (C) 2025 Juan Manuel Méndez Rey (Vejeta) - Licensed under GPL v3 with permission from original authors
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -66,6 +108,99 @@ int	remake=FALSE;
 
 FILE *fexe, *fopen();
 
+/*
+ * main - Primary administrative entry point for Conquer game management
+ *
+ * Comprehensive administrative control center that handles all game management
+ * operations including world creation, player addition, game execution, and
+ * system configuration. Implements multi-level security, environment variable
+ * processing, command-line argument parsing, and complete administrative workflow
+ * management with extensive error handling and user feedback.
+ *
+ * Parameters:
+ *   argc - Number of command-line arguments
+ *   argv - Array of command-line argument strings
+ *
+ * Returns:
+ *   Exits with SUCCESS (0) on successful completion
+ *   Exits with FAIL (1) on error or invalid operation
+ *
+ * Side Effects:
+ *   - Sets umask for file creation permissions
+ *   - Changes working directory to game data directory
+ *   - Creates or modifies game data files
+ *   - Manages file locks for concurrent access control
+ *   - May invoke world creation, player addition, or game update
+ *   - Validates user permissions and authentication
+ *   - Processes environment variables and command-line options
+ *   - Calls newlogin(), makeworld(), update(), readdata(), writedata()
+ *
+ * Command-Line Options:
+ *   -m: Create new world (requires admin privileges)
+ *   -a: Add new player (with security validation)
+ *   -x: Execute game update (requires admin privileges)
+ *   -r SCENARIO: Read scenario files during world creation
+ *   -d DIR: Specify custom data directory
+ *   -?: Display help and usage information
+ *
+ * Environment Variables:
+ *   CONQUER_OPTS: Game configuration options
+ *     - G: Gaudy display mode (ignored in admin)
+ *     - N/n: Nation name specification
+ *     - D/d: Data directory specification (data=, datadir=, directory=, dir=)
+ *
+ * Security Levels:
+ *   1. Game Administrator (LOGIN user): Full access to all operations
+ *   2. Nation Leader (nation[0].leader): World creation and update access
+ *   3. Standard User: Player addition only (with restrictions)
+ *
+ * Workflow Operations:
+ *   World Creation (-m):
+ *     - Validates admin permissions
+ *     - Checks for existing game (prevents accidental destruction)
+ *     - Optionally reads scenario files (-r flag)
+ *     - Calls makeworld() for world generation
+ *     - Removes update lock file
+ *
+ *   Player Addition (-a):
+ *     - Checks for active update or admin sessions
+ *     - Validates late-join permissions after LASTADD turns
+ *     - Creates addition lock to prevent concurrent additions
+ *     - Calls newlogin() for player registration
+ *     - Removes addition lock
+ *
+ *   Game Update (-x):
+ *     - Validates admin permissions
+ *     - Checks for active player sessions (RUNSTOP)
+ *     - Creates update lock to prevent concurrent updates
+ *     - Calls update() for game processing
+ *     - Calls writedata() for persistence
+ *     - Removes update lock
+ *     - Optional time logging (TIMELOG)
+ *
+ * File Lock Management:
+ *   - Update lock (isonfile + "up"): Prevents concurrent updates
+ *   - Addition lock (isonfile + "add"): Prevents concurrent player additions
+ *   - Player locks (isonfile + nation_id): Tracks active player sessions
+ *   - Admin lock (isonfile + "0"): Tracks admin session activity
+ *
+ * Error Handling:
+ *   - Directory access validation
+ *   - File existence checking
+ *   - User permission verification
+ *   - Lock conflict detection
+ *   - Password validation
+ *   - Command-line argument validation
+ *   - Environment variable parsing
+ *
+ * Testing Notes:
+ *   Category: C (System) - Requires full system setup and file operations
+ *   Approach: System testing with mock user accounts and file permissions
+ *   Key Tests: Command-line parsing, security validation, file operations, lock management
+ *   Dependencies: File system, user accounts, data directory, game data files
+ *   Mock Requirements: Mock filesystem, user database, permission system
+ *   Complexity: Complex - Multi-user security, file operations, process coordination
+ */
 void
 main(argc,argv)
 int argc;
@@ -382,7 +517,59 @@ char **argv;
 	exit(SUCCESS);
 }
 
-/* if parameter == 0 do for all nations */
+/*
+ * att_setup - Initialize nation attributes to starting values
+ *
+ * Sets up initial attribute values for nations at game start or during
+ * administration. Establishes base values for farming, economy, politics,
+ * and resource extraction capabilities. Can initialize a specific nation
+ * or all active nations in the game. Includes magic-based bonuses for
+ * mining ability and sets consistent starting parameters.
+ *
+ * Parameters:
+ *   cntry - Nation ID to initialize (0 = initialize all active nations)
+ *
+ * Returns:
+ *   None (void function)
+ *
+ * Side Effects:
+ *   - Modifies nation attribute values in ntn[] array
+ *   - Sets farm_ability, poverty, popularity, reputation, prestige
+ *   - Sets eatrate, tax_rate, mine_ability, knowledge, charity
+ *   - Applies magic power bonuses (MINER increases mine_ability)
+ *   - Only processes active nations (isntn() check)
+ *
+ * Attribute Initialization Values:
+ *   farm_ability: 10 (base agricultural productivity)
+ *   poverty: 95 (high initial poverty level)
+ *   popularity: 50 (neutral public opinion)
+ *   reputation: 50 (neutral international standing)
+ *   prestige: 50 (neutral power projection)
+ *   eatrate: 25 (base food consumption rate)
+ *   tax_rate: 10 (base taxation level)
+ *   mine_ability: 25 (with MINER magic) or 10 (base mining capability)
+ *   knowledge: 10 (base intellectual capacity)
+ *   charity: 0 (no initial charitable giving)
+ *
+ * Magic Integration:
+ *   - MINER magic power: Increases mine_ability from 10 to 25
+ *   - Uses magic() function for power verification
+ *   - Provides 150% mining bonus for magical nations
+ *
+ * Administrative Usage:
+ *   - Game initialization: Setup all nations (cntry = 0)
+ *   - Nation reset: Reset specific nation (cntry = nation_id)
+ *   - Debugging: Restore known attribute states
+ *   - Testing: Establish consistent starting conditions
+ *
+ * Testing Notes:
+ *   Category: A (Unit) - Isolated attribute manipulation
+ *   Approach: Unit tests with mock nation data and magic system
+ *   Key Tests: Single nation setup, all nations setup, magic bonus application
+ *   Dependencies: ntn[] array, magic() function, isntn() validation
+ *   Mock Requirements: Mock magic system, mock nation data structures
+ *   Complexity: Simple - Direct attribute assignment with conditional logic
+ */
 void
 att_setup(cntry)
 int	cntry;
@@ -403,8 +590,106 @@ int	cntry;
 	}
 }
 
-/* calculates a nations base values in each of its attributes */
-/* includes bonuses for magic powers, but not trade goods */
+/*
+ * att_base - Calculate comprehensive base attribute values for all nations
+ *
+ * Performs complete nation attribute calculation including economic indicators,
+ * military statistics, agricultural productivity, technological advancement,
+ * political metrics, and magical bonuses. This is the core attribute calculation
+ * engine that processes all active nations and computes relative world statistics
+ * for comparative analysis. Includes complex seasonal food calculations,
+ * population dynamics, infrastructure benefits, and class-based bonuses.
+ *
+ * Parameters:
+ *   None
+ *
+ * Returns:
+ *   None (void function)
+ *
+ * Side Effects:
+ *   - Updates all nation attributes in ntn[] array
+ *   - Calculates global world statistics (WORLD* variables)
+ *   - Modifies eatrate based on seasonal food availability
+ *   - Applies magic power bonuses to various attributes
+ *   - Applies nation class bonuses and penalties
+ *   - Enforces maximum value limits (MAXTGVAL)
+ *   - Processes all sectors for infrastructure calculations
+ *
+ * Attribute Calculations:
+ *   Economic Metrics:
+ *     - wealth: Based on gold, jewels, metals relative to world totals
+ *     - spoilrate: Food spoilage based on granaries and cities
+ *     - eatrate: Seasonal food consumption with dynamic adjustment
+ *
+ *   Military and Political:
+ *     - terror: Based on military/civilian ratio and mercenary presence
+ *     - power: Combination of score and military strength relative to world
+ *     - prestige: Average of prestige, power, and wealth
+ *     - reputation: Random fluctuation with bounds checking
+ *     - popularity: Based on wealth, food, clerics, and current popularity
+ *
+ *   Production and Technology:
+ *     - farm_ability: Food production efficiency per civilian
+ *     - mine_ability: Mining productivity with infrastructure bonuses
+ *     - knowledge: Based on cities, towns, and university scholars
+ *     - communications: Transportation efficiency from infrastructure
+ *
+ * Infrastructure Processing:
+ *   - Cities and Towns: Population centers for economic calculation
+ *   - Mines: Metal production with trade good validation
+ *   - Farms: Food production with efficiency calculations
+ *   - Universities: Knowledge generation from scholars
+ *   - Churches: Religious influence for popularity
+ *   - Blacksmiths: Industrial capacity for mining
+ *   - Roads: Transportation network efficiency
+ *   - Granaries: Food storage and spoilage reduction
+ *   - Capitols: Triple city value with enhanced bonuses
+ *
+ * Seasonal Food Calculations:
+ *   Winter: 180 * food / (eatrate + 25) - harsh survival
+ *   Spring: 204 * food / (eatrate + 25) - recovery period
+ *   Summer: 250 * food / (eatrate + 25) - abundant growth
+ *   Fall: 312 * food / (eatrate + 25) - harvest time
+ *
+ * Magic Power Integration:
+ *   - MINER: +15 mine_ability bonus
+ *   - STEEL: +15 mine_ability bonus
+ *   - SLAVER: +PWR_NA terror increase
+ *   - RELIGION: +PWR_NA popularity increase
+ *   - URBAN: -PWR_NA popularity penalty
+ *   - DEMOCRACY: +25 eatrate, -PWR_NA terror, +charity
+ *   - KNOWALL: +PWR_NA knowledge bonus
+ *   - ARCHITECT: -PWR_NA spoilrate improvement
+ *   - ROADS: +50 communications, +PWR_NA terror
+ *   - DESTROYER: +PWR_NA terror increase
+ *   - VAMPIRE: +PWR_NA terror increase
+ *
+ * Nation Class Bonuses:
+ *   - C_NPC: +popularity, +terror
+ *   - C_KING: +popularity
+ *   - C_TRADER: +wealth, +popularity, +prestige
+ *   - C_EMPEROR: +wealth, +popularity, +prestige
+ *   - C_WIZARD: +knowledge
+ *   - C_PRIEST: +popularity
+ *   - C_PIRATE: +terror
+ *   - C_WARLORD: +prestige (recursive scaling)
+ *   - C_DEMON: +terror
+ *   - C_DRAGON: +terror
+ *   - C_SHADOW: +terror
+ *
+ * World Statistics Calculated:
+ *   - WORLDJEWELS, WORLDGOLD, WORLDMETAL: Resource totals
+ *   - WORLDFOOD, WORLDSCORE, WORLDCIV: Development metrics
+ *   - WORLDSCT, WORLDMIL, WORLDNTN: Territory and military totals
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires complete game state and sector data
+ *   Approach: Integration testing with full world setup and magic system
+ *   Key Tests: World statistics calculation, seasonal variations, magic bonuses, class effects
+ *   Dependencies: Complete sector array, nation data, magic system, world state
+ *   Mock Requirements: Full world map, complete nation setup, magic power system
+ *   Complexity: Complex - Multi-system integration with extensive calculations
+ */
 void
 att_base()
 {
@@ -617,7 +902,106 @@ att_base()
 	}
 }
 
-/* calculates a nations bonuses due to trade goods */
+/*
+ * att_bonus - Calculate nation attribute bonuses from exotic trade goods
+ *
+ * Processes all map sectors to identify exotic trade goods and applies their
+ * bonuses to nation attributes. This function handles the economic simulation
+ * of rare resources, luxury goods, and special materials that provide significant
+ * advantages to nations that control them. Includes sector designation validation,
+ * trade good compatibility checking, and progressive bonus application across
+ * multiple attribute categories.
+ *
+ * Parameters:
+ *   None
+ *
+ * Returns:
+ *   None (void function)
+ *
+ * Side Effects:
+ *   - Modifies nation attributes based on controlled trade goods
+ *   - Applies bonuses to popularity, communications, spoilrate, knowledge
+ *   - Modifies farm_ability, spellpts, and terror attributes
+ *   - Enforces maximum attribute limits during bonus application
+ *   - Outputs progress message "working on exotic trade goods"
+ *   - Only processes sectors with valid trade good access (tg_ok())
+ *
+ * Trade Good Categories and Effects:
+ *   Popularity Enhancers (END_POPULARITY):
+ *     - Luxury goods, cultural items, entertainment resources
+ *     - Direct popularity bonus from trade good value
+ *     - Represents improved quality of life and satisfaction
+ *
+ *   Communication Boosters (END_COMMUNICATION):
+ *     - Transportation, communication, and infrastructure goods
+ *     - Enhances information flow and coordination
+ *     - Improves administrative efficiency and trade networks
+ *
+ *   Food Preservation (END_SPOILRATE):
+ *     - Preservation techniques, storage technologies, climate control
+ *     - Reduces food spoilage rate for better resource efficiency
+ *     - Minimum spoilrate of 1 maintained for game balance
+ *
+ *   Knowledge Resources (END_KNOWLEDGE):
+ *     - Educational materials, scientific instruments, cultural artifacts
+ *     - Enhances research capabilities and technological advancement
+ *     - Represents access to information and learning resources
+ *
+ *   Agricultural Enhancement (END_FARM):
+ *     - Farming tools, techniques, seeds, livestock improvements
+ *     - Increases agricultural productivity and efficiency
+ *     - Represents advanced farming methods and crop varieties
+ *
+ *   Magical Components (END_SPELL):
+ *     - Rare magical materials, components, and artifacts
+ *     - Provides spell points based on sector population
+ *     - Formula: spellpts += people/1000 + 1 (minimum 1 point per sector)
+ *
+ *   Terror Weapons (END_TERROR):
+ *     - Military technologies, weapons, intimidation tools
+ *     - Increases terror rating for psychological warfare
+ *     - Represents advanced military capabilities and fear tactics
+ *
+ * Sector Designation Compatibility:
+ *   The function validates that trade goods are compatible with sector types:
+ *   - Exact match: Trade good sector type == current designation
+ *   - City upgrades: DTOWN goods work in DCITY and DCAPITOL
+ *   - Capital benefits: DCITY goods work in DCAPITOL
+ *   - University access: DUNIVERSITY goods work in DCITY and DCAPITOL
+ *   - Universal goods: 'x' type works in any sector
+ *
+ * Trade Good Validation:
+ *   - Uses tg_ok() to verify nation has access to trade good
+ *   - Checks sector ownership and control
+ *   - Validates trade route access and economic control
+ *   - Ensures only legitimate bonuses are applied
+ *
+ * Bonus Application Logic:
+ *   - Value extraction: (*(tg_value+good) - '0') converts ASCII to numeric
+ *   - Boundary checking: Prevents attribute overflow beyond MAXTGVAL
+ *   - Progressive enhancement: Bonuses accumulate across multiple sectors
+ *   - Category-specific limits: Different maximum values for different attributes
+ *
+ * Economic Simulation:
+ *   - Represents economic advantage from rare resource control
+ *   - Models trade network benefits and luxury access
+ *   - Simulates technological transfer and knowledge exchange
+ *   - Implements resource scarcity and competitive advantage
+ *
+ * Performance Considerations:
+ *   - Full map scan: O(MAPX * MAPY) complexity
+ *   - Trade good lookup: Constant time array access
+ *   - Validation overhead: tg_ok() function calls for each sector
+ *   - Progress output: Single message for user feedback
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires complete world map and trade good system
+ *   Approach: Integration testing with mock trade good distribution and values
+ *   Key Tests: Trade good compatibility, bonus calculation, attribute limits, sector validation
+ *   Dependencies: Complete sector array, trade good tables, tg_ok() validation, nation data
+ *   Mock Requirements: Mock world map with trade goods, mock trade good value tables
+ *   Complexity: Moderate - Map processing with trade good validation and bonus application
+ */
 void
 att_bonus()
 {
