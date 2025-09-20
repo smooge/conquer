@@ -142,12 +142,46 @@ struct
 
 short dit[1<<MAXDITHER][1<<MAXDITHER];
 
-/*********************************************************************
-*                                                                    *
-* Sets the default fonts for the given size. If the font has already *
-* been specified ( ie is non-null ) leaves it alone.                 *
-*                                                                    *
-*********************************************************************/
+/*
+ * set_default_fonts - Set default fonts based on map magnification level
+ *
+ * Automatically selects appropriate fonts for map display based on the
+ * magnification factor. Searches through the global fonts[] array to find
+ * fonts suitable for the given magnification level. Only sets fonts that
+ * haven't been explicitly specified by the user (non-null entries in
+ * font_table are preserved).
+ *
+ * The function implements font fallback logic: it searches for the largest
+ * font that is still suitable for the given magnification. If no suitable
+ * font is found, it errors out rather than using an inappropriate font.
+ *
+ * Parameters:
+ *   mag - Map magnification factor (higher values = larger map pixels)
+ *   f   - Font type enum (f_nation, f_designation, f_title) to configure
+ *
+ * Returns:
+ *   void - Errors out if no suitable font can be found
+ *
+ * Side Effects:
+ *   - Modifies font_table[f].romanfont if currently NULL
+ *   - May modify font_table[f].boldfont if available and currently NULL
+ *   - Calls font_named() to load fonts from system
+ *   - Calls error() on font loading failures or no suitable fonts
+ *
+ * Testing Notes:
+ *   Category: D (Mock Intensive) - Requires graphics system and font loading
+ *   Approach: Mock font_named(), bad_font(), and error() functions
+ *   Key Tests: Font selection logic, fallback behavior, error conditions
+ *   Dependencies: Global fonts[] array, font_table[] array, graphics system
+ *   Mock Requirements: Font loading system, error handling
+ *   Complexity: Moderate - Font selection algorithm with error handling
+ *
+ * Notes:
+ *   - Part of 1989 graphics abstraction layer
+ *   - Designed for scalable map display with appropriate typography
+ *   - Font selection based on readability at different magnifications
+ *   - Preserves user-specified fonts (doesn't override explicit choices)
+ */
 
 void
 set_default_fonts(mag,f)
@@ -183,13 +217,46 @@ enum mapfont f;
     
     }
 
-/*********************************************************************
-*                                                                    *
-* Set up a single font. if the name is in the table ( or is a prefix *
-* ) then insert the name into the font table. If the name begins     *
-* with 'b' then sets the bold font.                                  *
-*                                                                    *
-*********************************************************************/
+/*
+ * set_a_font - Configure a specific font from command line arguments
+ *
+ * Parses command line font specifications and updates the font_table
+ * with user-specified fonts. Supports both roman and bold font variants
+ * through a prefix naming convention. The function performs partial
+ * string matching against known font categories.
+ *
+ * Font specification format:
+ * - "nation" or prefix -> sets roman nation font
+ * - "bnation" or "b" + prefix -> sets bold nation font
+ * - Similar patterns for "designation" and "title" fonts
+ *
+ * Parameters:
+ *   name     - Font category name (may have 'b' prefix for bold)
+ *   fontname - System font name to load and assign
+ *
+ * Returns:
+ *   void - Errors out if font name is unknown or font cannot be loaded
+ *
+ * Side Effects:
+ *   - Modifies font_table[].romanfont or boldfont based on name
+ *   - Calls font_named() to load the specified font from system
+ *   - Calls error() on unknown font names or loading failures
+ *   - Advances name pointer if 'b' prefix detected
+ *
+ * Testing Notes:
+ *   Category: D (Mock Intensive) - Requires graphics system and font loading
+ *   Approach: Mock font_named(), bad_font(), and error() functions
+ *   Key Tests: Prefix parsing, partial matching, font loading, error cases
+ *   Dependencies: Global font_table[] array, graphics font system
+ *   Mock Requirements: Font loading system, error handling, string functions
+ *   Complexity: Moderate - String parsing with font system integration
+ *
+ * Notes:
+ *   - Command line interface for font customization (-f option)
+ *   - Supports partial matching for user convenience
+ *   - Bold font handling via 'b' prefix convention
+ *   - Part of flexible font configuration system from 1989
+ */
 
 void
 set_a_font(name,fontname)
@@ -227,15 +294,51 @@ char *fontname;
 	font_table[i].romanfont=thefont;
     }
 
-/*********************************************************************
-*                                                                    *
-* scan over the header of the map. Returns the number of the map, or *
-* 0 if the map is bad. If `pipe' is != 0 then the input is a pipe    *
-* and an eof implies a bad password.                                 *
-*                                                                    *
-* Tries to cope with DEBUG and none-DEBUG conquers                   *
-*                                                                    *
-*********************************************************************/
+/*
+ * scan_header - Parse Conquer map file headers and extract metadata
+ *
+ * Scans through map file input to locate and parse the standardized
+ * Conquer map header. Extracts critical game state information including
+ * map type, nation identity, turn number, and Conquer version. Handles
+ * both file input and pipe input (from live Conquer process) with
+ * different error handling for each case.
+ *
+ * Header format expected:
+ * "Conquer Version X.Y : MapType Map ... Nation on Turn N"
+ *
+ * The function searches for HEADER_TAG ("Conquer Version") and parses
+ * the structured information that follows. Map types are validated
+ * against the known mapnames[] array.
+ *
+ * Parameters:
+ *   f    - FILE pointer to read header from (file or pipe)
+ *   pipe - Non-zero if input is a pipe (affects EOF error handling)
+ *
+ * Returns:
+ *   Map type ID (1-4) corresponding to mapnames[] array index
+ *   0 if map is invalid or unrecognized
+ *
+ * Side Effects:
+ *   - Sets global conquer_version[] with parsed version string
+ *   - Sets global nation pointer to identified nation or "god"
+ *   - Sets global turn variable with current turn number
+ *   - Advances file position past header
+ *   - May call error() on parse failures or bad passwords
+ *
+ * Testing Notes:
+ *   Category: B (Integration Required) - Requires file I/O and global state
+ *   Approach: Integration testing with mock files and global variable checks
+ *   Key Tests: Header parsing, map type recognition, EOF handling, pipe vs file
+ *   Dependencies: Global variables (conquer_version, nation, turn), mapnames[]
+ *   Mock Requirements: FILE operations, error handling, global state
+ *   Complexity: Moderate - File parsing with multiple output side effects
+ *
+ * Notes:
+ *   - Central parser for Conquer game file format from 1989
+ *   - Handles both DEBUG and non-DEBUG Conquer output variants
+ *   - Password validation through pipe EOF detection
+ *   - Critical for identifying map content before rendering
+ */
 
 scan_header(f,pipe)
 
@@ -284,12 +387,46 @@ int pipe;
     return mapid;
     }
 
-/*********************************************************************
-*                                                                    *
-* Find maps in a file and store away a file pointer and offset for   *
-* each                                                               *
-*                                                                    *
-*********************************************************************/
+/*
+ * process_map_file - Process multiple maps from input files
+ *
+ * Scans through a map file to locate and register all available maps.
+ * The function handles files containing multiple consecutive map dumps
+ * by repeatedly calling scan_header() to identify each map and then
+ * registering file positions through myopen(). This enables efficient
+ * random access to different map types within the same file.
+ *
+ * The function implements a sophisticated file position tracking system:
+ * it saves the position before each potential new map header, allowing
+ * the system to rewind to the exact start of map data when needed.
+ *
+ * Parameters:
+ *   name - Path to map file to process (must be readable)
+ *
+ * Returns:
+ *   void - Errors out if file cannot be opened or contains bad maps
+ *
+ * Side Effects:
+ *   - Opens the specified file for reading
+ *   - Calls myopen() for each discovered map (registers with file manager)
+ *   - Advances file position through all maps in the file
+ *   - Leaves file open for later access by registered maps
+ *   - May call error() on file access or map parsing failures
+ *
+ * Testing Notes:
+ *   Category: B (Integration Required) - Requires file I/O and map file manager
+ *   Approach: Integration testing with real map files and file position tracking
+ *   Key Tests: Multiple map detection, file position management, error handling
+ *   Dependencies: scan_header(), myopen(), file I/O system, HEADER_TAG
+ *   Mock Requirements: File operations, map file manager (myopen/myisopen)
+ *   Complexity: Moderate - File parsing with position management
+ *
+ * Notes:
+ *   - Designed for batch processing of map dump files
+ *   - Efficient file position caching for large map collections
+ *   - Part of file management system for conqrast map visualization
+ *   - Handles the complex multi-map file format from 1989 Conquer
+ */
 
 void
 process_map_file(name)
@@ -331,20 +468,58 @@ char *name;
 	}
     }
 
-/*********************************************************************
-*                                                                    *
-* Get a map. If the map was not in one of the files on the command   *
-* line it runs conquer -p to get it.                                 *
-*                                                                    *
-*     Which selects the map.                                         *
-*     Args are passed to conqrun.                                    *
-*     Tmpname is the name of a temporary file to use. This is        *
-*         deleted in this routine so you can reuse the name.         *
-*                                                                    *
-*     All except `which' are ignored if the user has given a map     *
-*     file of the correct type as an argumant.                       *
-*                                                                    *
-*********************************************************************/
+/*
+ * get_map_file - Retrieve maps from files or by running Conquer command
+ *
+ * Implements a sophisticated map acquisition system that first checks
+ * for cached maps from processed files, and if not available, dynamically
+ * runs the Conquer game to generate the requested map. This function
+ * bridges the gap between static map files and live game data.
+ *
+ * The function handles the complex authentication and communication
+ * protocol with the Conquer game, including password prompts, TTY
+ * disconnection (a documented hack for getpass), and background
+ * process management.
+ *
+ * Map acquisition flow:
+ * 1. Check if map already available via myisopen()
+ * 2. If not, prompt for password and nation (if not set)
+ * 3. Disconnect from controlling TTY (getpass workaround)
+ * 4. Optionally go into background mode
+ * 5. Run "conquer -p" with authentication
+ * 6. Parse output and register the new map
+ *
+ * Parameters:
+ *   which   - Map type ID (1=Altitude, 2=Vegetation, 3=Nation, 4=Designation)
+ *   args    - Additional arguments to pass to Conquer command
+ *   tmpname - Temporary file path for Conquer output (deleted after use)
+ *
+ * Returns:
+ *   Map type ID that was successfully acquired
+ *
+ * Side Effects:
+ *   - May prompt user for password via getpass()
+ *   - Sets global nation to "god" if not specified
+ *   - Calls disconnect() to detach from controlling TTY
+ *   - May call background() to become background process
+ *   - Creates and deletes temporary files
+ *   - Executes external "conquer" command via popen()
+ *   - Registers new map via myopen()
+ *
+ * Testing Notes:
+ *   Category: C (System Level Only) - Requires full Conquer game system
+ *   Approach: System testing with real Conquer installation
+ *   Key Tests: Map caching, password authentication, TTY handling, command execution
+ *   Dependencies: Conquer game, myisopen/myopen system, password system, TTY
+ *   Mock Requirements: Extensive - game system, authentication, process control
+ *   Complexity: Complex - Multi-system integration with authentication
+ *
+ * Notes:
+ *   - Contains documented "horrid hack" for getpass TTY disconnection
+ *   - Designed for both interactive and batch operation modes
+ *   - Critical component of live map visualization system
+ *   - Handles authentication and process management for 1989 Unix systems
+ */
 
 int
 get_map_file(which,args,tmpname)
@@ -406,6 +581,65 @@ char *tmpname;
 
     return which;
     }
+
+/*
+ * main - Complete application with argument parsing and map rendering
+ *
+ * The primary entry point for the conqrast map visualization tool. This
+ * function implements a comprehensive command-line interface for generating
+ * graphical representations of Conquer game maps. It orchestrates the entire
+ * map rendering pipeline from argument parsing through final output.
+ *
+ * Application workflow:
+ * 1. Parse extensive command-line options (fonts, maps, display modes)
+ * 2. Configure font systems based on selected map types and magnification
+ * 3. Initialize graphics system (screen or memory bitmap)
+ * 4. Acquire map data (from files or live Conquer process)
+ * 5. Render altitude/topography layer if requested
+ * 6. Render nation/designation overlays if requested
+ * 7. Add decorative borders and title information
+ * 8. Output to file or display on screen
+ *
+ * Command-line interface supports:
+ * - Output control (-o file/screen)
+ * - Map types (-a altitude, -n nations, -d designations, -b barbarians)
+ * - Font customization (-f fonttype fontname)
+ * - Live updates (-l) and background operation (-bg)
+ * - World selection (-D world) and nation perspective (-N nation)
+ * - Magnification control (-m factor)
+ * - Terrain brightness adjustment (-cX value)
+ * - Title control (-t) and help (-h)
+ *
+ * Parameters:
+ *   argc - Command line argument count
+ *   argv - Command line argument vector
+ *
+ * Returns:
+ *   Program exit (does not return to caller)
+ *
+ * Side Effects:
+ *   - Parses and modifies global configuration variables
+ *   - Calls process_map_file() for each map file argument
+ *   - Initializes graphics system via initialise_bitmaps()
+ *   - Creates and manipulates bitmap graphics
+ *   - May execute external Conquer commands
+ *   - Outputs graphics to files or screen
+ *   - Exits program when complete
+ *
+ * Testing Notes:
+ *   Category: C (System Level Only) - Complete application integration
+ *   Approach: System testing with full command-line argument sets
+ *   Key Tests: Argument parsing, graphics pipeline, map rendering, output modes
+ *   Dependencies: Full graphics system, file I/O, Conquer game, command-line parsing
+ *   Mock Requirements: Comprehensive - entire application stack
+ *   Complexity: Complex - Full application orchestration with extensive CLI
+ *
+ * Notes:
+ *   - Complete standalone map visualization application from 1989
+ *   - Sophisticated graphics rendering with multiple overlay modes
+ *   - Flexible output options for batch and interactive use
+ *   - Integrates multiple complex subsystems (graphics, fonts, file I/O, game comm)
+ */
 
 /*ARGSUSED*/
 main(argc,argv)
