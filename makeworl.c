@@ -52,6 +52,41 @@ sct[(x)][(y)].altitude=PEAK; \
 nmountains--; \
 }
 
+/*
+ * zeroworld - Initialize all nation data structures to default values
+ *
+ * Performs complete initialization of all nation (country) data structures
+ * in the game world. Resets all armies, navies, and nation attributes to
+ * default/zero values to prepare for world generation. This function ensures
+ * a clean slate before populating the world with nations and units.
+ *
+ * Parameters:
+ *   None
+ *
+ * Returns:
+ *   None (void function)
+ *
+ * Side Effects:
+ *   - Modifies global nation array (ntn[]) for all NTOTAL countries
+ *   - Resets all army data (location, soldiers, type, movement, status)
+ *   - Resets all navy data (ships, crew, people, location, movement)
+ *   - Initializes nation attributes (active status, resources, race, etc.)
+ *   - Sets all nations to INACTIVE state
+ *
+ * Testing Notes:
+ *   Category: A (Unit) - Simple initialization function with minimal dependencies
+ *   Approach: Unit tests with verification of array initialization
+ *   Key Tests: Verify all arrays zeroed, check INACTIVE status, validate structure fields
+ *   Dependencies: Global nation array (ntn[]), army/navy constants (MAXARM, MAXNAVY)
+ *   Mock Requirements: None - direct array manipulation
+ *   Complexity: Simple - Straightforward initialization loops, highly testable
+ *
+ * Notes:
+ *   - Called at the beginning of world generation to ensure clean state
+ *   - Critical for preventing leftover data from previous games
+ *   - Initializes exactly NTOTAL nations as defined in game constants
+ *   - Sets default DEFEND status for all armies
+ */
 void
 zeroworld()
 {
@@ -82,6 +117,51 @@ zeroworld()
 	}
 }
 
+/*
+ * makeworld - Main world generation orchestrator and setup function
+ *
+ * Primary world creation function that handles the complete world generation
+ * process including user interaction, configuration setup, and coordinate
+ * all subsystems. Manages password setup, world size configuration, water
+ * percentage, and orchestrates the creation of terrain, resources, and
+ * populations. This is the main entry point for world generation.
+ *
+ * Parameters:
+ *   rflag - TRUE if reading existing map from mapfiles, FALSE to generate new world
+ *
+ * Returns:
+ *   None (void function)
+ *
+ * Side Effects:
+ *   - Displays world generation UI and messages to user
+ *   - Creates and validates super-user (god) password
+ *   - Sets up alternate administrator (demi-god) if specified
+ *   - Configures world dimensions (mapx, mapy) with validation
+ *   - Sets global water percentage for world generation
+ *   - Allocates memory for world data structures via getspace()
+ *   - Calls createworld() or readmap() for terrain generation
+ *   - Calls rawmaterials() for resource placement
+ *   - Writes world data to persistent storage via writedata()
+ *   - Initializes news file system
+ *   - Removes old game files and temporary data
+ *
+ * Testing Notes:
+ *   Category: C (System) - Requires full system initialization and user interaction
+ *   Approach: System testing with mock user inputs and file system
+ *   Key Tests: Password validation, world size constraints, file operations, memory allocation
+ *   Dependencies: Curses UI, file system, memory allocation, global game state
+ *   Mock Requirements: User input simulation, file system mocking, display system
+ *   Complexity: Complex - Orchestrates multiple subsystems, extensive user interaction
+ *
+ * Notes:
+ *   - Main entry point called by game administrator to create worlds
+ *   - Handles both new world generation and existing map loading
+ *   - Enforces world size constraints (divisible by 8, minimum 24x24)
+ *   - Password must be 4-PASSLTH characters for security
+ *   - Uses crypt() for password hashing with SALT
+ *   - Supports conditional compilation with REMAKE and CHECKUSER flags
+ *   - Creates god nation (index 0) with special powers and administrator access
+ */
 void
 makeworld(rflag)
 int	rflag;		/* TRUE if you wish to read in a map from mapfiles */
@@ -274,6 +354,51 @@ int	rflag;		/* TRUE if you wish to read in a map from mapfiles */
 	newreset();
 }
 
+/*
+ * createworld - Generate procedural world terrain, geography, and environment
+ *
+ * Core world generation algorithm that creates the complete physical world
+ * including terrain distribution, altitude variations, vegetation patterns,
+ * and geographical features. Uses sophisticated procedural generation with
+ * area-based clustering, smoothing algorithms, and realistic geographical
+ * constraints to create playable and believable game worlds.
+ *
+ * Parameters:
+ *   None (uses global pwater percentage and world dimensions)
+ *
+ * Returns:
+ *   None (void function)
+ *
+ * Side Effects:
+ *   - Allocates temporary work arrays (tplace, area_map, type) via m2alloc()
+ *   - Modifies global sector array (sct[][]) for all world coordinates
+ *   - Sets terrain types (WATER, LAND) for every sector
+ *   - Assigns altitude values (CLEAR, HILL, MOUNTAIN, PEAK, WATER)
+ *   - Determines vegetation types based on altitude, climate, and location
+ *   - Creates mountain ranges using heuristic placement algorithms
+ *   - Applies polar/equatorial climate effects to vegetation
+ *   - Expands special terrain types (swamps, deserts) using cellular automata
+ *   - Ensures geographical consistency (no peaks next to water, etc.)
+ *   - Deallocates temporary arrays when complete
+ *
+ * Testing Notes:
+ *   Category: C (System) - Complex procedural generation requiring full world state
+ *   Approach: System testing with statistical analysis of generated worlds
+ *   Key Tests: Water percentage accuracy, mountain distribution, vegetation patterns, geographical rules
+ *   Dependencies: Global world dimensions, pwater setting, sector array, random number generator
+ *   Mock Requirements: Controlled random seed, memory allocation system, display system
+ *   Complexity: Complex - Most sophisticated algorithm in file, heavy computational load
+ *
+ * Notes:
+ *   - Uses 5-tier area classification system (0=water to 4=land) for initial generation
+ *   - Implements smoothing pass to reduce unrealistic terrain transitions
+ *   - Mountain ranges placed using line algorithm with probabilistic branching
+ *   - Vegetation determined by altitude, latitude (polar/equatorial), and local terrain
+ *   - Special handling for volcanoes (converted to peaks), ice placement at poles
+ *   - Geographic constraints enforced (deserts not adjacent to water, etc.)
+ *   - Memory-intensive operation requiring careful allocation/deallocation
+ *   - Algorithm quality directly affects game playability and balance
+ */
 void
 createworld()	/* create world */
 {
@@ -695,6 +820,50 @@ createworld()	/* create world */
 	free(area_map);
 }
 
+/*
+ * rawmaterials - Place raw materials, trade goods, and resources throughout world
+ *
+ * Distributes valuable resources, trade goods, and exotic materials across
+ * the generated world based on terrain suitability, rarity percentages, and
+ * geographical constraints. Handles metal deposits, jewel mines, and diverse
+ * trade goods while ensuring logical placement (fish near water, timber in
+ * forests, etc.) and calling population placement when complete.
+ *
+ * Parameters:
+ *   None (operates on global world state and sector array)
+ *
+ * Returns:
+ *   None (void function)
+ *
+ * Side Effects:
+ *   - Sets default sector designations (DNODESIG) and trade goods (TG_none)
+ *   - Initializes sector ownership, resources, and population to zero
+ *   - Places metal deposits via getmetal() based on METALPCT and terrain
+ *   - Places jewel deposits via getjewel() based on JEWELPCT
+ *   - Distributes trade goods based on weighted probability and terrain suitability
+ *   - Validates trade good placement against terrain requirements
+ *   - Calls populate() to place nations and units after resource distribution
+ *   - Sets global mercenary statistics (MERCMEN, MERCATT, MERCDEF)
+ *   - Displays completion messages and world generation narrative
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires terrain system and resource placement validation
+ *   Approach: Integration testing with statistical analysis of resource distribution
+ *   Key Tests: Resource percentage accuracy, terrain constraints, trade good suitability
+ *   Dependencies: Completed terrain generation, sector array, trade good system
+ *   Mock Requirements: Terrain validation functions, resource placement functions
+ *   Complexity: Moderate - Resource logic with terrain constraints, statistical distribution
+ *
+ * Notes:
+ *   - Trade good placement uses weighted distribution based on tg_value array
+ *   - Fish require adjacent water sectors for realistic placement
+ *   - Agricultural goods (corn, fruit) require fertile land (high food value)
+ *   - Forest products (timber, pine, oak) require forest/wood vegetation
+ *   - Mountains have higher probability of metal deposits
+ *   - Only habitable sectors receive resources (validated via is_habitable())
+ *   - Resource distribution directly affects game economy and strategy
+ *   - Includes humorous world generation narrative messages for user experience
+ */
 void
 rawmaterials() 		 /*PLACE EACH SECTOR'S RAW MATERIALS */
 {
@@ -806,6 +975,45 @@ rawmaterials() 		 /*PLACE EACH SECTOR'S RAW MATERIALS */
 	newerror(newstring);
 }
 
+/*
+ * fill_edge - Fill area boundary edges based on neighboring area classifications
+ *
+ * Subroutine for terrain generation that determines the terrain type for
+ * the edges of an 8x8 area block based on the area classifications of
+ * neighboring blocks. Uses area value combinations to create coherent
+ * terrain transitions between areas, handling world edge wrapping and
+ * probabilistic terrain assignment for realistic boundaries.
+ *
+ * Parameters:
+ *   AX - Area X coordinate in the area map (0 to MAXX-1)
+ *   AY - Area Y coordinate in the area map (0 to MAXY-1)
+ *
+ * Returns:
+ *   None (void function)
+ *
+ * Side Effects:
+ *   - Modifies global type[][] array for the edge sectors of the specified area
+ *   - Sets terrain types (LAND/WATER) for north, south, east, west edges
+ *   - Uses probabilistic assignment based on neighboring area values
+ *   - Handles world edge wrapping (coordinates beyond map bounds wrap around)
+ *
+ * Testing Notes:
+ *   Category: A (Unit) - Edge logic with clear inputs/outputs and minimal dependencies
+ *   Approach: Unit tests with controlled area map inputs and edge validation
+ *   Key Tests: Boundary calculations, edge wrapping, terrain assignment probabilities
+ *   Dependencies: Global area_map[][] and type[][] arrays, world dimensions
+ *   Mock Requirements: Controlled area map data, isolated type array
+ *   Complexity: Moderate - Edge logic with coordinate transformations and probability
+ *
+ * Notes:
+ *   - Called during createworld() for each area in the area map
+ *   - Uses area value sum (0-8) to determine edge terrain likelihood
+ *   - Higher sums (>6) produce land edges, lower sums (<4) produce water edges
+ *   - Medium sums (4-6) use 50% probability for realistic variation
+ *   - World wrapping ensures seamless terrain at map boundaries
+ *   - Edge generation happens before interior area filling
+ *   - Critical for creating coherent large-scale terrain patterns
+ */
 /*fill: subroutine to fill in a square edges with land or sea*/
 void
 fill_edge(int AX,int AY)
@@ -876,6 +1084,51 @@ fill_edge(int AX,int AY)
 	else for(i=0;i<8 ;i++) type[(X0*8)+i][Y0*8] = WATER;
 }
 
+/*
+ * populate - Place nations, NPCs, monsters, and populations throughout the world
+ *
+ * Complex population system that establishes all civilizations, monsters,
+ * and NPCs in the generated world. Handles god nation setup, monster
+ * distribution, NPC nation loading from files, and strategic placement
+ * algorithms. Creates diverse populations including pirates, nomads,
+ * savages, lizards, and player civilizations with appropriate units,
+ * resources, and territorial control.
+ *
+ * Parameters:
+ *   None (operates on global world state and nation arrays)
+ *
+ * Returns:
+ *   None (void function)
+ *
+ * Side Effects:
+ *   - Initializes god nation (index 0) with special powers and attributes
+ *   - Sets diplomatic relationships between all nations (war/peace status)
+ *   - Places monster nations (pirates, nomads, savages, lizards) across world
+ *   - Loads and places NPC nations from configuration files
+ *   - Assigns territories, fortifications, armies, and navies to placed nations
+ *   - Creates appropriate military units based on nation type and class
+ *   - Establishes resource deposits and trade goods for nation centers
+ *   - Validates help file availability for game documentation
+ *   - Handles conditional compilation for MONSTER and NPC features
+ *
+ * Testing Notes:
+ *   Category: C (System) - Complex system requiring full game state and file I/O
+ *   Approach: System testing with mock files and population validation
+ *   Key Tests: Nation placement, diplomatic setup, monster distribution, file parsing
+ *   Dependencies: Nation system, file I/O, military units, diplomatic system, world map
+ *   Mock Requirements: NPC files, help files, nation configuration data
+ *   Complexity: Complex - Most sophisticated population system, extensive game logic
+ *
+ * Notes:
+ *   - God nation gets KNOWALL and NINJA powers for administrative oversight
+ *   - Monster nations automatically at war with all other nations
+ *   - Pirate placement requires island generation (surrounded by water)
+ *   - NPC nations loaded from external files with class, alignment, resources
+ *   - Population distribution uses statistical algorithms for balance
+ *   - Supports multiple conditional compilation flags (MONSTER, NPC, CHECKUSER)
+ *   - Critical for establishing initial game state and strategic balance
+ *   - Includes extensive validation and error handling for file operations
+ */
 /* ALLOCATE POPULATIONS OF THE WORLD*/
 void
 populate()
