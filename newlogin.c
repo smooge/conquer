@@ -980,6 +980,142 @@ convert()
 	curntn->metals = NLMETAL * spent[CH_RAWGOODS];
 }
 
+/*
+ * newlogin - Interactive nation registration and creation system
+ *
+ * The master function that provides a complete curses-based interactive interface
+ * for new player registration in the Conquer game system. Handles the entire
+ * nation creation workflow from initial player input through final map placement,
+ * including nation name/password setup, race/alignment selection, point allocation
+ * for resources and military, and optional multi-nation registration.
+ *
+ * This is the largest and most complex function in the registration system,
+ * implementing a complete interactive state machine for nation building with
+ * comprehensive input validation, resource management, and error handling.
+ *
+ * Parameters:
+ *   realuser - Real user ID from system for user validation and tracking
+ *              Used with CHECKUSER compilation flag to enforce one-nation-per-user limit
+ *              Set to appropriate uid when called from main registration program
+ *
+ * Returns:
+ *   void (function manages complete registration workflow internally)
+ *
+ * Side Effects:
+ *   - Initializes curses display system for interactive interface
+ *   - Scans and allocates available nation slots (country numbers)
+ *   - Creates and validates nation names, passwords, and leader names
+ *   - Sets up race-specific starting bonuses and restrictions
+ *   - Manages interactive point allocation system for resource spending
+ *   - Converts allocation choices to final nation statistics
+ *   - Places nations on game map with location preference handling
+ *   - Updates global nation arrays and game state
+ *   - Creates executable file output for nation data
+ *   - Sends mail notifications to existing players about new nations
+ *   - Supports multi-nation registration in single session (optional)
+ *   - Performs complete curses cleanup before return
+ *
+ * Workflow Overview:
+ *   1. **System Initialization**: Sets up curses, finds available nation slots
+ *   2. **Nation Identification**: Name, password, leader name input with validation
+ *   3. **Race Selection**: Interactive race choice (Dwarf/Elf/Human/Orc) with bonuses
+ *   4. **Alignment Selection**: Good/Neutral/Evil alignment (Orcs forced Evil)
+ *   5. **National Mark**: Single character map symbol selection
+ *   6. **Resource Allocation**: Interactive point-spending system for nation building
+ *   7. **Final Confirmation**: Save/delete choice with conversion to game statistics
+ *   8. **Map Placement**: Automatic placement based on location preference
+ *   9. **Cleanup**: File closure, notifications, optional additional nations
+ *
+ * Interactive Point Allocation System:
+ *   - **Starting Points**: MAXPTS total points to spend on nation attributes
+ *   - **Resource Categories**: People, Treasury, Soldiers, Attack/Defense bonuses,
+ *     Reproduction rate, Movement points, Magic spells, Leaders, Raw materials,
+ *     Location preference (better starting positions cost more)
+ *   - **Race-Specific Modifiers**: Each race has different costs and restrictions
+ *   - **Real-time Interface**: Curses-based menu with immediate feedback
+ *   - **Validation**: Prevents overspending, enforces minimums/maximums
+ *   - **Key Bindings**: Standard vi-like navigation (hjkl) plus space/escape
+ *
+ * Race-Specific Features:
+ *   - **Dwarfs**: MINER power, starting treasury/raw materials bonus
+ *   - **Elves**: THE_VOID power (magical cloaking), FAIR starting location
+ *   - **Humans**: WARRIOR power (combat bonus), standard balanced stats
+ *   - **Orcs**: MI_MONST power, forced Evil alignment, no movement purchases,
+ *     modified reproduction costs, different attack/defense calculations
+ *
+ * Input Validation and Security:
+ *   - **Name Length Limits**: Nation names 2-NAMELTH chars, leader names 2-LEADERLTH
+ *   - **Reserved Names**: Prevents "god", "unowned", duplicate nation names
+ *   - **Password Security**: 2-PASSLTH character passwords with confirmation
+ *   - **Cryptographic Storage**: Uses crypt() with SALT for password hashing
+ *   - **User Limits**: Optional CHECKUSER enforcement of one-nation-per-user
+ *   - **Input Sanitization**: All user input validated for length and content
+ *
+ * Error Handling and Recovery:
+ *   - **File Operation Errors**: Graceful handling of executable file creation failures
+ *   - **Nation Slot Exhaustion**: Clear error messages when no slots available
+ *   - **Invalid Input**: Comprehensive validation with user-friendly error messages
+ *   - **Point Allocation Errors**: Real-time validation prevents impossible purchases
+ *   - **Memory Management**: Proper cleanup of curses resources on all exit paths
+ *   - **User Cancellation**: Allows cancellation at multiple points with cleanup
+ *
+ * Display and User Interface:
+ *   - **Screen Layout**: Multi-line display with headers, menus, and status information
+ *   - **Real-time Updates**: Immediate feedback for point allocation and resource changes
+ *   - **Visual Highlighting**: Standout mode for current selection and important info
+ *   - **Help System**: Context-sensitive help for each allocation category
+ *   - **Status Display**: Points remaining, current allocations, costs clearly shown
+ *   - **Professional Layout**: Consistent formatting with game branding
+ *
+ * Integration with Game System:
+ *   - **Nation Structure**: Populates complete ntn[] array entry for new nation
+ *   - **Map Integration**: Calls place() for automatic map placement
+ *   - **Attribute Calculation**: Calls att_setup() for derived nation statistics
+ *   - **Global Updates**: Updates nation counts, writes data files
+ *   - **Notification System**: Sends mail to existing players about new nation
+ *   - **Turn Integration**: Records turn number for nation creation tracking
+ *
+ * Multi-Nation Support:
+ *   - **Session Continuation**: Allows multiple nations in single registration session
+ *   - **Slot Management**: Tracks available slots across multiple registrations
+ *   - **User Choice**: Optional continuation prompt after each nation creation
+ *   - **Resource Cleanup**: Proper cleanup between nation creation cycles
+ *
+ * Testing Notes:
+ *   Category: C (System) - Requires full game environment with curses, file system, magic system
+ *   Approach: System testing with complete game world setup and user interaction simulation
+ *   Key Tests: [Complete registration workflow, race-specific features, point allocation system,
+ *              input validation, error handling, multi-nation registration, curses interface]
+ *   Dependencies: [Curses library, nation arrays, magic system, map system, file I/O,
+ *                 password encryption, mail system, global game state, constants/arrays]
+ *   Mock Requirements: [Complete game world, terminal interface, file system, user input simulation,
+ *                      random number generation, cryptographic functions, mail delivery system]
+ *   Complexity: Complex - Large interactive state machine with multiple subsystems integration
+ *
+ * Performance Considerations:
+ *   - **Map Placement**: Uses iterative random placement with 2000-attempt limit
+ *   - **Input Validation**: Real-time validation prevents expensive rollback operations
+ *   - **Memory Usage**: Minimal dynamic allocation, uses global arrays efficiently
+ *   - **Display Updates**: Selective screen refreshing for responsive interface
+ *   - **File I/O**: Single executable file per nation, closed promptly
+ *
+ * Security Considerations:
+ *   - **Password Hashing**: Strong cryptographic hashing with salt
+ *   - **Input Sanitization**: All user input validated and bounded
+ *   - **File Security**: Proper file handle management prevents resource leaks
+ *   - **User Authentication**: Optional real user ID tracking and enforcement
+ *   - **Session Management**: Clean state management prevents information leakage
+ *
+ * Notes:
+ *   - This function is the core of the entire player registration system
+ *   - Requires newinit() to be effective but calls it internally
+ *   - Must be called with valid nation arrays and game world initialized
+ *   - Uses extensive global state but manages it carefully for multiple nations
+ *   - Critical for game population growth and new player onboarding
+ *   - Complex control flow with multiple nested loops and state validation
+ *   - Integration point for multiple game subsystems (magic, combat, economics)
+ *   - Essential for maintaining game balance through controlled nation creation
+ */
 void
 newlogin(realuser)
   int realuser;
