@@ -37,7 +37,7 @@
 extern	int armornvy,roads_this_turn,terror_adj;
 
 char	fison[FILELTH];
-char	*getpass();
+char	*getpass(const char *prompt);
 struct	s_sector **sct;
 struct	s_nation ntn[NTOTAL];	/* player nation stats */
 struct	s_world	world;		
@@ -63,7 +63,7 @@ struct	s_nation	*curntn;
 short	Gaudy=FALSE;
 int	owneruid;
 
-FILE *fexe, *fopen();
+FILE *fexe;
 
 /************************************************************************/
 /*	MAIN() - main loop for conquer					*/
@@ -109,10 +109,8 @@ FILE *fexe, *fopen();
  *   - Complex authentication with password encryption
  *   - Legacy K&R function definition style needs modernization
  */
-void
-main(argc,argv)
-int	argc;
-char	**argv;
+int
+main(int argc, char **argv)
 {
 #ifdef  USERLOG
 	FILE *userlog;
@@ -127,10 +125,8 @@ char	**argv;
 #ifndef __STDC__
 	void srand();
 #endif
-	void init_hasseen(),mapprep();
-	int getopt();
+	void init_hasseen(void),mapprep(void);
 	char passwd[PASSLTH+1];
-	long time();
 	extern char *optarg, conqmail[];
 #ifdef SYSMAIL
 	extern char sysmail[];
@@ -139,7 +135,7 @@ char	**argv;
 
 	char defaultdir[BIGLTH],tmppass[PASSLTH+1];
 	char cq_opts[BIGLTH];
-	struct passwd *getpwnam(), *pwent;
+	struct passwd *pwent;
 
 	owneruid=getuid();
 	srand((unsigned) time((long *) 0));
@@ -280,6 +276,7 @@ char	**argv;
 		if (strlen (optarg) > 0)
 		   if (getpwnam(optarg))
 		      checkuser_uid = getpwnam(optarg)->pw_uid;
+		break;
 #endif
 	case 's': /*print the score*/
 		sflag++;
@@ -401,7 +398,7 @@ char	**argv;
 			fprintf(stderr," or %s",ntn[0].leader);
 		}
 		fprintf(stderr,".\n");
-		return;
+		return EXIT_FAILURE;
 	} else if(country==0 && !pflag) {
 		sprintf(filename,"%sadd",isonfile);
 		if(check_lock(filename,FALSE)==TRUE) {
@@ -633,6 +630,7 @@ char	**argv;
 			XNARGOLD ,country,curntn->jewels,"null");
 	}
 	bye(TRUE);	 		/* done so quit */
+	return EXIT_SUCCESS;  /* Should not reach here due to bye() calling exit() */
 }
 
 /************************************************************************/
@@ -757,12 +755,11 @@ makebottom()
  *   - Legacy K&R function definition style
  */
 int
-parse(ch)
-	int ch;
+parse(int ch)
 {
 	char	name[LINELTH+1];
 	char	passwd[PASSLTH+1];
-	struct passwd *getpwnam(), *pwent;
+	struct passwd *pwent;
 #ifdef DEBUG
 	void sect_info();
 #endif /* DEBUG */
@@ -1295,8 +1292,7 @@ sect_info()
  *   - Magic effects influence information visibility
  */
 void
-makeside(alwayssee)
-int	alwayssee;	/* see even if cant really see sector */
+makeside(int alwayssee)	/* see even if cant really see sector */
 {
 	int	i;
 	int	armbonus;
@@ -1618,7 +1614,7 @@ int	alwayssee;	/* see even if cant really see sector */
  *   - Different behavior for god mode vs normal nations
  */
 int
-aretheyon()
+aretheyon(void)
 {
 	/* return file descriptor for lock file */
 	sprintf(fison,"%s%d",isonfile,country);
@@ -1667,10 +1663,10 @@ aretheyon()
  *   - Part of legal compliance for GPL v3 licensing
  */
 void
-copyscreen()
+copyscreen(void)
 {
 #ifdef TIMELOG
-    FILE *timefp, *fopen();
+    FILE *timefp;
     char string[LINELTH+1];
 #endif /* TIMELOG */
 
@@ -1741,8 +1737,7 @@ copyscreen()
  *   - Thread-safe cleanup sequence
  */
 void
-bye(dounlink)
-int	dounlink;	/* TRUE if want to do unlink */
+bye(int dounlink)	/* TRUE if want to do unlink */
 {
 	if( dounlink ) if(strcmp(fison,"START")!=0) unlink(fison);
 	clear();
@@ -1794,7 +1789,7 @@ int	dounlink;	/* TRUE if want to do unlink */
  *   - Accessible from main game loop via 'v' command
  */
 void
-credits()
+credits(void)
 {
 	clear();
 	mvprintw(4,0,"Conquer %s.%s",VERSION,PATCHLEVEL);
@@ -1864,7 +1859,7 @@ credits()
  *   - Accessible from main game loop via 'I' command
  */
 void
-camp_info()
+camp_info(void)
 {
 	int mercs=0,solds=0,armynum,nvynum,nontn=0;
 	int numarm=0,numnvy=0,numlead=0;
