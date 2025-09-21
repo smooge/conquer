@@ -67,14 +67,13 @@
 ### Warning Elimination Strategy Discussion
 **User Request**: Begin planning warning elimination with enhanced gcc flags
 **Proposed Additional Flags**:
-- `-Wtraditional` - Traditional C compatibility warnings
 - `-Wstrict-prototypes` - Function prototype consistency
 - `-Wold-style-definition` - K&R style function detection
 - `-Wold-style-declaration` - Old declaration style warnings
 
 **Complete Intensive Analysis Command** (for next session):
 ```bash
-gcc -O2 -g -Wall -Wextra -Wformat -Wformat=2 -Wconversion -Wimplicit-fallthrough -Wsign-conversion -Wtraditional -Wstrict-prototypes -Wold-style-definition -Wold-style-declaration -fanalyzer -std=c2x -D_POSIX_C_SOURCE=200809L -c [file.c]
+gcc -O2 -g -Wall -Wextra -Wformat -Wformat=2 -Wstrict-prototypes -Wold-style-definition -Wold-style-declaration -Wconversion -Wimplicit-fallthrough -Wsign-conversion -fanalyzer -std=c2x -D_POSIX_C_SOURCE=200809L -c [file.c] -o /tmp/foo.o
 ```
 
 ### Phase 4 Todo List Created

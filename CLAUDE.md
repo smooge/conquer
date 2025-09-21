@@ -37,10 +37,10 @@ gcc -std=c2x -D_POSIX_C_SOURCE=200809L -Wall -Wextra -Wpedantic -g -O2 *.c -o pr
 gcc -std=c2x -D_POSIX_C_SOURCE=200809L -Wall -Wextra -Wpedantic -Werror -g -O2 -fsanitize=address -fsanitize=undefined *.c -o program
 
 # INTENSIVE ANALYSIS - Comprehensive warning detection (use for thorough analysis)
-gcc -O2 -g -Wall -Wextra -Wformat -Wformat=2 -Wtraditional -Wstrict-prototypes -Wold-style-definition -Wold-style-declaration -Wconversion -Wimplicit-fallthrough -Wsign-conversion -fanalyzer -std=c2x -D_POSIX_C_SOURCE=200809L *.c -o program
+gcc -O2 -g -Wall -Wextra -Wformat -Wformat=2 -Wstrict-prototypes -Wold-style-definition -Wold-style-declaration -Wconversion -Wimplicit-fallthrough -Wsign-conversion -fanalyzer -std=c2x -D_POSIX_C_SOURCE=200809L *.c -o program
 
 # INTENSIVE ANALYSIS - Single file testing (recommended for initial analysis)
-gcc -O2 -g -Wall -Wextra -Wformat -Wformat=2 -Wtraditional -Wstrict-prototypes -Wold-style-definition -Wold-style-declaration -Wconversion -Wimplicit-fallthrough -Wsign-conversion -fanalyzer -std=c2x -D_POSIX_C_SOURCE=200809L -c filename.c
+gcc -O2 -g -Wall -Wextra -Wformat -Wformat=2 -Wstrict-prototypes -Wold-style-definition -Wold-style-declaration -Wconversion -Wimplicit-fallthrough -Wsign-conversion -fanalyzer -std=c2x -D_POSIX_C_SOURCE=200809L -c filename.c
 
 # Static analysis with clang
 clang --analyze -std=c2x -D_POSIX_C_SOURCE=200809L -Wall -Wextra *.c
@@ -180,6 +180,12 @@ Before changing a single line of code, establishing a modern, strict, and contro
 
 **Essential for clean compilation needed by testing frameworks.**
 
+**⚠️ MANDATORY: Use Comprehensive Phase 4 Strategy Guide ⚠️**
+- **PRIMARY REFERENCE**: `_modernization/claude/reports/PHASE_4_STRATEGY.md`
+- **ALWAYS consult this detailed strategy guide before beginning Phase 4 work**
+- **Contains complete subphase breakdown, session management, and automation scripts**
+- **Includes retrospective methodology for multi-codebase knowledge capture**
+
 **Warning Elimination Priority**:
 1. Compilation errors
 2. Missing braces (data structure initialization)
@@ -188,6 +194,20 @@ Before changing a single line of code, establishing a modern, strict, and contro
 5. Multiple definitions
 
 **Safety Improvements**: Replace sprintf with snprintf, add missing includes
+
+**Key Strategy Elements** (see full strategy guide for details):
+- **Incremental Progression**: C99 first, then C2x to manage warning explosion
+- **Dependency-First**: Fix header.h before source files
+- **Context Management**: Break large files into manageable chunks per session
+- **Tool Synergy**: GCC primary, Clang for clarification, clang-tidy for automation
+- **Session Management**: Warning-type sessions for high warning count files
+- **Automation Required**: Create analysis and tracking scripts in Subphase 0
+- **Retrospective**: Capture lessons learned for future codebase modernizations
+
+**Phase 4 Subphases** (see strategy guide for full details):
+- **Subphase 0**: Baseline Assessment & Infrastructure (MANDATORY FIRST)
+- **Subphase 1-8**: Progressive warning elimination with increasing strictness
+- **Subphase 9**: Retrospective and Knowledge Capture for future codebases
 
 **Completion Criteria**: All source files compile with zero warnings using strict flags
 
@@ -530,6 +550,10 @@ At the beginning of each project, Claude must create a `_modernization/` directo
 - `_modernization/claude/reports/DOCUMENTATION_ASSESSMENT.md`
 - `_modernization/claude/reports/TESTING_INFRASTRUCTURE.md`
 - `_modernization/claude/reports/MODERNIZATION_PLAN.md`
+
+**Phase-Specific Strategy Documents** (MANDATORY references for each phase):
+- `_modernization/claude/reports/PHASE_4_STRATEGY.md` - Comprehensive Phase 4 implementation guide
+- `_modernization/claude/reports/PHASE_4_PLAN_REVIEW.md` - Phase 4 planning analysis and feedback
 
 ### Session End Management
 When the user indicates it's time to end a session, Claude must:

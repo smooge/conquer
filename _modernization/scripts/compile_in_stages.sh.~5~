@@ -1,0 +1,48 @@
+
+ARG_ARRAY=(
+    ""
+    "-Wall"
+    "-Wextra"
+    "-Wpedantic"
+    "-Wformat"
+    "-Wformat=2"
+    "-std=c2x -D_POSIX_C_SOURCE=200809L"
+    "-Wconversion"
+    "-Wimplicit-fallthrough"
+    "-fsanitize=address -fsanitize=undefined"
+    "-fanalyzer"
+    "-Wsign-conversion"
+    "-Wstrict-prototypes"
+    "-Wold-style-declaration"
+    "-Wtraditional"
+    "-Wtraditional-conversion"
+)
+
+# Homebrew version
+if [[ -f /opt/homebrew/bin/gcc-15 ]]; then
+    GCC="/opt/homebrew/bin/gcc-15"
+elif [[ -f /usr/bin/gcc ]]; then
+    GCC="/usr/bin/gcc"
+else
+    echo "NO GCC FOUND"
+    exit
+fi
+
+GCC_BASE="-O2 -g "
+
+count=0
+for args in "${ARG_ARRAY[@]}"; do
+    GCC_ARGS="${GCC_ARGS} ${args} "
+    # Use printf to format the count with a leading zero
+    PADDED_COUNT=$(printf "%02d" "$count")
+
+    # Use the new padded variable for the filename
+    OFILE="/tmp/gcc_errors_${PADDED_COUNT}"
+
+    /bin/rm -f ${OFILE}
+    touch ${OFILE}
+    for file in *.c *.h; do
+	${GCC} ${GCC_BASE} ${GCC_ARGS} -c ${file} -o /tmp/foo.o >> ${OFILE} 2>&1
+    done
+    count=$((count + 1))
+done
