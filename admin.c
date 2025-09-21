@@ -201,7 +201,7 @@ FILE *fexe, *fopen();
  *   Mock Requirements: Mock filesystem, user database, permission system
  *   Complexity: Complex - Multi-user security, file operations, process coordination
  */
-void
+int
 main(argc,argv)
 int argc;
 char **argv;
@@ -1025,7 +1025,7 @@ att_bonus()
 		||(( *(tg_stype+good)== DCITY )&&(sptr->designation==DCAPITOL))
 		||(( *(tg_stype+good)== DUNIVERSITY )&&(sptr->designation==DCITY))
 		||(( *(tg_stype+good)== DUNIVERSITY )&&(sptr->designation==DCAPITOL))
-		||( *(tg_stype+good)== 'x' ))
+		||( *(tg_stype+good)== 'x' )) {
 		if( good <= END_POPULARITY ) {
 			curntn->popularity += ( *(tg_value+good) - '0');
 			curntn->popularity = min( MAXTGVAL, curntn->popularity );
@@ -1054,6 +1054,7 @@ att_bonus()
 			if(curntn->terror + (*(tg_value+good)-'0')< MAXTGVAL)
 				curntn->terror += (*(tg_value+good)-'0');
 			else curntn->terror = MAXTGVAL;
+		}
 		}
 	}
 }

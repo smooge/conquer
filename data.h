@@ -379,7 +379,7 @@ struct s_sector
 	unsigned char	fortress;	/* fortification level; 0 to 12	*/
 	unsigned char	metal;		/* metal produced by sector	*/
 	unsigned char	tradegood;	/* exotic trade goods in sector	*/
-	/* unsigned char	region;		/* index of region	*/
+	/* unsigned char	region; */		/* index of region	*/
 };
 /*
  * Sector accessor macros - Quick access to current sector data
@@ -909,7 +909,8 @@ extern void	getjewel(),getmetal(),loadfleet(),removemgk(),exenewmgk();
 extern struct	s_sector *rand_sector();
 extern void	subgships(),submships(),subwships(),getspace(),sackem();
 extern void	whatcansee(), reset_god(), get_nname(), camp_info();
-extern void	main(), makebottom(), makeside(), check_mail(), centermap();
+extern int	main();
+extern void	makebottom(), makeside(), check_mail(), centermap();
 extern void	checkout(),copyscreen(),bye(),credits(),init_hasseen();
 extern void	combinearmies(),change_status(),reducearmy(),splitarmy();
 extern void	errormsg(), clear_bottom(), addgroup(),ext_cmd();
