@@ -146,6 +146,13 @@
     #ifdef PLATFORM_LINUX
         #include <sys/file.h>
     #endif
+    /* BSD random functions - requires feature test macros */
+    #ifndef _DEFAULT_SOURCE
+        #define _DEFAULT_SOURCE
+    #endif
+    /* Declare BSD random functions for compatibility */
+    extern long random(void);
+    extern void srandom(unsigned int seed);
 #elif defined(PLATFORM_WINDOWS)
     #ifndef WIN32_LEAN_AND_MEAN
         #define WIN32_LEAN_AND_MEAN
