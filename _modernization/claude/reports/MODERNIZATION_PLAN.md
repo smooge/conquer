@@ -375,6 +375,22 @@ dest[sizeof(dest) - 1] = '\0';
 snprintf(buffer, sizeof(buffer), format, ...);
 ```
 
+**File Locking Modernization** (check.c):
+- **Current Issue**: Complex dual-path implementation (lockf vs flock) requiring _XOPEN_SOURCE=700
+- **Modernization**: Simplify to single flock() implementation for better portability
+- **Benefits**: Remove _XOPEN_SOURCE dependency, simpler code, more predictable behavior
+```c
+// Before: Complex conditional compilation
+#ifdef LOCKF
+#    define do_lock(fd) lockf(fd,F_TLOCK,0)     // Needs _XOPEN_SOURCE=700
+#else
+#    define do_lock(fd) flock(fd,LOCK_EX|LOCK_NB)
+#endif
+
+// After: Simplified modern approach
+#define do_lock(fd) flock(fd,LOCK_EX|LOCK_NB)   // Widely available, simpler
+```
+
 #### 8.4 Standard Library Updates (1 day)
 **Modern Standard Library Usage**:
 - Include proper headers for all used functions
