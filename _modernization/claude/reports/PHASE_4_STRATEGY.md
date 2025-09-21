@@ -11,7 +11,7 @@
 1. **Incremental Progression**: C99 first, then C2x to manage warning explosion (200→800+)
 2. **Dependency-First**: Fix header.h before source files
 3. **Context Management**: Break large files into manageable chunks per session
-4. **Tool Synergy**: Use GCC primary, Clang for clarification, clang-tidy for automation
+4. **Tool Synergy**: Use GCC primary, Clang for clarification
 5. **Practical Testing**: Focus on compilation health over comprehensive testing initially
 
 ## Session Management Strategy
@@ -36,6 +36,9 @@
 ### Subphase 0: Baseline Assessment & Infrastructure ⚠️
 **CRITICAL FIRST STEP**
 
+**⚠️ ESSENTIAL PREREQUISITE: Makefile Configuration Analysis**
+This codebase uses extensive conditional compilation (308 #ifdef directives) requiring specific -D flags for proper compilation. The baseline test MUST include essential configuration flags discovered through Makefile analysis to avoid massive false errors from missing code paths.
+
 #### Bug Tracking Strategy
 **GitHub Issues: Compilation Errors ONLY**
 - File issues ONLY for compilation errors that prevent building
@@ -51,19 +54,41 @@
 
 #### Implementation Commands
 ```bash
-# File inventory and dependency mapping
+# STEP 1: Makefile Configuration Analysis (CRITICAL FIRST)
+# Analyze existing Makefile for essential -D flags required for compilation
+make config  # Extract build configuration and essential -D flags
+# Document findings in _modernization/claude/reports/BASELINE_COMPILATION.txt
+
+# STEP 2: File inventory and dependency mapping
 find . -name "*.c" -o -name "*.h" | sort > _modernization/claude/reports/FILE_INVENTORY.txt
 
-# Baseline compilation test (capture all current state)
+# STEP 3: Baseline compilation test with essential -D flags
+# Extract essential flags from Makefile analysis:
+ESSENTIAL_FLAGS='-DDEFAULTDIR="/home/ssmoogen/conquer/lib" -DEXEDIR="/home/ssmoogen/conquer/bin" -DVERSION="4" -DPATCHLEVEL="12" -DLOGIN="ssmoogen"'
+
+# CRITICAL: Essential Feature Test Macros (discovered during Phase 4 implementation)
+# These feature test macros are REQUIRED for legacy code compilation:
+FEATURE_TEST_MACROS='-D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE'
+# - _POSIX_C_SOURCE=200809L: Enables POSIX.1-2008 functions
+# - _XOPEN_SOURCE=700: Enables X/Open extensions (required for lockf() and other system functions)
+# - _DEFAULT_SOURCE: Enables BSD extensions (required for bzero() and other legacy functions)
+
+# Test each file with minimal but essential configuration
 for file in *.h *.c; do
     echo "=== Testing $file ===" >> _modernization/claude/reports/BASELINE_COMPILATION.txt
-    gcc -O2 -g -std=c99 -c "$file" -o /tmp/foo.o >> _modernization/claude/reports/BASELINE_COMPILATION.txt 2>&1
+    # Test with CONQUER flag (game executable configuration)
+    gcc -O2 -g -std=c99 $FEATURE_TEST_MACROS $ESSENTIAL_FLAGS -DCONQUER -c "$file" -o /tmp/foo.o >> _modernization/claude/reports/BASELINE_COMPILATION.txt 2>&1
+    # For shared files, also test ADMIN configuration if relevant
+    if [[ "$file" =~ ^(cexecute|io|misc|navy|magic|data|trade)\.c$ ]]; then
+        echo "=== Testing $file (ADMIN) ===" >> _modernization/claude/reports/BASELINE_COMPILATION.txt
+        gcc -O2 -g -std=c99 $FEATURE_TEST_MACROS $ESSENTIAL_FLAGS -DADMIN -DCONQUER -c "$file" -o /tmp/foo.o >> _modernization/claude/reports/BASELINE_COMPILATION.txt 2>&1
+    fi
 done
 
-# GitHub Issues: Create for compilation errors only
+# STEP 4: GitHub Issues: Create for compilation errors only
 gh issue create --title "COMPILE-ERROR: [File] - [Description]" --label "phase-4,compilation-error,blocker"
 
-# Create automation scripts and local tracking files
+# STEP 5: Create automation scripts and local tracking files
 ```
 
 **Create Required Automation Scripts:**
@@ -84,7 +109,7 @@ gh issue create --title "COMPILE-ERROR: [File] - [Description]" --label "phase-4
 
 **Compilation Command:**
 ```bash
-gcc -O2 -g -Wno-traditional-conversion -Wno-old-style-declaration -std=c99 -c header.h -o /tmp/foo.o
+gcc -O2 -g -Wno-traditional-conversion -Wno-old-style-declaration -std=c99 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -c header.h -o /tmp/foo.o
 ```
 
 **Session Strategy for header.h:**
@@ -100,7 +125,7 @@ gcc -O2 -g -Wno-traditional-conversion -Wno-old-style-declaration -std=c99 -c he
 
 **Compilation Command:**
 ```bash
-gcc -O2 -g -std=c99 -c filename.c -o /tmp/foo.o
+gcc -O2 -g -std=c99 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -c filename.c -o /tmp/foo.o
 ```
 
 **Priority Order:**
@@ -118,12 +143,12 @@ gcc -O2 -g -std=c99 -c filename.c -o /tmp/foo.o
 
 **Compilation Command:**
 ```bash
-gcc -O2 -g -std=c99 -Wall -c filename.c -o /tmp/foo.o
+gcc -O2 -g -std=c99 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -Wall -c filename.c -o /tmp/foo.o
 ```
 
 **Tool Integration**: Introduce Clang for comparison
 ```bash
-clang -O2 -g -std=c99 -Wall -c filename.c -o /tmp/foo.o
+clang -O2 -g -std=c99 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -Wall -c filename.c -o /tmp/foo.o
 ```
 
 **Common Warning Categories**:
@@ -137,7 +162,7 @@ clang -O2 -g -std=c99 -Wall -c filename.c -o /tmp/foo.o
 
 **Compilation Command:**
 ```bash
-gcc -O2 -g -std=c99 -Wall -Wextra -Wpedantic -Wformat=2 -c filename.c -o /tmp/foo.o
+gcc -O2 -g -std=c99 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -Wall -Wextra -Wpedantic -Wformat=2 -c filename.c -o /tmp/foo.o
 ```
 
 **Focus Areas**:
@@ -151,7 +176,7 @@ gcc -O2 -g -std=c99 -Wall -Wextra -Wpedantic -Wformat=2 -c filename.c -o /tmp/fo
 **Migration Strategy**:
 ```bash
 # Test one file at a time for C2x compatibility
-gcc -O2 -g -Wall -Wextra -Wpedantic -Wformat=2 -std=c2x -D_POSIX_C_SOURCE=200809L -c filename.c -o /tmp/foo.o
+gcc -O2 -g -Wall -Wextra -Wpedantic -Wformat=2 -std=c2x -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -c filename.c -o /tmp/foo.o
 ```
 
 **Expected Issues**:
@@ -161,30 +186,12 @@ gcc -O2 -g -Wall -Wextra -Wpedantic -Wformat=2 -std=c2x -D_POSIX_C_SOURCE=200809
 
 **Session Management**: This phase will likely require multiple sessions per file due to warning explosion
 
-### Subphase 6: clang-tidy Integration
-**Focus**: Automated modernization where safe
-
-**Progressive Approach**:
-```bash
-# Analysis only first
-clang-tidy filename.c --checks='-*,bugprone-*,readability-identifier-naming'
-
-# Selective fixes with validation
-clang-tidy filename.c --fix --checks='-*,bugprone-unlikely-function-cast'
-```
-
-**Safety Protocol**:
-1. Run analysis only first
-2. Apply one check category at a time
-3. Test compilation after each fix
-4. Git commit or restore if problems
-
-### Subphase 7: Intensive Analysis
+### Subphase 6: Intensive Analysis
 **Focus**: Add conversion warnings, analyzer, sanitizers
 
 **Compilation Command:**
 ```bash
-gcc -O2 -g -Wall -Wextra -Wpedantic -Wformat=2 -std=c2x -D_POSIX_C_SOURCE=200809L \
+gcc -O2 -g -Wall -Wextra -Wpedantic -Wformat=2 -std=c2x -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE \
     -Wconversion -Wsign-conversion -Wimplicit-fallthrough \
     -fanalyzer -Wstrict-prototypes -Wold-style-declaration \
     -c filename.c -o /tmp/foo.o
@@ -195,7 +202,7 @@ gcc -O2 -g -Wall -Wextra -Wpedantic -Wformat=2 -std=c2x -D_POSIX_C_SOURCE=200809
 - Replace `int32_t`, `uint32_t` where appropriate
 - Fix implicit conversions and sign issues
 
-### Subphase 8: Legacy Compatibility
+### Subphase 7: Legacy Compatibility
 **Focus**: Traditional warnings for remaining K&R artifacts
 
 **Compilation Command:**
@@ -206,6 +213,154 @@ gcc -O2 -g -Wall -Wextra -Wpedantic -Wformat=2 -std=c2x -D_POSIX_C_SOURCE=200809
     -Wtraditional -Wtraditional-conversion \
     -c filename.c -o /tmp/foo.o
 ```
+
+### Subphase 8: K&R Function Definition Modernization
+
+**Focus**: Systematic conversion of legacy K&R function definitions to modern ANSI C prototypes
+
+**⚠️ IMPORTANT**: This subphase triggers when C2x strict warnings flag K&R style definitions as deprecated. At this point, manual conversion becomes necessary for clean compilation.
+
+**Triggering Warning Example:**
+```bash
+# This will start generating warnings in stricter C2x mode:
+gcc -std=c2x -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -Wold-style-definition -Wstrict-prototypes -c file.c
+# warning: old-style function definition [-Wold-style-definition]
+# warning: function declaration isn't a prototype [-Wstrict-prototypes]
+```
+
+#### K&R Pattern Categories Found in Codebase
+
+**Pattern 1: Basic K&R Style** (Most Common)
+```c
+// BEFORE: Legacy K&R definition
+void
+main(argc,argv)
+int	argc;
+char	**argv;
+{
+    // function body
+}
+
+// AFTER: Modern ANSI C prototype
+int main(int argc, char **argv) {
+    // function body
+}
+```
+
+**Pattern 2: PARM_X Macro System** (Complex Legacy)
+```c
+// BEFORE: Macro-based parameter definitions
+#define PARM_2(a,b,c,d) (b, d) a b; c d;
+main PARM_2 (int, argc, char **, argv)
+{
+    // function body
+}
+
+// AFTER: Direct ANSI C prototype
+int main(int argc, char **argv) {
+    // function body
+}
+```
+
+**Pattern 3: PL_ Header Macros** (Header File Legacy)
+```c
+// BEFORE: Prototype wrapper macros
+#define PL_(x) x
+extern int main PL_(( int argc, char ** argv ));
+
+// AFTER: Clean modern prototypes
+extern int main(int argc, char **argv);
+```
+
+#### Automation Script Development Strategy
+
+**Script 1: `convert_kr_functions.py`**
+```python
+#!/usr/bin/env -S uv run --script
+# /// script
+# dependencies = ["regex", "pathlib", "argparse"]
+# ///
+
+# Convert basic K&R function definitions to ANSI C
+# Handles Pattern 1: Multi-line K&R definitions
+# Input: function_name(param1,param2)\ntype param1;\ntype param2;\n{
+# Output: return_type function_name(type param1, type param2) {
+```
+
+**Script 2: `cleanup_parm_macros.py`**
+```python
+#!/usr/bin/env -S uv run --script
+# /// script
+# dependencies = ["regex", "pathlib", "argparse"]
+# ///
+
+# Remove PARM_X macro usage and convert to direct prototypes
+# Handles Pattern 2: PARM_1, PARM_2, PARM_3, etc.
+# Must analyze macro definitions to understand parameter mapping
+```
+
+**Script 3: `modernize_header_prototypes.py`**
+```python
+#!/usr/bin/env -S uv run --script
+# /// script
+# dependencies = ["regex", "pathlib", "argparse"]
+# ///
+
+# Clean up PL_() wrapper macros and legacy prototype styles
+# Handles Pattern 3: Header file prototype modernization
+# Removes unnecessary macro wrappers around function signatures
+```
+
+#### Implementation Workflow
+
+**Step 1: Pattern Analysis**
+```bash
+# Catalog all K&R patterns in codebase
+grep -n "^[a-zA-Z_][a-zA-Z0-9_]*(" *.c > kr_functions.txt
+grep -n "PARM_[0-9]" *.c *.h > parm_macros.txt
+grep -n "PL_(" *.h > pl_macros.txt
+```
+
+**Step 2: Script Development and Testing**
+- Create scripts with `--dry-run` and `--backup` options
+- Test on single file first
+- Validate with compilation after each conversion
+- Ensure idempotent operation (safe to run multiple times)
+
+**Step 3: Systematic Conversion**
+```bash
+# Convert basic K&R functions first
+python3 _modernization/scripts/convert_kr_functions.py --backup *.c
+
+# Then clean up macro-based prototypes
+python3 _modernization/scripts/cleanup_parm_macros.py --backup *.c *.h
+
+# Finally modernize header prototypes
+python3 _modernization/scripts/modernize_header_prototypes.py --backup *.h
+```
+
+**Step 4: Validation and Cleanup**
+```bash
+# Test compilation after each script run
+gcc -std=c2x -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -Wold-style-definition -Wstrict-prototypes -c *.c
+
+# Remove backup files after successful validation
+find . -name "*.orig" -delete
+```
+
+#### Success Criteria
+- ✅ Zero `-Wold-style-definition` warnings
+- ✅ Zero `-Wstrict-prototypes` warnings
+- ✅ All functions use modern ANSI C prototype syntax
+- ✅ All PARM_X and PL_() macro usage eliminated
+- ✅ Header files contain clean, modern function prototypes
+
+#### Integration with Other Subphases
+- **Dependency**: Requires Subphases 1-7 completion (clean C2x compilation)
+- **Trigger**: Activated when strict C2x warnings flag K&R definitions
+- **Prerequisite**: Modern build system (Phase 5) for consistent testing
+- **Follow-up**: Enables clang-tidy integration in later phases
+
 
 ### Subphase 9: Phase 4 Retrospective and Knowledge Capture 🔄
 **Focus**: Document lessons learned and create reusable methodology for future codebases

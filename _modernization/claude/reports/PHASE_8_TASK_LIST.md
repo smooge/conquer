@@ -81,6 +81,53 @@
 - [ ] Use POSIX-compliant function variants
 - [ ] Avoid GNU extensions and BSD-specific functions
 
+#### bzero() Function Modernization (misc.c) ⭐ HIGH PRIORITY
+**Discovered during Phase 4 misc.c compilation fixes**
+
+**Current State**:
+- Using BSD extension `bzero()` function requiring `_DEFAULT_SOURCE` feature test macro
+- Non-portable dependency on BSD string functions
+- Potential compatibility issues on non-BSD systems
+
+**Modernization Goal**:
+- Replace `bzero()` with portable POSIX `memset()` equivalent
+- Remove `_DEFAULT_SOURCE` feature test macro dependency
+- Improve cross-platform compatibility
+
+**Technical Details**:
+```c
+// BEFORE: BSD-specific function (requires _DEFAULT_SOURCE)
+#include <strings.h>  // BSD header
+bzero((char *) *history_reachp, MAPX*MAPY);
+
+// AFTER: POSIX-compliant equivalent
+#include <string.h>   // Standard C header
+memset(*history_reachp, 0, MAPX*MAPY);
+```
+
+**Benefits**:
+- ✅ Remove `_DEFAULT_SOURCE` feature test macro requirement
+- ✅ Use standard C library function available everywhere
+- ✅ Better portability across all POSIX systems
+- ✅ Cleaner compilation without BSD-specific extensions
+- ✅ Eliminate dependency on non-standard `<strings.h>` header
+
+**Files Affected**:
+- `misc.c` - Primary usage in `land_reachp()` function (line 525)
+- Search for other potential `bzero()` usage throughout codebase
+
+**Implementation**:
+1. Replace `bzero(ptr, size)` with `memset(ptr, 0, size)`
+2. Ensure `#include <string.h>` is present for `memset()`
+3. Remove `#include <strings.h>` if only used for `bzero()`
+4. Test compilation without `_DEFAULT_SOURCE` flag
+
+**Testing Required**:
+- Verify memory initialization behavior is identical
+- Test on all target platforms (Linux/macOS/FreeBSD)
+- Ensure no performance regression with memset() vs bzero()
+- Validate that cleared memory areas function correctly
+
 ## Implementation Notes
 
 ### Phase 8 Prerequisites
