@@ -1,8 +1,8 @@
 # Phase 4: Warning Elimination Strategy
 
-**Date**: 2025-01-20
+**Date**: 2025-01-20 (Updated 2025-01-21)
 **Based on**: Updated phase4_plan.md and review feedback
-**Scope**: 32 .c files, 9 .h files
+**Scope**: 26 .c files, 6 .h files (utilities moved to Unfinished - X11R1 incompatible)
 **Critical Path**: header.h (highest dependency)
 
 ## Strategy Overview
@@ -36,6 +36,20 @@
 ### Subphase 0: Baseline Assessment & Infrastructure ⚠️
 **CRITICAL FIRST STEP**
 
+#### Bug Tracking Strategy
+**GitHub Issues: Compilation Errors ONLY**
+- File issues ONLY for compilation errors that prevent building
+- Use standardized format: `COMPILE-ERROR: [File] - [Brief Description]`
+- Label with: `phase-4,compilation-error,blocker`
+- Rationale: Multi-thousand warnings would overwhelm issue tracker
+
+**Local Tracking: All Warnings**
+- Use local status files for comprehensive warning tracking
+- Automation scripts for categorization and progress monitoring
+- Session memory files for cross-session continuity
+- Git commits as primary progress tracking mechanism
+
+#### Implementation Commands
 ```bash
 # File inventory and dependency mapping
 find . -name "*.c" -o -name "*.h" | sort > _modernization/claude/reports/FILE_INVENTORY.txt
@@ -46,7 +60,10 @@ for file in *.h *.c; do
     gcc -O2 -g -std=c99 -c "$file" -o /tmp/foo.o >> _modernization/claude/reports/BASELINE_COMPILATION.txt 2>&1
 done
 
-# Create automation scripts
+# GitHub Issues: Create for compilation errors only
+gh issue create --title "COMPILE-ERROR: [File] - [Description]" --label "phase-4,compilation-error,blocker"
+
+# Create automation scripts and local tracking files
 ```
 
 **Create Required Automation Scripts:**
