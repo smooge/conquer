@@ -2160,40 +2160,40 @@ char race;
 	for( j = 0; veg[j] != '0'; j++ ) {
 		switch( race ) {
 		case ELF:
-			veg_cost[ veg[j] ] = EVegcost[j] - '0';
+			veg_cost[ (unsigned char)veg[j] ] = EVegcost[j] - '0';
 			break;
 		case DWARF:
-			veg_cost[ veg[j] ] = DVegcost[j] - '0';
+			veg_cost[ (unsigned char)veg[j] ] = DVegcost[j] - '0';
 			break;
 		case ORC:
-			veg_cost[ veg[j] ] = OVegcost[j] - '0';
+			veg_cost[ (unsigned char)veg[j] ] = OVegcost[j] - '0';
 			break;
 		case HUMAN:
 		default:
-			veg_cost[ veg[j] ] = HVegcost[j] - '0';
+			veg_cost[ (unsigned char)veg[j] ] = HVegcost[j] - '0';
 			break;
 		} /* switch */
 	} /* for */
 
 	if(magic(cntry,DERVISH) || magic(cntry,DESTROYER)) {
-		veg_cost[ ICE ] = 0;
-		veg_cost[ DESERT ] = 0;
+		veg_cost[ (unsigned char)ICE ] = 0;
+		veg_cost[ (unsigned char)DESERT ] = 0;
 	}
 
 	for( j = 0; ele[j] != '0'; j++ ) {
 		switch( race ) {
 		case ELF:
-			ele_cost[ ele[j] ] = EElecost[j] - '0';
+			ele_cost[ (unsigned char)ele[j] ] = EElecost[j] - '0';
 			break;
 		case DWARF:
-			ele_cost[ ele[j] ] = DElecost[j] - '0';
+			ele_cost[ (unsigned char)ele[j] ] = DElecost[j] - '0';
 			break;
 		case ORC:
-			ele_cost[ ele[j] ] = OElecost[j] - '0';
+			ele_cost[ (unsigned char)ele[j] ] = OElecost[j] - '0';
 			break;
 		case HUMAN:
 		default:
-			ele_cost[ ele[j] ] = HElecost[j] - '0';
+			ele_cost[ (unsigned char)ele[j] ] = HElecost[j] - '0';
 			break;
 		} /* switch */
 	} /* for */
@@ -3315,7 +3315,7 @@ mailclose(int to)
 		}
 		system(line);
 	}
-	if (tmp_mail_name!=NULL) {
+	if (tmp_mail_name[0] != '\0') {
 		(void) unlink(tmp_mail_name);
 	}
 #endif /*CONQUER*/
