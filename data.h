@@ -836,7 +836,7 @@ struct	s_nation		/* player nation stats	*/
 #endif
 
 #ifdef SYSV
-extern	long		lrand48();
+extern	long		lrand48(void);
 #define	rand()		lrand48()
 #define	srand(x)	srand48(x)
 #endif
@@ -885,69 +885,72 @@ extern	long		lrand48();
  */
 
 /* extern all subroutine calls	*/
-extern long	getmagic(), getmagic(), getmgkcost(), score_one();
-extern long	get_number(), solds_in_sector(),defaultunit();
+extern long	getmagic(void), getmagic(void), getmgkcost(void), score_one(void);
+extern long	get_number(void), solds_in_sector(void),defaultunit(void);
 
-extern int	move_file(), land_2reachp(), land_reachp(), canbeseen();
-extern int	water_reachp(), markok(), is_habitable(), parse();
-extern int	units_in_sector(), num_powers(), tofood(), mailopen();
-extern int	get_god(), flightcost(), todigit(), getclass(), startcost();
-extern int	water_2reachp(),tg_ok(), readmap(), avian();
-extern int	cbonus(), armymove(),takeover(),getnewname();
-extern int getleader();
-extern int execute();
+extern int	move_file(void), land_2reachp(void), land_reachp(void), canbeseen(void);
+extern int	water_reachp(void), markok(void), is_habitable(void), parse(void);
+extern int	units_in_sector(void), num_powers(void), tofood(void), mailopen(void);
+extern int	get_god(void), flightcost(void), todigit(void), getclass(void), startcost(void);
+extern int	water_2reachp(void),tg_ok(void), readmap(void), avian(void);
+extern int	cbonus(void), armymove(void),takeover(void),getnewname(void);
+extern int getleader(void);
+extern int execute(void);
 extern void peasant_revolt(int *newnation);
 extern int other_revolt(int *new);
-extern int	aretheyon(),armygoto(),navygoto(),getselunit();
-extern int	unitvalid(),access(),orctake(),fort_val();
-extern int	addgships(),addmships(),addwships(),fltships();
-extern int	fltghold(),fltwhold(),fltmhold(),flthold(),compass();
-extern int	get_country(),check_lock(),doclass(),get_pass();
-extern unsigned short	fltspeed();
-extern void	do_pirate(), do_nomad(), do_savage(), do_lizard();
-extern void	getjewel(),getmetal(),loadfleet(),removemgk(),exenewmgk();
-extern struct	s_sector *rand_sector();
-extern void	subgships(),submships(),subwships(),getspace(),sackem();
-extern void	whatcansee(), reset_god(), get_nname(), camp_info();
-extern int	main();
-extern void	makebottom(), makeside(), check_mail(), centermap();
-extern void	checkout(),copyscreen(),bye(),credits(),init_hasseen();
-extern void	combinearmies(),change_status(),reducearmy(),splitarmy();
-extern void	errormsg(), clear_bottom(), addgroup(),ext_cmd();
-extern void	randomevent(), wdisaster(), weather(), deplete();
-extern void	verify_ntn(), verify_sct(), verifydata(), prep();
-extern void	errorbar(), newbye(), newreset(), newmsg(), newerror();
-extern void	newinit(), jump_to();
-extern void	destroy(), updmove(), spreadsheet(), mailclose();
-extern void	updexecs(), updcapture(), updsectors();
-extern void	updmil(), updcomodities(), updleader();
-extern void	nationrun(), n_atpeace(), n_trespass(), n_people();
-extern void	n_toofar(), n_unowned(), pceattr(), checkout();
-extern void	fdxyretreat(), retreat(), rawmaterials(), createworld();
-extern void	att_setup(), att_base(), att_bonus();
-extern void	adjarm(),armyrpt(),atkattr(),blowup();
-extern void	budget(),change(),cheat(),coffmap(),combat(),construct();
-extern void	defattr(),diploscrn(),domagic(),draft(),erupt();
-extern void	fight();
-extern void	fill_edge(),flee(),fleetrpt(),hangup(),help();
+extern int	aretheyon(void),armygoto(void),navygoto(void),getselunit(void);
+extern int	unitvalid(void),orctake(void),fort_val(void);
+extern int	conquer_access(void);  /* renamed to avoid conflict with system access() */
+extern int	addgships(void),addmships(void),addwships(void),fltships(void);
+extern int	fltghold(void),fltwhold(void),fltmhold(void),flthold(void),compass(void);
+extern int	get_country(void),check_lock(void),doclass(void),get_pass(void);
+extern unsigned short	fltspeed(void);
+extern void	do_pirate(void), do_nomad(void), do_savage(void), do_lizard(void);
+extern void	getjewel(void),getmetal(void),loadfleet(void),removemgk(void),exenewmgk(void);
+extern struct	s_sector *rand_sector(void);
+extern void	subgships(void),submships(void),subwships(void),getspace(void),sackem(void);
+extern void	whatcansee(void), reset_god(void), get_nname(void), camp_info(void);
+extern int	main(void);
+extern void	makebottom(void), makeside(void), check_mail(void), centermap(void);
+extern void	checkout(void),copyscreen(void),bye(void),credits(void),init_hasseen(void);
+extern void	combinearmies(void),change_status(void),reducearmy(void),splitarmy(void);
+extern void	errormsg(void), clear_bottom(void), addgroup(void),ext_cmd(void);
+extern void	randomevent(void), wdisaster(void), weather(void), deplete(void);
+extern void	verify_ntn(void), verify_sct(void), verifydata(void), prep(void);
+extern void	errorbar(void), newbye(void), newreset(void), newmsg(void), newerror(void);
+extern void	newinit(void), jump_to(void);
+extern void	destroy(void), updmove(void), spreadsheet(void), mailclose(void);
+extern void	updexecs(void), updcapture(void), updsectors(void);
+extern void	updmil(void), updcomodities(void), updleader(void);
+extern void	nationrun(void), n_atpeace(void), n_trespass(void), n_people(void);
+extern void	n_toofar(void), n_unowned(void), pceattr(void), checkout(void);
+extern void	fdxyretreat(void), retreat(void), rawmaterials(void), createworld(void);
+extern void	att_setup(void), att_base(void), att_bonus(void);
+extern void	adjarm(void),armyrpt(void),atkattr(void),blowup(void);
+extern void	budget(void),change(void),cheat(void),coffmap(void),combat(void),construct(void);
+extern void	defattr(void),diploscrn(void),domagic(void),draft(void),erupt(void);
+extern void	fight(void);
+extern void	fill_edge(void),flee(void),fleetrpt(void),hangup(void),help(void);
 extern void	highlight(int x, int y, short hmode);
-extern void	makemap();
-extern void	makeside();
-extern void	makeworld(),monster(),moveciv();
-extern void	mymove(),navalcbt(),newdip(),newdisplay(),newlogin();
-extern void	newspaper(),npcredes(),offmap(),place(),populate();
-extern void	printele(),printnat(),printscore(),printveg();
-extern void	pr_ntns(),pr_desg(),produce();
-extern void	readdata(),redesignate(),redomil(),reduce(),rmessage(),score();
-extern void	see(),showscore(),update();
-extern void	wmessage(),writedata(),getdstatus(),exit();
-extern void	wizardry();
-extern	char	*crypt(),**m2alloc();
+extern void	makemap(void);
+extern void	makeside(void);
+extern void	makeworld(void),monster(void),moveciv(void);
+extern void	mymove(void),navalcbt(void),newdip(void),newdisplay(void),newlogin(void);
+extern void	newspaper(void),npcredes(void),offmap(void),place(void),populate(void);
+extern void	printele(void),printnat(void),printscore(void),printveg(void);
+extern void	pr_ntns(void),pr_desg(void),produce(void);
+extern void	readdata(void),redesignate(void),redomil(void),reduce(void),rmessage(void),score(void);
+extern void	see(void),showscore(void),update(void);
+extern void	wmessage(void),writedata(void),getdstatus(void);
+/* exit() declaration removed - conflicts with system exit(int) */
+extern void	wizardry(void);
+extern	char	**m2alloc(void);
+/* crypt() declaration removed - conflicts with system crypt(const char*, const char*) */
 #ifdef SPEW
 extern void makemess(int n, FILE *fp);
 #endif
 #ifdef TRADE
-void trade(),uptrade(),checktrade();
+void trade(void),uptrade(void),checktrade(void);
 #endif /* TRADE */
 
 #define	HI_OWN		0	/* hilight modes	*/
