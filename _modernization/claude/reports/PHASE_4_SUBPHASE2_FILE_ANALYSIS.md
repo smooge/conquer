@@ -2,15 +2,21 @@
 
 ## Summary
 
-Total files with warnings/errors: 17 files (18 originally)
-Total warnings/errors: 142 issues (148 originally)
+Total files with warnings/errors: 16 files (18 originally)
+Total warnings/errors: 130 issues (148 originally)
 ✅ **admin.c**: COMPLETE - 6 issues resolved
+✅ **check.c**: COMPLETE - 12 issues resolved
+   - Fixed: Moved #include <fcntl.h> to proper location (top of file)
+   - Fixed: Added -D_XOPEN_SOURCE=700 flag for lockf() function declaration
+   - Fixed: 3 format string mismatches (%d → %ld for long int variables)
+   - Required flags: -DFILELOCK -DLOCKF for file locking features
+   - Result: Zero warnings with intensive analysis flags
 
 ## Priority Classification
 
 ### HIGH PRIORITY (Compilation Errors - Must Fix First)
 1. **admin.c** ✅ COMPLETE - Zero warnings/errors (was 6 issues)
-2. **check.c** (12 issues) - Has compilation errors (lockf, F_TLOCK)
+2. **check.c** ✅ COMPLETE - Zero warnings/errors (was 12 issues)
 3. **misc.c** (14 issues) - Has compilation errors (DEFAULTPAGE)
 
 ### MEDIUM PRIORITY (Many Warnings)

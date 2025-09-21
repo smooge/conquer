@@ -54,6 +54,7 @@
 
 #include	<ctype.h>
 #include	<stdio.h>
+#include	<fcntl.h>
 #ifndef FILELOCK
 #include	<sys/types.h>
 #include	<sys/stat.h>
@@ -131,7 +132,7 @@ int	__line__;
 		for( i = 0; i < MAXARM; i++ ) {
 			a = &nptr->arm[i];
 			if( a->sold < 0 ) {
-				fprintf( stderr, "file %s: line %d: nation[%d] army[%d] sold = %d\n",
+				fprintf( stderr, "file %s: line %d: nation[%d] army[%d] sold = %ld\n",
 					__file__, __line__, country, i, a->sold );
 				a->sold = 0;
 			}
@@ -169,7 +170,7 @@ int	__line__;
 				}
 			}
 			if( a->stat != ONBOARD && sct[a->xloc][a->yloc].altitude==WATER ) {
-				fprintf( stderr, "file %s: line %d: nation[%d] army[%d] loc=%d,%d (water) men=%d\n",
+				fprintf( stderr, "file %s: line %d: nation[%d] army[%d] loc=%d,%d (water) men=%ld\n",
 				__file__,__line__,country,i,a->xloc,a->yloc,a->sold);
 				a->sold = 0;
 			}
@@ -280,7 +281,7 @@ int	__line__;
 				sptr->people = ABSMAXPEOPLE;
 
 			if( sptr->people < 0 ) {
-				fprintf( stderr, "file %s: line %d: sct[%d][%d].people = %d\n", __file__, __line__, x, y, sptr->people );
+				fprintf( stderr, "file %s: line %d: sct[%d][%d].people = %ld\n", __file__, __line__, x, y, sptr->people );
 				if( sptr->people < -1*ABSMAXPEOPLE )
 					sptr->people = ABSMAXPEOPLE;
 				else sptr->people = 0;
@@ -390,7 +391,6 @@ char	*file;
 }
 #endif /* DEBUG */
 
-#include <fcntl.h>
 #ifdef FILELOCK
 #ifdef LOCKF
 #    include <unistd.h>
