@@ -1,10 +1,10 @@
 /*
  * update.c - Game state update and turn processing
- * 
+ *
  * This file is part of Conquer.
  * Originally Copyright (C) 1988-1989 by Edward M. Barlow and Adam Bryant
  * Copyright (C) 2025 Juan Manuel Méndez Rey (Vejeta) - Licensed under GPL v3 with permission from original authors
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -75,7 +75,7 @@ long	**newpop;		/* storage for old population */
  *   - String formatting approach may be less efficient than direct conversion
  *   - BIGLTH buffer size should be sufficient for largest double representations
  */
-long 
+long
 dtol (double d)
 {
 	char tempstr[BIGLTH];
@@ -146,7 +146,7 @@ dtol (double d)
  *   - News file management ensures player communication and game history
  *   - Integrity checks (check()) provide critical error detection throughout turn processing
  */
-void 
+void
 update (void)
 {
 	char command[BIGLTH],filename[FILELTH];
@@ -450,7 +450,7 @@ attract(int x,int y,int race)
  *   - Group leaders coordinate movement of all assigned units
  *   - Complex conditional logic for different army types and situations
  */
-int 
+int
 armymove (int armynum)
 {
 	long		sum, where;
@@ -498,7 +498,7 @@ armymove (int armynum)
 				&& (curntn->arm[x].unittyp<MINLEADER))
 					menok+=P_ASOLD;
 		} else	menok=P_ASOLD;
-		if((menok > TAKESECTOR ) 
+		if((menok > TAKESECTOR )
 		||( P_ATYPE>=MINLEADER)) menok=TRUE;
 		else menok=FALSE;
 		/* range of 4 if menok is FALSE else 2 */
@@ -592,9 +592,9 @@ armymove (int armynum)
 #endif /*XENIX*/
 					takesctr++;
 				}
-		
+
 				if((P_ATYPE>=MINLEADER)&&(P_ASTAT==GENERAL))
-				for(x=0;x<MAXARM;x++) 
+				for(x=0;x<MAXARM;x++)
 				if((curntn->arm[x].sold>0 )
 				&&( curntn->arm[x].stat==armynum+NUMSTATUS)){
 					curntn->arm[x].xloc=P_AXLOC;
@@ -626,7 +626,7 @@ armymove (int armynum)
 					takesctr++;
 				}
 				if((P_ATYPE>=MINLEADER)&&(P_ASTAT==GENERAL))
-				for(i=0;i<MAXARM;i++) 
+				for(i=0;i<MAXARM;i++)
 				if((curntn->arm[i].sold>0 )
 				&&( curntn->arm[i].stat==armynum+NUMSTATUS)){
 					curntn->arm[i].xloc=P_AXLOC;
@@ -682,7 +682,7 @@ armymove (int armynum)
  *   - Nation 0 is skipped (nations start at index 1)
  *   - Cumulative scoring allows tracking long-term nation performance
  */
-void 
+void
 score (void)
 {
 	int x;
@@ -745,7 +745,7 @@ score (void)
  *   - Score comparison ensures only struggling NPCs receive help
  *   - Diplomatic changes are probabilistic and gradual
  */
-void 
+void
 cheat (void)
 {
 	int x,y;
@@ -785,14 +785,14 @@ cheat (void)
 
 	bonus=0;
 	count=0;
-	for(x=1;x<NTOTAL;x++) 
+	for(x=1;x<NTOTAL;x++)
 		if(realnpc[x]==TRUE)  {
 			bonus+=ntn[x].aplus+ntn[x].dplus;
 			count++;
 		}
 	if(count==0) return;
 	npcavg = bonus / count;
-	for(x=1;x<NTOTAL;x++) 
+	for(x=1;x<NTOTAL;x++)
 	if((realnpc[x]==TRUE)
 	&&(ntn[x].score < avgscore)
 	&&(ntn[x].race != ORC )
@@ -888,7 +888,7 @@ cheat (void)
  *   - Nation disarray occurs when primary leader is killed
  *   - Civilian movement driven by sector attractiveness calculations
  */
-void 
+void
 updexecs (void)
 {
 	register struct s_sector	*sptr;
@@ -907,7 +907,7 @@ updexecs (void)
 	newpop = (long **) m2alloc(5,MAPY,sizeof(long));
 	check();
 
-	for(country=0;country<NTOTAL;country++) 
+	for(country=0;country<NTOTAL;country++)
 		if( isntn(ntn[country].active) ) execed[country]=FALSE;
 		else {
 			execed[country]=TRUE;
@@ -1144,7 +1144,7 @@ printf("checking for leader in nation %s: armynum=%d\n",curntn->name,armynum);
 /*	DO_LIZARD() 						*/
 /* update lizards	 					*/
 /****************************************************************/
-void 
+void
 do_lizard (void)
 {
 #ifdef XENIX
@@ -1182,9 +1182,9 @@ do_lizard (void)
 			for(i=(int)ntn[country].arm[armynum-1].xloc-1;i<=ntn[country].arm[armynum-1].xloc+1;i++) {
 				for(j=(int)ntn[country].arm[armynum-1].yloc-1;j<=ntn[country].arm[armynum-1].yloc+1;j++) {
 					if(ONMAP(i,j)
-					&&(sct[i][j].altitude!=WATER) 
-					&&(sct[i][j].altitude!=PEAK) 
-					&&(sct[i][j].owner != country) 
+					&&(sct[i][j].altitude!=WATER)
+					&&(sct[i][j].altitude!=PEAK)
+					&&(sct[i][j].owner != country)
 					&&(rand()%3==0)){
 						P_AXLOC = i;
 						P_AYLOC = j;
@@ -1292,7 +1292,7 @@ do_lizard (void)
 /*	UPDCAPTURE() 						*/
 /* capture unoccupied sectors					*/
 /****************************************************************/
-void 
+void
 updcapture (void)
 {
 	register struct s_sector	*sptr;
@@ -1304,7 +1304,7 @@ updcapture (void)
 	/*look for any areas where armies alone in sector*/
 	prep(0,-1);
 
-	for(country=1;country<NTOTAL;country++) 
+	for(country=1;country<NTOTAL;country++)
 	if(ntn[country].active!=INACTIVE){
 		curntn = &ntn[country];
 		for(armynum=0;armynum<MAXARM;armynum++)
@@ -1326,12 +1326,13 @@ updcapture (void)
 					if (curntn->popularity<MAXTGVAL) curntn->popularity++;
 				} else if((sptr->owner!=country)
 				&&(curntn->dstatus[sptr->owner]>=WAR)) {
-					if(ntn[sptr->owner].race!=curntn->race)
+					if(ntn[sptr->owner].race!=curntn->race) {
 						if(magic(country,SLAVER)==TRUE){
 							flee(P_AXLOC,P_AYLOC,1,TRUE);
 						} else {
 							flee(P_AXLOC,P_AYLOC,1,FALSE);
 						}
+					}
 
 					if((isntn( curntn->active ))
 					   &&(isntn( ntn[sptr->owner].active))) {
@@ -1495,7 +1496,7 @@ updcapture (void)
 /*	UPDSECTORS() 						*/
 /* update sectors one at a time				*/
 /**************************************************************/
-void 
+void
 updsectors (void)
 {
 	register struct s_sector	*sptr;
@@ -1514,12 +1515,13 @@ updsectors (void)
 
 		/* add to contents of sector */
 		if(rand()%100<FINDPERCENT) {
-			if( sct[x][y].tradegood == TG_none )
-			if(rand()%2==0) getmetal( &sct[x][y] );
-			else getjewel( &sct[x][y] );
+			if( sct[x][y].tradegood == TG_none ) {
+				if(rand()%2==0) getmetal( &sct[x][y] );
+				else getjewel( &sct[x][y] );
+			}
 		}
 
-		/* calculate reproduction per season */ 
+		/* calculate reproduction per season */
 		rephold = nptr->repro/4;
 		if ((SEASON(TURN)!=WINTER) &&
 		(SEASON(TURN)<=(nptr->repro%4)))
@@ -1553,7 +1555,7 @@ updsectors (void)
 		} else if(sptr->people<100) {
 			sptr->people+=sptr->people/10;
 		} else {
-			sptr->people += (rephold * sptr->people)/100; 
+			sptr->people += (rephold * sptr->people)/100;
 			if(sptr->people * sptr->metal > (rand()%100)*TOMUCHMINED)
 				if(sptr->designation==DMINE) sptr->metal--;
 			if(sptr->people * sptr->jewels > (rand()%100)*TOMUCHMINED)
@@ -1644,7 +1646,7 @@ updsectors (void)
 			else	curntn->poverty -= (charity+1)/2;
 
 			/* Calculate inflation base */
-			if(curntn->inflation > 0) 
+			if(curntn->inflation > 0)
 				curntn->inflation = rand()%(curntn->inflation/2+1);
 			else curntn->inflation = 0;
 			curntn->inflation += (curntn->tax_rate/4 + (rand()%(curntn->tax_rate*3/4+1)));
@@ -1791,17 +1793,17 @@ updsectors (void)
 /* reset military stuff 					*/
 /****************************************************************/
 #define MAXSIEGE (NTOTAL)
-void 
+void
 updmil (void)
 {
 	struct	army	*A;
 	int	AX, AY, AT;	/* armies x,y locations, type : for speed */
 	int armynum,nvynum,flag,dfltunit;
-	int army2,asmen,dsmen,nation,sieges=0;
+	int army2,asmen,dsmen,nation=0,sieges=0;
 	unsigned char siegex[MAXSIEGE],siegey[MAXSIEGE],siegok[MAXSIEGE];
 
 	fprintf(stderr,"updating armies and navies\n");
-	for(country=1;country<NTOTAL;country++) 
+	for(country=1;country<NTOTAL;country++)
 	if(isntn(ntn[country].active)){
 		curntn = &ntn[country];
 
@@ -1947,7 +1949,7 @@ updmil (void)
 			} else if (AT<MINLEADER) {
 				curntn->tgold -= A->sold * (*(unitmaint+(AT%UTYPE)));
 				if((ispc(ntn[country].active))
-				&&(occ[AX][AY] == 0)) 
+				&&(occ[AX][AY] == 0))
 					A->smove /= 2;
 			} else if (AT>=MINMONSTER) {
 				curntn->tgold -= 5L * (*(unitmaint+(AT%UTYPE)));
@@ -1967,7 +1969,7 @@ updmil (void)
 			}
 		}
 		/* group moves at rate of slowest +2 */
-		for(armynum=0;armynum<MAXARM;armynum++) 
+		for(armynum=0;armynum<MAXARM;armynum++)
 		if(( P_ASTAT == GENERAL )&&(P_ASOLD>0)){
 			flag=FALSE;
 			for(nvynum=0;nvynum<MAXARM;nvynum++) {
@@ -2177,18 +2179,18 @@ updmil (void)
 /*	UPDCOMODITIES()						*/
 /* update commodities						*/
 /****************************************************************/
-void 
+void
 updcomodities (void)
 {
 	register struct s_sector	*sptr;
 	register int x,y;
 	long xx;
 	float tempflt;
-	long dead;
+	long dead = 0;
 
 	fprintf(fnews,"2\tWORLD ECONOMY & DECLARATIONS OF WAR\n");
 	printf("working on world economy\n");
-	for(country=1;country<NTOTAL;country++) 
+	for(country=1;country<NTOTAL;country++)
 	if(isntn(ntn[country].active)){
 		curntn = &ntn[country];
 		/*soldiers eat  2 times as much */
@@ -2224,7 +2226,7 @@ updcomodities (void)
 					fprintf(fm,"Message to %s from CONQUER\n\n",curntn->name);
 					fprintf(fm,"During the %s of Year %d,\n",PSEASON(TURN),YEAR(TURN));
 					fprintf(fm,"a famine hit your town at %d,%d.\n",x,y);
-					fprintf(fm,"%d out of %d people died.\n",dead,sptr->people);
+					fprintf(fm,"%ld out of %ld people died.\n",dead,sptr->people);
 					mailclose(country);
 				}
 				}
@@ -2372,10 +2374,10 @@ updcomodities (void)
  */
 
 /****************************************************************/
-/* Conquer: Copyright (c) 1988 by Edward M Barlow
+/* Conquer: Copyright (c) 1988 by Edward M Barlow              */
 /*	UPDLEADER()						*/
 /****************************************************************/
-void 
+void
 updleader (void)
 {
 	int	nation,armynum,born,type;
@@ -2408,7 +2410,7 @@ updleader (void)
 					mailclose(nation);
 					}
 				}
-				printf("\tmonster born in nation %s\n",curntn->name); 
+				printf("\tmonster born in nation %s\n",curntn->name);
 				break;
 			}
 		}
@@ -2447,7 +2449,7 @@ updleader (void)
 					mailclose(nation);
 				}
 			}
-			printf("\tleader born in nation %s\n",curntn->name); 
+			printf("\tleader born in nation %s\n",curntn->name);
 			break;
 		}
 	}
@@ -2571,7 +2573,7 @@ updleader (void)
  * DELTA(2) = (EQUILIBRIUM(2) - P2) / 5 =(A2P1 - P2A1) / 5(A1 + A2) = -DELTA(1)
  * (i, j) is refered to as 1, (x, y) as 2
  */
-void 
+void
 move_people (void)
 {
 	register int x, y, i, j;

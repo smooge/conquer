@@ -1,10 +1,10 @@
 /*
  * commands.c - Player command processing
- * 
+ *
  * This file is part of Conquer.
  * Originally Copyright (C) 1988-1989 by Edward M. Barlow and Adam Bryant
  * Copyright (C) 2025 Juan Manuel Méndez Rey (Vejeta) - Licensed under GPL v3 with permission from original authors
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -295,7 +295,7 @@ desg_ok(prtflag, desg, sptr)
  *   - SADJDES macro updates influence on adjacent sectors after changes
  */
 /*change current hex designation*/
-void 
+void
 redesignate (void)
 {
 	char	newdes;
@@ -648,7 +648,7 @@ redesignate (void)
  *   - Heavy Ship Restriction: Towns cannot construct heavy class ships
  */
 /*build fort or ship-type */
-void 
+void
 construct (void)
 {
 	int	tmpvar,tmpvar2,onboard;
@@ -750,7 +750,7 @@ construct (void)
 				if(isgod==TRUE) reset_god();
 				return;
 			}
-				    
+
 
 			/* find cost of repairs on all ships */
 			cost = 0;
@@ -1115,7 +1115,7 @@ construct (void)
  *   - Resource Management: Careful validation prevents over-recruitment
  */
 /*DRAFT IF IN A CITY*/
-void 
+void
 draft (void)
 {
 	short	armynum,x,y,i;
@@ -1526,7 +1526,7 @@ draft (void)
  */
 /*go through msgfile not rewriting to temp messages you discard*/
 /* then move temp to msgfile*/
-void 
+void
 rmessage (void)
 {
 	int unlink();
@@ -1543,10 +1543,10 @@ rmessage (void)
 	struct stat fst;
 
 	/*open file; used in mailopen() as well */
-	snprintf(tempfile, FILELTH, "%s%hd.tmp", msgfile, country);
+	snprintf(tempfile, FILELTH, "%.*s%hd.tmp", msgfile, country);
 	if( (fptemp = fopen(tempfile,"w")) == NULL ) {
 		clear_bottom(0);
-		snprintf(mesgfile, FILELTH, "error: %.67s open", tempfile);
+		snprintf(mesgfile, FILELTH, "error: %.*s open", tempfile);
 		errormsg(mesgfile);
 		redraw=DONE;
 		makebottom();
@@ -1564,7 +1564,7 @@ rmessage (void)
 	}
 
 	/* check for people sending mail */
-	snprintf(line, LINELTH+1, "send.%s%hd", msgfile, country);
+	snprintf(line, LINELTH+1, "send.%.*s%hd", msgfile, country);
 	if (stat(line,&fst)==0) {
 		long now;
 		now = time(0);
@@ -1760,7 +1760,7 @@ rmessage (void)
  *   - Input handling: Comprehensive character processing for editing
  *   - Screen management: Complex screen state management for editing interface
  */
-void 
+void
 wmessage (void)
 {
 	int x,y;
@@ -1782,7 +1782,7 @@ wmessage (void)
 		strcpy(name,"news");
 	} else {
 		/* quick return on bad input */
-		if(temp==(-1) || temp>=NTOTAL 
+		if(temp==(-1) || temp>=NTOTAL
 		|| (!isntn(ntn[temp].active) && temp!=0)) {
 			makebottom();
 			return;
@@ -2027,7 +2027,7 @@ wmessage (void)
  *   - God Mode: Conditional ownership bypass for administrative functions
  */
 /*strategic move of civilians...once only*/
-void 
+void
 moveciv (void)
 {
 	long	people;
@@ -2200,7 +2200,7 @@ moveciv (void)
  *   - Performance: Optimized for typical army counts in gameplay
  *   - User Experience: Provides smooth army cycling for player convenience
  */
-int 
+int
 armygoto (void)
 {
 	short armynum=0,loop=0;
@@ -2342,7 +2342,7 @@ armygoto (void)
  *   - Ship Types: Supports three distinct ship categories for tactical diversity
  *   - User Experience: Provides smooth fleet cycling for naval operations
  */
-int 
+int
 navygoto (void)
 {
 	short nvynum=0,loop=0;

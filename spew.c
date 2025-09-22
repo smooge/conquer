@@ -136,7 +136,7 @@
 #endif
 
 /* Random number generator macro */
-#define RANDOM(n) (rand() % (n))
+#define RAND_INT(n) (rand() % (n))
 
 /* Structure to hold a single definition within a class */
 struct definition {
@@ -261,7 +261,7 @@ void makemess(int count, FILE *output)
 
     /* Try to load the rules file */
     char filename[256];
-    snprintf(filename, sizeof(filename), "%s/%s", DEFAULTDIR, DEFFILE);
+    snprintf(filename, sizeof(filename), "%.*s/%.*s", DEFAULTDIR, DEFFILE);
 
     if (load_rules_file(filename) != 0) {
         fprintf(stderr, "Error: Cannot load rules file: %s\n", filename);
@@ -984,7 +984,7 @@ static void generate_text(const char *class_spec, char default_variant, FILE *ou
         return;
     }
 
-    int rand_val = RANDOM(cls->total_weight);
+    int rand_val = RAND_INT(cls->total_weight);
     struct definition *def = cls->defs;
     while (def && def->weight <= rand_val) {
         def = def->next;

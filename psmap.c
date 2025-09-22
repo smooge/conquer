@@ -927,7 +927,7 @@ main(int argc, char *argv[])
 	fprintf(stderr, "Not a Conquer Map file\n");
 	exit(1);
     }
-    for (c = 0; c < strlen(firstline); c++) {
+    for (c = 0; c < (int)strlen(firstline); c++) {
 	if (firstline[c] == ':')
 	    break;
     }

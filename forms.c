@@ -545,7 +545,7 @@ diploscrn (void)
 		    &&(ntn[nation].dstatus[country]<WAR))
 		    ||(curntn->dstatus[nation]==JIHAD))) {
 
-			mvprintw(LINES-1,0,"Sorry, need %d talons to change status with ntn %s",BREAKJIHAD,ntn[nation].name);
+			mvprintw(LINES-1,0,"Sorry, need %ld talons to change status with ntn %s",BREAKJIHAD,ntn[nation].name);
 			clrtoeol();
         		mvaddstr(LINES-1, 60, "PRESS ANY KEY");
 			refresh();
@@ -561,13 +561,13 @@ diploscrn (void)
 			clear();
 			mvaddstr(0,0,"WHAT NEW STATUS");
 			j=2;
-			mvprintw(j++,0,"1) TREATY (%d talons to break)",BREAKJIHAD);
+			mvprintw(j++,0,"1) TREATY (%ld talons to break)",BREAKJIHAD);
 			mvaddstr(j++,0,"2) ALLIED");
 			mvaddstr(j++,0,"3) FRIENDLY");
 			mvaddstr(j++,0,"4) NEUTRAL");
 			mvaddstr(j++,0,"5) HOSTILE");
 			mvaddstr(j++,0,"6) WAR");
-			mvprintw(j++,0,"7) JIHAD (%d talons to break):",BREAKJIHAD);
+			mvprintw(j++,0,"7) JIHAD (%ld talons to break):",BREAKJIHAD);
 			j++;
 			for( i=1; i<NTOTAL; i++ )
 				if((isntnorp(ntn[i].active)) && (ntn[nation].dstatus[i]==TREATY))
@@ -724,7 +724,7 @@ change (void)
 		mvprintw(12,COLS-30,"total soldiers....%8ld",curntn->tmil);
 	} else {
 		mvprintw(12,0,"demigod is %s",curntn->leader);
-		mvprintw(16,0,"turn currently....%ld",TURN);
+		mvprintw(16,0,"turn currently....%d",TURN);
 		mvprintw(3,COLS-30, "mercs attack bonus....+%2d%%",MERCATT);
 		mvprintw(4,COLS-30, "mercs defense bonus...+%2d%%",MERCDEF);
 		mvprintw(12,COLS-30,"total mercs.......%8ld",MERCMEN);
@@ -984,8 +984,12 @@ change (void)
 				}
 				destroy(country);
 				fclose(fnews);
-				sprintf(command,"%s/%s", EXEDIR, sortname);
-				sprintf(command,"%s %s %s", command, filename, filename);
+				snprintf(command, sizeof(command), "%s/%s", EXEDIR, sortname);
+				{
+					char temp_command[BIGLTH];
+					snprintf(temp_command, sizeof(temp_command), "%s", command);
+					snprintf(command, sizeof(command), "%s %s %s", temp_command, filename, filename);
+				}
 				system(command);
 			}
 		}
@@ -1076,7 +1080,7 @@ void
 help (void)
 {
 	int lineno;
-	FILE *fp, *fopen();
+	FILE *fp;
 	int i,xcnt,ycnt,done=FALSE;
 	char line[LINELTH],fname[FILELTH];
 
@@ -1312,7 +1316,7 @@ void
 newspaper (void)
 {
 	int lineno;
-	FILE *fp, *fopen();
+	FILE *fp;
 	int newpage,choice,done;
 	short pagenum,subpage;
 	int i,ydist,xdist;
@@ -1368,7 +1372,7 @@ newspaper (void)
 	sprintf(name,"%s%d",newsfile,TURN-choice);
 	if ((fp=fopen(name,"r"))==NULL) {
 		clear_bottom(0);
-		sprintf(line,"unable to open news file <%s>",name);
+		snprintf(line, sizeof(line), "unable to open news file <%s>", name);
 		errormsg(line);
 		if (readold)
 		  return;

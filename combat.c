@@ -536,12 +536,14 @@ fight (void)
 	/*archer bonus if not in fort vs knights/cavalry*/
 	j=0;
 	k=0;
-	for(i=0;i<count;i++) if(owner[i]>(-1))
-	if(ISCITY(sct[xspot][yspot].designation)){
-		if((ntn[owner[i]].arm[unit[i]].unittyp == A_CAVALRY)
-		||(ntn[owner[i]].arm[unit[i]].unittyp == A_KNIGHT))
-		if(side[i]==ATKR) j+=troops[i];
-		else if(side[i]==DFND) k+=troops[i];
+	for(i=0;i<count;i++) if(owner[i]>(-1)) {
+		if(ISCITY(sct[xspot][yspot].designation)){
+			if((ntn[owner[i]].arm[unit[i]].unittyp == A_CAVALRY)
+			||(ntn[owner[i]].arm[unit[i]].unittyp == A_KNIGHT)) {
+				if(side[i]==ATKR) j+=troops[i];
+				else if(side[i]==DFND) k+=troops[i];
+			}
+		}
 	}
 
 	for(i=0;i<count;i++) if(owner[i]>(-1)) {
@@ -824,7 +826,7 @@ printf("I AM VERY CONFUSED - PLEASE HELP... combat.c\n");
 				else
 					fprintf(fm,"in limbo: ");
 			
-				fprintf(fm,"army %d (%s, men %d, bonus=%d, loss=%d)",
+				fprintf(fm,"army %d (%s, men %ld, bonus=%d, loss=%ld)",
 					unit[k],
 					unittype[ntn[UOWNER(k)].arm[unit[k]].unittyp%UTYPE],
 					troops[k],
@@ -1323,7 +1325,6 @@ navalcbt (void)
 	int thold, ghold, nvynum, armynum;
 	int dcptpct, acptpct, cptpct;
 	struct s_nation *saventn=curntn;
-	void show_ships(),capture();
 
 	printf("In Naval Combat....\n");
 

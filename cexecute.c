@@ -242,7 +242,7 @@ int	isupdate;	/* 0 if not update, 1 if update */
 			strcpy(curntn->name,comment);
 			break;
 		case XECPAS:	/*Nadjpas*/
-			strncpy(curntn->passwd,comment,PASSLTH);
+			snprintf(curntn->passwd, PASSLTH+1, "%.*s", PASSLTH, comment);
 			break;
 		case NPOP:	/* set various nation attributes */
 #ifdef CONQUER

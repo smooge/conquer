@@ -167,7 +167,7 @@ char *Mhelp[]= { "Population: Amount of citizens in your nation",
 
 int nstartcst(void);
 extern int pwater;		/* percent water in world (0-100) */
-extern FILE *fexe, *fopen();
+extern FILE *fexe;
 extern short country;
 int	numleaders;
 int spent[CH_NUMBER];
@@ -228,7 +228,7 @@ int spent[CH_NUMBER];
  *   - Terrain modification is permanent and affects starting nation advantages
  *   - Critical for game balance as it determines starting resource availability
  */
-void 
+void
 teraform (int x, int y, int range, int chance)
 {
 	int i,j;
@@ -349,7 +349,7 @@ teraform (int x, int y, int range, int chance)
  *   - Critical for multiplayer communication and event notification
  *   - Message delivery is best-effort (no delivery confirmation)
  */
-void 
+void
 mailtopc (char *string)
 {
 	int	ctry;
@@ -417,7 +417,7 @@ mailtopc (char *string)
  *   - Terminal size check prevents interface corruption on small displays
  *   - Required for secure password input handling in registration
  */
-void 
+void
 newinit (void)
 {
 	initscr();
@@ -480,7 +480,7 @@ newinit (void)
  *   - Critical for proper shell prompt restoration after program exit
  *   - Used by newbye() for complete program termination sequence
  */
-void 
+void
 newreset (void)
 {
 	clear();
@@ -534,7 +534,7 @@ newreset (void)
  *   - Prevents terminal corruption that could occur with abrupt termination
  *   - Critical for clean integration with shell environment
  */
-void 
+void
 newbye (int status)
 {
 	newreset();
@@ -592,7 +592,7 @@ newbye (int status)
  *   - Complements blocking error display functions for complete UI messaging
  *   - Critical for user experience during interactive nation building
  */
-void 
+void
 newmsg (char *str)
 {
 	mvaddstr(LINES-1,0,str);
@@ -601,7 +601,7 @@ newmsg (char *str)
 }
 
 /* message with wait for keystroke */
-void 
+void
 newerror (char *str)
 {
 	mvaddstr(LINES-1, 0, str);
@@ -648,7 +648,7 @@ newerror (char *str)
  *   - Essential for validating user menu choices and input characters
  *   - Could be optimized with strchr() but current implementation is clear
  */
-int 
+int
 in_str (int ch, char *str)
 {
 	int i,l=strlen(str);
@@ -695,7 +695,7 @@ in_str (int ch, char *str)
  *   - Essential for user feedback during registration validation
  *   - Assumes VERSION and PATCHLEVEL are defined string constants
  */
-void 
+void
 errorbar (char *str1, char *str2)
 {
 	int i;
@@ -749,7 +749,7 @@ errorbar (char *str1, char *str2)
  *   - NLMETAL/Mvalues[CH_RAWGOODS] ratio determines metal conversion
  *   - Essential for displaying resource allocation in registration interface
  */
-void 
+void
 dispitem (int item, long amount)
 {
 	if (item == CH_LOCATE) {
@@ -810,11 +810,11 @@ dispitem (int item, long amount)
  *   - Essential for displaying current allocation state during registration
  *   - Note: nsprintf on line 851 appears to be typo for sprintf
  */
-void 
+void
 showitem (int line, int item)
 {
 	char tempc[LINELTH];
-	
+
 	move(line,15);
 	if (item == CH_LOCATE) {
 		sprintf(tempc,"%s %s", LType[spent[item]], Mitems[item]);
@@ -823,7 +823,7 @@ showitem (int line, int item)
 		sprintf(tempc,"%ld %s", spent[item]*Mvalues[item], Mitems[item]);
 		printw("%23s",tempc);
 	}
-	
+
 	if (item != CH_RAWGOODS) return;
 	line++;
 
@@ -889,7 +889,7 @@ showitem (int line, int item)
  *   - Raw goods generate both food and derived jewel/metal resources
  *   - Critical function that finalizes nation creation from user choices
  */
-void 
+void
 convert (void)
 {
 	int i,loop;
@@ -1067,7 +1067,7 @@ convert (void)
  *   - Integration point for multiple game subsystems (magic, combat, economics)
  *   - Essential for maintaining game balance through controlled nation creation
  */
-void 
+void
 newlogin (int realuser)
 {
 	/* use points to create empire, add if late starter*/
@@ -1088,8 +1088,8 @@ newlogin (int realuser)
 	/*find valid nation number type*/
 	country=0;
         pccount=0;
-	for(i=1;i<NTOTAL;i++) 
-		if(ntn[i].active==INACTIVE) 
+	for(i=1;i<NTOTAL;i++)
+		if(ntn[i].active==INACTIVE)
 		{
 			country=i;
 			curntn = &ntn[country];
@@ -1127,8 +1127,9 @@ newlogin (int realuser)
 		mvprintw(0,0,"Building Country Number %d",country);
 		sprintf(tempc,"%s%d",exefile,i);
 		if ((fexe=fopen(tempc,"w"))==NULL) {
-			sprintf(tempc,"Error opening <%s>",tempc);
-			newerror(tempc);
+			char errmsg[LINELTH*2];
+			snprintf(errmsg,sizeof(errmsg),"Error opening <%.*s>",tempc);
+			newerror(errmsg);
 			newbye(FAIL);
 		}
 
@@ -1173,7 +1174,7 @@ newlogin (int realuser)
 		clrtoeol();
 		standout();
 		mvprintw(0,COLS/2-15-strlen(curntn->name)/2,
-			"< Building Country %s >",curntn->name,country);
+			"< Building Country %s >",curntn->name);
 		standend();
 		clrtoeol();
 
@@ -1396,7 +1397,7 @@ newlogin (int realuser)
 				mvprintw(ypos,COLS/2+5,"%3d     %s", Mcost[i],
 					    "Better Location");
 			} else {
-				if (curntn->race==ORC) {			
+				if (curntn->race==ORC) {
 					switch(i) {
 					case CH_MOVEMENT:
 						mvaddstr(ypos++,COLS/2+5,"  -     --------");
@@ -1753,7 +1754,7 @@ newlogin (int realuser)
  *   - Historical context: Core game mechanic determining nation starting conditions
  *   - Critical for game balance: Placement quality directly affects nation viability
  */
-void 
+void
 place (
     int xloc,
     int yloc	/* if not -1,-1 should place in this spot */
@@ -2149,14 +2150,14 @@ place (
  */
 /*get class routine*/
 /* return the number of points needed */
-int 
+int
 getclass (int race)
 {
 	short chk=FALSE;
 	short tmp;
 	short ypos=4;
 	int i,j;
-	
+
 	mvaddstr(ypos,0,"The List of Possible Nation Classes:");
 	ypos+=2;
 	mvprintw(ypos++,0,"     %-8s %4s   %15s %8s %4s", "class", "who",
@@ -2196,7 +2197,7 @@ getclass (int race)
 		move(tmp,0);
 		clrtoeol();
 	}
-	
+
 	return( doclass( curntn->class, TRUE ) );
 }
 
@@ -2271,7 +2272,7 @@ getclass (int race)
  *   - Historical context: Core RPG class system determining nation capabilities
  *   - Design pattern: Configuration function separating UI from logic
  */
-int 
+int
 doclass (
     int tmp,
     int isupd	/* true if update, false if interactive */
@@ -2374,7 +2375,7 @@ doclass (
  *   - Historical context: Modern evolution of nation creation cost system
  *   - Design pattern: Data-driven calculation using configuration tables
  */
-int 
+int
 nstartcst (void)	/* to be used for new method */
 {
 	float points=0.0;
@@ -2393,7 +2394,7 @@ nstartcst (void)	/* to be used for new method */
 			   (float) (TURN-1) / LATESTART);
 		newerror(temp);
 	}
-	points += 1.0;	/* round up */	
+	points += 1.0;	/* round up */
 	return((int)points);
 }
 
@@ -2487,7 +2488,7 @@ nstartcst (void)	/* to be used for new method */
  *   - Historical context: Original nation creation cost system
  *   - Deprecation status: Legacy method, nstartcst() preferred for new code
  */
-int 
+int
 startcost (void)	/* cant be used for npc nations yet!!! see below */
 {
 	float	points;	/* points */

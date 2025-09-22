@@ -198,11 +198,12 @@ newdip (int ntn1, int ntn2)
 	}
 	if((ntn[ntn1].race==ORC)
 	||( ntn[ntn2].race==ORC)) {
-		if(ntn[ntn1].dstatus[ntn2]==UNMET)
+		if(ntn[ntn1].dstatus[ntn2]==UNMET) {
 			if((rand()%2==0)|| ispc(ntn[ntn1].active))
 				ntn[ntn1].dstatus[ntn2]=HOSTILE;
 			else
 				ntn[ntn1].dstatus[ntn2]=WAR;
+		}
 	} else if(ismonst(ntn[ntn2].active)) {
 		ntn[ntn1].dstatus[ntn2]=WAR;
 	} else if(ispc(ntn[ntn1].active)) {
@@ -285,7 +286,7 @@ monster (void)
 	{
 	int neededtroops;
 	int actualtroops;
-	int savages,nomads;
+	int savages = -1, nomads = -1;
 	int i,x,y;
 	int nomad_space=1, savage_space=1;
 

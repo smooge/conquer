@@ -306,7 +306,7 @@ mymove()
 			ycurs=oldycurs;
 		}
 		/*if valid move check if have enough movement points*/
-		if(valid==TRUE)
+		if(valid==TRUE) {
 		if(armornvy==ARMY) {
 			if (P_ASTAT==FLIGHT) {
 				fmove=flightcost(XREAL,YREAL);
@@ -440,6 +440,7 @@ mymove()
 		} else if(armornvy==AORN){
 			errormsg("ERROR - NOT ARMY OR NAVY");
 			return;
+		}
 		}
 
 		/*if moved and not done*/
@@ -622,11 +623,12 @@ mymove()
 			&&(P_ASTAT>=DEFEND)) {	/* atk, def, and group */
 				/*people flee if not of same race*/
 				if((sct[XREAL][YREAL].people>0)
-				&&(ntn[sct[XREAL][YREAL].owner].race!=curntn->race))
+				&&(ntn[sct[XREAL][YREAL].owner].race!=curntn->race)) {
 				if(magic(country,SLAVER)==TRUE) {
 					flee(XREAL,YREAL,0,TRUE);
 				} else{
 					flee(XREAL,YREAL,0,FALSE);
+				}
 				}
 				mvaddstr(LINES-2,0,"TAKING SECTOR");
 				clrtoeol();
@@ -642,7 +644,7 @@ mymove()
 			&&(groupmen<TAKESECTOR)&&(P_ASTAT!=SCOUT)
 			&&((P_ATYPE<MINLEADER)||(P_ASTAT==GENERAL))){
 				clear_bottom(0);
-				mvprintw(LINES-3,0,"army has too few men (%d) to take sector (need %d) - hit any key",groupmen,TAKESECTOR);
+				mvprintw(LINES-3,0,"army has too few men (%ld) to take sector (need %ld) - hit any key",groupmen,TAKESECTOR);
 				refresh();
 				getch();
 			}

@@ -103,9 +103,7 @@
  *   - Thread safety: Not thread-safe due to global data modification
  */
 void
-verify_ntn( __file__, __line__ )
-char	__file__[];
-int	__line__;
+verify_ntn(char __file__[], int __line__)
 {
 	register struct s_nation	*nptr;
 	register int	i;

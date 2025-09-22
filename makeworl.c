@@ -1,10 +1,10 @@
 /*
  * makeworl.c - World generation and initialization
- * 
+ *
  * This file is part of Conquer.
  * Originally Copyright (C) 1988-1989 by Edward M. Barlow and Adam Bryant
  * Copyright (C) 2025 Juan Manuel Méndez Rey (Vejeta) - Licensed under GPL v3 with permission from original authors
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -162,7 +162,7 @@ zeroworld()
  *   - Supports conditional compilation with REMAKE and CHECKUSER flags
  *   - Creates god nation (index 0) with special powers and administrator access
  */
-void 
+void
 makeworld (
     int rflag		/* TRUE if you wish to read in a map from mapfiles */
 )
@@ -218,7 +218,7 @@ makeworld (
 		} else valid=TRUE;
 	}
 	strncpy(ntn[0].passwd,crypt(passwd,SALT),PASSLTH);
-	
+
 	/* finally ask for the secondary administrator */
 	mvaddstr(7,0,"You may designate an other user as an alternate \"god\" for this world.");
 	mvaddstr(8,0,"Enter a System Login or \"god\" to have none.  [Return for default]");
@@ -269,14 +269,14 @@ makeworld (
 #endif /*REMAKE*/
 		} else if (strlen(newstring) <= LEADERLTH) {
 			if (getpwnam(newstring)!=NULL) {
-				(void) snprintf(tempc,sizeof(tempc),"The demi-god %s may administrate this new world.",newstring);
+				(void) snprintf(tempc,sizeof(tempc),"The demi-god %.*s may administrate this new world.",newstring);
 				newmsg(tempc);
 				(void) strncpy(ntn[0].leader,newstring,LEADERLTH);
 				mvprintw(7,0,"Demi-God: %s",ntn[0].leader);
 				clrtoeol();
 				break;
 			} else {
-				(void) snprintf(tempc,sizeof(tempc),"Their is no mortal named %s on this system.",newstring);
+				(void) snprintf(tempc,sizeof(tempc),"Their is no mortal named %.*s on this system.",newstring);
 				newerror(tempc);
 			}
 		} else {
@@ -347,7 +347,7 @@ makeworld (
 		fprintf(fm,"5\tGLOBAL ANNOUNCEMENTS\n");
 		fclose(fm);
 	} else {
-		snprintf(tempc,sizeof(tempc),"error opening news file <%s>\n",newstring);
+		snprintf(tempc,sizeof(tempc),"error opening news file <%.*s>\n",newstring);
 		newerror(tempc);
 	}
 	newreset();
@@ -398,7 +398,7 @@ makeworld (
  *   - Memory-intensive operation requiring careful allocation/deallocation
  *   - Algorithm quality directly affects game playability and balance
  */
-void 
+void
 createworld (void)	/* create world */
 {
 	int	i,j;
@@ -636,7 +636,7 @@ createworld (void)	/* create world */
 	avvalue	= PMOUNT * (100-pwater);
 	avvalue	/= 10000;
 	nmountains	= NUMSECTS * avvalue;
-	
+
 	mvprintw(11,0,"Hills and Mountains....  %ld out of %ld sectors",nmountains,(long)NUMSECTS);
 	newmsg("Day 3... God created hills and mountains");
 	sleep(1);
@@ -673,7 +673,7 @@ createworld (void)	/* create world */
 
 			if(type[x][y] == LAND){
 				if(rand()%100>80) {	TOPEAK(x,y);
-				} else {		TOMT(x,y) 
+				} else {		TOMT(x,y)
 				}
 			}
 
@@ -878,7 +878,7 @@ createworld (void)	/* create world */
  *   - Resource distribution directly affects game economy and strategy
  *   - Includes humorous world generation narrative messages for user experience
  */
-void 
+void
 rawmaterials (void) 		 /*PLACE EACH SECTOR'S RAW MATERIALS */
 {
 	int i,j;
@@ -1144,7 +1144,7 @@ fill_edge(int AX,int AY)
  *   - Includes extensive validation and error handling for file operations
  */
 /* ALLOCATE POPULATIONS OF THE WORLD*/
-void 
+void
 populate (void)
 {
 	int	i=0,x=0,y=0,j=0,xloc,yloc,xpos,ypos;
@@ -1152,8 +1152,8 @@ populate (void)
 	short	short1,short2;			/*temporary short variables */
 	short	class;
 
-	int	loopcnt=0;	
-	int	pirarmy=0,barbarmy=0,nomadarmy=0,lizarmy=0; 
+	int	loopcnt=0;
+	int	pirarmy=0,barbarmy=0,nomadarmy=0,lizarmy=0;
 	short	npirates=0,nbarbarians=0,nnomads=0,nlizards=0;
 
 	FILE *fp;
@@ -1223,7 +1223,7 @@ populate (void)
 		curntn->repro=5;
 
 		/* everybody hates monster nations */
-		if(ismonst(ntn[country].active)) 
+		if(ismonst(ntn[country].active))
 		for(i=1;i<NTOTAL;i++) {
 			ntn[country].dstatus[i]=WAR;
 			ntn[i].dstatus[country]=WAR;
@@ -1253,11 +1253,11 @@ populate (void)
 			for(country=1;country<NTOTAL;country++)
 				if( ntn[country].active == NPC_LIZARD ) break;
 			armynum=lizarmy;
-		} else	if( nbarbarians>0 ) {	
+		} else	if( nbarbarians>0 ) {
 			for(country=1;country<NTOTAL;country++)
 				if( ntn[country].active==NPC_SAVAGE ) break;
 			armynum=barbarmy;
-		} else	if( nnomads>0 )	 {	
+		} else	if( nnomads>0 )	 {
 			for(country=1;country<NTOTAL;country++)
 				if( ntn[country].active == NPC_NOMAD ) break;
 			armynum=nomadarmy;
@@ -1322,7 +1322,7 @@ populate (void)
 		case NPC_PIRATE:
 			/* pirates must be on islands */
 			temp=TRUE;
-			for(i=x-1;i<=x+1;i++) for(j=y-1;j<=y+1;j++) 
+			for(i=x-1;i<=x+1;i++) for(j=y-1;j<=y+1;j++)
 				if((ONMAP(i,j)) && ( x!=i || y!=j)
 				&&( sct[i][j].altitude!=WATER)) {
 					/* fifty percent chance of failure */
@@ -1400,7 +1400,7 @@ populate (void)
 			y = rand()%MAPY;
 			if (is_habitable(x,y)&&sct[x][y].owner==0) {
 				sct[x][y].owner = country;
-				if( sct[x][y].jewels==0 ) 
+				if( sct[x][y].jewels==0 )
 					getjewel( &(sct[x][y]) );
 				P_AXLOC= x;
 				P_AYLOC= y;
@@ -1486,7 +1486,7 @@ populate (void)
 				sprintf(line,"World too small to add npc nation %d %s",cnum,curntn->name);
 				newerror(line);
 				continue;
-			} 
+			}
 			if( isactive(ntn[cnum].active) ) {
 				sprintf(line,"Not enough available nations to add npc nation %d %s",cnum,curntn->name);
 				newerror(line);

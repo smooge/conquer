@@ -1,10 +1,10 @@
 /*
  * main.c - Main game loop and initialization
- * 
+ *
  * This file is part of Conquer.
  * Originally Copyright (C) 1988-1989 by Edward M. Barlow and Adam Bryant
  * Copyright (C) 2025 Juan Manuel Méndez Rey (Vejeta) - Licensed under GPL v3 with permission from original authors
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -40,7 +40,7 @@ char	fison[FILELTH];
 char	*getpass(const char *prompt);
 struct	s_sector **sct;
 struct	s_nation ntn[NTOTAL];	/* player nation stats */
-struct	s_world	world;		
+struct	s_world	world;
 char	**occ;	/*is sector occupied by an army?*/
 short	**movecost;
 long	startgold=0;
@@ -174,7 +174,7 @@ main(int argc, char **argv)
 						name[j] = cq_opts[i+j];
 					}
 					name[j]='\0';
-					
+
 					/* end the parse properly */
 					i += j-1;
 					if (j==NAMELTH) {
@@ -229,7 +229,7 @@ main(int argc, char **argv)
 	}
 	if (defaultdir[0] != '/') {
 		strcpy(cq_opts, defaultdir);
-		snprintf(defaultdir, sizeof(defaultdir), "%s/%s", DEFAULTDIR, cq_opts);
+		snprintf(defaultdir, sizeof(defaultdir), "%.*s/%.*s", DEFAULTDIR, cq_opts);
 	}
 
 	/* process the command line arguments */
@@ -476,26 +476,26 @@ main(int argc, char **argv)
 	if (checkuser_mod)
 	   {
 		fprintf (stderr, "Nation:  %s\n", curntn->name);
-                fprintf (stderr, "   Current player = %s\n", 
+                fprintf (stderr, "   Current player = %s\n",
 			getpwuid(curntn->uid)->pw_name);;
 		curntn->uid = checkuser_uid;
-                fprintf (stderr, "   New player = %s\n", 
+                fprintf (stderr, "   New player = %s\n",
 			getpwuid(curntn->uid)->pw_name);
 		writedata();
 		exit (SUCCESS);
 	   }
 	if (checkuser_list)
 	   {
-	      	for (i=0; i < NTOTAL; i++) 
-			if (ntn[i].active != INACTIVE) 
+	      	for (i=0; i < NTOTAL; i++)
+			if (ntn[i].active != INACTIVE)
 				fprintf (stderr, "%3d %15s %d %-15s\n",
-					i, ntn[i].name, 
+					i, ntn[i].name,
 					ntn[i].uid,
 					getpwuid(ntn[i].uid)->pw_name);
 		exit (SUCCESS);
 	   }
         if ((curntn->uid != owneruid) &&
-	    (owneruid != (getpwnam(LOGIN))->pw_uid) && 
+	    (owneruid != (getpwnam(LOGIN))->pw_uid) &&
             (owneruid != (getpwnam(ntn[0].leader))->pw_uid) &&
 	    (curntn->uid != (getpwnam(LOGIN))->pw_uid))
            {
@@ -520,7 +520,7 @@ main(int argc, char **argv)
 	copyscreen();		/* copyright screen */
 				/* note the getch() later - everything between
 					now and then is non-interactive */
-	init_hasseen();		/* now we know how big the screen is, 
+	init_hasseen();		/* now we know how big the screen is,
 					we can init that array!	*/
 
 	strcpy(fison,"START");	/* just in case you abort early */
@@ -536,7 +536,7 @@ main(int argc, char **argv)
 		(void) aretheyon();
 	} else {
 		if(curntn->active==INACTIVE) {
-			standout(); 
+			standout();
 			mvaddstr(LINES-2,0,"Sorry, for some reason, your country no longer exists.");
 			mvprintw(LINES-1,0,"If there is a problem, please send mail to %s", LOGIN);
 			if (strcmp(LOGIN, ntn[0].leader)!=0) {
@@ -568,7 +568,7 @@ main(int argc, char **argv)
 	yoffset = 0;
 #ifdef USERLOG
 	userlog = fopen (".userlog", "a");
-        fprintf (userlog, "%3d %15s %30s %15s\n", 
+        fprintf (userlog, "%3d %15s %30s %15s\n",
    		TURN, getpwuid(owneruid)->pw_name, defaultdir, curntn->name);
         fclose (userlog);
 #endif
@@ -1074,7 +1074,7 @@ parse(int ch)
 			country=ocountry;
 			makebottom();
 			break;
-		} 
+		}
 		if(country==ocountry){
 			errormsg("What?  You are already logged into that nation.");
 			makebottom();
@@ -1203,12 +1203,12 @@ sect_info()
 		move(i,COLS-21);
 		clrtoeol();
 	}
-	
+
 	standout();
 	mvaddstr(0,COLS-20,"Sector Information");
 	mvprintw(1,COLS-20,"  x = %2d, y = %2d  ",(int)XREAL,(int)YREAL);
 	standend();
-	
+
 	/* find units in the sector */
 	for (i=0;i<NTOTAL;i++) if (ntn[i].active != INACTIVE) {
 		x = 0;
@@ -1343,7 +1343,7 @@ makeside(int alwayssee)	/* see even if cant really see sector */
 
 				if(P_ATYPE<MINLEADER)
 				mvprintw((nfound%SCRARM)*2,COLS-20,"army %d: %ld %s",armynum,P_ASOLD,*(shunittype+(P_ATYPE%UTYPE)));
-				else 
+				else
 				mvprintw((nfound%SCRARM)*2,COLS-20,"%s %d: str=%ld",*(unittype+(P_ATYPE%UTYPE)),armynum,P_ASOLD);
 				clrtoeol();
 
@@ -1375,7 +1375,7 @@ makeside(int alwayssee)	/* see even if cant really see sector */
 					mvaddch((nfound%SCRARM)*2,COLS-21,'*');
 					standout();
 				} else	mvaddch((nfound%SCRARM)*2,COLS-21,'>');
-	
+
 				mvprintw((nfound%SCRARM)*2,COLS-20,"nvy %d: mv:%hd cw:%hd",nvynum,P_NMOVE,P_NCREW);
 				mvprintw((nfound%SCRARM)*2+1,COLS-20,"war:%2hd mer:%2hd gal:%2hd",
 					P_NWAR(N_LIGHT)+P_NWAR(N_MEDIUM)+P_NWAR(N_HEAVY),
@@ -1458,7 +1458,7 @@ makeside(int alwayssee)	/* see even if cant really see sector */
 	} else {
 	if((country!=0)&&(country!=sptr->owner)
 	&&(magic(sptr->owner,THE_VOID)==TRUE)){
-		for(y=LINES-11;y<=LINES-4;y++) { 
+		for(y=LINES-11;y<=LINES-4;y++) {
 			move(y,COLS-20);
 			clrtoeol();
 		}

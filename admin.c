@@ -201,7 +201,7 @@ FILE *fexe, *fopen();
  *   Mock Requirements: Mock filesystem, user database, permission system
  *   Complexity: Complex - Multi-user security, file operations, process coordination
  */
-int 
+int
 main (int argc, char **argv)
 {
 	int realuser, l;
@@ -230,7 +230,7 @@ main (int argc, char **argv)
 
 	/* check conquer options */
 	if (getenv(ENVIRON_OPTS)!=NULL) {
-		strncpy(cq_opts, getenv(ENVIRON_OPTS), BIGLTH);
+		snprintf(cq_opts, sizeof(cq_opts), "%.*s", getenv(ENVIRON_OPTS));
 	}
 	if (cq_opts[0] != '\0') {
 		l = strlen(cq_opts);
@@ -568,7 +568,7 @@ main (int argc, char **argv)
  *   Mock Requirements: Mock magic system, mock nation data structures
  *   Complexity: Simple - Direct attribute assignment with conditional logic
  */
-void 
+void
 att_setup (int cntry)
 {
 	int	nat;
@@ -687,13 +687,13 @@ att_setup (int cntry)
  *   Mock Requirements: Full world map, complete nation setup, magic power system
  *   Complexity: Complex - Multi-system integration with extensive calculations
  */
-void 
+void
 att_base (void)
 {
 	long	cityfolk,townfolk,scholars,foodpts,minepts,roads,clerics,ngrain;
 	long	blksmths;
 	long	mercs,armynum,ncities;
-	long	temp;
+	long	temp = 0;
 	int	x,y;
 	char	d;
 
@@ -715,7 +715,7 @@ att_base (void)
 		WORLDMIL+=curntn->tmil;
 	}
 	if (WORLDGOLD==0) WORLDGOLD=1;
-	
+
 	/* count the number of sectors */
 	for(country=1;country<NTOTAL;country++) {
 		if(!isntn(ntn[country].active)) continue;
@@ -999,7 +999,7 @@ att_base (void)
  *   Mock Requirements: Mock world map with trade goods, mock trade good value tables
  *   Complexity: Moderate - Map processing with trade good validation and bonus application
  */
-void 
+void
 att_bonus (void)
 {
 	short	x,y,nation,good;
