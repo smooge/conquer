@@ -991,6 +991,7 @@ extern void rawmaterials(void);
 extern void fill_edge(int AX, int AY);
 extern void populate(void);
 /* misc.c */
+extern int move_file(char *from, char *to);
 extern long get_number(void);
 extern int land_2reachp(int ax, int ay, int move_points);
 extern int land_reachp(int ax, int ay, int gx, int gy, int move_points, int movee);
