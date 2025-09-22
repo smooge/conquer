@@ -207,8 +207,7 @@ extern short redraw;
  *   - Integration point for multiple game systems (economy, military, trade)
  */
 void
-armyrpt(repnum)
-	int repnum;
+armyrpt(int repnum)
 	/* 0 is for full report 'a' and 1 is for group report 'g' */
 {
 	int i,j;
@@ -368,7 +367,7 @@ armyrpt(repnum)
 					break;
 				} else if(P_ATYPE==A_SPY) {
 					/*spys are given a shut up fee */
-					mvprintw(LINES-4,0,"Your spy demands %ld talons to remain quiet",
+					mvprintw(LINES-4,0,"Your spy demands %d talons to remain quiet",
 					*(u_encost+(P_ATYPE%UTYPE)) * 2);
 					mvaddstr(LINES-3,0,"Pay him off? (y or n)");
 					clrtoeol();
@@ -656,7 +655,7 @@ budget (void)
 	mvprintw(10,COLS-50,"%8ld troops...............%8ld",numsold,costsold);
 	mvprintw(11,COLS-50,"%8ld monsters.............%8ld",nummonst,costmonst);
 
-	mvprintw(12,COLS-50,"%8ld ship holds @ %4d....%8ld",numship,SHIPMAINT,numship*SHIPMAINT);
+	mvprintw(12,COLS-50,"%8ld ship holds @ %4ld....%8ld",numship,SHIPMAINT,numship*SHIPMAINT);
 	mvprintw(13,COLS-50,"other expenses this turn......%8ld",startgold-curntn->tgold);
 	standout();
 	money=costmonst+costsold+(numship*SHIPMAINT)+startgold-curntn->tgold;

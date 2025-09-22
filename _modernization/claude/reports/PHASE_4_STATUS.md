@@ -16,7 +16,7 @@
 **Phase 4.3 Progress**:
 - **Baseline established**: Comprehensive -Wall warning analysis complete
 - **Methodology validated**: Manual approach proven effective
-- **Files complete**: 3/34 files now 100% warning-free (admin.c, check.c, psmap.c)
+- **Files complete**: 12/34 files now 100% warning-free (35.3% complete)
 - **Tools corrected**: Fixed script issues for accurate warning detection
 - **Blocked files resolved**: Both compilation error files now working
 
@@ -52,7 +52,7 @@
 **✅ All Working (7/7 files):**
 - **forms.c** ✅ - PHASE 4.3 COMPLETE (warning-free) - Fixed format warnings and buffer safety (2025-01-22)
 - **move.c** ✅ - PHASE 4.3 COMPLETE (warning-free) - Fixed dangling else and format warnings (2025-01-22)
-- **reports.c** ✅ - PHASE 4.2 COMPLETE
+- **reports.c** ✅ - PHASE 4.3 COMPLETE (warning-free) - Fixed K&R function, format warnings in macros (2025-01-22)
 - **display.c** ✅ - PHASE 4.2 COMPLETE
 - **extcmds.c** ✅ - PHASE 4.2 COMPLETE
 - **commands.c** ✅ - Fixed in previous session (move_file declaration added)
