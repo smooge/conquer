@@ -167,10 +167,8 @@ makeworld (
     int rflag		/* TRUE if you wish to read in a map from mapfiles */
 )
 {
-	char passwd[PASSLTH+1],*getpass();
+	char passwd[PASSLTH+1];
 	char newstring[BIGLTH],tempc[BIGLTH];
-	FILE *fopen();
-	struct passwd *getpwnam();
 	int i,valid;
 
 	/* conquer makeworld information */
@@ -271,14 +269,14 @@ makeworld (
 #endif /*REMAKE*/
 		} else if (strlen(newstring) <= LEADERLTH) {
 			if (getpwnam(newstring)!=NULL) {
-				(void) sprintf(tempc,"The demi-god %s may administrate this new world.",newstring);
+				(void) snprintf(tempc,sizeof(tempc),"The demi-god %s may administrate this new world.",newstring);
 				newmsg(tempc);
 				(void) strncpy(ntn[0].leader,newstring,LEADERLTH);
 				mvprintw(7,0,"Demi-God: %s",ntn[0].leader);
 				clrtoeol();
 				break;
 			} else {
-				(void) sprintf(tempc,"Their is no mortal named %s on this system.",newstring);
+				(void) snprintf(tempc,sizeof(tempc),"Their is no mortal named %s on this system.",newstring);
 				newerror(tempc);
 			}
 		} else {
@@ -349,7 +347,7 @@ makeworld (
 		fprintf(fm,"5\tGLOBAL ANNOUNCEMENTS\n");
 		fclose(fm);
 	} else {
-		sprintf(tempc,"error opening news file <%s>\n",newstring);
+		snprintf(tempc,sizeof(tempc),"error opening news file <%s>\n",newstring);
 		newerror(tempc);
 	}
 	newreset();
@@ -591,11 +589,13 @@ createworld (void)	/* create world */
 
 	/*calculate all 50% areas*/
 	for(X=0;X<MAPX;X++) for(Y=0;Y<MAPY;Y++) {
-		if(type[X][Y] == HALF)
+		if(type[X][Y] == HALF) {
 			if(rand()%100 >= (100-pwater)) {
 				type[X][Y] = LAND;
+			} else {
+				type[X][Y] = WATER;
 			}
-			else type[X][Y] = WATER;
+		}
 	}
 
 	chance=0;
@@ -637,7 +637,7 @@ createworld (void)	/* create world */
 	avvalue	/= 10000;
 	nmountains	= NUMSECTS * avvalue;
 	
-	mvprintw(11,0,"Hills and Mountains....  %d out of %d sectors",nmountains,NUMSECTS);
+	mvprintw(11,0,"Hills and Mountains....  %ld out of %ld sectors",nmountains,(long)NUMSECTS);
 	newmsg("Day 3... God created hills and mountains");
 	sleep(1);
 
@@ -744,10 +744,13 @@ createworld (void)	/* create world */
 				if((rand()%6==4)&&((y>MAPY/2+8)||(y<MAPY/2-8)))
 					sct[x][y].vegetation=ICE;
 				else sct[x][y].vegetation=(*(veg+2+rand()%3));
-			else if(sct[x][y].altitude==PEAK)
-				if((rand()%3==0)&&((y>MAPY/2+8)||(y<MAPY/2-8)))
+			else if(sct[x][y].altitude==PEAK) {
+				if((rand()%3==0)&&((y>MAPY/2+8)||(y<MAPY/2-8))) {
 					sct[x][y].vegetation=ICE;
-				else sct[x][y].vegetation=VOLCANO;
+				} else {
+					sct[x][y].vegetation=VOLCANO;
+				}
+			}
 		}
 
 	/*REWORK POLEAR/EQUATORIAL sector.vegetation*/
@@ -773,24 +776,34 @@ createworld (void)	/* create world */
 
 	/*insert equator*/
 	for(y=(MAPY/2)-8;y<=(MAPY/2)+8;y++) for(x=0;x<MAPX;x++)
-		if(type[x][y]==LAND)
-			if(rand()%10 ==0) sct[x][y].vegetation=DESERT;
-			/*increment vegetation if between Waste and Jungle*/
-			else for(n=2;n<9;n++)
-				if((sct[x][y].vegetation==(*(veg+n)))
-				&&(sct[x][y].altitude==CLEAR)
-				&&(rand()%4==0))
-				sct[x][y].vegetation=(*(veg+(n+1)));
+		if(type[x][y]==LAND) {
+			if(rand()%10 ==0) {
+				sct[x][y].vegetation=DESERT;
+			} else {
+				/*increment vegetation if between Waste and Jungle*/
+				for(n=2;n<9;n++)
+					if((sct[x][y].vegetation==(*(veg+n)))
+					&&(sct[x][y].altitude==CLEAR)
+					&&(rand()%4==0))
+					sct[x][y].vegetation=(*(veg+(n+1)));
+			}
+		}
 
 	for(y=((MAPY/2)-2);y<=((MAPY/2)+2);y++) for(x=0;x<MAPX;x++)
-		if((type[x][y]==LAND)&&(sct[x][y].altitude==CLEAR))
-			if(rand()%10 == 0) sct[x][y].vegetation=DESERT;
-			else if(rand()%10 == 0) sct[x][y].vegetation=JUNGLE;
-			else if(rand()%10 == 0) sct[x][y].vegetation=SWAMP;
-			/*increment vegetation again, but only Waste to Light*/
-			else for(n=2;n<4;n++)
-				if(sct[x][y].vegetation==(*(veg+n)))
-					sct[x][y].vegetation=(*(veg+(n+1)));
+		if((type[x][y]==LAND)&&(sct[x][y].altitude==CLEAR)) {
+			if(rand()%10 == 0) {
+				sct[x][y].vegetation=DESERT;
+			} else if(rand()%10 == 0) {
+				sct[x][y].vegetation=JUNGLE;
+			} else if(rand()%10 == 0) {
+				sct[x][y].vegetation=SWAMP;
+			} else {
+				/*increment vegetation again, but only Waste to Light*/
+				for(n=2;n<4;n++)
+					if(sct[x][y].vegetation==(*(veg+n)))
+						sct[x][y].vegetation=(*(veg+(n+1)));
+			}
+		}
 
 	/*expand swamps*/
 	for(y=2;y<MAPY;y++) for(x=2;x<MAPX;x++)
@@ -1143,7 +1156,7 @@ populate (void)
 	int	pirarmy=0,barbarmy=0,nomadarmy=0,lizarmy=0; 
 	short	npirates=0,nbarbarians=0,nnomads=0,nlizards=0;
 
-	FILE *fp, *fopen();
+	FILE *fp;
 	char line[LINELTH+1],allign;
 	char fname[FILELTH];
 
@@ -1496,7 +1509,7 @@ populate (void)
 			else if( allign == 'i' )
 				curntn->active = ISOLATIONIST;
 			else {
-				sprintf(line,"invalid nation alignment (%c)");
+				sprintf(line,"invalid nation alignment (%c)",allign);
 				newerror(line);
 				newreset();
 				abrt();

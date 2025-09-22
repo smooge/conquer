@@ -52,5 +52,7 @@
  * Central version tracking for the entire Conquer game system.
  */
 
+#ifndef PATCHLEVEL
 #define PATCHLEVEL	"12"    /* Final patch level from original 1988-1989 development */
                                 /* Used for version display and compatibility identification */
+#endif

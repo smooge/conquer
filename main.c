@@ -229,7 +229,7 @@ main(int argc, char **argv)
 	}
 	if (defaultdir[0] != '/') {
 		strcpy(cq_opts, defaultdir);
-		sprintf(defaultdir, "%s/%s", DEFAULTDIR, cq_opts);
+		snprintf(defaultdir, sizeof(defaultdir), "%s/%s", DEFAULTDIR, cq_opts);
 	}
 
 	/* process the command line arguments */
@@ -1344,7 +1344,7 @@ makeside(int alwayssee)	/* see even if cant really see sector */
 				if(P_ATYPE<MINLEADER)
 				mvprintw((nfound%SCRARM)*2,COLS-20,"army %d: %ld %s",armynum,P_ASOLD,*(shunittype+(P_ATYPE%UTYPE)));
 				else 
-				mvprintw((nfound%SCRARM)*2,COLS-20,"%s %d: str=%d",*(unittype+(P_ATYPE%UTYPE)),armynum,P_ASOLD);
+				mvprintw((nfound%SCRARM)*2,COLS-20,"%s %d: str=%ld",*(unittype+(P_ATYPE%UTYPE)),armynum,P_ASOLD);
 				clrtoeol();
 
 				if(P_ASTAT >= NUMSTATUS )
@@ -1404,14 +1404,14 @@ makeside(int alwayssee)	/* see even if cant really see sector */
 				&&(ntn[i].arm[armynum].sold>0)){
 				if(nfound2>SCRARM) nfound2=SCRARM;
 				if( ntn[i].arm[armynum].unittyp>=MINMONSTER ){
-					mvprintw(nfound2*2+count,COLS-20,"%s: str=%d",*(unittype+(ntn[i].arm[armynum].unittyp%UTYPE)),ntn[i].arm[armynum].sold);
+					mvprintw(nfound2*2+count,COLS-20,"%s: str=%ld",*(unittype+(ntn[i].arm[armynum].unittyp%UTYPE)),ntn[i].arm[armynum].sold);
 					count++;
 				} else enemy += ntn[i].arm[armynum].sold;
 				}
 			}
 			if(enemy>0) {
 				if((magic(country,NINJA)==TRUE) || country == 0 )
-					mvprintw(nfound2*2+count,COLS-20,"%s: %d men  ",ntn[i].name,enemy);
+					mvprintw(nfound2*2+count,COLS-20,"%s: %ld men  ",ntn[i].name,enemy);
 				else if(magic(i,THE_VOID)==TRUE)
 				mvprintw(nfound2*2+count,COLS-20,"%s: ?? men  ",ntn[i].name);
 				else {
@@ -1433,7 +1433,7 @@ makeside(int alwayssee)	/* see even if cant really see sector */
 				}
 			if(enemy>0) {
 				if((magic(country,NINJA)==TRUE) || country == 0 )
-					mvprintw(nfound2*2+count,COLS-20,"%s: %d ships",ntn[i].name,enemy);
+					mvprintw(nfound2*2+count,COLS-20,"%s: %ld ships",ntn[i].name,enemy);
 				else if(magic(i,THE_VOID)==TRUE)
 				mvprintw(nfound2*2+count,COLS-20,"%s: ?? ships",ntn[i].name);
 				else {
@@ -1479,10 +1479,10 @@ makeside(int alwayssee)	/* see even if cant really see sector */
 		standend();
 
 		if((sptr->owner==country)||(country==0)||(magic(country,NINJA)==TRUE))
-		mvprintw(LINES-9,COLS-20,"people: %6d",sptr->people);
+		mvprintw(LINES-9,COLS-20,"people: %6ld",sptr->people);
 		else {
 			srand(country*17+TURN*3+sptr->people);
-			mvprintw(LINES-9,COLS-20,"people: %6d",sptr->people*(rand()%60+70)/100);
+			mvprintw(LINES-9,COLS-20,"people: %6ld",sptr->people*(rand()%60+70)/100);
 			srand((unsigned) time((long *) 0));
 		}
 		clrtoeol();
@@ -1902,7 +1902,7 @@ camp_info(void)
 
 	/* user information */
 	mvprintw(7,COLS-40,"Number of Leaders........... %d",numlead);
-	mvprintw(8,COLS-40,"Men Needed To Take Land..... %d",TAKESECTOR);
+	mvprintw(8,COLS-40,"Men Needed To Take Land..... %ld",TAKESECTOR);
 	mvprintw(9,COLS-40,"Mercenaries in Nation....... %d",mercs);
 	mvprintw(10,COLS-40,"Total Soldiers in Nation.... %d",solds);
 	mvprintw(11,COLS-40,"Current Number of Armies.... %d",numarm);
