@@ -71,6 +71,7 @@
 #include <fcntl.h>
 #include <pwd.h>
 #include <unistd.h>
+#include <sys/types.h>
 #include <sys/stat.h>
 #include "header.h"
 #include "data.h"
@@ -204,7 +205,8 @@ FILE *fexe, *fopen();
 int
 main (int argc, char **argv)
 {
-	int realuser, l;
+	uid_t realuser;
+	int l;
 	register int i,j;
 	char *name;
 #ifndef __STDC__
