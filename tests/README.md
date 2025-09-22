@@ -20,8 +20,8 @@ Compilation wrapper for testing data.h changes. Includes proper header.h depende
 ```bash
 # Test data.h compilation health
 gcc -O2 -g -std=c99 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE \
-  -DDEFAULTDIR="/home/ssmoogan/conquer/lib" -DEXEDIR="/home/ssmoogan/conquer/bin" \
-  -DVERSION="4" -DPATCHLEVEL="12" -DLOGIN="ssmoogan" -DCONQUER \
+  -DDEFAULTDIR="/home/ssmoogen/conquer/lib" -DEXEDIR="/home/ssmoogen/conquer/bin" \
+  -DPATCHLEVEL="12" -DLOGIN="ssmoogen" -DCONQUER \
   -c tests/utils/test_data_h.c -o /tmp/test_data_h.o
 ```
 

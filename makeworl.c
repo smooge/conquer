@@ -269,14 +269,14 @@ makeworld (
 #endif /*REMAKE*/
 		} else if (strlen(newstring) <= LEADERLTH) {
 			if (getpwnam(newstring)!=NULL) {
-				(void) snprintf(tempc,sizeof(tempc),"The demi-god %.*s may administrate this new world.",newstring);
+				(void) snprintf(tempc,sizeof(tempc),"The demi-god %s may administrate this new world.",newstring);
 				newmsg(tempc);
 				(void) strncpy(ntn[0].leader,newstring,LEADERLTH);
 				mvprintw(7,0,"Demi-God: %s",ntn[0].leader);
 				clrtoeol();
 				break;
 			} else {
-				(void) snprintf(tempc,sizeof(tempc),"Their is no mortal named %.*s on this system.",newstring);
+				(void) snprintf(tempc,sizeof(tempc),"Their is no mortal named %s on this system.",newstring);
 				newerror(tempc);
 			}
 		} else {
@@ -347,7 +347,7 @@ makeworld (
 		fprintf(fm,"5\tGLOBAL ANNOUNCEMENTS\n");
 		fclose(fm);
 	} else {
-		snprintf(tempc,sizeof(tempc),"error opening news file <%.*s>\n",newstring);
+		snprintf(tempc,sizeof(tempc),"error opening news file <%s>\n",newstring);
 		newerror(tempc);
 	}
 	newreset();

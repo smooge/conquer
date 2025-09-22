@@ -229,7 +229,7 @@ main(int argc, char **argv)
 	}
 	if (defaultdir[0] != '/') {
 		strcpy(cq_opts, defaultdir);
-		snprintf(defaultdir, sizeof(defaultdir), "%.*s/%.*s", DEFAULTDIR, cq_opts);
+		snprintf(defaultdir, sizeof(defaultdir), "%s/%s", DEFAULTDIR, cq_opts);
 	}
 
 	/* process the command line arguments */

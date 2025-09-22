@@ -1,10 +1,10 @@
 /*
  * combat.c - Combat system and battle resolution
- * 
+ *
  * This file is part of Conquer.
  * Originally Copyright (C) 1988-1989 by Edward M. Barlow and Adam Bryant
  * Copyright (C) 2025 Juan Manuel Méndez Rey (Vejeta) - Licensed under GPL v3 with permission from original authors
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -387,18 +387,18 @@ combat()
  * - Performance critical for large battles
  * - Historical combat balance maintained for game compatibility
  */
-void 
+void
 fight (void)
 {
 	int	roll,strength,fortdam=FALSE;
-	int	odds;			/* odds (asold/dsold) times 100 */
-	int	done;
+	int	odds=0;			/* odds (asold/dsold) times 100 */
+	int	done=0;
 	int	i,j,k;
 	long	asold=0,dsold=0;	/*a's and d's total soldiers*/
 	float astr=0,dstr=0;		/*a's and d's relative strength*/
 	long	Aloss,Dloss;    	/*a's and d's total losses*/
 	int	PAloss,PDloss;		/*percent a and d loss*/
-	long	loss;
+	long	loss=0;
 	int	abonus=0,dbonus=0;	/* bonus aggregate */
 	long	vampire=0;		/* # non vamps deaded */
 	short	nvamps=0;		/* number of vampire armies */
@@ -825,7 +825,7 @@ printf("I AM VERY CONFUSED - PLEASE HELP... combat.c\n");
 					fprintf(fm,"neutral: ");
 				else
 					fprintf(fm,"in limbo: ");
-			
+
 				fprintf(fm,"army %d (%s, men %ld, bonus=%d, loss=%ld)",
 					unit[k],
 					unittype[ntn[UOWNER(k)].arm[unit[k]].unittyp%UTYPE],
@@ -1099,7 +1099,7 @@ cbonus(int num)
  *   - Diplomatic integration: Respects alliance/war status for safe passage
  *   - Town/city sectors block retreats (defensive advantage mechanic)
  */
-void 
+void
 fdxyretreat (void)	/* finds retreat location */
 {
 	int	x,y,nation=(-1);
@@ -1193,7 +1193,7 @@ fdxyretreat (void)	/* finds retreat location */
  *   - Casualty asymmetry: Naval units suffer retreat losses, land units don't
  *   - Used for: Battle retreats, mercenary desertion, diplomatic withdrawals
  */
-void 
+void
 retreat (
     int unitnum	/* if -1 then normal, else retreat only unit ismerc */
 )
@@ -1306,7 +1306,7 @@ retreat (
 #define QMER 3
 /* just like fight, this takes array of owner,side,unit and calculates */
 /* a random battle based on the strengths of the combatants.           */
-void 
+void
 navalcbt (void)
 {
 	int acrew=0,dcrew=0;	/*a's and d's crew and soldier strength*/
@@ -1761,7 +1761,7 @@ navalcbt (void)
 				fprintf(fm,"%d (%d warships %d galleys %d merchants)",
 					unit[k],wnum[k],gnum[k],mnum[k]);
 				putc('\n',fm);
- 
+
 			}
 
 			fprintf(fm,"attacker strength (%d men) -> percent loss %d%%\n",acrew,PAloss);
@@ -1846,7 +1846,7 @@ navalcbt (void)
  *   - Ship types: Supports all three naval vessel categories
  */
 /* routine to distribute a captured ship */
-void 
+void
 capture (int type, int to, int shipsize, int holdcount)
 {
 	int i,nvynum;
@@ -1949,7 +1949,7 @@ capture (int type, int to, int shipsize, int holdcount)
  *   - User experience: Clear, readable battle outcome presentation
  */
 /* routine to display combat results */
-void 
+void
 show_ships (char *who, char *what, int war, int gal, int mer)
 {
 	if (war+gal+mer>0) {

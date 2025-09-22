@@ -7,7 +7,7 @@
 # =============================================================================
 
 PACKAGE_NAME = conquer
-VERSION = 4
+# VERSION = 4
 PATCHLEVEL = 12
 
 # Main targets
@@ -49,7 +49,7 @@ EXEDIR = $(PREFIX)/bin
 
 # Base compiler definitions
 CDEFS = -DDEFAULTDIR=\"$(DEFAULT)\" -DEXEDIR=\"$(EXEDIR)\"
-CDEFS += -DVERSION=\"$(VERSION)\" -DPATCHLEVEL=\"$(PATCHLEVEL)\"
+CDEFS += -DPATCHLEVEL=\"$(PATCHLEVEL)\"
 CDEFS += -DLOGIN=\"$(shell whoami)\"
 
 # Platform-specific library detection

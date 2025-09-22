@@ -1128,7 +1128,7 @@ newlogin (int realuser)
 		sprintf(tempc,"%s%d",exefile,i);
 		if ((fexe=fopen(tempc,"w"))==NULL) {
 			char errmsg[LINELTH*2];
-			snprintf(errmsg,sizeof(errmsg),"Error opening <%.*s>",tempc);
+			snprintf(errmsg,sizeof(errmsg),"Error opening <%s>",tempc);
 			newerror(errmsg);
 			newbye(FAIL);
 		}
@@ -1762,7 +1762,7 @@ place (
 {
 	int	placed=0,armysize=100;
 	short	armynum=0;
-	long	people;
+	long	people=0;
 	char tempo[LINELTH+1];
 	int	x,y,i,j,temp,t;
 	int	n=0, leadtype;

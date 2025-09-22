@@ -230,7 +230,7 @@ main (int argc, char **argv)
 
 	/* check conquer options */
 	if (getenv(ENVIRON_OPTS)!=NULL) {
-		snprintf(cq_opts, sizeof(cq_opts), "%.*s", getenv(ENVIRON_OPTS));
+		snprintf(cq_opts, sizeof(cq_opts), "%s", getenv(ENVIRON_OPTS));
 	}
 	if (cq_opts[0] != '\0') {
 		l = strlen(cq_opts);

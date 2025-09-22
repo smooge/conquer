@@ -261,7 +261,7 @@ void makemess(int count, FILE *output)
 
     /* Try to load the rules file */
     char filename[256];
-    snprintf(filename, sizeof(filename), "%.*s/%.*s", DEFAULTDIR, DEFFILE);
+    snprintf(filename, sizeof(filename), "%s/%s", DEFAULTDIR, DEFFILE);
 
     if (load_rules_file(filename) != 0) {
         fprintf(stderr, "Error: Cannot load rules file: %s\n", filename);

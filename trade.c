@@ -1,10 +1,10 @@
 /*
  * trade.c - Trade and commerce system
- * 
+ *
  * This file is part of Conquer.
  * Originally Copyright (C) 1988-1989 by Edward M. Barlow and Adam Bryant
  * Copyright (C) 2025 Juan Manuel Méndez Rey (Vejeta) - Licensed under GPL v3 with permission from original authors
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -28,7 +28,7 @@
 #include "data.h"
 #include "trade.h"
 
-#ifdef TRADE		
+#ifdef TRADE
 
 /* possible commodities */
 #define TDGOLD   0
@@ -120,7 +120,7 @@ trade()
 	int type1[MAXITM], type2[MAXITM], deal[MAXITM], extra[MAXITM];
 	int natn[MAXITM], itemnum;
 	long lvar1[MAXITM], lvar2[MAXITM], holdlong, holdlong2;
-	
+
 	clear();
 	while (done==FALSE) {
 		itemnum=0;
@@ -520,9 +520,9 @@ trade()
 			holdint--;
 #ifdef OGOD
 			/* allow god to remove commodities */
-			if (country!=0 && country!=natn[holdint]) 
-#else 
-			if (country != natn[holdint]) 
+			if (country!=0 && country!=natn[holdint])
+#else
+			if (country != natn[holdint])
 #endif /* OGOD */
 			{
 				tradeerr("That is not your item");
@@ -533,7 +533,7 @@ trade()
 				tradeerr("That item is not up for sale");
 				return;
 			}
-			
+
 			/* remove it from market */
 			if ( (tfile = fopen(tradefile,"a+"))==NULL) {
 				tradeerr("Error opening file for trading");
@@ -590,7 +590,7 @@ trade()
  *   - Hardcoded screen positions (lines 21-22) assume standard terminal size
  *   - Blocking function that pauses game until user acknowledgment
  */
-void 
+void
 tradeerr (char *mesg)
 {
 	clear_bottom(0);
@@ -648,14 +648,14 @@ tradeerr (char *mesg)
  *   - Prevents exploitation of capital and city trading
  *   - Used by both buy and sell operations
  */
-int 
+int
 checkland (int tradestat, int xspot, int yspot)
 {
 	int newstat=tradestat;
 	if (!ONMAP(xspot,yspot)) {
 		tradeerr("That is off the map");
 		newstat=NODEAL;
-	} 
+	}
 	else if (sct[xspot][yspot].owner != country) {
 		tradeerr("You don't own it");
 		newstat=NODEAL;
@@ -721,10 +721,10 @@ checkland (int tradestat, int xspot, int yspot)
  *   - Breaks out of nested loops using i=MAPX+1, j=MAPY+1 technique
  *   - Food value depends on both vegetation type and nation context
  */
-int 
+int
 getland (int *count)
 {
-	int	temp;
+	int	temp=0;
 	int	i,j;
 	char	entered;
 
@@ -802,7 +802,7 @@ getland (int *count)
  *   - Case-insensitive input handling for user convenience
  *   - Returns -1 for any unrecognized input to signal error condition
  */
-int 
+int
 gettrade (char *saletype, int *count)
 {
 	int hold=(-1);
@@ -892,7 +892,7 @@ gettrade (char *saletype, int *count)
  *   - isup flag creates conditional behavior for some commodity types
  *   - TRADED status prevents units from being used while reserved
  */
-void 
+void
 setaside (int cntry, int item, long longval, int extint, int isup)
 {
 	switch(item)
@@ -971,7 +971,7 @@ setaside (int cntry, int item, long longval, int extint, int isup)
  *   - Essential for trade cancellation and marketplace unselling operations
  *   - Units remain immobilized until next turn despite status restoration
  */
-void 
+void
 takeback (int cntry, int item, long longval, int extint, int isup)
 {
 	if (cntry == -1) return;
@@ -1057,7 +1057,7 @@ takeback (int cntry, int item, long longval, int extint, int isup)
  *   - Critical for maintaining game economy balance with trading costs
  *   - Handles complex unit roster management for military transfers
  */
-long 
+long
 tradeit (int cntry1, int cntry2, int item, long longval, int extra)
 {
 	int unitnum=(-1),unitcount=0;
@@ -1282,7 +1282,7 @@ gettval(int cntry1,int cntry2,int type,long longval,int extint)
  *   - Critical for player communication and game transparency
  *   - Terminates program on file errors to prevent silent failures
  */
-void 
+void
 trademail (int cntry1, int cntry2, int item1, int item2, long lvar1, long lvar2, long lvar3, long lvar4)
 {
 	FILE *fp[2];
@@ -1382,7 +1382,7 @@ trademail (int cntry1, int cntry2, int item1, int item2, long lvar1, long lvar2,
  *   - Prevents trading of regular troops to maintain game balance
  *   - Context switching ensures accurate unit status evaluation
  */
-int 
+int
 tradable (int cntry, int armynum)
 {
 	int oldcntry=country,returnval=FALSE;
@@ -1444,11 +1444,11 @@ tradable (int cntry, int armynum)
  *   - Essential for establishing fair market prices for military units
  *   - Scaling factor prevents unrealistic unit values in trading
  */
-long 
+long
 armyvalue (int cntry, int unit)
 {
 	long returnval;
-	
+
 	returnval = ntn[cntry].arm[unit].sold*100 +
 		ntn[cntry].arm[unit].sold * unitattack[ntn[cntry].arm[unit].unittyp%UTYPE];
 	if (ntn[cntry].arm[unit].unittyp >= MINMONSTER) returnval+=ntn[cntry].arm[unit].sold*10;
@@ -1505,7 +1505,7 @@ armyvalue (int cntry, int unit)
  *   - Essential for persistent trading across game sessions
  *   - Gracefully handles missing trade file (no operations active)
  */
-void 
+void
 checktrade (void)
 {
 	FILE *tfile;
@@ -1606,7 +1606,7 @@ checktrade (void)
  *   - Critical for maintaining game balance and fairness
  *   - Handles complex auction mechanics with multiple bidders
  */
-void 
+void
 uptrade (void)
 {
 	FILE *tfile;
@@ -1782,7 +1782,7 @@ fixtrade (int cntry)
 	itemnum = 0;
 
 	/* read in all of the data */
-	while (notopen==FALSE && !feof(tfile)) 
+	while (notopen==FALSE && !feof(tfile))
 	{
 		if (fscanf(tfile,"%d %d %d %d %ld %ld %d\n",&deal[itemnum],
 			&natn[itemnum],&type1[itemnum],&type2[itemnum],
@@ -1799,9 +1799,9 @@ fixtrade (int cntry)
 
 	/* go through list of commodities */
 
-	for ( holdint=0; holdint<itemnum; holdint++) 
+	for ( holdint=0; holdint<itemnum; holdint++)
 	{
-		if ( deal[holdint]==SELL ) 
+		if ( deal[holdint]==SELL )
 		{
 
 			if ( natn[holdint] == cntry )
@@ -1814,7 +1814,7 @@ fixtrade (int cntry)
 					abrt();
 				}
 
-				fprintf(tfile, "%d %d %d %d %ld %ld %d\n", 
+				fprintf(tfile, "%d %d %d %d %ld %ld %d\n",
 				 NOSALE, natn[holdint], holdint, 0, 0L, 0L, 0);
 
 				fclose(tfile);

@@ -1,10 +1,10 @@
 /*
  * move.c - Unit movement and pathfinding
- * 
+ *
  * This file is part of Conquer.
  * Originally Copyright (C) 1988-1989 by Edward M. Barlow and Adam Bryant
  * Copyright (C) 2025 Juan Manuel Méndez Rey (Vejeta) - Licensed under GPL v3 with permission from original authors
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -36,7 +36,7 @@ extern short xcurs,ycurs,xoffset,yoffset;
 extern short hilmode;   /*highlight modes: 0=owned sectors, 1= armies, 2=none*/
 
 extern short country;
-int armornvy=AORN;	
+int armornvy=AORN;
 
 /*
  * mymove - Interactive unit movement interface for armies and navies
@@ -127,14 +127,14 @@ void
 mymove()
 {
 	int	mveleft;	/* movement remaining to army group */
-	long	groupmen;	/* infantry types in current army group */
-	long	othermen;	/* leader & monster strength in current group */
+	long	groupmen = 0;	/* infantry types in current army group */
+	long	othermen = 0;	/* leader & monster strength in current group */
 	int	i,j,x;
 	int	total,Tarmynum,Tnation,fmove;
 	int	valid=FALSE;     /* TRUE if move was a valid move */
 	short	armynum;
 	short	nvynum;
-	int	oldxcurs,oldycurs,mvused;
+	int	oldxcurs,oldycurs,mvused = 0;
 	int	done=FALSE;	/*done is TRUE if done with this move*/
 
 	armornvy=AORN;
@@ -188,12 +188,13 @@ mymove()
 		}
 
 		/* add up infantry types in army group */
-		othermen = groupmen = 0;
+		othermen = 0;
+		groupmen = 0;
 		if(P_ASTAT==GENERAL) {
 			x=armynum;
-			for(armynum=0;armynum<MAXARM;armynum++) 
+			for(armynum=0;armynum<MAXARM;armynum++)
 			if(curntn->arm[armynum].stat==x+NUMSTATUS){
-				if(P_ATYPE<MINLEADER) 
+				if(P_ATYPE<MINLEADER)
 					groupmen += P_ASOLD;
 				else	othermen += P_ASOLD;
 			}
@@ -360,7 +361,7 @@ mymove()
 				}
 			}
 		} else if(armornvy==NAVY) {
-				
+
 			if(abs(movecost[XREAL][YREAL])>mveleft){
 				errormsg("Costs Too Much To Move Here!!!");
 				valid=FALSE;
@@ -650,12 +651,12 @@ mymove()
 			}
 			clrtoeol();
 			refresh();
-		} 
+		}
 
 		/*set move for parts of group*/
 		if((P_ASOLD>=0)&&(P_ASTAT==GENERAL)) {
 			x=armynum;
-			for(armynum=0;armynum<MAXARM;armynum++) 
+			for(armynum=0;armynum<MAXARM;armynum++)
 			if(curntn->arm[armynum].stat==x+NUMSTATUS){
 				P_AXLOC=XREAL;
 				P_AYLOC=YREAL;
@@ -783,12 +784,12 @@ mymove()
 /*	if navy, number is MAXARM+nvynum.  set armornvy			*/
 /*	current selected unit is selector/2+4*pager			*/
 /************************************************************************/
-int 
+int
 getselunit (void)
 {
 	int	selunit=(-1);
 	short	armynum=0, nvynum=0;
-	int	count=0; 
+	int	count=0;
 	for(armynum=0;armynum<MAXARM;armynum++){
 		if((P_ASOLD>0)&&(P_AXLOC==XREAL)&&(P_AYLOC==YREAL)) {
 			if((SCRARM*pager)+(selector/2)==count) selunit=armynum;
