@@ -751,6 +751,106 @@ int test_function_exists() {
 - Focus on compilation health as primary validation
 - Document behavioral changes for future testing
 
+## CRITICAL: Dual Compilation Strategy (ADMIN vs Non-ADMIN)
+
+**Discovery Date**: 2025-01-22
+**Source**: admin.c compilation analysis revealed dual compilation requirements
+
+### Understanding the Build System
+
+The Conquer project uses a sophisticated dual compilation strategy where some files are compiled twice with different preprocessor flags:
+
+1. **Admin executable (conqrun)**: Compiled with `-DADMIN -DCONQUER`
+2. **Game executable (conquer)**: Compiled with `-DCONQUER` only
+
+### File Classification for Compilation Testing
+
+#### Files Requiring Dual Compilation (7 files)
+These files contain `#ifdef ADMIN` blocks and must compile cleanly in both modes:
+
+1. **cexecute.c** → `cexecuteA.o` (with -DADMIN) & `cexecuteG.o` (without -DADMIN)
+2. **io.c** → `ioA.o` (with -DADMIN) & `ioG.o` (without -DADMIN)
+3. **misc.c** → `miscA.o` (with -DADMIN) & `miscG.o` (without -DADMIN)
+4. **navy.c** → `navyA.o` (with -DADMIN) & `navyG.o` (without -DADMIN)
+5. **magic.c** → `magicA.o` (with -DADMIN) & `magicG.o` (without -DADMIN)
+6. **data.c** → `dataA.o` (with -DADMIN) & `dataG.o` (without -DADMIN)
+7. **trade.c** → `tradeA.o` (with -DADMIN) & `tradeG.o` (without -DADMIN)
+
+#### Admin-Only Files (8 files)
+These files are only compiled for the admin executable with `-DADMIN -DCONQUER`:
+
+- **admin.c**, **makeworl.c**, **combat.c**, **spew.c**
+- **newlogin.c**, **update.c**, **npc.c**, **randeven.c**
+
+#### Game-Only Files (7 files)
+These files are only compiled for the game executable with `-DCONQUER` only:
+
+- **commands.c**, **main.c**, **forms.c**, **move.c**
+- **reports.c**, **display.c**, **extcmds.c**
+
+#### Shared Files (1 file)
+- **check.c** → compiled once with `-DADMIN -DCONQUER` for both executables
+
+#### PostScript Utility Files (1 file)
+These files are compiled as standalone utilities with specific PostScript flags:
+
+- **psmap.c** → PostScript map generation utility (standalone executable)
+
+### Compilation Commands for Testing
+
+**CRITICAL**: Use correct flags for each file type to avoid false compilation errors.
+
+#### Admin-Only and Shared Files:
+```bash
+gcc -O2 -g -std=c99 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -DDEFAULTDIR='"/home/ssmoogen/conquer/lib"' -DEXEDIR='"/home/ssmoogen/conquer/bin"' -DPATCHLEVEL='"12"' -DLOGIN='"ssmoogen"' -DADMIN -DCONQUER -c filename.c -o /tmp/filename.o
+```
+
+#### Game-Only Files:
+```bash
+gcc -O2 -g -std=c99 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -DDEFAULTDIR='"/home/ssmoogen/conquer/lib"' -DEXEDIR='"/home/ssmoogen/conquer/bin"' -DPATCHLEVEL='"12"' -DLOGIN='"ssmoogen"' -DCONQUER -c filename.c -o /tmp/filename.o
+```
+
+#### Dual-Compiled Files (Test Both):
+```bash
+# Test Admin version
+gcc [admin flags above] -c filename.c -o /tmp/filenameA.o
+
+# Test Game version
+gcc [game flags above] -c filename.c -o /tmp/filenameG.o
+```
+
+#### PostScript Utility Files:
+```bash
+gcc -g -fno-strict-aliasing -fwrapv -Wall -Wextra -O2 -DPSFILE='"/home/ssmoogen/conquer/bin/psmap.ps"' -DLETTER -c psmap.c -o /tmp/psmap.o
+```
+
+### Key Insights from admin.c Analysis
+
+1. **Variable Declaration Dependencies**: Some variables (like `scenario`) are only declared in data.h when `ADMIN` is defined
+2. **Macro Quoting**: Command-line macro definitions require proper quoting: `-DDEFAULTDIR='"/path"'`
+3. **Version Flag Removal**: The `-DVERSION="4"` flag causes redefinition warnings and should be omitted (already removed from current Makefile)
+
+### Impact on Phase 4 Testing
+
+**MANDATORY**: When testing individual files during Phase 4, use the correct compilation flags based on file type:
+
+- ❌ **Wrong**: Testing commands.c with `-DADMIN` (will fail due to unnecessary dependencies)
+- ✅ **Right**: Testing commands.c with `-DCONQUER` only
+- ❌ **Wrong**: Testing admin.c without `-DADMIN` (will fail due to missing variable declarations)
+- ✅ **Right**: Testing admin.c with `-DADMIN -DCONQUER`
+- ❌ **Wrong**: Testing psmap.c with standard flags (will fail due to missing PSFILE/DEFAULTPAGE)
+- ✅ **Right**: Testing psmap.c with PostScript flags `-DPSFILE='"/home/ssmoogen/conquer/bin/psmap.ps"' -DLETTER`
+
+### Automation Script Updates Required
+
+All Phase 4 automation scripts must be updated to:
+
+1. Classify files by compilation type (admin-only, game-only, dual, shared, PostScript)
+2. Use appropriate flags for each file type
+3. Test dual-compiled files in both modes
+4. Handle PostScript utility files with special flags
+5. Report compilation status per file type
+
 ---
 
 **Next Steps**: Begin with Subphase 0 to establish baseline and create automation infrastructure before any code changes.
