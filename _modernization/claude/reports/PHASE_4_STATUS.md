@@ -16,7 +16,7 @@
 **Phase 4.3 Progress**:
 - **Baseline established**: Comprehensive -Wall warning analysis complete
 - **Methodology validated**: Manual approach proven effective
-- **Files complete**: 12/34 files now 100% warning-free (35.3% complete)
+- **Files complete**: 13/34 files now 100% warning-free (38.2% complete)
 - **Tools corrected**: Fixed script issues for accurate warning detection
 - **Blocked files resolved**: Both compilation error files now working
 
@@ -55,7 +55,7 @@
 - **reports.c** ✅ - PHASE 4.3 COMPLETE (warning-free) - Fixed K&R function, format warnings in macros (2025-01-22)
 - **display.c** ✅ - PHASE 4.2 COMPLETE
 - **extcmds.c** ✅ - PHASE 4.2 COMPLETE
-- **commands.c** ✅ - Fixed in previous session (move_file declaration added)
+- **commands.c** ✅ - PHASE 4.3 COMPLETE (warning-free) - Fixed K&R function, unlink conflicts, format warnings (2025-01-22)
 - **main.c** ✅ - Fixed in previous session (signal handling resolved)
 
 ### Dual-Compiled Files (7 files) - Must work with both flag sets

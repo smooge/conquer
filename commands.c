@@ -122,10 +122,7 @@ int roads_this_turn = 0;
  */
 /* routine to determine if the given designation is ok; TRUE for ok */
 int
-desg_ok(prtflag, desg, sptr)
-	int prtflag;
-	char desg;
-	struct	s_sector	*sptr;
+desg_ok(int prtflag, char desg, struct s_sector *sptr)
 {
 	/* check vegetation */
 	if((desg!=DNODESIG)&&(desg!=DROAD)&&(desg!=DFORT)
@@ -1529,7 +1526,6 @@ draft (void)
 void
 rmessage (void)
 {
-	int unlink();
 	FILE *mesgfp;
 	FILE *fptemp;
 	int i;
@@ -1543,10 +1539,10 @@ rmessage (void)
 	struct stat fst;
 
 	/*open file; used in mailopen() as well */
-	snprintf(tempfile, FILELTH, "%.*s%hd.tmp", msgfile, country);
+	snprintf(tempfile, FILELTH, "%s%hd.tmp", msgfile, country);
 	if( (fptemp = fopen(tempfile,"w")) == NULL ) {
 		clear_bottom(0);
-		snprintf(mesgfile, FILELTH, "error: %.*s open", tempfile);
+		snprintf(mesgfile, FILELTH, "error: %s open", tempfile);
 		errormsg(mesgfile);
 		redraw=DONE;
 		makebottom();
@@ -1564,7 +1560,7 @@ rmessage (void)
 	}
 
 	/* check for people sending mail */
-	snprintf(line, LINELTH+1, "send.%.*s%hd", msgfile, country);
+	snprintf(line, LINELTH+1, "send.%s%hd", msgfile, country);
 	if (stat(line,&fst)==0) {
 		long now;
 		now = time(0);
