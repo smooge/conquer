@@ -592,9 +592,8 @@ trade()
  *   - Hardcoded screen positions (lines 21-22) assume standard terminal size
  *   - Blocking function that pauses game until user acknowledgment
  */
-void
-tradeerr(mesg)
-char *mesg;
+void 
+tradeerr (char *mesg)
 {
 	clear_bottom(0);
 	standout();
@@ -651,9 +650,8 @@ char *mesg;
  *   - Prevents exploitation of capital and city trading
  *   - Used by both buy and sell operations
  */
-int
-checkland(tradestat,xspot,yspot)
-int tradestat,xspot,yspot;
+int 
+checkland (int tradestat, int xspot, int yspot)
 {
 	int newstat=tradestat;
 	if (!ONMAP(xspot,yspot)) {
@@ -725,9 +723,8 @@ int tradestat,xspot,yspot;
  *   - Breaks out of nested loops using i=MAPX+1, j=MAPY+1 technique
  *   - Food value depends on both vegetation type and nation context
  */
-int
-getland(count)
-int *count;
+int 
+getland (int *count)
 {
 	int	temp;
 	int	i,j;
@@ -807,10 +804,8 @@ int *count;
  *   - Case-insensitive input handling for user convenience
  *   - Returns -1 for any unrecognized input to signal error condition
  */
-int
-gettrade(saletype,count)
-char *saletype;
-int *count;
+int 
+gettrade (char *saletype, int *count)
 {
 	int hold=(-1);
 
@@ -899,10 +894,8 @@ int *count;
  *   - isup flag creates conditional behavior for some commodity types
  *   - TRADED status prevents units from being used while reserved
  */
-void
-setaside(cntry,item,longval,extint,isup)
-int cntry,item,isup,extint;
-long longval;
+void 
+setaside (int cntry, int item, long longval, int extint, int isup)
 {
 	switch(item)
 	{
@@ -980,10 +973,8 @@ long longval;
  *   - Essential for trade cancellation and marketplace unselling operations
  *   - Units remain immobilized until next turn despite status restoration
  */
-void
-takeback(cntry,item,longval,extint,isup)
-int cntry,item,isup,extint;
-long longval;
+void 
+takeback (int cntry, int item, long longval, int extint, int isup)
 {
 	if (cntry == -1) return;
 	switch(item)
@@ -1068,10 +1059,8 @@ long longval;
  *   - Critical for maintaining game economy balance with trading costs
  *   - Handles complex unit roster management for military transfers
  */
-long
-tradeit(cntry1,cntry2,item,longval,extra)
-int cntry1,cntry2,item,extra;
-long longval;
+long 
+tradeit (int cntry1, int cntry2, int item, long longval, int extra)
 {
 	int unitnum=(-1),unitcount=0;
 	/* error for -1 returned */
@@ -1296,10 +1285,8 @@ gettval(int cntry1,int cntry2,int type,long longval,int extint)
  *   - Critical for player communication and game transparency
  *   - Terminates program on file errors to prevent silent failures
  */
-void
-trademail(cntry1,cntry2,item1,item2,lvar1,lvar2,lvar3,lvar4)
-int cntry1,cntry2,item1,item2;
-long lvar1,lvar2,lvar3,lvar4;
+void 
+trademail (int cntry1, int cntry2, int item1, int item2, long lvar1, long lvar2, long lvar3, long lvar4)
 {
 	FILE *fp[2];
 	int count;
@@ -1398,9 +1385,8 @@ long lvar1,lvar2,lvar3,lvar4;
  *   - Prevents trading of regular troops to maintain game balance
  *   - Context switching ensures accurate unit status evaluation
  */
-int
-tradable(cntry,armynum)
-int cntry,armynum;
+int 
+tradable (int cntry, int armynum)
 {
 	int oldcntry=country,returnval=FALSE;
 	country=cntry;
@@ -1461,8 +1447,8 @@ int cntry,armynum;
  *   - Essential for establishing fair market prices for military units
  *   - Scaling factor prevents unrealistic unit values in trading
  */
-long armyvalue(cntry,unit)
-int cntry,unit;
+long 
+armyvalue (int cntry, int unit)
 {
 	long returnval;
 	
@@ -1522,8 +1508,8 @@ int cntry,unit;
  *   - Essential for persistent trading across game sessions
  *   - Gracefully handles missing trade file (no operations active)
  */
-void
-checktrade()
+void 
+checktrade (void)
 {
 	FILE *tfile;
 	int count, itemnum=0, natn[MAXITM];
@@ -1625,8 +1611,8 @@ checktrade()
  *   - Critical for maintaining game balance and fairness
  *   - Handles complex auction mechanics with multiple bidders
  */
-void
-uptrade()
+void 
+uptrade (void)
 {
 	FILE *tfile;
 	int count, itemnum=0, natn[MAXITM];

@@ -201,10 +201,8 @@ FILE *fexe, *fopen();
  *   Mock Requirements: Mock filesystem, user database, permission system
  *   Complexity: Complex - Multi-user security, file operations, process coordination
  */
-int
-main(argc,argv)
-int argc;
-char **argv;
+int 
+main (int argc, char **argv)
 {
 	int realuser, l;
 	register int i,j;
@@ -570,9 +568,8 @@ char **argv;
  *   Mock Requirements: Mock magic system, mock nation data structures
  *   Complexity: Simple - Direct attribute assignment with conditional logic
  */
-void
-att_setup(cntry)
-int	cntry;
+void 
+att_setup (int cntry)
 {
 	int	nat;
 	for( nat= 0; nat<NTOTAL;nat++) if( isntn( ntn[nat].active ))
@@ -690,8 +687,8 @@ int	cntry;
  *   Mock Requirements: Full world map, complete nation setup, magic power system
  *   Complexity: Complex - Multi-system integration with extensive calculations
  */
-void
-att_base()
+void 
+att_base (void)
 {
 	long	cityfolk,townfolk,scholars,foodpts,minepts,roads,clerics,ngrain;
 	long	blksmths;
@@ -1002,8 +999,8 @@ att_base()
  *   Mock Requirements: Mock world map with trade goods, mock trade good value tables
  *   Complexity: Moderate - Map processing with trade good validation and bonus application
  */
-void
-att_bonus()
+void 
+att_bonus (void)
 {
 	short	x,y,nation,good;
 	struct	s_sector	*sptr;

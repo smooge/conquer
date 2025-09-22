@@ -407,8 +407,8 @@ showscore()
  *   Mock Requirements: Mock diplomatic state, mock mail system, mock file operations
  *   Complexity: Complex - Multi-system integration with financial transactions and cascading effects
  */
-void
-diploscrn()
+void 
+diploscrn (void)
 {
 	int i,j;
 	char k,name[LINELTH];
@@ -645,101 +645,8 @@ diploscrn()
 }
 
 int terror_adj=0;
-void
-/*
- * change - Interactive nation statistics editor and administrative control panel
- *
- * Provides a comprehensive interface for modifying nation attributes, administrative
- * controls, and system management. Features real-time display of all nation statistics
- * with interactive menus for modification. Supports both player and god mode operations
- * with secure password verification and extensive validation.
- *
- * Key Features:
- * - Real-time nation statistics display with two-column layout
- * - Interactive modification menus with input validation
- * - Password management with secure entry and encryption
- * - Administrative controls for god mode operations
- * - Economic transaction processing with cost validation
- * - PC/NPC status toggling and nation management
- * - Resource management (gold, jewels, metals, food)
- * - Combat bonus adjustments with class-based modifiers
- * - Nation destruction capabilities (god mode only)
- * - Integration with budget and production systems
- *
- * Display Layout:
- * - Left column: Basic nation info (name, alignment, location, class, race)
- * - Center column: Social statistics (terror, popularity, prestige, wealth)
- * - Right column: Resources and military (gold, food, soldiers, ships)
- * - Bottom: Interactive menu options and system controls
- *
- * Interactive Options:
- * 1) Nation name modification with duplicate checking
- * 2) Password change with verification and encryption
- * 3) Tax rate adjustment with revolt calculations
- * 4) Charity percentage with popularity effects
- * 5) Terror increase with reputation consequences
- * 6) Combat bonus enhancement with resource costs
- * 7) PC/NPC status toggle with notification system
- * 8) Nation destruction (administrative only)
- * 9) Resource modification (god mode with OGOD)
- * 0) Demigod password change (administrative)
- * B) Budget screen access with integration
- * P) Production screen access with integration
- *
- * Security Features:
- * - God mode authentication with password verification
- * - Current password validation for changes
- * - Encrypted password storage using crypt() with salt
- * - Administrative privilege checking for sensitive operations
- * - Input validation and bounds checking for all modifications
- *
- * Economic Integration:
- * - Cost calculations for combat bonus improvements
- * - Resource validation for transactions
- * - Class-based modifiers (WARLORD, CAPTAIN, WARRIOR effects)
- * - Race-specific cost multipliers (ORC penalty)
- * - Budget and production system integration
- *
- * Administrative Controls:
- * - Nation destruction with news file logging
- * - Resource modification with execution file logging
- * - Demigod password management
- * - PC/NPC conversion with mail notification effects
- * - System integration with external sorting utilities
- *
- * Parameters:
- *   None - Operates on global nation data and user interaction
- *
- * Returns:
- *   void - Function exits on user completion or administrative reset
- *
- * Side Effects:
- *   - Modifies current nation statistics based on user selections
- *   - Updates global nation array with validated changes
- *   - Writes to execution files for administrative changes
- *   - Logs nation destruction events to news files
- *   - Triggers external sort utilities for news processing
- *   - May reset god mode status on completion
- *   - Integrates with budget() and produce() subsystems
- *
- * Testing Notes:
- *   Category: C (System) - Requires full game state and file system
- *   Approach: System testing with mock file operations and user input simulation
- *   Key Tests: Interactive menu navigation, password validation, resource transactions,
- *             administrative controls, god mode operations, economic calculations
- *   Dependencies: Global nation data, file system access, user input, external utilities
- *   Mock Requirements: File operations, user input simulation, external command execution
- *   Complexity: Complex - Interactive UI with extensive validation and system integration
- *
- * Notes:
- *   - Main interactive interface for nation management and administration
- *   - Continuous loop design allows multiple operations per session
- *   - Extensive input validation prevents invalid state modifications
- *   - Integration with budget and production systems provides seamless workflow
- *   - Administrative features require careful privilege checking and logging
- *   - Performance optimized for real-time display updates and user interaction
- */
-change()
+void 
+change (void)
 {
 	float temp;
 	char string[LINELTH], command[BIGLTH];
@@ -1165,73 +1072,8 @@ change()
 	} /* end of continuous loop */
 }
 
-void
-/*
- * help - Interactive help system with topic selection and pagination
- *
- * Provides a file-based help system with interactive topic selection and
- * paginated screen display. Displays available help topics in a grid layout,
- * allows user selection, and presents help content with highlighted headers
- * and navigation controls.
- *
- * Key Features:
- * - Dynamic topic listing from helplist array
- * - Grid-based topic display with responsive layout
- * - File-based help content with structured format
- * - Page-by-page help content display with navigation
- * - Highlighted topic headers with standout formatting
- * - Interactive navigation with space key termination
- * - Error handling for missing or invalid help files
- *
- * Help File Format:
- * - Files named as helpfile + topic number (e.g., help0, help1)
- * - Content organized by screens with END markers
- * - DONE marker indicates end of help file
- * - First line of each screen serves as highlighted header
- * - Maximum line length of 80 characters for compatibility
- *
- * Display Layout:
- * - Topic selection: Grid format with numbered options
- * - Help content: Full screen display with highlighted headers
- * - Navigation: Bottom screen prompts for continuation/exit
- * - Error handling: Clear error messages for file issues
- *
- * Navigation Controls:
- * - Number keys (0-MAXHELP): Select help topic
- * - Any key (except space): Continue to next help screen
- * - Space key: Exit help system at any point
- * - Invalid topic numbers: Safe exit without error
- *
- * Parameters:
- *   None - Operates through interactive user input
- *
- * Returns:
- *   void - Function exits on completion or user termination
- *
- * Side Effects:
- *   - Clears bottom portion of screen for topic display
- *   - Modifies global redraw flag for screen refresh coordination
- *   - Opens and closes help files based on topic selection
- *   - Temporarily takes over full screen for help display
- *   - Restores screen state through makebottom() integration
- *
- * Testing Notes:
- *   Category: B (Integration) - Requires file system and screen management
- *   Approach: Integration testing with mock files and input simulation
- *   Key Tests: Topic selection validation, file error handling, pagination navigation,
- *             screen formatting, user input processing, file format compliance
- *   Dependencies: Help files, screen management, user input, file system access
- *   Mock Requirements: File system operations, user input simulation, screen state
- *   Complexity: Moderate - File processing with interactive navigation
- *
- * Notes:
- *   - Help content must follow specific file format with END/DONE markers
- *   - Topic selection uses grid layout optimized for readability
- *   - Error handling gracefully manages missing help files
- *   - Integration with screen management system for proper display restoration
- *   - Performance optimized for responsive user interaction
- */
-help()
+void 
+help (void)
 {
 	int lineno;
 	FILE *fp, *fopen();
@@ -1466,8 +1308,8 @@ void mvaddstrnahil(int li,int col,char *p)
  *   - Robust error handling for missing or corrupted news files
  *   - Performance considerations for large news archives
  */
-void
-newspaper()
+void 
+newspaper (void)
 {
 	int lineno;
 	FILE *fp, *fopen();

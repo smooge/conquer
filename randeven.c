@@ -305,8 +305,8 @@ findnew()
  *   - Function assumes markok() provides accurate availability information
  *   - No validation of returned character's actual uniqueness
  */
-char
-getnewmark()
+char 
+getnewmark (void)
 {
 	char tmpchr='A'-1;			/* cap letters first */
 	while (TRUE) {
@@ -374,11 +374,12 @@ getnewmark()
  *   - Uses global country variable temporarily during sector selection
  *   - HIDELOC compilation flag controls location disclosure in event messages
  */
-int
-disolve(percent, target, ispsnt)
-int target;
-int percent;
-int ispsnt;		/* true/false */
+int 
+disolve (
+    int percent,
+    int target,
+    int ispsnt		/* true/false */
+)
 {
 	int new;	/* new nation number */
 	int split;	/* number of sectors split */
@@ -608,9 +609,8 @@ int ispsnt;		/* true/false */
  *   - Function assumes names[] array is properly null-terminated
  *   - Does not handle duplicate names within the names[] array itself
  */
-int
-getnewname(new)
-int	new;
+int 
+getnewname (int new)
 {
 	int count,i=0;
 
@@ -698,8 +698,8 @@ int	new;
  *   - Military events can paralyze armies or reduce soldier populations
  *   - Architectural events improve fortress defenses across all cities
  */
-void
-randomevent()
+void 
+randomevent (void)
 {
 	int percent,count, event, newnation, i, j, armynum,x,y;
 	int done,holdval;	/*if 1 then event happened */
@@ -1378,10 +1378,8 @@ printf("TEMP: %s chance of revolt is %d (tax=%d prest=%d)\n",
  *   - Percentage reporting allows players to assess event severity/impact
  *   - Administrative console output aids in game monitoring and debugging
  */
-void
-wdisaster( cntry,xloc,yloc,prcnt,event )
-int cntry,xloc,yloc,prcnt;
-char *event;
+void 
+wdisaster (int cntry, int xloc, int yloc, int prcnt, char *event)
 {
 	fprintf(fnews,"1. \t%s in %s\n",event,ntn[cntry].name);
 	printf("\t%s in %s\n",event,ntn[cntry].name);
@@ -1600,9 +1598,10 @@ peasant_revolt(int *newnation)	/* peasant revolt */
  *   - Territorial percentages balance gameplay impact with historical realism
  *   - Each revolt type corresponds to specific event description in randevents[]
  */
-int
-other_revolt( new )	/* return reason and new nation number*/
-int	*new;
+int 
+other_revolt (	/* return reason and new nation number*/
+    int *new
+)
 {
 	short	reason = rand()%8;
 	switch( reason ) {
@@ -1705,8 +1704,8 @@ int	*new;
  *   - Volcano selection algorithm has O(n) complexity where n = total map sectors
  *   - No validation of volcano sector validity before triggering eruption
  */
-void
-erupt()
+void 
+erupt (void)
 {
 	int i, j, nvolcanos=0, volhold;
 
@@ -1806,9 +1805,8 @@ erupt()
  *   - Resource depletion impacts economic recovery for affected nations
  *   - No bounds checking on coordinates - assumes valid map positions
  */
-void
-blowup(i,j)
-register int i,j;
+void 
+blowup (register int i, register int j)
 {
 	register int x,y;
 	wdisaster(sct[i][j].owner,i,j,100,"volcano erupted");
@@ -1830,9 +1828,8 @@ register int i,j;
 }
 
 /** reduce will drop armies & and civilians in sector by percent **/
-void
-reduce(x,y,percent)
-int x,y,percent;
+void 
+reduce (int x, int y, int percent)
 {
 	long temp;	/* used to avoid overflow problems */
 	int armynum,ctry;
@@ -1860,8 +1857,8 @@ int x,y,percent;
 }
 
 /* returns pointer to random sector in country */
-struct s_sector
-*rand_sector()
+struct s_sector *
+rand_sector (void)
 {
 	int count=0;
 	for(xpos=0;xpos<MAPX;xpos++) for(ypos=0;ypos<MAPY;ypos++)
@@ -1876,8 +1873,8 @@ struct s_sector
 	return(NULL);	/* stop lint from complaining */
 }
 
-void
-weather()
+void 
+weather (void)
 {
 }
 #endif /* RANEVENT */

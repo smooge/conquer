@@ -187,9 +187,8 @@ prtattr()
  *   - Special rules for PC (player character) nations
  *   - Orc racial hostility hardcoded for gameplay balance
  */
-void
-newdip(ntn1,ntn2)
-int	ntn1,ntn2;
+void 
+newdip (int ntn1, int ntn2)
 {
 	if( ispc( ntn[ntn1].active ) ) {
 		if( ntn[ntn2].race==ORC ) 
@@ -272,8 +271,8 @@ int	ntn1,ntn2;
  *   - Spawning formula maintains balance across different map sizes
  *   - Uses goto statements for army slot allocation (legacy pattern)
  */
-void
-monster()
+void 
+monster (void)
 {
 	for(country=1;country<NTOTAL;country++) {
 		curntn = &ntn[country];
@@ -461,8 +460,8 @@ monster()
  *   - Movement failure protection prevents infinite loops
  *   - Uses P_A* macros for army data access (legacy convenience macros)
  */
-void
-do_nomad()
+void 
+do_nomad (void)
 {
 	int	count;
 	short	armynum;
@@ -570,8 +569,8 @@ do_nomad()
  *   - Growth mechanic maintains savage threat throughout game
  *   - Uses P_A* macros for army data access (legacy convenience macros)
  */
-void
-do_savage()
+void 
+do_savage (void)
 {
 	short armynum;
 	int x, y;
@@ -669,8 +668,8 @@ do_savage()
  *   - Uses P_N* macros for naval data access (legacy convenience macros)
  *   - Requires both MONSTER and MORE_MONST flags for full functionality
  */
-void
-do_pirate()
+void 
+do_pirate (void)
 {
 	short nvynum,shipsize;
 	int x, y, campx, campy;
@@ -726,64 +725,8 @@ do_pirate()
 #endif /* MONSTER */
 
 #ifdef NPC
-void
-/*
- * n_redes - Intelligent sector redesignation based on resource needs
- *
- * Implements sophisticated economic sector management algorithm that adapts
- * sector designations based on population, resource thresholds, food ratios,
- * and overall economic conditions. This function is the core of NPC economic
- * intelligence, making dynamic decisions about how sectors should be used
- * to optimize resource production and population management.
- *
- * The algorithm balances multiple competing priorities:
- * 1. Population-driven city formation and management
- * 2. Food security through farm designation priority
- * 3. Resource extraction optimization (trade goods, metals, jewels)
- * 4. Strategic infrastructure placement (stockades, granaries, churches)
- *
- * Parameters:
- *   x - Sector X coordinate (valid map position)
- *   y - Sector Y coordinate (valid map position)
- *   goldthresh - Jewel resource threshold for economic decisions (1-4+ range)
- *   metalthresh - Metal resource threshold for economic decisions (1-4+ range)
- *   citythresh - Food threshold for city vs farm decisions (varies dynamically)
- *   hunger - Current food ratio (food per civilian, compared to P_EATRATE)
- *
- * Returns:
- *   void (modifies sector designation and spread statistics directly)
- *
- * Side Effects:
- *   - Modifies sct[x][y].designation (primary economic effect)
- *   - Updates spread.incity, spread.infarm population tracking
- *   - Changes resource allocation patterns across the nation
- *   - Affects overall economic balance and food security
- *
- * Testing Notes:
- *   Category: B (Integration) - Requires sector data, spread calculation, nation state
- *   Approach: Integration testing with mock nation and sector configurations
- *   Key Tests: City formation thresholds, food crisis response, resource optimization
- *   Dependencies: Global spread data, sector structures, nation parameters
- *   Mock Requirements: Mock sector data with various resource/population combinations
- *   Complexity: Complex - Multi-factor economic decision making with cascading effects
- *
- * Economic Algorithm Details:
- *   - City Formation: Population > civilians/CITYLIMIT OR (civilians<30k AND people>1k)
- *   - Food Security: Hunger < P_EATRATE triggers farm conversion priority
- *   - Resource Extraction: Compares local resources against thresholds for specialization
- *   - Population Balance: CITYPERCENT controls urban vs rural population distribution
- *   - Infrastructure Logic: Randomized placement of churches, granaries, blacksmiths
- *
- * Notes:
- *   - Called iteratively with adjusted thresholds based on food conditions
- *   - Protects capitals and cities from redesignation
- *   - Uses probabilistic decisions for infrastructure variety
- *   - Critical for NPC economic competitiveness and survival
- *   - Complex interaction with spread calculation and resource management
- */
-n_redes(x,y,goldthresh,metalthresh,citythresh,hunger)
-int	x,y,goldthresh,metalthresh,citythresh;
-float	hunger;
+void 
+n_redes (int x, int y, int goldthresh, int metalthresh, int citythresh, double hunger)
 {
 	register struct s_sector	*sptr = &sct[x][y];
 
@@ -921,8 +864,8 @@ float	hunger;
  *   - Critical for NPC military competitiveness and strategic effectiveness
  *   - Extensive debug output available for military analysis
  */
-void
-redomil()
+void 
+redomil (void)
 {
 	short x,y,armynum,nvynum;
 	int i, free, done;
@@ -1342,8 +1285,8 @@ redomil()
  *   - Critical for creating dynamic political landscape and strategic challenges
  *   - Prevents diplomatic status changes for certain protected relationships
  */
-void
-getdstatus()
+void 
+getdstatus (void)
 {
 	int x,oldstat[NTOTAL];
 	int X,Y;
@@ -1543,8 +1486,8 @@ getdstatus()
  *   - Performance optimized with register variables for map traversal
  *   - Results used throughout AI subsystems for strategic evaluation
  */
-static void
-find_avg_sector ()
+static void 
+find_avg_sector (void)
 {
 	int armynum, i, nation, repeat, total_sectors, total_food = 0;
 	struct s_sector *sptr;	/* used to speed up this function */
@@ -1708,8 +1651,8 @@ find_avg_sector ()
  *   - Debug Support: Includes comprehensive debug output for AI behavior analysis
  *   - Error Handling: Multiple check() calls ensure data integrity throughout
  */
-void
-nationrun()
+void 
+nationrun (void)
 {
 	int goldthresh,metalthresh,citythresh,useful;
 	int armynum,loop;
@@ -2076,8 +2019,8 @@ nationrun()
  *   - Bilateral checking: Ensures both nations agree on diplomatic status
  *   - Integration: Called by defattr(), atkattr(), and pceattr() coordinators
  */
-void
-n_trespass()
+void 
+n_trespass (void)
 {
 	register int x,y;
 	for(x=stx;x<endx;x++) for(y=sty;y<endy;y++)  {
@@ -2173,8 +2116,8 @@ n_trespass()
  *   - Implementation: Simple but globally comprehensive boundary enforcement
  *   - Integration: Called by all attractiveness coordinators (defattr, atkattr, pceattr)
  */
-void
-n_toofar()
+void 
+n_toofar (void)
 {
 	register int x,y;
 	for(x=0;x<MAPX;x++) for(y=0;y<MAPY;y++) {
@@ -2285,8 +2228,8 @@ n_toofar()
  *   - Intelligence handling: Graceful degradation for unexplored territories
  *   - XENIX compatibility: Special integer division handling for older systems
  */
-void
-n_unowned()
+void 
+n_unowned (void)
 {
 #ifdef XENIX
 	register int z;
@@ -2342,104 +2285,8 @@ n_unowned()
 	}
 }
 
-void
-/*
- * n_defend - Defensive Positioning Attractiveness Against Specific Enemy Nations
- *
- * Calculates and applies defensive attractiveness modifiers based on the presence
- * and positioning of armies from a specific threatening nation. This function
- * implements tactical defensive positioning by increasing attractiveness near
- * enemy forces, defensive terrain, population centers, and the nation's capitol.
- *
- * The function creates defensive positioning incentives that guide AI armies
- * toward strategically important locations for defending against specific threats,
- * balancing immediate tactical response with strategic territorial protection.
- *
- * Algorithm:
- * 1. Identify enemy army positions and add attractiveness near their locations
- * 2. Add high attractiveness bonus around own capitol for critical defense
- * 3. Apply terrain-based defensive bonuses for tactical advantage
- * 4. Add population-based attractiveness for civilian protection priorities
- *
- * Enemy Force Response Logic:
- * - If enemy armies are visible: Add attractiveness equal to 1/10th army size
- * - If enemy armies are hidden: Use average army size estimates per sector
- * - Duplication prevention: Only count average once per sector with multiple armies
- * - Direct threat response: Higher attractiveness where enemy forces are present
- *
- * Capitol Defense Priority:
- * - +80 attractiveness to all sectors within 1 square of capitol (3x3 grid)
- * - Creates defensive perimeter around most critical national asset
- * - Ensures concentrated defense of political and economic center
- * - Takes priority over other defensive considerations
- *
- * Defensive Terrain Utilization:
- * - Plains (movecost=1): +50 attractiveness for mobility and formations
- * - Light terrain (movecost≤3): +20 attractiveness for moderate defense
- * - Difficult terrain (movecost≤5): +10 attractiveness for natural barriers
- * - Terrain bonuses apply throughout operational area for tactical positioning
- *
- * Population Protection Strategy:
- * - Cities get +50 attractiveness bonus for civilian protection
- * - Population distribution: 3000 points spread proportionally across civilians
- * - Higher civilian populations get proportionally higher attractiveness
- * - Balances military strategy with civilian protection responsibilities
- *
- * Parameters:
- *   natn - Target enemy nation index to defend against (0-MAXNTN)
- *        Used to locate threatening armies and assess enemy capabilities
- *
- * Returns:
- *   void - Modifies global attractiveness map attr[x][y] with defensive bonuses
- *
- * Side Effects:
- *   - Increases attr[x][y] near enemy army positions for tactical response
- *   - Adds +80 attractiveness around capitol for critical asset protection
- *   - Applies terrain-based bonuses throughout operational area
- *   - Adds population-based attractiveness for civilian protection
- *   - Creates defensive positioning patterns against specific enemy threats
- *
- * Global Dependencies:
- *   - ntn[]: All nations array for enemy army locations and statistics
- *   - attr[][]: Global attractiveness map modified with defensive bonuses
- *   - sct[][]: World sector map for terrain, ownership, and population data
- *   - country: Current nation index for ownership and territorial checks
- *   - curntn: Current nation structure for capitol location and civilian count
- *   - stx,sty,endx,endy: NPC operational boundaries for area scanning
- *   - movecost[][]: Terrain movement costs for defensive terrain evaluation
- *   - Avg_soldiers[]: Average army sizes for intelligence-based planning
- *   - COUNT_ARMIES(): Macro for determining army visibility status
- *
- * Intelligence Integration:
- * - Visible armies: Use exact soldier counts for precise threat assessment
- * - Hidden armies: Use intelligence averages for estimated threat response
- * - Sector deduplication: Prevents multiple counting in sectors with many armies
- * - Adaptive planning: Adjusts defensive strategy based on available information
- *
- * Testing Notes:
- *   Category: B (Integration) - Requires nations, armies, and world map data
- *   Approach: Integration testing with enemy armies and defensive scenarios
- *   Key Tests:
- *     - Enemy army proximity response (attractiveness increases near threats)
- *     - Capitol defense prioritization (+80 bonus around capitol)
- *     - Terrain-based defensive positioning (higher values for better terrain)
- *     - Population protection priorities (cities and civilian concentrations)
- *     - Intelligence handling (visible vs hidden army responses)
- *     - Sector deduplication (multiple armies per sector handled correctly)
- *   Dependencies: Nations with armies, world sectors, intelligence systems
- *   Mock Requirements: Enemy armies at various locations and visibility states
- *   Complexity: Moderate - Multi-factor defensive strategy with threat assessment
- *
- * Notes:
- *   - Thread safety: Read-only access to enemy data, modifies only attr array
- *   - Performance: O(armies + sectors) for enemy analysis and terrain evaluation
- *   - Strategic balance: Balances immediate threat response with territorial defense
- *   - Tactical integration: Coordinates with other attractiveness functions for strategy
- *   - Intelligence adaptation: Gracefully handles incomplete enemy information
- *   - Defensive doctrine: Implements layered defense with capitol protection priority
- */
-n_defend(natn)
-register short natn;
+void 
+n_defend (int natn)
 {
 	register	int		i,j;
 	int		repeat;
@@ -2595,9 +2442,8 @@ register short natn;
  *   - Tactical integration: Coordinates with other attractiveness functions for strategy
  *   - Combat doctrine: Implements combined-arms coordination with force concentration
  */
-void
-n_attack(nation)
-register short nation;
+void 
+n_attack (int nation)
 {
 	register int x,y;
 	int	armynum;
@@ -2838,9 +2684,10 @@ n_undefended(int nation )
  *   - Tactical realism: Population influence reflects real-world military constraints
  *   - Integration: Coordinates with other attractiveness functions for balanced strategy
  */
-void
-n_people(doadd)
-int doadd;	/* TRUE if adding, FALSE if subtracting */
+void 
+n_people (
+    int doadd	/* TRUE if adding, FALSE if subtracting */
+)
 {
 	register int x,y;
 	for(x=stx;x<endx;x++) for(y=sty;y<endy;y++)
@@ -2984,67 +2831,8 @@ n_between(int nation)
  *	if within two of cap add 1/5th of men
  *	if on cap and war and 2x your garrison go jihad and + 1/2 men
  */
-void
-/*
- * n_survive - Emergency capitol defense and survival prioritization for crisis situations
- *
- * Implements emergency response protocol when the nation's capitol is under immediate
- * threat or has been captured. Prioritizes reconquest of occupied capitol and defense
- * against nearby enemy forces within tactical engagement range (5x5 sector area).
- * Provides crisis management through maximum priority (+1000) capitol recovery and
- * proportional threat response based on enemy force concentrations.
- *
- * Algorithm:
- * 1. Capitol Recovery: If capitol captured, maximum attractiveness (+1000) for reconquest
- * 2. Threat Assessment: Scan all hostile nations within war status for nearby armies
- * 3. Intelligence-Based Response:
- *    - Perfect Intelligence: Use exact army sizes for precise threat calculation
- *    - Limited Intelligence: Use average army estimates to prevent intelligence exploitation
- * 4. Proximity Defense: Double attractiveness for armies directly on capitol (+2x soldiers)
- * 5. Area Defense: Standard attractiveness for armies in 5x5 engagement zone (+1x soldiers)
- * 6. Duplicate Prevention: Avoid double-counting multiple armies in same sector
- *
- * Capitol Defense Strategy:
- * - Occupied Capitol: Immediate maximum priority reconquest (attractiveness +1000)
- * - Direct Threat: Double response for armies positioned on capitol coordinates
- * - Tactical Zone: Standard response for armies within 2-sector engagement radius
- * - Intelligence Adaptation: Exact counts vs estimates based on reconnaissance capability
- *
- * Crisis Response Features:
- * - Emergency Prioritization: Capitol survival takes absolute precedence over expansion
- * - Tactical Assessment: 5x5 sector engagement zone around capitol for threat evaluation
- * - Intelligence Security: Limited intelligence prevents exact force assessment exploitation
- * - Proportional Response: Attractiveness scaled by actual or estimated enemy force size
- *
- * Parameters:
- *   (none) - Uses global curntn (current nation), country (nation ID), and world state
- *
- * Returns:
- *   (void) - Modifies global attr[][] attractiveness array with survival priorities
- *
- * Side Effects:
- *   - Modifies attr[][] with emergency capitol defense attractiveness values
- *   - Reads sct[][] for capitol ownership verification
- *   - Reads ntn[] for enemy army positions and diplomatic status
- *   - Uses COUNT_ARMIES() macro for intelligence-based army visibility
- *   - Accesses Avg_soldiers[] for limited intelligence force estimates
- *
- * Testing Notes:
- *   Category: B (Integration) - Requires nations, armies, diplomatic status, intelligence
- *   Approach: Integration testing with enemy armies positioned around friendly capitol
- *   Key Tests: Capitol captured recovery, nearby threat response, intelligence scaling
- *   Dependencies: Diplomatic system, army positioning, intelligence macros, global state
- *   Mock Requirements: Nation data, army positions, capitol coordinates, intelligence state
- *   Complexity: Moderate - Multi-nation threat assessment with intelligence integration
- *
- * Notes:
- *   - Crisis Management: Designed for emergency capitol defense scenarios
- *   - Intelligence Dependent: Behavior adapts based on reconnaissance capabilities
- *   - Thread Safety: Not thread-safe due to global variable dependencies
- *   - Performance: O(nations * armies) but typically called only in crisis situations
- *   - Legacy Pattern: K&R function declaration needs modernization to ANSI C
- */
-n_survive()
+void 
+n_survive (void)
 {
 	int i;
 	int nation,armynum;
@@ -3176,8 +2964,8 @@ n_survive()
  *   - Debug Output: Contains incorrect debug message (shows "atkattr" instead of "defattr")
  *   - Legacy Pattern: K&R function declaration needs modernization to ANSI C
  */
-void
-defattr()
+void 
+defattr (void)
 {
 	int nation;
 
@@ -3272,8 +3060,8 @@ defattr()
  *   - Legacy Pattern: K&R function declaration needs modernization to ANSI C
  */
 /*calculate attractiveness of attacking sectors*/
-void
-atkattr()
+void 
+atkattr (void)
 {
 	int nation;
 #ifdef DEBUG
@@ -3372,8 +3160,8 @@ atkattr()
  *   - Legacy Pattern: K&R function declaration needs modernization to ANSI C
  */
 /*calculate attractiveness when at peace*/
-void
-pceattr()
+void 
+pceattr (void)
 {
 #ifdef DEBUG
 	printf("pceattr()\n");

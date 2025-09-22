@@ -123,9 +123,8 @@ char progname[80];
  *   - Returns 0 for any unrecognized input (safe default)
  *   - Used by command-line option processing and environment variable parsing
  */
-int
-parsepagesize(buf)
-    char *buf;
+int 
+parsepagesize (char *buf)
 {
     if (!strcmp(buf, "A4"))
 	return (1);
@@ -179,9 +178,8 @@ parsepagesize(buf)
  *   - Default case handles custom/user-defined page sizes
  *   - Values sourced from psmap.h constant definitions
  */
-void
-setpagesize(defpag)
-    int defpag;
+void 
+setpagesize (int defpag)
 {
     switch (defpag) {
     case 1:
@@ -246,8 +244,8 @@ setpagesize(defpag)
  *   - Uses parsepagesize() for string-to-code conversion
  *   - Not thread-safe due to global state modifications
  */
-void
-get_pagesize()
+void 
+get_pagesize (void)
 {
     char *buf;
     int defpag = DEFAULTPAGE;
@@ -299,10 +297,8 @@ get_pagesize()
  *   - Essential for preventing PostScript syntax errors
  *   - Used for titles, footers, and text labels in map output
  */
-void
-psstring(fh, str)
-    FILE *fh;
-    char *str;
+void 
+psstring (FILE *fh, char *str)
 {
     fprintf(fh, "(");
     while (*str != '\0') {
@@ -370,9 +366,8 @@ psstring(fh, str)
  *   - Used by getmaptype() for map format detection
  *   - Efficient for short patterns in header strings
  */
-int
-isinstr(string, word)
-    char *string, *word;
+int 
+isinstr (char *string, char *word)
 {
     int i,l1=strlen(string),l2=strlen(word);
 
@@ -434,9 +429,8 @@ isinstr(string, word)
  *   - Used during map file parsing to configure rendering pipeline
  *   - Falls back to SIMPLE type for unknown formats
  */
-int
-getmaptype(string)
-    char *string;
+int 
+getmaptype (char *string)
 {
     if (isinstr(string, "Altitude"))
 	return (ALTITUDES);
@@ -505,8 +499,8 @@ getmaptype(string)
  *   - Critical function in the map processing pipeline
  *   - Handles variable-sized maps with automatic dimension detection
  */
-void
-readmap()
+void 
+readmap (void)
 {
     int x, none;
 
@@ -633,8 +627,8 @@ readmap()
  *   - Handles both single-page and multi-page output modes
  *   - PostScript variables enable template customization
  */
-void
-buildps()
+void 
+buildps (void)
 {
     int xbeg, ybeg, xnumb, ynumb, x, y, xpages, ypages, xcorr, ycorr;
 

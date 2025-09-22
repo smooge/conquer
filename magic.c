@@ -387,8 +387,8 @@ int type;
  *   - User experience: Central magic system interface - critical for gameplay
  *   - Conditional compilation: Features vary based on compile-time options (OGOD, ORCTAKE)
  */
-void
-domagic()
+void 
+domagic (void)
 {
 	int county, countx, done=FALSE, loop=0, i,type;
 	long price,x;
@@ -547,9 +547,8 @@ domagic()
  *   - Game balance: High-impact feature requiring careful probability tuning
  *   - Conditional: Only available when ORCTAKE compile option enabled
  */
-int
-takeover(percent,target)
-int percent,target;
+int 
+takeover (int percent, int target)
 {
 	int loop=1,y,save,isupdate=0;
 	save=country;
@@ -651,9 +650,8 @@ int percent,target;
  *   - Game balance: Critical function affecting core game mechanics
  *   - Conditional compilation: Some effects depend on ADMIN flag for update vs player mode
  */
-void
-exenewmgk(newpower)
-long newpower;
+void 
+exenewmgk (long newpower)
 {
 	short x,armynum;
 #ifdef ADMIN
@@ -856,8 +854,8 @@ long newpower;
  *   - Game balance: Resource costs prevent summoning abuse
  *   - Army management: Finds first available slot or reports "NO FREE ARMIES"
  */
-void
-dosummon()
+void 
+dosummon (void)
 {
 	int x,count,i,armynum;
 	long e_cost;
@@ -995,9 +993,8 @@ dosummon()
  *   - Game balance: High-cost, low-probability feature requiring strategic resource use
  *   - ORC-specific: Unique racial ability providing alternative conquest mechanism
  */
-int
-orctake(count)
-int *count;
+int 
+orctake (int *count)
 {
 	int chance=0,done=TRUE,i,s_cost;
 	if((*count)>20) {
@@ -1113,9 +1110,8 @@ int *count;
  *   - Game balance: Critical function controlling unit availability and strategic options
  *   - Integration: Used by recruitment, summoning, and army management systems
  */
-int
-unitvalid(type)
-int type;
+int 
+unitvalid (int type)
 {
 	int valid=FALSE;
 	switch(type){
@@ -1251,9 +1247,8 @@ int type;
  *   - Pairing requirement: Must exactly reverse effects applied by exenewmgk()
  *   - Administrative usage: Called during god-mode power manipulation and game events
  */
-void
-removemgk(oldpower)
-long oldpower;
+void 
+removemgk (long oldpower)
 {
 	short x,y,armynum;
 	if((oldpower==WARRIOR)
@@ -1423,8 +1418,8 @@ long oldpower;
  *   - Power management: Provides complete administrative control over magic systems
  *   - Game testing: Essential tool for game balance testing and debugging
  */
-void
-god_magk()
+void 
+god_magk (void)
 {
 	int county,countx,choice;
 	int remove,i,done=FALSE;
@@ -1583,8 +1578,8 @@ int magiccost[NUMSPELLS]={0,100,300,300};
  *   - Integration: Works closely with army management and combat systems
  *   - Conditional compilation: Only available when CONQUER flag is enabled
  */
-void
-wizardry()
+void 
+wizardry (void)
 {
 	int i,xspt,yspt,choice,armynum,s_cost;
 	char line[LINELTH+1];

@@ -75,8 +75,8 @@ long	**newpop;		/* storage for old population */
  *   - String formatting approach may be less efficient than direct conversion
  *   - BIGLTH buffer size should be sufficient for largest double representations
  */
-long
-dtol(d) double d;
+long 
+dtol (double d)
 {
 	char tempstr[BIGLTH];
 	long l;
@@ -146,8 +146,8 @@ dtol(d) double d;
  *   - News file management ensures player communication and game history
  *   - Integrity checks (check()) provide critical error detection throughout turn processing
  */
-void
-update()
+void 
+update (void)
 {
 	char command[BIGLTH],filename[FILELTH];
 
@@ -450,9 +450,8 @@ attract(int x,int y,int race)
  *   - Group leaders coordinate movement of all assigned units
  *   - Complex conditional logic for different army types and situations
  */
-int
-armymove(armynum)
-int armynum;
+int 
+armymove (int armynum)
 {
 	long		sum, where;
 #ifdef XENIX
@@ -683,8 +682,8 @@ int armynum;
  *   - Nation 0 is skipped (nations start at index 1)
  *   - Cumulative scoring allows tracking long-term nation performance
  */
-void
-score()
+void 
+score (void)
 {
 	int x;
 	printf("\nUpdating nation's scores\n");
@@ -746,8 +745,8 @@ score()
  *   - Score comparison ensures only struggling NPCs receive help
  *   - Diplomatic changes are probabilistic and gradual
  */
-void
-cheat()
+void 
+cheat (void)
 {
 	int x,y;
 	int bonus=0, count=0, npcavg, pcavg, avgscore=0;
@@ -889,8 +888,8 @@ cheat()
  *   - Nation disarray occurs when primary leader is killed
  *   - Civilian movement driven by sector attractiveness calculations
  */
-void
-updexecs()
+void 
+updexecs (void)
 {
 	register struct s_sector	*sptr;
 	register int x, y;
@@ -1145,8 +1144,8 @@ printf("checking for leader in nation %s: armynum=%d\n",curntn->name,armynum);
 /*	DO_LIZARD() 						*/
 /* update lizards	 					*/
 /****************************************************************/
-void
-do_lizard()
+void 
+do_lizard (void)
 {
 #ifdef XENIX
 	register int x;
@@ -1293,8 +1292,8 @@ do_lizard()
 /*	UPDCAPTURE() 						*/
 /* capture unoccupied sectors					*/
 /****************************************************************/
-void
-updcapture()
+void 
+updcapture (void)
 {
 	register struct s_sector	*sptr;
 	int armynum, occval;
@@ -1496,8 +1495,8 @@ updcapture()
 /*	UPDSECTORS() 						*/
 /* update sectors one at a time				*/
 /**************************************************************/
-void
-updsectors()
+void 
+updsectors (void)
 {
 	register struct s_sector	*sptr;
 	register struct s_nation		*nptr;
@@ -1792,8 +1791,8 @@ updsectors()
 /* reset military stuff 					*/
 /****************************************************************/
 #define MAXSIEGE (NTOTAL)
-void
-updmil()
+void 
+updmil (void)
 {
 	struct	army	*A;
 	int	AX, AY, AT;	/* armies x,y locations, type : for speed */
@@ -2178,8 +2177,8 @@ updmil()
 /*	UPDCOMODITIES()						*/
 /* update commodities						*/
 /****************************************************************/
-void
-updcomodities()
+void 
+updcomodities (void)
 {
 	register struct s_sector	*sptr;
 	register int x,y;
@@ -2376,8 +2375,8 @@ updcomodities()
 /* Conquer: Copyright (c) 1988 by Edward M Barlow
 /*	UPDLEADER()						*/
 /****************************************************************/
-void
-updleader()
+void 
+updleader (void)
 {
 	int	nation,armynum,born,type;
 	printf("working on national leaders\n");
@@ -2572,8 +2571,8 @@ updleader()
  * DELTA(2) = (EQUILIBRIUM(2) - P2) / 5 =(A2P1 - P2A1) / 5(A1 + A2) = -DELTA(1)
  * (i, j) is refered to as 1, (x, y) as 2
  */
-void
-move_people()
+void 
+move_people (void)
 {
 	register int x, y, i, j;
 	register struct s_sector *sptr;

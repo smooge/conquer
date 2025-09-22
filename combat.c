@@ -387,8 +387,8 @@ combat()
  * - Performance critical for large battles
  * - Historical combat balance maintained for game compatibility
  */
-void
-fight()
+void 
+fight (void)
 {
 	int	roll,strength,fortdam=FALSE;
 	int	odds;			/* odds (asold/dsold) times 100 */
@@ -1097,8 +1097,8 @@ cbonus(int num)
  *   - Diplomatic integration: Respects alliance/war status for safe passage
  *   - Town/city sectors block retreats (defensive advantage mechanic)
  */
-void
-fdxyretreat()	/* finds retreat location */
+void 
+fdxyretreat (void)	/* finds retreat location */
 {
 	int	x,y,nation=(-1);
 	int	xsctr= xspot;
@@ -1191,9 +1191,10 @@ fdxyretreat()	/* finds retreat location */
  *   - Casualty asymmetry: Naval units suffer retreat losses, land units don't
  *   - Used for: Battle retreats, mercenary desertion, diplomatic withdrawals
  */
-void
-retreat(unitnum)
-int	unitnum;	/* if -1 then normal, else retreat only unit ismerc */
+void 
+retreat (
+    int unitnum	/* if -1 then normal, else retreat only unit ismerc */
+)
 {
 	int cnum;
 
@@ -1303,8 +1304,8 @@ int	unitnum;	/* if -1 then normal, else retreat only unit ismerc */
 #define QMER 3
 /* just like fight, this takes array of owner,side,unit and calculates */
 /* a random battle based on the strengths of the combatants.           */
-void
-navalcbt()
+void 
+navalcbt (void)
 {
 	int acrew=0,dcrew=0;	/*a's and d's crew and soldier strength*/
 	int ahold=0,dhold=0;	/*a's and d's warship strength*/
@@ -1844,9 +1845,8 @@ navalcbt()
  *   - Ship types: Supports all three naval vessel categories
  */
 /* routine to distribute a captured ship */
-void
-capture(type,to,shipsize,holdcount)
-	int type,to,shipsize,holdcount;
+void 
+capture (int type, int to, int shipsize, int holdcount)
 {
 	int i,nvynum;
 	struct s_nation *saventn=curntn;
@@ -1948,10 +1948,8 @@ capture(type,to,shipsize,holdcount)
  *   - User experience: Clear, readable battle outcome presentation
  */
 /* routine to display combat results */
-void
-show_ships(who,what,war,gal,mer)
-	char *who,*what;
-	int war, gal, mer;
+void 
+show_ships (char *who, char *what, int war, int gal, int mer)
 {
 	if (war+gal+mer>0) {
 		fprintf(fm,"%s ships %s: ",who,what);

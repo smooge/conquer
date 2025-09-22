@@ -781,8 +781,8 @@ mymove()
 /*	if navy, number is MAXARM+nvynum.  set armornvy			*/
 /*	current selected unit is selector/2+4*pager			*/
 /************************************************************************/
-int
-getselunit()
+int 
+getselunit (void)
 {
 	int	selunit=(-1);
 	short	armynum=0, nvynum=0;

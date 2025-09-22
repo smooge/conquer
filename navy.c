@@ -141,9 +141,8 @@ addwships (nvynum, shipsize, nships)
  *   Mock Requirements: Global fleet state setup
  *   Complexity: Moderate - Bit manipulation requires careful boundary testing
  */
-int
-addmships (nvynum, shipsize, nships)
-	short nvynum, shipsize, nships;
+int 
+addmships (int nvynum, int shipsize, int nships)
 {
 	short hold=nships;
 
@@ -215,9 +214,8 @@ addmships (nvynum, shipsize, nships)
  *   Mock Requirements: Global fleet state setup
  *   Complexity: Moderate - Bit manipulation requires careful boundary testing
  */
-int
-addgships (nvynum, shipsize, nships)
-	short nvynum, shipsize, nships;
+int 
+addgships (int nvynum, int shipsize, int nships)
 {
 	short hold=nships;
 
@@ -289,9 +287,8 @@ addgships (nvynum, shipsize, nships)
  *   Mock Requirements: Global fleet state setup with existing ships
  *   Complexity: Moderate - Bit manipulation with underflow protection logic
  */
-void
-subwships (nvynum, shipsize, nships)
-	short nvynum, shipsize, nships;
+void 
+subwships (int nvynum, int shipsize, int nships)
 {
 	short hold;
 
@@ -363,9 +360,8 @@ subwships (nvynum, shipsize, nships)
  *   Mock Requirements: Global fleet state setup with existing merchant ships
  *   Complexity: Moderate - Bit manipulation with underflow protection logic
  */
-void
-submships (nvynum, shipsize, nships)
-	short nvynum, shipsize, nships;
+void 
+submships (int nvynum, int shipsize, int nships)
 {
 	short hold;
 
@@ -436,9 +432,8 @@ submships (nvynum, shipsize, nships)
  *   Mock Requirements: Global fleet state setup with existing galley ships
  *   Complexity: Moderate - Bit manipulation with underflow protection logic
  */
-void
-subgships (nvynum, shipsize, nships)
-	short nvynum, shipsize, nships;
+void 
+subgships (int nvynum, int shipsize, int nships)
 {
 	short hold;
 
@@ -508,9 +503,8 @@ subgships (nvynum, shipsize, nships)
  *   Mock Requirements: Multi-nation setup with populated fleets
  *   Complexity: Simple - Mathematical accumulation with context management
  */
-int
-fltships(country,nvynum)
-	int country, nvynum;
+int 
+fltships (int country, int nvynum)
 {
 	struct s_nation *savntn=curntn;
 	int i, hold=0;
@@ -574,9 +568,8 @@ fltships(country,nvynum)
  *   Mock Requirements: Fleet setup with various ship types and sizes
  *   Complexity: Simple - Mathematical minimum calculation with iteration
  */
-unsigned short
-fltspeed(nvynum)
-	int nvynum;
+unsigned short 
+fltspeed (int nvynum)
 {
 	int i,hold=99;
 
@@ -644,9 +637,8 @@ fltspeed(nvynum)
  *   Mock Requirements: Fleet setup with various ship types and sizes
  *   Complexity: Simple - Mathematical accumulation with size-based multipliers
  */
-int
-flthold(nvynum)
-	int nvynum;
+int 
+flthold (int nvynum)
 {
 	int i,hold=0;
 
@@ -710,9 +702,8 @@ flthold(nvynum)
  *   Mock Requirements: Fleet setup with various warship types and sizes
  *   Complexity: Simple - Mathematical accumulation with size-based multipliers
  */
-int
-fltwhold(nvynum)
-	int nvynum;
+int 
+fltwhold (int nvynum)
 {
 	int i,hold=0;
 
@@ -773,9 +764,8 @@ fltwhold(nvynum)
  *   Mock Requirements: Fleet setup with various galley types and sizes
  *   Complexity: Simple - Mathematical accumulation with size-based multipliers
  */
-int
-fltghold(nvynum)
-	int nvynum;
+int 
+fltghold (int nvynum)
 {
 	int i,hold=0;
 
@@ -835,9 +825,8 @@ fltghold(nvynum)
  *   Mock Requirements: Fleet setup with various merchant types and sizes
  *   Complexity: Simple - Mathematical accumulation with size-based multipliers
  */
-int
-fltmhold(nvynum)
-	int nvynum;
+int 
+fltmhold (int nvynum)
 {
 	int i,hold=0;
 
@@ -893,9 +882,8 @@ extern FILE *fexe;
  *   Mock Requirements: UI system setup and input simulation
  *   Complexity: Simple - Straightforward input handling with validation
  */
-static int
-get_cargo(str)
-	char *str;
+static int 
+get_cargo (char *str)
 {
 	int choice=(-1);
 
@@ -966,9 +954,8 @@ get_cargo(str)
  *   Mock Requirements: Army status constant definitions
  *   Complexity: Simple - Switch statement with boolean logic
  */
-int
-loadstat(status)
-	int status;
+int 
+loadstat (int status)
 {
 	switch(status) {
 	case TRADED:
@@ -1066,8 +1053,8 @@ loadstat(status)
  *   Mock Requirements: Complete game state with fleets, armies, sectors, nations
  *   Complexity: Complex - Extensive branching logic with multiple subsystem interactions
  */
-void
-loadfleet()
+void 
+loadfleet (void)
 {
 	short nvynum;
 	/* merchant holding unused */

@@ -89,7 +89,7 @@ find . -name "*.c" -o -name "*.h" | sort > _modernization/claude/reports/FILE_IN
 
 # STEP 3: Baseline compilation test with essential -D flags
 # Extract essential flags from Makefile analysis:
-ESSENTIAL_FLAGS='-DDEFAULTDIR="/home/ssmoogen/conquer/lib" -DEXEDIR="/home/ssmoogen/conquer/bin" -DVERSION="4" -DPATCHLEVEL="12" -DLOGIN="ssmoogen"'
+ESSENTIAL_FLAGS='-DDEFAULTDIR="/home/ssmoogen/conquer/lib" -DEXEDIR="/home/ssmoogen/conquer/bin" -DPATCHLEVEL="12" -DLOGIN="ssmoogen"'
 
 # CRITICAL: Essential Feature Test Macros (discovered during Phase 4 implementation)
 # These feature test macros are REQUIRED for legacy code compilation:

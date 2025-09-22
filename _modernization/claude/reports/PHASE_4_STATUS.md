@@ -146,7 +146,7 @@
 **Essential Feature Test Macros** (Required for all compilation):
 ```bash
 FEATURE_TEST_MACROS='-D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE'
-ESSENTIAL_FLAGS='-DDEFAULTDIR="/home/ssmoogen/conquer/lib" -DEXEDIR="/home/ssmoogen/conquer/bin" -DVERSION="4" -DPATCHLEVEL="12" -DLOGIN="ssmoogen"'
+ESSENTIAL_FLAGS='-DDEFAULTDIR="/home/ssmoogen/conquer/lib" -DEXEDIR="/home/ssmoogen/conquer/bin" -DPATCHLEVEL="12" -DLOGIN="ssmoogen"'
 ```
 
 **Subphase Progression Commands**:

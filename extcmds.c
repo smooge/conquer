@@ -199,9 +199,8 @@ int	armie;
  *   - TRADE compilation flag affects TRADED status handling
  *   - Pure function suitable for optimization
  */
-int
-nocomb_stat(astat)
-	unsigned char astat;
+int 
+nocomb_stat (int astat)
 {
 	int hold;
 
@@ -261,9 +260,8 @@ nocomb_stat(astat)
  *   - Handles complex group leadership scenarios
  *   - Critical for army management efficiency
  */
-void
-combinearmies(armynum,army2)
-int armynum, army2;
+void 
+combinearmies (int armynum, int army2)
 {
 	int nocomb_stat();
 
@@ -346,9 +344,8 @@ int armynum, army2;
  *   - Movement penalty system prevents status change exploitation
  *   - Critical for maintaining game balance and realism
  */
-void
-change_status(armynum,new_stat)
-int armynum,new_stat;
+void 
+change_status (int armynum, int new_stat)
 {
 	int	i;
 	if(armynum<0 || armynum >= MAXARM || P_ASTAT==SCOUT ||
@@ -478,9 +475,8 @@ int armynum,new_stat;
  *   - New army gets same movement points as source army
  *   - Critical for tactical army management and positioning
  */
-void
-reducearmy(armynum,men)
-int armynum,men;
+void 
+reducearmy (int armynum, int men)
 {
 	int army2;
 	int oldx, oldy, army;

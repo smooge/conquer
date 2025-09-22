@@ -228,10 +228,8 @@ int spent[CH_NUMBER];
  *   - Terrain modification is permanent and affects starting nation advantages
  *   - Critical for game balance as it determines starting resource availability
  */
-void
-teraform( x,y,range, chance )
-int x,y;
-int range,chance;
+void 
+teraform (int x, int y, int range, int chance)
 {
 	int i,j;
 	switch(curntn->race) {
@@ -351,9 +349,8 @@ int range,chance;
  *   - Critical for multiplayer communication and event notification
  *   - Message delivery is best-effort (no delivery confirmation)
  */
-void
-mailtopc(string)
-char	*string;
+void 
+mailtopc (char *string)
 {
 	int	ctry;
 	for( ctry=0; ctry<NTOTAL; ctry++){
@@ -420,8 +417,8 @@ char	*string;
  *   - Terminal size check prevents interface corruption on small displays
  *   - Required for secure password input handling in registration
  */
-void
-newinit()
+void 
+newinit (void)
 {
 	initscr();
 	/* check terminal size */
@@ -483,8 +480,8 @@ newinit()
  *   - Critical for proper shell prompt restoration after program exit
  *   - Used by newbye() for complete program termination sequence
  */
-void
-newreset()
+void 
+newreset (void)
 {
 	clear();
 	refresh();
@@ -537,9 +534,8 @@ newreset()
  *   - Prevents terminal corruption that could occur with abrupt termination
  *   - Critical for clean integration with shell environment
  */
-void
-newbye(status)
-	int status;
+void 
+newbye (int status)
 {
 	newreset();
 	exit(status);
@@ -596,9 +592,8 @@ newbye(status)
  *   - Complements blocking error display functions for complete UI messaging
  *   - Critical for user experience during interactive nation building
  */
-void
-newmsg(str)
-	char *str;
+void 
+newmsg (char *str)
 {
 	mvaddstr(LINES-1,0,str);
 	clrtoeol();
@@ -606,47 +601,8 @@ newmsg(str)
 }
 
 /* message with wait for keystroke */
-void
-/*
- * newerror - Display error message and wait for user acknowledgment
- *
- * Displays an error message on the bottom line of the screen and waits
- * for the user to press any key before continuing. Provides visual and
- * audio feedback (beep) to ensure the user notices the error condition.
- * Clears the message line after user acknowledgment.
- *
- * Parameters:
- *   str - Error message string to display (must not be NULL)
- *
- * Returns:
- *   void
- *
- * Side Effects:
- *   - Displays message on bottom line of screen (LINES-1)
- *   - Clears to end of line to prevent display artifacts
- *   - Shows "PRESS ANY KEY" prompt on right side of screen
- *   - Produces audible beep to alert user
- *   - Blocks execution until user presses any key
- *   - Clears bottom line after user acknowledgment
- *   - Refreshes screen display twice (before and after input)
- *
- * Testing Notes:
- *   Category: C (System) - Requires curses initialization and terminal interaction
- *   Approach: System testing with mock terminal and user input simulation
- *   Key Tests: [Message display positioning, beep functionality, key press handling, screen cleanup]
- *   Dependencies: [Curses library initialization, LINES/COLS globals, terminal capabilities]
- *   Mock Requirements: [Terminal screen, user input simulation, beep capability testing]
- *   Complexity: Simple - basic curses UI interaction with standard pattern
- *
- * Notes:
- *   - Assumes curses has been initialized via newinit()
- *   - Uses standard curses functions: mvaddstr, clrtoeol, beep, refresh, getch
- *   - Message positioning depends on LINES and COLS terminal dimensions
- *   - Blocking function - suspends program execution until user input
- *   - Essential for error reporting in interactive registration process
- */
-newerror(str)
-	char *str;
+void 
+newerror (char *str)
 {
 	mvaddstr(LINES-1, 0, str);
 	clrtoeol();
@@ -692,9 +648,8 @@ newerror(str)
  *   - Essential for validating user menu choices and input characters
  *   - Could be optimized with strchr() but current implementation is clear
  */
-int
-in_str(ch,str)
-	char ch, *str;
+int 
+in_str (int ch, char *str)
 {
 	int i,l=strlen(str);
 
@@ -740,9 +695,8 @@ in_str(ch,str)
  *   - Essential for user feedback during registration validation
  *   - Assumes VERSION and PATCHLEVEL are defined string constants
  */
-void
-errorbar(str1,str2)
-	char *str1,*str2;
+void 
+errorbar (char *str1, char *str2)
 {
 	int i;
 	move(LINES-4,0);
@@ -795,10 +749,8 @@ errorbar(str1,str2)
  *   - NLMETAL/Mvalues[CH_RAWGOODS] ratio determines metal conversion
  *   - Essential for displaying resource allocation in registration interface
  */
-void
-dispitem(item, amount)
-	int item;
-	long amount;
+void 
+dispitem (int item, long amount)
 {
 	if (item == CH_LOCATE) {
 		printw("%s %s", LType[amount], Mitems[item]);
@@ -858,9 +810,8 @@ dispitem(item, amount)
  *   - Essential for displaying current allocation state during registration
  *   - Note: nsprintf on line 851 appears to be typo for sprintf
  */
-void
-showitem(line,item)
-	int line, item;
+void 
+showitem (int line, int item)
 {
 	char tempc[LINELTH];
 	
@@ -938,8 +889,8 @@ showitem(line,item)
  *   - Raw goods generate both food and derived jewel/metal resources
  *   - Critical function that finalizes nation creation from user choices
  */
-void
-convert()
+void 
+convert (void)
 {
 	int i,loop;
 	long x;
@@ -1116,9 +1067,8 @@ convert()
  *   - Integration point for multiple game subsystems (magic, combat, economics)
  *   - Essential for maintaining game balance through controlled nation creation
  */
-void
-newlogin(realuser)
-  int realuser;
+void 
+newlogin (int realuser)
 {
 	/* use points to create empire, add if late starter*/
 	int points, clr;
@@ -1803,9 +1753,11 @@ newlogin(realuser)
  *   - Historical context: Core game mechanic determining nation starting conditions
  *   - Critical for game balance: Placement quality directly affects nation viability
  */
-void
-place(xloc,yloc)
-int	xloc,yloc;	/* if not -1,-1 should place in this spot */
+void 
+place (
+    int xloc,
+    int yloc	/* if not -1,-1 should place in this spot */
+)
 {
 	int	placed=0,armysize=100;
 	short	armynum=0;
@@ -2197,9 +2149,8 @@ int	xloc,yloc;	/* if not -1,-1 should place in this spot */
  */
 /*get class routine*/
 /* return the number of points needed */
-int
-getclass(race)
-	int race;
+int 
+getclass (int race)
 {
 	short chk=FALSE;
 	short tmp;
@@ -2320,10 +2271,11 @@ getclass(race)
  *   - Historical context: Core RPG class system determining nation capabilities
  *   - Design pattern: Configuration function separating UI from logic
  */
-int
-doclass( tmp, isupd )
-short	tmp;
-int	isupd;	/* true if update, false if interactive */
+int 
+doclass (
+    int tmp,
+    int isupd	/* true if update, false if interactive */
+)
 {
 	int cost;
 	long x;
@@ -2422,8 +2374,8 @@ int	isupd;	/* true if update, false if interactive */
  *   - Historical context: Modern evolution of nation creation cost system
  *   - Design pattern: Data-driven calculation using configuration tables
  */
-int
-nstartcst()	/* to be used for new method */
+int 
+nstartcst (void)	/* to be used for new method */
 {
 	float points=0.0;
 	char temp[LINELTH];
@@ -2535,8 +2487,8 @@ nstartcst()	/* to be used for new method */
  *   - Historical context: Original nation creation cost system
  *   - Deprecation status: Legacy method, nstartcst() preferred for new code
  */
-int
-startcost()	/* cant be used for npc nations yet!!! see below */
+int 
+startcost (void)	/* cant be used for npc nations yet!!! see below */
 {
 	float	points;	/* points */
 

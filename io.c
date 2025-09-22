@@ -230,8 +230,8 @@ char **mapseen;
  *   - Performance scales with map size and number of military units
  *   - Critical for map printing functions and strategic game balance
  */
-void
-mapprep()
+void 
+mapprep (void)
 {
 	int armynum, nvynum;
 	int x,y,i,j;
@@ -327,8 +327,8 @@ mapprep()
  *   - Map dimensions are fixed by compile-time MAPX/MAPY constants
  *   - Performance is O(MAPX*MAPY) with simple character output per sector
  */
-void
-printele()
+void 
+printele (void)
 {
 	register int X, Y;
 	fprintf(stderr,"doing print of altitude\n");
@@ -394,8 +394,8 @@ printele()
  *   - Output format matches other map printing functions for consistency
  *   - Performance is O(MAPX*MAPY) with simple character output logic
  */
-void
-pr_ntns()
+void 
+pr_ntns (void)
 {
 	register int X, Y;
 	fprintf(stderr,"doing print of nations\n");
@@ -468,8 +468,8 @@ pr_ntns()
  *   - Undesignated sectors show natural terrain for reference
  *   - Information warfare balance between concealment and revelation
  */
-void
-pr_desg()
+void 
+pr_desg (void)
 {
 	register int X, Y;
 	fprintf(stderr,"doing print of designations\n");
@@ -545,8 +545,8 @@ pr_desg()
  *   - Simplest of the map printing functions in terms of visibility rules
  *   - Performance is O(MAPX*MAPY) with straightforward character output
  */
-void
-printveg()
+void 
+printveg (void)
 {
 	register int X, Y;
 	fprintf(stderr,"doing print of vegetation\n");
@@ -620,8 +620,8 @@ printveg()
  *   - Terminates on any error to prevent partial/corrupted saves
  *   - Essential counterpart to readdata() for complete persistence system
  */
-void
-writedata()
+void 
+writedata (void)
 {
 	long	bytes;
 	int	fd;
@@ -708,8 +708,8 @@ writedata()
  *   - Critical for game initialization and session restoration functionality
  *   - File format must match writedata() output exactly for successful loading
  */
-void
-readdata()
+void 
+readdata (void)
 {
 	int fd;
 	int n_read;
@@ -819,8 +819,8 @@ readdata()
  *   - Essential for large world navigation where map exceeds screen size
  *   - Coordinates with display system for efficient partial redraws
  */
-void
-offmap()
+void 
+offmap (void)
 {
 	/*set offset offsets can not be < 0*/
 	if(xcurs<1){
@@ -943,8 +943,8 @@ offmap()
  *   - Provides immediate visual feedback for player orientation
  *   - Part of the XYZZY enhanced display system
  */
-void
-centermap()
+void 
+centermap (void)
 {
 	int xx,yy;
 	xx=XREAL;
@@ -1019,9 +1019,8 @@ centermap()
  *   - Supports both automated (capitals) and manual (coordinates) navigation
  *   - Critical for game management and strategic oversight functionality
  */
-void
-jump_to(home)
-	int home;
+void 
+jump_to (int home)
 {
 	int i,j,done;
 	static int next_ntn;
@@ -1152,8 +1151,8 @@ jump_to(home)
  *   - Provides comprehensive overview of world power structure
  *   - Used by both players and administrators for game state assessment
  */
-void
-printscore()
+void 
+printscore (void)
 {
 	int i;
 	int nationid; 	/*current nation id */
@@ -1272,9 +1271,8 @@ printscore()
  *   - Essential for preventing unrealistic population invulnerability
  *   - Provides dramatic feedback for major military and economic disruptions
  */
-void
-flee(x,y,isupd,slaver)
-int x,y,isupd,slaver;
+void 
+flee (int x, int y, int isupd, int slaver)
 {
 	int count=0;	/*count is number of acceptable sectors to go to */
 	int svcountry=country;
@@ -1410,8 +1408,8 @@ int x,y,isupd,slaver;
  *   - Critical for dynamic world generation and campaign management
  *   - Enables separation of game logic from world data configuration
  */
-int
-readmap()
+int 
+readmap (void)
 {
 	FILE	*mapfile;
 	char	line[BIGLTH+1];
@@ -1514,10 +1512,12 @@ readmap()
  *   - Critical infrastructure for scalable world sizes
  *   - Enables efficient two-dimensional array access patterns
  */
-char **m2alloc(nrows, ncols, entrysize)
-int	nrows;		/* row dimension */
-int	ncols;		/* column dimension */
-int	entrysize;	/* # bytes in items to be stored */
+char **
+m2alloc (
+    int nrows,		/* row dimension */
+    int ncols,		/* column dimension */
+    int entrysize	/* # bytes in items to be stored */
+)
 {
 	char	**baseaddr;
 	int	j;
@@ -1598,9 +1598,8 @@ int	entrysize;	/* # bytes in items to be stored */
  *   - Return value enables password length validation by callers
  *   - Proper string handling ensures safe integration with authentication systems
  */
-int
-get_pass(str)
-	char *str;
+int 
+get_pass (char *str)
 {
 	char ch;
 	int done=FALSE,count=0;

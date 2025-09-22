@@ -599,8 +599,8 @@ armyrpt(repnum)
  *   - Red highlighting warns of potential food shortages
  *   - Supports both player and administrative (god mode) perspectives
  */
-void
-budget()
+void 
+budget (void)
 {
 	short armynum,nvynum;
 	long numship=0L,costsold=0L,numsold=0L;
@@ -788,8 +788,8 @@ budget()
  *   - Critical for preventing empire collapse due to resource shortages
  *   - Integration hub connecting production, military, and economic systems
  */
-void
-produce()
+void 
+produce (void)
 {
 	FILE *fp;
 	short armynum;
@@ -999,8 +999,8 @@ char *fltstr[]= {"Light", "Medium", "Heavy"};
  *   - Integration point for naval, military, and economic systems
  *   - Extensive use of packed data structures for efficient ship storage
  */
-void
-fleetrpt()
+void 
+fleetrpt (void)
 {
 	short navy,armynum;
 	short newx,newy,newnavy;

@@ -287,8 +287,8 @@ init_hasseen()
  *   - Cursor positioning uses 2x horizontal scaling for dual-character display
  *   - Must be called after whatcansee() to ensure proper visibility state
  */
-void
-makemap()
+void 
+makemap (void)
 {
 	register int x,y;
 
@@ -350,9 +350,8 @@ makemap()
  *   - Army preparation required for army-based highlighting modes
  *   - Dual display mode signs control which display is active
  */
-void
-get_display_mode(dmode,hmode,odmode,ohmode)
-	short *dmode, *hmode, *odmode, *ohmode;
+void 
+get_display_mode (short *dmode, short *hmode, short *odmode, short *ohmode)
 {
 	short temp;
 	
@@ -505,8 +504,8 @@ get_display_mode(dmode,hmode,odmode,ohmode)
  *   - Ensures screen consistency through makebottom() call
  *   - Part of the user command processing workflow
  */
-void
-newdisplay()
+void 
+newdisplay (void)
 {
 	get_display_mode(&dismode,&hilmode,&otherdismode,&otherhilmode);
 	makebottom();
@@ -904,8 +903,8 @@ highlight(int x,int y,short hmode)
  *   - Cursor positioning uses 2x horizontal scaling for dual-character display
  *   - Complete screen update cycle ensures all display elements stay synchronized
  */
-void
-coffmap()
+void 
+coffmap (void)
 {
 	if( xcurs<0 || (XREAL!=0 && xcurs==0) || (ycurs<0) ||
 	   (YREAL!=0 && ycurs==0) || xcurs>=SCREEN_X_SIZE-1 ||
@@ -973,9 +972,8 @@ coffmap()
  *   - Depends on proper initialization of hasseen array by whatcansee()
  *   - Performance optimized - minimal overhead for frequent visibility checks
  */
-int
-canbeseen(x,y)
-int	x,y;
+int 
+canbeseen (int x, int y)
 {
 	if(!ONMAP(x,y)) return(FALSE);
 	return( (int) HAS_SEEN(x-xoffset,y-yoffset) );
@@ -1031,8 +1029,8 @@ int	x,y;
  *   - Screen-relative calculations require careful coordinate translation
  *   - Must be called before map rendering to ensure accurate visibility state
  */
-void
-whatcansee()
+void 
+whatcansee (void)
 {
 	register int x,y;
 	int	i,j;

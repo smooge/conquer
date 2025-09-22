@@ -413,8 +413,8 @@ int	isupdate;	/* 0 if not update, 1 if update */
  *   - Maintains file locking integrity
  *   - Thread safety not required (single-threaded emergency handler)
  */
-void
-hangup()
+void 
+hangup (void)
 {
 	char line[LINELTH];
 

@@ -162,9 +162,10 @@ zeroworld()
  *   - Supports conditional compilation with REMAKE and CHECKUSER flags
  *   - Creates god nation (index 0) with special powers and administrator access
  */
-void
-makeworld(rflag)
-int	rflag;		/* TRUE if you wish to read in a map from mapfiles */
+void 
+makeworld (
+    int rflag		/* TRUE if you wish to read in a map from mapfiles */
+)
 {
 	char passwd[PASSLTH+1],*getpass();
 	char newstring[BIGLTH],tempc[BIGLTH];
@@ -399,8 +400,8 @@ int	rflag;		/* TRUE if you wish to read in a map from mapfiles */
  *   - Memory-intensive operation requiring careful allocation/deallocation
  *   - Algorithm quality directly affects game playability and balance
  */
-void
-createworld()	/* create world */
+void 
+createworld (void)	/* create world */
 {
 	int	i,j;
 	register int x,y;
@@ -864,8 +865,8 @@ createworld()	/* create world */
  *   - Resource distribution directly affects game economy and strategy
  *   - Includes humorous world generation narrative messages for user experience
  */
-void
-rawmaterials() 		 /*PLACE EACH SECTOR'S RAW MATERIALS */
+void 
+rawmaterials (void) 		 /*PLACE EACH SECTOR'S RAW MATERIALS */
 {
 	int i,j;
 	register int x,y;
@@ -1130,8 +1131,8 @@ fill_edge(int AX,int AY)
  *   - Includes extensive validation and error handling for file operations
  */
 /* ALLOCATE POPULATIONS OF THE WORLD*/
-void
-populate()
+void 
+populate (void)
 {
 	int	i=0,x=0,y=0,j=0,xloc,yloc,xpos,ypos;
 	int	nvynum=0,armynum=0,points,shipsize,temp,cnum;

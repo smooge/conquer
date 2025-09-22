@@ -295,8 +295,8 @@ desg_ok(prtflag, desg, sptr)
  *   - SADJDES macro updates influence on adjacent sectors after changes
  */
 /*change current hex designation*/
-void
-redesignate()
+void 
+redesignate (void)
 {
 	char	newdes;
 	char	tgtype[NAMELTH+1];
@@ -648,8 +648,8 @@ redesignate()
  *   - Heavy Ship Restriction: Towns cannot construct heavy class ships
  */
 /*build fort or ship-type */
-void
-construct()
+void 
+construct (void)
 {
 	int	tmpvar,tmpvar2,onboard;
 	long	cost;
@@ -1115,8 +1115,8 @@ construct()
  *   - Resource Management: Careful validation prevents over-recruitment
  */
 /*DRAFT IF IN A CITY*/
-void
-draft()
+void 
+draft (void)
 {
 	short	armynum,x,y,i;
 	long	men=0,mercs;
@@ -1526,8 +1526,8 @@ draft()
  */
 /*go through msgfile not rewriting to temp messages you discard*/
 /* then move temp to msgfile*/
-void
-rmessage()
+void 
+rmessage (void)
 {
 	int unlink();
 	FILE *mesgfp;
@@ -1760,8 +1760,8 @@ rmessage()
  *   - Input handling: Comprehensive character processing for editing
  *   - Screen management: Complex screen state management for editing interface
  */
-void
-wmessage()
+void 
+wmessage (void)
 {
 	int x,y;
 	int done=FALSE;
@@ -2027,8 +2027,8 @@ wmessage()
  *   - God Mode: Conditional ownership bypass for administrative functions
  */
 /*strategic move of civilians...once only*/
-void
-moveciv()
+void 
+moveciv (void)
 {
 	long	people;
 	short	i,j;
@@ -2200,8 +2200,8 @@ moveciv()
  *   - Performance: Optimized for typical army counts in gameplay
  *   - User Experience: Provides smooth army cycling for player convenience
  */
-int
-armygoto()
+int 
+armygoto (void)
 {
 	short armynum=0,loop=0;
 	armynum=getselunit();
@@ -2342,8 +2342,8 @@ armygoto()
  *   - Ship Types: Supports three distinct ship categories for tactical diversity
  *   - User Experience: Provides smooth fleet cycling for naval operations
  */
-int
-navygoto()
+int 
+navygoto (void)
 {
 	short nvynum=0,loop=0;
 	nvynum=getselunit()-MAXARM;

@@ -884,73 +884,260 @@ extern	long		lrand48(void);
  * - Memory allocation functions use non-standard naming (**m2alloc)
  */
 
-/* extern all subroutine calls	*/
-extern long	getmagic(void), getmagic(void), getmgkcost(void), score_one(void);
-extern long	get_number(void), solds_in_sector(void),defaultunit(void);
+/* admin.c */
+extern void att_setup(int cntry);
+extern void att_base(void);
+extern void att_bonus(void);
+/* cexecute.c */
+extern int execute(int isupdate);
+extern void hangup(void);
 
-extern int	move_file(char *from, char *to), land_2reachp(void), land_reachp(void), canbeseen(int x, int y);
-extern int	water_reachp(void), markok(void), is_habitable(void), parse(int ch);
-extern int	units_in_sector(int x, int y, int nation), num_powers(void), tofood(struct s_sector *sptr, int cntry), mailopen(int to);
-extern int	get_god(void), flightcost(void), todigit(void), getclass(void), startcost(void);
-extern int	water_2reachp(void),tg_ok(int nation, struct s_sector *sptr), readmap(void), avian(void);
-extern int	cbonus(void), armymove(void),takeover(void),getnewname(void);
-extern int getleader(void);
-extern int execute(int flag);
+/* check.c */
+extern void verify_ntn(char __file__[], int __line__);
+extern void verify_sct(char __file__[], int __line__);
+extern void verifydata(char __file__[], int __line__);
+extern void checkout(char *file, int line);
+extern int check_lock(char *filename, int keeplock);
+/* combat.c */
+extern void combat(void);
+extern void fight(void);
+extern int cbonus(int num);
+extern void fdxyretreat(void);
+extern void retreat(int unitnum);
+extern void navalcbt(void);
+extern void capture(int type, int to, int shipsize, int holdcount);
+extern void show_ships(char *who, char *what, int war, int gal, int mer);
+/* commands.c */
+extern int desg_ok(int prtflag, char desg, struct s_sector *sptr);
+extern void redesignate(void);
+extern void construct(void);
+extern void draft(void);
+extern void rmessage(void);
+extern void wmessage(void);
+extern void moveciv(void);
+extern int armygoto(void);
+extern int navygoto(void);
+/* data.c */
+/* display.c */
+extern void init_hasseen(void);
+extern void makemap(void);
+extern void get_display_mode(short *dmode, short *hmode, short *odmode, short *ohmode);
+extern void newdisplay(void);
+extern char get_display_for(int x, int y, short dmode);
+extern void see(int x, int y);
+extern void highlight(int x, int y, short hmode);
+extern void coffmap(void);
+extern int canbeseen(int x, int y);
+extern void whatcansee(void);
+/* extcmds.c */
+extern void ext_cmd(int armie);
+extern int nocomb_stat(int astat);
+extern void combinearmies(int armynum, int army2);
+extern void change_status(int armynum, int new_stat);
+extern void reducearmy(int armynum, int men);
+extern void splitarmy(int armynum);
+extern void errormsg(char *str);
+extern void clear_bottom(int i);
+extern void addgroup(int armynum);
+/* forms.c */
+extern void showscore(void);
+extern void diploscrn(void);
+extern void change(void);
+extern void help(void);
+extern void mvaddstrnahil(int li, int col, char *p);
+extern void newspaper(void);
+/* io.c */
+extern void getspace(void);
+extern void mapprep(void);
+extern void printele(void);
+extern void pr_ntns(void);
+extern void pr_desg(void);
+extern void printveg(void);
+extern void writedata(void);
+extern void readdata(void);
+extern void offmap(void);
+extern void centermap(void);
+extern void jump_to(int home);
+extern void printscore(void);
+extern void flee(int x, int y, int isupd, int slaver);
+extern int readmap(void);
+extern char **m2alloc(int nrows, int ncols, int entrysize);
+extern int get_pass(char *str);
+/* magic.c */
+extern long getmagic(int type);
+extern int takeover(int percent, int target);
+extern void exenewmgk(long newpower);
+extern void dosummon(void);
+extern void domagic(void);
+extern int orctake(int *count);
+extern int unitvalid(int type);
+extern void removemgk(long oldpower);
+extern void god_magk(void);
+extern void wizardry(void);
+/* main.c */
+extern void makebottom(void);
+extern int parse(int ch);
+extern void makeside(int alwayssee);
+extern int aretheyon(void);
+extern void copyscreen(void);
+extern void bye(int dounlink);
+extern void credits(void);
+extern void camp_info(void);
+/* makeworl.c */
+extern void zeroworld(void);
+extern void makeworld(int rflag);
+extern void createworld(void);
+extern void rawmaterials(void);
+extern void fill_edge(int AX, int AY);
+extern void populate(void);
+/* misc.c */
+extern long get_number(void);
+extern int land_2reachp(int ax, int ay, int move_points);
+extern int land_reachp(int ax, int ay, int gx, int gy, int move_points, int movee);
+extern int water_2reachp(int ax, int ay, int move_points);
+extern int water_reachp(int ax, int ay, int gx, int gy, int move_points, int movee);
+extern long solds_in_sector(int x, int y, int nation);
+extern long score_one(int nation);
+extern int is_habitable(int x, int y);
+extern int units_in_sector(int x, int y, int nation);
+extern int num_powers(int nation, int type);
+extern int tofood(struct s_sector *sptr, int cntry);
+extern long getmgkcost(int type, int nation);
+extern int todigit(register int character);
+extern void prep(int nation, int leader);
+extern void deplete(int nation);
+extern void sackem(int cntry);
+extern void destroy(int cntry);
+extern void updmove(int race, int cntry);
+extern int flightcost(int i, int j);
+extern int avian(int typ);
+extern void spreadsheet(int nation);
+extern void get_nname(char str[]);
+extern int get_country(void);
+extern int get_god(void);
+extern void reset_god(void);
+extern int getleader(int class);
+extern int mailopen(int to);
+extern void mailclose(int to);
+extern int markok(int mark, int prtflag);
+extern long defaultunit(int nation);
+extern void getmetal(struct s_sector *sptr);
+extern void getjewel(struct s_sector *sptr);
+extern int tg_ok(int nation, struct s_sector *sptr);
+extern int fort_val(struct s_sector *sptr);
+extern int compass(int x0, int y0, int x1, int y1);
+extern void check_mail(void);
+/* move.c */
+extern void mymove(void);
+extern int getselunit(void);
+/* navy.c */
+extern int addwships(short nvynum, short shipsize, short nships);
+extern int addmships(int nvynum, int shipsize, int nships);
+extern int addgships(int nvynum, int shipsize, int nships);
+extern void subwships(int nvynum, int shipsize, int nships);
+extern void submships(int nvynum, int shipsize, int nships);
+extern void subgships(int nvynum, int shipsize, int nships);
+extern int fltships(int country, int nvynum);
+extern unsigned short fltspeed(int nvynum);
+extern int flthold(int nvynum);
+extern int fltwhold(int nvynum);
+extern int fltghold(int nvynum);
+extern int fltmhold(int nvynum);
+extern int loadstat(int status);
+extern void loadfleet(void);
+/* newlogin.c */
+extern void teraform(int x, int y, int range, int chance);
+extern void mailtopc(char *string);
+extern void newinit(void);
+extern void newreset(void);
+extern void newbye(int status);
+extern void newmsg(char *str);
+extern void newerror(char *str);
+extern int in_str(int ch, char *str);
+extern void errorbar(char *str1, char *str2);
+extern void dispitem(int item, long amount);
+extern void showitem(int line, int item);
+extern void convert(void);
+extern void newlogin(int realuser);
+extern void place(int xloc, int yloc);
+extern int getclass(int race);
+extern int doclass(int tmp, int isupd);
+extern int nstartcst(void);
+extern int startcost(void);
+/* npc.c */
+extern void prtattr(void);
+extern void newdip(int ntn1, int ntn2);
+extern void monster(void);
+extern void do_nomad(void);
+extern void do_savage(void);
+extern void do_pirate(void);
+extern void n_redes(int x, int y, int goldthresh, int metalthresh, int citythresh, double hunger);
+extern void redomil(void);
+extern void getdstatus(void);
+extern void nationrun(void);
+extern void n_trespass(void);
+extern void n_toofar(void);
+extern void n_unowned(void);
+extern void n_defend(int natn);
+extern void n_attack(int nation);
+extern void n_undefended(int nation);
+extern void n_people(int doadd);
+extern void n_between(int nation);
+extern void n_survive(void);
+extern void defattr(void);
+extern void atkattr(void);
+extern void pceattr(void);
+/* randeven.c */
+extern int findnew(void);
+extern char getnewmark(void);
+extern int disolve(int percent, int target, int ispsnt);
+extern int getnewname(int new);
+extern void randomevent(void);
+extern void wdisaster(int cntry, int xloc, int yloc, int prcnt, char *event);
 extern void peasant_revolt(int *newnation);
 extern int other_revolt(int *new);
-extern int	aretheyon(void),armygoto(void),navygoto(void),getselunit(void);
-extern int	unitvalid(int type),orctake(void),fort_val(struct s_sector *sptr);
-extern int	conquer_access(void);  /* renamed to avoid conflict with system access() */
-extern int	addgships(void),addmships(void),addwships(void),fltships(int country, int nvynum);
-extern int	fltghold(void),fltwhold(int nvynum),fltmhold(int nvynum),flthold(int nvynum),compass(int x0, int y0, int x1, int y1);
-extern int	get_country(void),check_lock(char *filename, int keeplock),doclass(void),get_pass(char *str);
-extern unsigned short	fltspeed(void);
-extern void	do_pirate(void), do_nomad(void), do_savage(void), do_lizard(void);
-extern void	getjewel(void),getmetal(void),loadfleet(void),removemgk(void),exenewmgk(void);
-extern struct	s_sector *rand_sector(void);
-extern void	subgships(void),submships(void),subwships(void),getspace(void),sackem(void);
-extern void	whatcansee(void), reset_god(void), get_nname(char *str), camp_info(void);
-extern void	makebottom(void), check_mail(void), centermap(void);
-extern void	checkout(void),copyscreen(void),bye(int dounlink),credits(void),init_hasseen(void);
-extern void	combinearmies(void),change_status(void),reducearmy(void),splitarmy(void);
-extern void	errormsg(char *str), clear_bottom(int i), addgroup(void),ext_cmd(int armie);
-extern void	randomevent(void), wdisaster(void), weather(void), deplete(void);
-extern void	verify_ntn(void), verify_sct(void), verifydata(char *__file__, int __line__), prep(int nation, int leader);
-extern void	errorbar(void), newbye(void), newreset(void), newmsg(void), newerror(void);
-extern void	newinit(void), jump_to(int home);
-extern void	destroy(void), updmove(int race, int country), spreadsheet(void), mailclose(int to);
-extern void	updexecs(void), updcapture(void), updsectors(void);
-extern void	updmil(void), updcomodities(void), updleader(void);
-extern void	nationrun(void), n_atpeace(void), n_trespass(void), n_people(void);
-extern void	n_toofar(void), n_unowned(void), pceattr(void), checkout(void);
-extern void	fdxyretreat(void), retreat(void), rawmaterials(void), createworld(void);
-extern void	att_setup(void), att_base(void), att_bonus(void);
-extern void	adjarm(void),armyrpt(int repnum),atkattr(void),blowup(void);
-extern void	budget(void),change(void),cheat(void),coffmap(void),combat(void),construct(void);
-extern void	defattr(void),diploscrn(void),domagic(void),draft(void),erupt(void);
-extern void	fight(void);
-extern void	fill_edge(void),flee(void),fleetrpt(void),hangup(int sig),help(void);
-extern void	highlight(int x, int y, short hmode);
-extern void	makemap(void);
-extern void	makeside(int alwayssee);
-extern void	makeworld(void),monster(void),moveciv(void);
-extern void	mymove(void),navalcbt(void),newdip(void),newdisplay(void),newlogin(void);
-extern void	newspaper(void),npcredes(void),offmap(void),place(void),populate(void);
-extern void	printele(void),printnat(void),printscore(void),printveg(void);
-extern void	pr_ntns(void),pr_desg(void),produce(void);
-extern void	readdata(void),redesignate(void),redomil(void),reduce(void),rmessage(void),score(void);
-extern void	see(void),showscore(void),update(void);
-extern void	wmessage(void),writedata(void),getdstatus(void);
-/* exit() declaration removed - conflicts with system exit(int) */
-extern void	wizardry(void);
-extern	char	**m2alloc(void);
-/* crypt() declaration removed - conflicts with system crypt(const char*, const char*) */
-#ifdef SPEW
-extern void makemess(int n, FILE *fp);
-#endif
-#ifdef TRADE
-void trade(void),uptrade(void),checktrade(void);
-#endif /* TRADE */
+extern void erupt(void);
+extern void blowup(register int i, register int j);
+extern void reduce(int x, int y, int percent);
+extern struct s_sector *rand_sector(void);
+extern void weather(void);
+/* reports.c */
+extern void armyrpt(int repnum);
+extern void budget(void);
+extern void produce(void);
+extern void fleetrpt(void);
+/* spew.c */
+extern void makemess(int count, FILE *output);
+/* trade.c */
+extern void tradeerr(char *mesg);
+extern int checkland(int tradestat, int xspot, int yspot);
+extern int getland(int *count);
+extern int gettrade(char *saletype, int *count);
+extern void setaside(int cntry, int item, long longval, int extint, int isup);
+extern void takeback(int cntry, int item, long longval, int extint, int isup);
+extern long tradeit(int cntry1, int cntry2, int item, long longval, int extra);
+extern long gettval(int cntry1, int cntry2, int type, long longval, int extint);
+extern void trademail(int cntry1, int cntry2, int item1, int item2, long lvar1, long lvar2, long lvar3, long lvar4);
+extern int tradable(int cntry, int armynum);
+extern long armyvalue(int cntry, int unit);
+extern void checktrade(void);
+extern void uptrade(void);
+extern void fixtrade(int cntry);
+/* update.c */
+extern long dtol(double d);
+extern void update(void);
+extern int attract(int x, int y, int race);
+extern int armymove(int armynum);
+extern void score(void);
+extern void cheat(void);
+extern void updexecs(void);
+extern void do_lizard(void);
+extern void updcapture(void);
+extern void updsectors(void);
+extern void updmil(void);
+extern void updcomodities(void);
+extern void updleader(void);
+extern void move_people(void);
 
 #define	HI_OWN		0	/* hilight modes	*/
 #define	HI_ARMY		1
@@ -977,7 +1164,7 @@ extern	struct sprd_sht
 	long food,gold,jewels,metal; 		/* total @ end of turn	*/
 	long revfood,revjewels,revmetal,
 	     revcap,revcity,revothr; 		/* revenue in turn	*/
-	long ingold,inmetal,infarm,incity,incap,inothr; 
+	long ingold,inmetal,infarm,incity,incap,inothr;
 						/* civilians in area	*/
 	long civilians;				/* total civilians	*/
 	int sectors;
@@ -1087,7 +1274,7 @@ extern	struct sprd_sht
 #define	TG_irregation	35
 #define	TG_oxen		36
 #define	TG_plows	37
-#define	END_FARM	37	
+#define	END_FARM	37
 
 #define	TG_stones	38
 #define	END_SPELL	38
@@ -1098,7 +1285,7 @@ extern	struct sprd_sht
 
 #define	TG_torture	41
 #define	TG_prison	42
-#define	END_TERROR	42	
+#define	END_TERROR	42
 #define	END_NORMAL	42	/* also end of non mine/jewel goods */
 
 #define	TG_bronze	43
@@ -1176,10 +1363,10 @@ if((sct[X][Y].designation == DCAPITOL) \
 extern	FILE	*fm;
 extern	int	mailok;
 extern	char	*seasonstr[];
-extern	char	*alignment[];	
+extern	char	*alignment[];
 extern	struct	s_sector	**sct;
 extern	struct	s_nation	ntn[NTOTAL];
-extern	struct	s_nation	*curntn;	
+extern	struct	s_nation	*curntn;
 extern	struct	s_world		world;
 
 extern	short	**movecost;
@@ -1275,7 +1462,7 @@ extern	char	*tradefile;
 #define R_CIVIL_WAR	0	/* 0-19: number of turns left in war	*/
 
 #define	NUMREGIONS	250	/* number of regions in the world	*/
-#define	STARTYEAR	-10000	/* year that game treats as 0.  In this	
+#define	STARTYEAR	-10000	/* year that game treats as 0.  In this
 					case - ten thousand years B.C	*/
 
 struct s_region
