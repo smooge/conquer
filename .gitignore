@@ -1,5 +1,79 @@
+# Compiled object files and executables
 *.o
 conqsort
 conqps
 conqrun
 conquer
+
+# Editor backup and temporary files
+*~
+*.bak
+*.orig
+*.swp
+*.swo
+*.tmp
+\#*\#
+.\#*
+
+# Emacs backup files
+*~
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# Vim temporary files
+*.swp
+*.swo
+*~
+
+# IDE files
+.vscode/
+.idea/
+*.sublime-*
+
+# Build artifacts
+*.a
+*.so
+*.dylib
+*.exe
+*.out
+a.out
+core
+core.*
+
+# Test executables (without extensions)
+tests/test_*
+!tests/test_*.c
+!tests/test_*.h
+
+# Coverage and profiling
+*.gcov
+*.gcda
+*.gcno
+*.profdata
+*.profraw
+
+# Static analysis
+*.plist
+
+# Documentation build artifacts
+*.aux
+*.log
+*.toc
+*.pdf
+
+# Platform specific
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary directories
+*/build/
+*/target/
+*/.deps/
+*/.libs/

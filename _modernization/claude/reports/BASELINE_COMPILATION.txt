@@ -1,0 +1,236 @@
+BASELINE COMPILATION TEST REPORT
+=================================
+Date: Sun 21 Sep 14:18:21 EDT 2025
+Phase: 4 Subphase 0 - Updated Strategy with Essential -D Flags
+Scope: 26 .c files, 6 .h files
+
+ESSENTIAL FLAGS USED:
+-DDEFAULTDIR="/home/ssmoogen/conquer/lib" -DEXEDIR="/home/ssmoogen/conquer/bin" -DVERSION="4" -DPATCHLEVEL="12" -DLOGIN="ssmoogen"
+
+=== Testing data.h ===
+In file included from <command-line>:
+./data.h:641:26: error: ‘MAXARM’ undeclared here (not in a function)
+  641 |         struct  army arm[MAXARM];       /* nation's armies      */
+      |                          ^~~~~~
+./data.h:642:26: error: ‘MAXNAVY’ undeclared here (not in a function)
+  642 |         struct  navy nvy[MAXNAVY];      /* nation's navies      */
+      |                          ^~~~~~~
+./data.h:643:25: error: ‘NTOTAL’ undeclared here (not in a function)
+  643 |         char    dstatus[NTOTAL];        /* diplomatic status with all nations */
+      |                         ^~~~~~
+./data.h:1173:9: error: unknown type name ‘FILE’
+ 1173 | extern  FILE    *fm;
+      |         ^~~~
+./data.h:1:1: note: ‘FILE’ is defined in header ‘<stdio.h>’; this is probably fixable by adding ‘#include <stdio.h>’
+  +++ |+#include <stdio.h>
+    1 | /*
+
+=== Testing header.h ===
+In file included from <command-line>:
+./header.h:485:9: warning: ‘VERSION’ redefined
+  485 | #define VERSION "Version 4"     /* version number of the game */
+      |         ^~~~~~~
+<command-line>: note: this is the location of the previous definition
+
+=== Testing newlogin.h ===
+In file included from <command-line>:
+./newlogin.h:195:54: error: ‘MAXARM’ undeclared here (not in a function)
+  195 | int Maxvalues[]= { 50, 10, 2, 20, 80, 80, 10, 30, 5, MAXARM/2, 10 };
+      |                                                      ^~~~~~
+
+=== Testing patchlevel.h ===
+
+=== Testing psmap.h ===
+In file included from <command-line>:
+./psmap.h:164:9: warning: ‘VERSION’ redefined
+  164 | #define VERSION         "1.0"  /* Program version embedded in PostScript output */
+      |         ^~~~~~~
+<command-line>: note: this is the location of the previous definition
+
+=== Testing trade.h ===
+
+=== Testing admin.c ===
+In file included from admin.c:75:
+header.h:485:9: warning: ‘VERSION’ redefined
+  485 | #define VERSION "Version 4"     /* version number of the game */
+      |         ^~~~~~~
+<command-line>: note: this is the location of the previous definition
+In file included from admin.c:76:
+admin.c: In function ‘main’:
+data.h:846:25: error: implicit declaration of function ‘srandom’; did you mean ‘srand’? [-Wimplicit-function-declaration]
+  846 | #define srand(x)        srandom(x)
+      |                         ^~~~~~~
+admin.c:227:9: note: in expansion of macro ‘srand’
+  227 |         srand((unsigned) time((long *) 0));
+      |         ^~~~~
+admin.c:308:24: error: ‘scenario’ undeclared (first use in this function)
+  308 |                 strcpy(scenario, optarg);
+      |                        ^~~~~~~~
+admin.c:308:24: note: each undeclared identifier is reported only once for each function it appears in
+admin.c: In function ‘att_base’:
+data.h:845:25: error: implicit declaration of function ‘random’; did you mean ‘rand’? [-Wimplicit-function-declaration]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+admin.c:812:39: note: in expansion of macro ‘rand’
+  812 |                 curntn->reputation += rand()%8-3;
+      |                                       ^~~~
+
+=== Testing cexecute.c ===
+In file included from cexecute.c:64:
+header.h:485:9: warning: ‘VERSION’ redefined
+  485 | #define VERSION "Version 4"     /* version number of the game */
+      |         ^~~~~~~
+<command-line>: note: this is the location of the previous definition
+In file included from cexecute.c:65:
+cexecute.c: In function ‘execute’:
+data.h:845:25: error: implicit declaration of function ‘random’; did you mean ‘rand’? [-Wimplicit-function-declaration]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+cexecute.c:193:29: note: in expansion of macro ‘rand’
+  193 |                         if( rand()%100 < x){
+      |                             ^~~~
+
+=== Testing check.c ===
+In file included from check.c:62:
+header.h:485:9: warning: ‘VERSION’ redefined
+  485 | #define VERSION "Version 4"     /* version number of the game */
+      |         ^~~~~~~
+<command-line>: note: this is the location of the previous definition
+check.c: In function ‘check_lock’:
+check.c:397:25: error: implicit declaration of function ‘lockf’ [-Wimplicit-function-declaration]
+  397 | #    define do_lock(fd) lockf(fd,F_TLOCK,0)
+      |                         ^~~~~
+check.c:454:20: note: in expansion of macro ‘do_lock’
+  454 |                 if(do_lock(fd)==(-1)) {
+      |                    ^~~~~~~
+check.c:397:34: error: ‘F_TLOCK’ undeclared (first use in this function)
+  397 | #    define do_lock(fd) lockf(fd,F_TLOCK,0)
+      |                                  ^~~~~~~
+check.c:454:20: note: in expansion of macro ‘do_lock’
+  454 |                 if(do_lock(fd)==(-1)) {
+      |                    ^~~~~~~
+check.c:397:34: note: each undeclared identifier is reported only once for each function it appears in
+  397 | #    define do_lock(fd) lockf(fd,F_TLOCK,0)
+      |                                  ^~~~~~~
+check.c:454:20: note: in expansion of macro ‘do_lock’
+  454 |                 if(do_lock(fd)==(-1)) {
+      |                    ^~~~~~~
+
+=== Testing combat.c ===
+In file included from combat.c:26:
+header.h:485:9: warning: ‘VERSION’ redefined
+  485 | #define VERSION "Version 4"     /* version number of the game */
+      |         ^~~~~~~
+<command-line>: note: this is the location of the previous definition
+In file included from combat.c:27:
+combat.c: In function ‘combat’:
+data.h:845:25: error: implicit declaration of function ‘random’; did you mean ‘rand’? [-Wimplicit-function-declaration]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+combat.c:222:53: note: in expansion of macro ‘rand’
+  222 |                                         } else if(( rand()%2==0 )
+      |                                                     ^~~~
+
+=== Testing commands.c ===
+In file included from commands.c:33:
+header.h:485:9: warning: ‘VERSION’ redefined
+  485 | #define VERSION "Version 4"     /* version number of the game */
+      |         ^~~~~~~
+<command-line>: note: this is the location of the previous definition
+
+=== Testing data.c ===
+In file included from data.c:55:
+header.h:485:9: warning: ‘VERSION’ redefined
+  485 | #define VERSION "Version 4"     /* version number of the game */
+      |         ^~~~~~~
+<command-line>: note: this is the location of the previous definition
+
+=== Testing display.c ===
+In file included from display.c:174:
+header.h:485:9: warning: ‘VERSION’ redefined
+  485 | #define VERSION "Version 4"     /* version number of the game */
+      |         ^~~~~~~
+<command-line>: note: this is the location of the previous definition
+display.c: In function ‘init_hasseen’:
+display.c:241:9: error: implicit declaration of function ‘bzero’ [-Wimplicit-function-declaration]
+  241 |         bzero(hasseen,((COLS-10)/2) * (LINES-5));
+      |         ^~~~~
+
+=== Testing io.c ===
+In file included from io.c:121:
+header.h:485:9: warning: ‘VERSION’ redefined
+  485 | #define VERSION "Version 4"     /* version number of the game */
+      |         ^~~~~~~
+<command-line>: note: this is the location of the previous definition
+
+=== Testing main.c ===
+In file included from main.c:33:
+header.h:485:9: warning: ‘VERSION’ redefined
+  485 | #define VERSION "Version 4"     /* version number of the game */
+      |         ^~~~~~~
+<command-line>: note: this is the location of the previous definition
+In file included from main.c:34:
+main.c: In function ‘main’:
+data.h:846:25: error: implicit declaration of function ‘srandom’; did you mean ‘srand’? [-Wimplicit-function-declaration]
+  846 | #define srand(x)        srandom(x)
+      |                         ^~~~~~~
+main.c:145:9: note: in expansion of macro ‘srand’
+  145 |         srand((unsigned) time((long *) 0));
+      |         ^~~~~
+main.c: In function ‘makeside’:
+data.h:845:25: error: implicit declaration of function ‘random’; did you mean ‘rand’? [-Wimplicit-function-declaration]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+main.c:1423:110: note: in expansion of macro ‘rand’
+ 1423 |                                         mvprintw(nfound2*2+count,COLS-20,"%s: %ld men  ",ntn[i].name,(enemy*(rand()%60+70)/100));
+      |                                                                                                              ^~~~
+
+=== Testing misc.c ===
+In file included from misc.c:34:
+header.h:485:9: warning: ‘VERSION’ redefined
+  485 | #define VERSION "Version 4"     /* version number of the game */
+      |         ^~~~~~~
+<command-line>: note: this is the location of the previous definition
+
+
+COMPILATION ANALYSIS SUMMARY
+============================
+
+CRITICAL ERROR PATTERNS IDENTIFIED:
+
+1. HEADER DEPENDENCY ERRORS:
+   - data.h: Missing constants MAXARM, MAXNAVY, NTOTAL
+   - data.h: Missing #include <stdio.h> for FILE type
+   - newlogin.h: Uses undefined MAXARM constant
+
+2. SYSTEM FUNCTION CONFLICTS:
+   - admin.c: Implicit declaration of srandom/random (BSD vs POSIX)
+   - check.c: Missing lockf/F_TLOCK declarations
+   - display.c: bzero function not declared (BSD legacy)
+
+3. VERSION MACRO CONFLICTS:
+   - ALL FILES: VERSION redefined warning (Makefile -D vs header.h #define)
+   - psmap.h: Also redefines VERSION
+
+PRIORITY CLASSIFICATION:
+
+CRITICAL BLOCKERS (prevent compilation):
+  - header.h: Must be fixed FIRST (highest dependency)
+  - data.h: Missing constants and stdio.h include
+  - System function declarations (srandom/random, lockf, bzero)
+
+NON-CRITICAL WARNINGS:
+  - VERSION macro redefinition (cosmetic)
+
+FILES COMPILING SUCCESSFULLY:
+  - commands.c (only VERSION warning)
+  - data.c (only VERSION warning)
+  - misc.c (only VERSION warning)
+  - patchlevel.h (clean)
+  - trade.h (clean)
+
+NEXT STEPS FOR SUBPHASE 1:
+1. Fix header.h first (critical dependency)
+2. Fix data.h constants and includes
+3. Address system function declarations
+4. Test full compilation after critical fixes
