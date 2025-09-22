@@ -118,10 +118,8 @@ trade()
 	int count, done=FALSE, notopen=FALSE;
 	int buysell, holdint, holdint2, extint, inloop;
 	int type1[MAXITM], type2[MAXITM], deal[MAXITM], extra[MAXITM];
-	int natn[MAXITM], itemnum, getland(), gettrade(), checkland();
-	int tradable();
-	long lvar1[MAXITM], lvar2[MAXITM], holdlong, holdlong2, armyvalue();
-	void tradeerr(), setaside(), takeback();
+	int natn[MAXITM], itemnum;
+	long lvar1[MAXITM], lvar2[MAXITM], holdlong, holdlong2;
 	
 	clear();
 	while (done==FALSE) {
@@ -245,7 +243,7 @@ trade()
 						tradeerr("Error opening file for trading");
 						abrt();
 					}
-					fprintf(tfile, "%d %d %d %d %ld %ld %d\n",BUY, country, GETFOOD, 0, curntn->tfood, 0, 0);
+					fprintf(tfile, "%d %d %d %d %ld %d %d\n",BUY, country, GETFOOD, 0, curntn->tfood, 0, 0);
 					fclose(tfile);
 					break;
 				case GETMETAL:
@@ -1201,7 +1199,6 @@ long
 gettval(int cntry1,int cntry2,int type,long longval,int extint)
 {
 	int returnval=(-1);
-	long armyvalue();
 
 	switch(type) {
 	case TDGOLD:
@@ -1515,8 +1512,6 @@ checktrade (void)
 	int count, itemnum=0, natn[MAXITM];
 	int type1[MAXITM], type2[MAXITM], deal[MAXITM], extra[MAXITM];
 	long lvar1[MAXITM], lvar2[MAXITM];
-	void takeback();
-	void setaside();
 	/* initialize purchase list */
 	for (count=0; count<MAXITM; count++) {
 		deal[count]=(-1);
@@ -1618,12 +1613,10 @@ uptrade (void)
 	int count, itemnum=0, natn[MAXITM];
 	int type1[MAXITM], type2[MAXITM], deal[MAXITM], extra[MAXITM];
 	extern FILE *fnews;
-	void trademail();
 	int whobuy[MAXITM];
-	long tradeit(), buy1[MAXITM], buy2[MAXITM];
-	long price[MAXITM], gettval(), longval1, longval2;
+	long buy1[MAXITM], buy2[MAXITM];
+	long price[MAXITM], longval1, longval2;
 	long lvar1[MAXITM], lvar2[MAXITM];
-	void takeback();
 
 	/* initialize purchase list */
 	for (count=0; count<MAXITM; count++) {
@@ -1779,9 +1772,8 @@ fixtrade (int cntry)
 	FILE *tfile;
 	int holdint, notopen=FALSE;
 	int type1[MAXITM], type2[MAXITM], deal[MAXITM], extra[MAXITM];
-	int natn[MAXITM], itemnum, getland(), gettrade(), checkland();
-	long lvar1[MAXITM], lvar2[MAXITM], armyvalue();
-	void  setaside(), takeback();
+	int natn[MAXITM], itemnum;
+	long lvar1[MAXITM], lvar2[MAXITM];
 
 	/* open trading file */
 	if ((tfile=fopen(tradefile,"r")) == NULL ) {
