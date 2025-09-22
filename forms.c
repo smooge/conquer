@@ -91,6 +91,7 @@
 #include <ctype.h>
 #include <curses.h>
 #include <pwd.h>
+#include <crypt.h>
 #include "header.h"
 #include "data.h"
 
