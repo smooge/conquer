@@ -1016,7 +1016,7 @@ static void generate_text(const char *class_spec, char default_variant, FILE *ou
                     if (*p == DELIMITER_CHAR) {
                         p += 2; /* Skip delimiter and variant tag */
                         char temp_spec[64];
-                        int spec_len = (p - start);
+                        size_t spec_len = (p - start);
                         if (spec_len < sizeof(temp_spec)) {
                             memcpy(temp_spec, start, spec_len);
                             temp_spec[spec_len] = '\0';
