@@ -202,6 +202,7 @@ Before changing a single line of code, establishing a modern, strict, and contro
 - **Tool Synergy**: GCC primary, Clang for clarification, clang-tidy for automation
 - **Session Management**: Warning-type sessions for high warning count files
 - **Automation Required**: Create analysis and tracking scripts in Subphase 0
+- **Bug Tracking Strategy**: GitHub Issues for compilation errors ONLY, local tracking for warnings
 - **Retrospective**: Capture lessons learned for future codebase modernizations
 
 **Phase 4 Subphases** (see strategy guide for full details):

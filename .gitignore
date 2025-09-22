@@ -47,6 +47,15 @@ tests/test_*
 !tests/test_*.c
 !tests/test_*.h
 
+# Test utility executables
+tests/utils/test_*
+!tests/utils/*.c
+!tests/utils/*.h
+
+# Test output files
+tests/*.out
+tests/*/*.out
+
 # Coverage and profiling
 *.gcov
 *.gcda

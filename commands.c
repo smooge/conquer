@@ -653,7 +653,7 @@ construct()
 {
 	int	tmpvar,tmpvar2,onboard;
 	long	cost;
-	int	armbonus;
+	int	armbonus = 0;
 	int	x,y;
 	short	nvynum=0;
 	short	shipsize,amount;
@@ -1149,7 +1149,7 @@ draft()
 
 	if(ISCITY(sct[XREAL][YREAL].designation)
 	&&(sct[XREAL][YREAL].people*(3*CITYLIMIT+(curntn->tsctrs/2))<curntn->tciv)){
-		mvprintw(LINES-1,0,"Need %d people in sector: hit any key",curntn->tciv/(3*CITYLIMIT+(curntn->tsctrs/2)));
+		mvprintw(LINES-1,0,"Need %ld people in sector: hit any key",curntn->tciv/(3*CITYLIMIT+(curntn->tsctrs/2)));
 		refresh();
 		getch();
 		if(isgod==TRUE) reset_god();
@@ -1543,17 +1543,17 @@ rmessage()
 	struct stat fst;
 
 	/*open file; used in mailopen() as well */
-	sprintf(tempfile,"%s%hd.tmp",msgfile,country);
+	snprintf(tempfile, FILELTH, "%s%hd.tmp", msgfile, country);
 	if( (fptemp = fopen(tempfile,"w")) == NULL ) {
 		clear_bottom(0);
-		sprintf(mesgfile,"error: %s open",tempfile);
+		snprintf(mesgfile, FILELTH, "error: %.67s open", tempfile);
 		errormsg(mesgfile);
 		redraw=DONE;
 		makebottom();
 		return;
 	}
 
-	sprintf(mesgfile,"%s%d",msgfile,country);
+	snprintf(mesgfile, FILELTH, "%s%d", msgfile, country);
 	if ((mesgfp=fopen(mesgfile,"r"))==NULL) {
 		(void) unlink (tempfile) ;
 		clear_bottom(0);
@@ -1564,7 +1564,7 @@ rmessage()
 	}
 
 	/* check for people sending mail */
-	sprintf(line,"send.%s%hd",msgfile,country);
+	snprintf(line, LINELTH+1, "send.%s%hd", msgfile, country);
 	if (stat(line,&fst)==0) {
 		long now;
 		now = time(0);
@@ -2048,7 +2048,7 @@ moveciv()
 		return;
 	}
 
-	mvprintw(LINES-4,0,"Sector contains %d people [cost 50 per civilian]",sct[XREAL][YREAL].people);
+	mvprintw(LINES-4,0,"Sector contains %ld people [cost 50 per civilian]",sct[XREAL][YREAL].people);
 	mvaddstr(LINES-3,0,"How many people to move?");
 	clrtoeol();
 	refresh();
