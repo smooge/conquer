@@ -890,7 +890,7 @@ extern void att_base(void);
 extern void att_bonus(void);
 /* cexecute.c */
 extern int execute(int isupdate);
-extern void hangup(void);
+extern void hangup(int sig);
 
 /* check.c */
 extern void verify_ntn(char __file__[], int __line__);
@@ -1110,6 +1110,7 @@ extern void fleetrpt(void);
 /* spew.c */
 extern void makemess(int count, FILE *output);
 /* trade.c */
+extern void trade(void);
 extern void tradeerr(char *mesg);
 extern int checkland(int tradestat, int xspot, int yspot);
 extern int getland(int *count);
