@@ -636,19 +636,19 @@ writedata (void)
 	if((bytes=write(fd,&world,sizeof(struct s_world)))!=sizeof(struct s_world))
 	{
 		printf("error writing world data\n");
-		printf("wrong data format (%ld vs. %d)\n",bytes,sizeof(struct s_world) );
+		printf("wrong data format (%ld vs. %zu)\n",bytes,sizeof(struct s_world) );
 		abrt();
 	}
 
 	if((bytes=write(fd,*sct,MAPX*MAPY*sizeof(struct s_sector))) == -1)
 	{
-		printf("Wrong number of bytes (%ld) written for sct (should be %d)\n",bytes,MAPX*MAPY*sizeof(struct s_sector));
+		printf("Wrong number of bytes (%ld) written for sct (should be %zu)\n",bytes,MAPX*MAPY*sizeof(struct s_sector));
 		abrt();
 	};
 	printf("writing %ld bytes of sector data\n",bytes);
 	if((bytes=write(fd,ntn,NTOTAL*sizeof(struct s_nation))) == -1)
 	{
-		printf("Wrong number of bytes (%ld) written for ntn (should be %d)\n",bytes,NTOTAL*sizeof(struct s_nation));
+		printf("Wrong number of bytes (%ld) written for ntn (should be %zu)\n",bytes,NTOTAL*sizeof(struct s_nation));
 		abrt();
 	}
 	printf("writing %ld bytes of nation data\n",bytes);
@@ -727,7 +727,7 @@ readdata (void)
 	if((n_read=read(fd,&world,sizeof(struct s_world)))!=sizeof(struct s_world))
 	{
 		printf("error reading world data\n");
-		printf("wrong data format (%d vs. %d)\n",n_read, sizeof(struct s_world) );
+		printf("wrong data format (%d vs. %zu)\n",n_read, sizeof(struct s_world) );
 		abrt();
 	}
 #ifdef DEBUG
@@ -741,7 +741,7 @@ readdata (void)
 	else if(n_read==-1) printf("error reading sector data (sct)\n");
 	if(n_read != (MAPX*MAPY*sizeof(struct s_sector))) {
 		printf("error reading sector data (sct)\n");
-		printf( "wrong data format (%d vs. %d)\n",n_read,  MAPX*MAPY*sizeof(struct s_sector) );
+		printf( "wrong data format (%d vs. %zu)\n",n_read,  MAPX*MAPY*sizeof(struct s_sector) );
 		abrt();
 	}
 #ifdef DEBUG
@@ -751,7 +751,7 @@ readdata (void)
 		printf("error reading s_nation data (ntn)\n");
 	else if(n_read!= NTOTAL*sizeof(struct s_nation)) {
 		printf("error reading s_nation data (ntn)\n");
-		printf( "wrong data format (%d vs. %d)\n",n_read, NTOTAL*sizeof(struct s_nation) );
+		printf( "wrong data format (%d vs. %zu)\n",n_read, NTOTAL*sizeof(struct s_nation) );
 		abrt();
 	}
 #ifdef DEBUG
@@ -1157,7 +1157,7 @@ printscore (void)
 	int i;
 	int nationid; 	/*current nation id */
 #ifdef TIMELOG
-	FILE *timefp, *fopen();
+	FILE *timefp;
 	char timestr[LINELTH+1];
 #endif /* TIMELOG */
 
@@ -1430,7 +1430,7 @@ readmap (void)
 		y++;
 		if(y>=MAPY) break;
 	}
-	fprintf(stderr,"done reading %d lines of %d characters\n",y,strlen(line));
+	fprintf(stderr,"done reading %d lines of %zu characters\n",y,strlen(line));
 
 	/* read in veg.map */
 	strcpy(line,scenario);
@@ -1446,7 +1446,7 @@ readmap (void)
 		y++;
 		if(y>=MAPY) break;
 	}
-	fprintf(stderr,"done reading %d lines of %d characters\n",y,strlen(line));
+	fprintf(stderr,"done reading %d lines of %zu characters\n",y,strlen(line));
 
 	return(TRUE);
 }
