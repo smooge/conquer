@@ -133,7 +133,7 @@ mymove()
 	int	total,Tarmynum,Tnation,fmove;
 	int	valid=FALSE;     /* TRUE if move was a valid move */
 	short	armynum;
-	short	nvynum;
+	short	nvynum = 0;
 	int	oldxcurs,oldycurs,mvused = 0;
 	int	done=FALSE;	/*done is TRUE if done with this move*/
 

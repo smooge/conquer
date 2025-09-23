@@ -125,12 +125,14 @@
 - **Commit**: [To be added]
 - **Result**: All 2 warnings eliminated, zero compilation warnings
 
-#### ☐ 11. move.c (1 warning) - PRIORITY LOW
-- **Status**: ⏳ Pending
+#### ✅ 11. move.c (1 warning) - COMPLETED (2025-01-23)
+- **Status**: ✅ Complete
 - **Warning Type**: maybe-uninitialized (1 warning)
 - **Lines**: 136 (nvynum variable)
 - **Issue**: Variable 'nvynum' may be used uninitialized
-- **Solution**: Initialize variable or add defensive checks
+- **Solution Applied**: Initialize variable at declaration: `short nvynum = 0;`
+- **Commit**: [To be added]
+- **Result**: Warning eliminated, zero compilation warnings
 
 ### 🟢 Dual-Compiled Files (3 warnings)
 
@@ -226,9 +228,9 @@ gcc [game flags above] -c filename.c -o /tmp/filenameG.o
 
 ## Session Tracking
 
-**Phase 4.4 Progress**: 24/47 warnings fixed (51.1% complete)
-**Files Completed**: 9/15 files with warnings (60.0% complete)
-**Clean Files**: 19/24 total files (79.2% warning-free)
+**Phase 4.4 Progress**: 25/47 warnings fixed (53.2% complete)
+**Files Completed**: 10/15 files with warnings (66.7% complete)
+**Clean Files**: 20/24 total files (83.3% warning-free)
 
 **Recent Progress**:
 - ✅ **admin.c** (2025-01-22): 4 sign-compare warnings → 0 warnings (uid_t type fix)
@@ -240,6 +242,7 @@ gcc [game flags above] -c filename.c -o /tmp/filenameG.o
 - ✅ **io.c** (2025-01-23): 1 sign-compare warning → 0 warnings (ssize_t type fix)
 - ✅ **cexecute.c** (2025-01-23): 1 unused-parameter warning → 0 warnings (void cast)
 - ✅ **extcmds.c** (2025-01-23): 6 implicit-fallthrough warnings → 0 warnings (FALLTHROUGH comments)
+- ✅ **move.c** (2025-01-23): 1 maybe-uninitialized warning → 0 warnings (variable initialization)
 
 **Pattern Library Enhanced**:
 - ✅ **Sign-compare (uid_t)**: Change int to uid_t for user ID operations
@@ -248,9 +251,10 @@ gcc [game flags above] -c filename.c -o /tmp/filenameG.o
 - ✅ **Implicit-fallthrough**: Add `/* FALLTHROUGH */` comments to preserve intentional fall-through
 - ✅ **Format-truncation**: Use precision specifiers (e.g., `%.67s`) to limit string length in snprintf
 - ✅ **Unused-parameter**: Add `(void)param;` statements for required but unused function parameters
+- ✅ **Maybe-uninitialized**: Initialize variables at declaration to prevent uninitialized usage warnings
 
-**Last Updated**: 2025-01-23 - extcmds.c completed successfully using scaled implicit-fallthrough pattern
-**Next Session**: Continue with move.c (1 maybe-uninitialized warning) or main.c (14 mixed warnings)
+**Last Updated**: 2025-01-23 - move.c completed successfully, 7th pattern category mastered
+**Next Session**: Continue with main.c (14 mixed warnings) or forms.c (6 mixed warnings)
 
 ---
 
