@@ -100,12 +100,14 @@
 - **Issue**: Mixed uid comparison and string truncation warnings
 - **Solution**: Type casting for uid + safer string handling
 
-#### ☐ 8. extcmds.c (6 warnings) - PRIORITY MEDIUM
-- **Status**: ⏳ Pending
+#### ✅ 8. extcmds.c (6 warnings) - COMPLETED (2025-01-23)
+- **Status**: ✅ Complete
 - **Warning Type**: implicit-fallthrough (6 warnings)
 - **Lines**: 153, 154, 155, 156, 157, 158
 - **Issue**: Cascading switch statement in ext_cmd() function
-- **Solution**: Add explicit break statements or fallthrough comments
+- **Solution Applied**: Added `/* FALLTHROUGH */` comments at 6 locations to preserve intentional army status cascading logic
+- **Commit**: [To be added]
+- **Result**: All 6 implicit-fallthrough warnings eliminated, zero compilation warnings
 
 #### ☐ 9. forms.c (6 warnings) - PRIORITY MEDIUM
 - **Status**: ⏳ Pending
@@ -224,9 +226,9 @@ gcc [game flags above] -c filename.c -o /tmp/filenameG.o
 
 ## Session Tracking
 
-**Phase 4.4 Progress**: 18/47 warnings fixed (38.3% complete)
-**Files Completed**: 8/15 files with warnings (53.3% complete)
-**Clean Files**: 18/24 total files (75.0% warning-free)
+**Phase 4.4 Progress**: 24/47 warnings fixed (51.1% complete)
+**Files Completed**: 9/15 files with warnings (60.0% complete)
+**Clean Files**: 19/24 total files (79.2% warning-free)
 
 **Recent Progress**:
 - ✅ **admin.c** (2025-01-22): 4 sign-compare warnings → 0 warnings (uid_t type fix)
@@ -237,6 +239,7 @@ gcc [game flags above] -c filename.c -o /tmp/filenameG.o
 - ✅ **magic.c** (2025-01-23): 2 implicit-fallthrough warnings → 0 warnings (FALLTHROUGH comments)
 - ✅ **io.c** (2025-01-23): 1 sign-compare warning → 0 warnings (ssize_t type fix)
 - ✅ **cexecute.c** (2025-01-23): 1 unused-parameter warning → 0 warnings (void cast)
+- ✅ **extcmds.c** (2025-01-23): 6 implicit-fallthrough warnings → 0 warnings (FALLTHROUGH comments)
 
 **Pattern Library Enhanced**:
 - ✅ **Sign-compare (uid_t)**: Change int to uid_t for user ID operations
@@ -246,8 +249,8 @@ gcc [game flags above] -c filename.c -o /tmp/filenameG.o
 - ✅ **Format-truncation**: Use precision specifiers (e.g., `%.67s`) to limit string length in snprintf
 - ✅ **Unused-parameter**: Add `(void)param;` statements for required but unused function parameters
 
-**Last Updated**: 2025-01-23 - cexecute.c completed successfully using new unused-parameter pattern
-**Next Session**: Continue with extcmds.c (6 implicit-fallthrough warnings) or main.c (14 mixed warnings)
+**Last Updated**: 2025-01-23 - extcmds.c completed successfully using scaled implicit-fallthrough pattern
+**Next Session**: Continue with move.c (1 maybe-uninitialized warning) or main.c (14 mixed warnings)
 
 ---
 

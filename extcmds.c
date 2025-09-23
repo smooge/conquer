@@ -151,11 +151,17 @@ int	armie;
 		addgroup(armynum);
 		break;
 	case 'a': if(stat==0) stat=ATTACK;
+		/* FALLTHROUGH */
 	case 'd': if(stat==0) stat=DEFEND;
+		/* FALLTHROUGH */
 	case 'm': if(stat==0) stat=MARCH;
+		/* FALLTHROUGH */
 	case 's': if(stat==0) stat=SCOUT;
+		/* FALLTHROUGH */
 	case 'g': if(stat==0) stat=GARRISON;
+		/* FALLTHROUGH */
 	case 'R': if(stat==0) stat=RULE;
+		/* FALLTHROUGH */
 	case 'S':
 		if(stat==0) {
 			if(sct[P_AXLOC][P_AYLOC].owner==country) stat=SORTIE;
