@@ -1,0 +1,301 @@
+=== ADMIN-ONLY FILES (8 files) ===
+--- Testing admin.c ---
+admin.c: In function ‘main’:
+admin.c:353:39: warning: comparison of integer expressions of different signedness: ‘int’ and ‘__uid_t’ {aka ‘unsigned int’} [-Wsign-compare]
+  353 |                         if ((realuser != (getpwnam(LOGIN))->pw_uid ) &&
+      |                                       ^~
+admin.c:355:42: warning: comparison of integer expressions of different signedness: ‘int’ and ‘__uid_t’ {aka ‘unsigned int’} [-Wsign-compare]
+  355 |                                 realuser != pwent->pw_uid )) {
+      |                                          ^~
+admin.c:454:23: warning: comparison of integer expressions of different signedness: ‘int’ and ‘__uid_t’ {aka ‘unsigned int’} [-Wsign-compare]
+  454 |         if ((realuser != (getpwnam(LOGIN)->pw_uid) ) &&
+      |                       ^~
+admin.c:456:20: warning: comparison of integer expressions of different signedness: ‘int’ and ‘__uid_t’ {aka ‘unsigned int’} [-Wsign-compare]
+  456 |           realuser != pwent->pw_uid )) {
+      |                    ^~
+
+--- Testing combat.c ---
+
+--- Testing spew.c ---
+spew.c: In function ‘generate_text’:
+spew.c:1020:38: warning: comparison of integer expressions of different signedness: ‘int’ and ‘long unsigned int’ [-Wsign-compare]
+ 1020 |                         if (spec_len < sizeof(temp_spec)) {
+      |                                      ^
+
+--- Testing newlogin.c ---
+newlogin.c: In function ‘newlogin’:
+newlogin.c:1203:17: warning: ‘strncpy’ specified bound 8 equals destination size [-Wstringop-truncation]
+ 1203 |                 strncpy(curntn->passwd,crypt(tempc,SALT),PASSLTH+1);
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+--- Testing update.c ---
+update.c: In function ‘updmil’:
+update.c:1900:37: warning: this statement may fall through [-Wimplicit-fallthrough=]
+ 1900 |                                 flag=FALSE;
+      |                                     ^
+update.c:1902:25: note: here
+ 1902 |                         case GARRISON:
+      |                         ^~~~
+update.c:1910:37: warning: this statement may fall through [-Wimplicit-fallthrough=]
+ 1910 |                                 flag=FALSE;
+      |                                     ^
+update.c:1912:25: note: here
+ 1912 |                         case RULE:
+      |                         ^~~~
+update.c:1913:35: warning: this statement may fall through [-Wimplicit-fallthrough=]
+ 1913 |                                 if((flag==TRUE)
+      |                                   ^
+update.c:1921:25: note: here
+ 1921 |                         case SIEGED:
+      |                         ^~~~
+update.c:1928:40: warning: this statement may fall through [-Wimplicit-fallthrough=]
+ 1928 |                                 A->stat=DEFEND;
+update.c:1929:25: note: here
+ 1929 |                         default:
+      |                         ^~~~~~~
+
+--- Testing npc.c ---
+
+--- Testing randeven.c ---
+randeven.c: In function ‘randomevent’:
+randeven.c:1182:35: warning: this statement may fall through [-Wimplicit-fallthrough=]
+ 1182 |                                 if(magic(country,AV_MONST)==TRUE) {
+      |                                   ^
+randeven.c:1186:25: note: here
+ 1186 |                         case AV_MONST:
+      |                         ^~~~
+randeven.c:1193:35: warning: this statement may fall through [-Wimplicit-fallthrough=]
+ 1193 |                                 if(magic(country,CAPTAIN)==TRUE) {
+      |                                   ^
+randeven.c:1197:25: note: here
+ 1197 |                         case CAPTAIN:
+      |                         ^~~~
+randeven.c:1204:35: warning: this statement may fall through [-Wimplicit-fallthrough=]
+ 1204 |                                 if(magic(country,WYZARD)==TRUE) {
+      |                                   ^
+randeven.c:1208:25: note: here
+ 1208 |                         case WYZARD:
+      |                         ^~~~
+
+--- Testing makeworl.c ---
+makeworl.c: In function ‘makeworld’:
+makeworl.c:274:40: warning: ‘strncpy’ output may be truncated copying 9 bytes from a string of length 255 [-Wstringop-truncation]
+  274 |                                 (void) strncpy(ntn[0].leader,newstring,LEADERLTH);
+      |                                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+=== SHARED FILES (1 file) ===
+--- Testing check.c ---
+=== GAME-ONLY FILES (7 files) ===
+--- Testing commands.c ---
+commands.c: In function ‘redesignate’:
+commands.c:328:42: warning: this statement may fall through [-Wimplicit-fallthrough=]
+  328 |                         if((newdes==PEAK)||(newdes==WATER)) {
+      |                            ~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~
+commands.c:334:17: note: here
+  334 |                 case 'v':
+      |                 ^~~~
+commands.c: In function ‘rmessage’:
+commands.c:1545:53: warning: ‘%s’ directive output may be truncated writing up to 79 bytes into a region of size 73 [-Wformat-truncation=]
+ 1545 |                 snprintf(mesgfile, FILELTH, "error: %s open", tempfile);
+      |                                                     ^~        ~~~~~~~~
+commands.c:1545:17: note: ‘snprintf’ output between 13 and 92 bytes into a destination of size 80
+ 1545 |                 snprintf(mesgfile, FILELTH, "error: %s open", tempfile);
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+--- Testing main.c ---
+main.c: In function ‘main’:
+main.c:353:31: warning: comparison of integer expressions of different signedness: ‘int’ and ‘__uid_t’ {aka ‘unsigned int’} [-Wsign-compare]
+  353 |                 if ((owneruid != (getpwnam(LOGIN))->pw_uid ) &&
+      |                               ^~
+main.c:355:28: warning: comparison of integer expressions of different signedness: ‘int’ and ‘__uid_t’ {aka ‘unsigned int’} [-Wsign-compare]
+  355 |                   owneruid != pwent->pw_uid )) {
+      |                            ^~
+main.c:373:31: warning: comparison of integer expressions of different signedness: ‘int’ and ‘__uid_t’ {aka ‘unsigned int’} [-Wsign-compare]
+  373 |                 if ((owneruid == (getpwnam(LOGIN))->pw_uid) ||
+      |                               ^~
+main.c:374:31: warning: comparison of integer expressions of different signedness: ‘int’ and ‘__uid_t’ {aka ‘unsigned int’} [-Wsign-compare]
+  374 |                     (owneruid == (getpwnam(ntn[0].leader))->pw_uid)) {
+      |                               ^~
+main.c:498:23: warning: comparison of integer expressions of different signedness: ‘int’ and ‘__uid_t’ {aka ‘unsigned int’} [-Wsign-compare]
+  498 |             (owneruid != (getpwnam(LOGIN))->pw_uid) &&
+      |                       ^~
+main.c:499:23: warning: comparison of integer expressions of different signedness: ‘int’ and ‘__uid_t’ {aka ‘unsigned int’} [-Wsign-compare]
+  499 |             (owneruid != (getpwnam(ntn[0].leader))->pw_uid) &&
+      |                       ^~
+main.c:500:26: warning: comparison of integer expressions of different signedness: ‘short int’ and ‘__uid_t’ {aka ‘unsigned int’} [-Wsign-compare]
+  500 |             (curntn->uid != (getpwnam(LOGIN))->pw_uid))
+      |                          ^~
+main.c: In function ‘parse’:
+main.c:1049:31: warning: comparison of integer expressions of different signedness: ‘int’ and ‘__uid_t’ {aka ‘unsigned int’} [-Wsign-compare]
+ 1049 |                 if ((owneruid != (getpwnam(LOGIN))->pw_uid ) &&
+      |                               ^~
+main.c:1050:72: warning: comparison of integer expressions of different signedness: ‘int’ and ‘__uid_t’ {aka ‘unsigned int’} [-Wsign-compare]
+ 1050 |                     ((pwent=getpwnam(ntn[0].leader))==NULL || owneruid != pwent->pw_uid )) break;
+      |                                                                        ^~
+main.c: In function ‘main’:
+main.c:148:17: warning: ‘strncpy’ specified bound 256 equals destination size [-Wstringop-truncation]
+  148 |                 strncpy(cq_opts, getenv(ENVIRON_OPTS), BIGLTH);
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+main.c:415:9: warning: ‘strncpy’ specified bound 8 equals destination size [-Wstringop-truncation]
+  415 |         strncpy(tmppass,getpass(""),PASSLTH+1);
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+main.c:416:9: warning: ‘strncpy’ specified bound 8 equals destination size [-Wstringop-truncation]
+  416 |         strncpy(passwd,crypt(tmppass,SALT),PASSLTH+1);
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+main.c:420:17: warning: ‘strncpy’ specified bound 8 equals destination size [-Wstringop-truncation]
+  420 |                 strncpy(tmppass,getpass(""),PASSLTH+1);
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+main.c:421:17: warning: ‘strncpy’ specified bound 8 equals destination size [-Wstringop-truncation]
+  421 |                 strncpy(passwd,crypt(tmppass,SALT),PASSLTH+1);
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+--- Testing forms.c ---
+forms.c: In function ‘change’:
+forms.c:992:80: warning: ‘%s’ directive output may be truncated writing up to 79 bytes into a region of size between 0 and 255 [-Wformat-truncation=]
+  992 |                                         snprintf(command, sizeof(command), "%s %s %s", temp_command, filename, filename);
+      |                                                                                ^~                    ~~~~~~~~
+forms.c:992:41: note: ‘snprintf’ output between 3 and 416 bytes into a destination of size 256
+  992 |                                         snprintf(command, sizeof(command), "%s %s %s", temp_command, filename, filename);
+      |                                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+forms.c:798:25: warning: ‘strncpy’ specified bound 8 equals destination size [-Wstringop-truncation]
+  798 |                         strncpy(passwd,crypt(command,SALT),PASSLTH+1);
+      |                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+forms.c:814:17: warning: ‘strncpy’ output may be truncated copying 7 bytes from a string of length 255 [-Wstringop-truncation]
+  814 |                 strncpy(passwd,command,PASSLTH);
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+forms.c:1059:33: warning: ‘strncpy’ output may be truncated copying 9 bytes from a string of length 79 [-Wstringop-truncation]
+ 1059 |                                 strncpy(ntn[0].leader,string,LEADERLTH);
+      |                                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+forms.c: In function ‘help’:
+forms.c:1094:37: warning: ‘%s’ directive writing up to 119 bytes into a region of size 75 [-Wformat-overflow=]
+ 1094 |                 sprintf(line,"  %d) %s",i,helplist[i]);
+      |                                     ^~
+forms.c:1094:17: note: ‘sprintf’ output between 6 and 125 bytes into a destination of size 80
+ 1094 |                 sprintf(line,"  %d) %s",i,helplist[i]);
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+--- Testing move.c ---
+In file included from move.c:29:
+move.c: In function ‘mymove’:
+data.h:677:36: warning: ‘nvynum’ may be used uninitialized [-Wmaybe-uninitialized]
+  677 | #define P_NMOVE curntn->nvy[nvynum].smove
+      |                 ~~~~~~~~~~~~~~~~~~~^~~~~~
+move.c:219:44: note: in expansion of macro ‘P_NMOVE’
+  219 |                 if(armornvy==NAVY) mveleft=P_NMOVE;
+      |                                            ^~~~~~~
+move.c:136:17: note: ‘nvynum’ was declared here
+  136 |         short   nvynum;
+      |                 ^~~~~~
+
+--- Testing reports.c ---
+
+--- Testing display.c ---
+
+--- Testing extcmds.c ---
+extcmds.c: In function ‘ext_cmd’:
+extcmds.c:153:21: warning: this statement may fall through [-Wimplicit-fallthrough=]
+  153 |         case 'a': if(stat==0) stat=ATTACK;
+      |                     ^
+extcmds.c:154:9: note: here
+  154 |         case 'd': if(stat==0) stat=DEFEND;
+      |         ^~~~
+extcmds.c:154:21: warning: this statement may fall through [-Wimplicit-fallthrough=]
+  154 |         case 'd': if(stat==0) stat=DEFEND;
+      |                     ^
+extcmds.c:155:9: note: here
+  155 |         case 'm': if(stat==0) stat=MARCH;
+      |         ^~~~
+extcmds.c:155:21: warning: this statement may fall through [-Wimplicit-fallthrough=]
+  155 |         case 'm': if(stat==0) stat=MARCH;
+      |                     ^
+extcmds.c:156:9: note: here
+  156 |         case 's': if(stat==0) stat=SCOUT;
+      |         ^~~~
+extcmds.c:156:21: warning: this statement may fall through [-Wimplicit-fallthrough=]
+  156 |         case 's': if(stat==0) stat=SCOUT;
+      |                     ^
+extcmds.c:157:9: note: here
+  157 |         case 'g': if(stat==0) stat=GARRISON;
+      |         ^~~~
+extcmds.c:157:21: warning: this statement may fall through [-Wimplicit-fallthrough=]
+  157 |         case 'g': if(stat==0) stat=GARRISON;
+      |                     ^
+extcmds.c:158:9: note: here
+  158 |         case 'R': if(stat==0) stat=RULE;
+      |         ^~~~
+extcmds.c:158:21: warning: this statement may fall through [-Wimplicit-fallthrough=]
+  158 |         case 'R': if(stat==0) stat=RULE;
+      |                     ^
+extcmds.c:159:9: note: here
+  159 |         case 'S':
+      |         ^~~~
+
+=== DUAL-COMPILED FILES (7 files) ===
+--- Testing cexecute.c (Admin mode) ---
+cexecute.c: In function ‘hangup’:
+cexecute.c:417:13: warning: unused parameter ‘sig’ [-Wunused-parameter]
+  417 | hangup (int sig)
+      |         ~~~~^~~
+--- Testing cexecute.c (Game mode) ---
+cexecute.c: In function ‘hangup’:
+cexecute.c:417:13: warning: unused parameter ‘sig’ [-Wunused-parameter]
+  417 | hangup (int sig)
+      |         ~~~~^~~
+
+--- Testing io.c (Admin mode) ---
+io.c: In function ‘readdata’:
+io.c:742:19: warning: comparison of integer expressions of different signedness: ‘int’ and ‘long unsigned int’ [-Wsign-compare]
+  742 |         if(n_read != (MAPX*MAPY*sizeof(struct s_sector))) {
+      |                   ^~
+--- Testing io.c (Game mode) ---
+io.c: In function ‘readdata’:
+io.c:742:19: warning: comparison of integer expressions of different signedness: ‘int’ and ‘long unsigned int’ [-Wsign-compare]
+  742 |         if(n_read != (MAPX*MAPY*sizeof(struct s_sector))) {
+      |                   ^~
+
+--- Testing misc.c (Admin mode) ---
+--- Testing misc.c (Game mode) ---
+
+--- Testing navy.c (Admin mode) ---
+--- Testing navy.c (Game mode) ---
+
+--- Testing magic.c (Admin mode) ---
+magic.c: In function ‘wizardry’:
+magic.c:1618:31: warning: this statement may fall through [-Wimplicit-fallthrough=]
+ 1618 |                         choice--;
+      |                         ~~~~~~^~
+magic.c:1619:17: note: here
+ 1619 |                 case 'a':
+      |                 ^~~~
+magic.c:1621:31: warning: this statement may fall through [-Wimplicit-fallthrough=]
+ 1621 |                         choice--;
+      |                         ~~~~~~^~
+magic.c:1622:17: note: here
+ 1622 |                 case 'd':
+      |                 ^~~~
+--- Testing magic.c (Game mode) ---
+magic.c: In function ‘wizardry’:
+magic.c:1618:31: warning: this statement may fall through [-Wimplicit-fallthrough=]
+ 1618 |                         choice--;
+      |                         ~~~~~~^~
+magic.c:1619:17: note: here
+ 1619 |                 case 'a':
+      |                 ^~~~
+magic.c:1621:31: warning: this statement may fall through [-Wimplicit-fallthrough=]
+ 1621 |                         choice--;
+      |                         ~~~~~~^~
+magic.c:1622:17: note: here
+ 1622 |                 case 'd':
+      |                 ^~~~
+
+--- Testing data.c (Admin mode) ---
+--- Testing data.c (Game mode) ---
+
+--- Testing trade.c (Admin mode) ---
+--- Testing trade.c (Game mode) ---
+
+=== POSTSCRIPT UTILITY FILES (1 file) ===
+--- Testing psmap.c ---
+
+=== SUBPHASE 3 TESTING COMPLETE ===
+Check report for warning counts and compilation status.

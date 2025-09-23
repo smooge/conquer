@@ -67,27 +67,27 @@ RESULT: SUCCESS (warnings only)
 
 --- Testing forms.c ---
 forms.c: In function ‘change’:
-forms.c:991:80: warning: ‘%s’ directive output may be truncated writing up to 79 bytes into a region of size between 0 and 255 [-Wformat-truncation=]
-  991 |                                         snprintf(command, sizeof(command), "%s %s %s", temp_command, filename, filename);
+forms.c:992:80: warning: ‘%s’ directive output may be truncated writing up to 79 bytes into a region of size between 0 and 255 [-Wformat-truncation=]
+  992 |                                         snprintf(command, sizeof(command), "%s %s %s", temp_command, filename, filename);
       |                                                                                ^~                    ~~~~~~~~
-forms.c:991:41: note: ‘snprintf’ output between 3 and 416 bytes into a destination of size 256
-  991 |                                         snprintf(command, sizeof(command), "%s %s %s", temp_command, filename, filename);
+forms.c:992:41: note: ‘snprintf’ output between 3 and 416 bytes into a destination of size 256
+  992 |                                         snprintf(command, sizeof(command), "%s %s %s", temp_command, filename, filename);
       |                                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-forms.c:797:25: warning: ‘strncpy’ specified bound 8 equals destination size [-Wstringop-truncation]
-  797 |                         strncpy(passwd,crypt(command,SALT),PASSLTH+1);
+forms.c:798:25: warning: ‘strncpy’ specified bound 8 equals destination size [-Wstringop-truncation]
+  798 |                         strncpy(passwd,crypt(command,SALT),PASSLTH+1);
       |                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-forms.c:813:17: warning: ‘strncpy’ output may be truncated copying 7 bytes from a string of length 255 [-Wstringop-truncation]
-  813 |                 strncpy(passwd,command,PASSLTH);
+forms.c:814:17: warning: ‘strncpy’ output may be truncated copying 7 bytes from a string of length 255 [-Wstringop-truncation]
+  814 |                 strncpy(passwd,command,PASSLTH);
       |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-forms.c:1058:33: warning: ‘strncpy’ output may be truncated copying 9 bytes from a string of length 79 [-Wstringop-truncation]
- 1058 |                                 strncpy(ntn[0].leader,string,LEADERLTH);
+forms.c:1059:33: warning: ‘strncpy’ output may be truncated copying 9 bytes from a string of length 79 [-Wstringop-truncation]
+ 1059 |                                 strncpy(ntn[0].leader,string,LEADERLTH);
       |                                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 forms.c: In function ‘help’:
-forms.c:1093:37: warning: ‘%s’ directive writing up to 119 bytes into a region of size 75 [-Wformat-overflow=]
- 1093 |                 sprintf(line,"  %d) %s",i,helplist[i]);
+forms.c:1094:37: warning: ‘%s’ directive writing up to 119 bytes into a region of size 75 [-Wformat-overflow=]
+ 1094 |                 sprintf(line,"  %d) %s",i,helplist[i]);
       |                                     ^~
-forms.c:1093:17: note: ‘sprintf’ output between 6 and 125 bytes into a destination of size 80
- 1093 |                 sprintf(line,"  %d) %s",i,helplist[i]);
+forms.c:1094:17: note: ‘sprintf’ output between 6 and 125 bytes into a destination of size 80
+ 1094 |                 sprintf(line,"  %d) %s",i,helplist[i]);
       |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 RESULT: SUCCESS (warnings only)
 
@@ -121,97 +121,8 @@ ADMIN RESULT: SUCCESS (warnings only)
 GAME RESULT: SUCCESS (warnings only)
 
 --- Testing io.c (Admin mode) ---
-io.c: In function ‘writedata’:
-io.c:639:53: warning: format ‘%d’ expects argument of type ‘int’, but argument 3 has type ‘long unsigned int’ [-Wformat=]
-  639 |                 printf("wrong data format (%ld vs. %d)\n",bytes,sizeof(struct s_world) );
-      |                                                    ~^           ~~~~~~~~~~~~~~~~~~~~~~
-      |                                                     |           |
-      |                                                     int         long unsigned int
-      |                                                    %ld
-io.c:645:81: warning: format ‘%d’ expects argument of type ‘int’, but argument 3 has type ‘long unsigned int’ [-Wformat=]
-  645 |                 printf("Wrong number of bytes (%ld) written for sct (should be %d)\n",bytes,MAPX*MAPY*sizeof(struct s_sector));
-      |                                                                                ~^
-      |                                                                                 |
-      |                                                                                 int
-      |                                                                                %ld
-io.c:651:81: warning: format ‘%d’ expects argument of type ‘int’, but argument 3 has type ‘long unsigned int’ [-Wformat=]
-  651 |                 printf("Wrong number of bytes (%ld) written for ntn (should be %d)\n",bytes,NTOTAL*sizeof(struct s_nation));
-      |                                                                                ~^
-      |                                                                                 |
-      |                                                                                 int
-      |                                                                                %ld
-io.c: In function ‘readdata’:
-io.c:730:52: warning: format ‘%d’ expects argument of type ‘int’, but argument 3 has type ‘long unsigned int’ [-Wformat=]
-  730 |                 printf("wrong data format (%d vs. %d)\n",n_read, sizeof(struct s_world) );
-      |                                                   ~^             ~~~~~~~~~~~~~~~~~~~~~~
-      |                                                    |             |
-      |                                                    int           long unsigned int
-      |                                                   %ld
-io.c:744:53: warning: format ‘%d’ expects argument of type ‘int’, but argument 3 has type ‘long unsigned int’ [-Wformat=]
-  744 |                 printf( "wrong data format (%d vs. %d)\n",n_read,  MAPX*MAPY*sizeof(struct s_sector) );
-      |                                                    ~^
-      |                                                     |
-      |                                                     int
-      |                                                    %ld
-io.c:754:53: warning: format ‘%d’ expects argument of type ‘int’, but argument 3 has type ‘long unsigned int’ [-Wformat=]
-  754 |                 printf( "wrong data format (%d vs. %d)\n",n_read, NTOTAL*sizeof(struct s_nation) );
-      |                                                    ~^
-      |                                                     |
-      |                                                     int
-      |                                                    %ld
-io.c: In function ‘readmap’:
-io.c:1433:51: warning: format ‘%d’ expects argument of type ‘int’, but argument 4 has type ‘size_t’ {aka ‘long unsigned int’} [-Wformat=]
- 1433 |         fprintf(stderr,"done reading %d lines of %d characters\n",y,strlen(line));
-      |                                                  ~^                 ~~~~~~~~~~~~
-      |                                                   |                 |
-      |                                                   int               size_t {aka long unsigned int}
-      |                                                  %ld
-io.c:1449:51: warning: format ‘%d’ expects argument of type ‘int’, but argument 4 has type ‘size_t’ {aka ‘long unsigned int’} [-Wformat=]
- 1449 |         fprintf(stderr,"done reading %d lines of %d characters\n",y,strlen(line));
-      |                                                  ~^                 ~~~~~~~~~~~~
-      |                                                   |                 |
-      |                                                   int               size_t {aka long unsigned int}
-      |                                                  %ld
 ADMIN RESULT: SUCCESS (warnings only)
 --- Testing io.c (Game mode) ---
-io.c: In function ‘writedata’:
-io.c:639:53: warning: format ‘%d’ expects argument of type ‘int’, but argument 3 has type ‘long unsigned int’ [-Wformat=]
-  639 |                 printf("wrong data format (%ld vs. %d)\n",bytes,sizeof(struct s_world) );
-      |                                                    ~^           ~~~~~~~~~~~~~~~~~~~~~~
-      |                                                     |           |
-      |                                                     int         long unsigned int
-      |                                                    %ld
-io.c:645:81: warning: format ‘%d’ expects argument of type ‘int’, but argument 3 has type ‘long unsigned int’ [-Wformat=]
-  645 |                 printf("Wrong number of bytes (%ld) written for sct (should be %d)\n",bytes,MAPX*MAPY*sizeof(struct s_sector));
-      |                                                                                ~^
-      |                                                                                 |
-      |                                                                                 int
-      |                                                                                %ld
-io.c:651:81: warning: format ‘%d’ expects argument of type ‘int’, but argument 3 has type ‘long unsigned int’ [-Wformat=]
-  651 |                 printf("Wrong number of bytes (%ld) written for ntn (should be %d)\n",bytes,NTOTAL*sizeof(struct s_nation));
-      |                                                                                ~^
-      |                                                                                 |
-      |                                                                                 int
-      |                                                                                %ld
-io.c: In function ‘readdata’:
-io.c:730:52: warning: format ‘%d’ expects argument of type ‘int’, but argument 3 has type ‘long unsigned int’ [-Wformat=]
-  730 |                 printf("wrong data format (%d vs. %d)\n",n_read, sizeof(struct s_world) );
-      |                                                   ~^             ~~~~~~~~~~~~~~~~~~~~~~
-      |                                                    |             |
-      |                                                    int           long unsigned int
-      |                                                   %ld
-io.c:744:53: warning: format ‘%d’ expects argument of type ‘int’, but argument 3 has type ‘long unsigned int’ [-Wformat=]
-  744 |                 printf( "wrong data format (%d vs. %d)\n",n_read,  MAPX*MAPY*sizeof(struct s_sector) );
-      |                                                    ~^
-      |                                                     |
-      |                                                     int
-      |                                                    %ld
-io.c:754:53: warning: format ‘%d’ expects argument of type ‘int’, but argument 3 has type ‘long unsigned int’ [-Wformat=]
-  754 |                 printf( "wrong data format (%d vs. %d)\n",n_read, NTOTAL*sizeof(struct s_nation) );
-      |                                                    ~^
-      |                                                     |
-      |                                                     int
-      |                                                    %ld
 GAME RESULT: SUCCESS (warnings only)
 
 --- Testing misc.c (Admin mode) ---
