@@ -28,6 +28,7 @@
 #include <signal.h>
 #include <pwd.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
 #include "header.h"
@@ -61,7 +62,7 @@ short	pager=0;	/* pager for selector 0,1,2,3*/
 short	country=0;	/* nation id of owner*/
 struct	s_nation	*curntn;
 short	Gaudy=FALSE;
-int	owneruid;
+uid_t	owneruid;
 
 FILE *fexe;
 
@@ -145,7 +146,7 @@ main(int argc, char **argv)
 
 	/* check conquer options */
 	if (getenv(ENVIRON_OPTS)!=NULL) {
-		strncpy(cq_opts, getenv(ENVIRON_OPTS), BIGLTH);
+		snprintf(cq_opts, BIGLTH, "%s", getenv(ENVIRON_OPTS));
 	}
 	if (cq_opts[0] != '\0') {
 		l = strlen(cq_opts);
@@ -412,13 +413,13 @@ main(int argc, char **argv)
 
 	/*get encrypted password*/
 	fprintf(stderr,"\nWhat is your Nation's Password: ");
-	strncpy(tmppass,getpass(""),PASSLTH+1);
-	strncpy(passwd,crypt(tmppass,SALT),PASSLTH+1);
+	snprintf(tmppass, PASSLTH+1, "%s", getpass(""));
+	snprintf(passwd, PASSLTH+1, "%s", crypt(tmppass,SALT));
 	if((strncmp(passwd,curntn->passwd,PASSLTH)!=0)
 	&&(strncmp(passwd,ntn[0].passwd,PASSLTH)!=0)) {
 		fprintf(stderr,"\nError: Reenter your Nation's Password: ");
-		strncpy(tmppass,getpass(""),PASSLTH+1);
-		strncpy(passwd,crypt(tmppass,SALT),PASSLTH+1);
+		snprintf(tmppass, PASSLTH+1, "%s", getpass(""));
+		snprintf(passwd, PASSLTH+1, "%s", crypt(tmppass,SALT));
 		if((strncmp(passwd,curntn->passwd,PASSLTH)!=0)
 		&&(strncmp(passwd,ntn[0].passwd,PASSLTH)!=0)) {
 			fprintf(stderr,"\nSorry:");
@@ -494,10 +495,10 @@ main(int argc, char **argv)
 					getpwuid(ntn[i].uid)->pw_name);
 		exit (SUCCESS);
 	   }
-        if ((curntn->uid != owneruid) &&
+        if (((uid_t)curntn->uid != owneruid) &&
 	    (owneruid != (getpwnam(LOGIN))->pw_uid) &&
             (owneruid != (getpwnam(ntn[0].leader))->pw_uid) &&
-	    (curntn->uid != (getpwnam(LOGIN))->pw_uid))
+	    ((uid_t)curntn->uid != (getpwnam(LOGIN))->pw_uid))
            {
               fprintf (stderr,"\nSorry -- you are not the owner of %s",curntn->name);
 	      fprintf(stderr,"\nFor information on conquer please contact %s.",OWNER);
