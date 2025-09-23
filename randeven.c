@@ -1183,6 +1183,7 @@ printf("TEMP: %s chance of revolt is %d (tax=%d prest=%d)\n",
 					newpower=AV_MONST;
 					i++;
 				}
+				/* FALLTHROUGH */
 			case AV_MONST:
 				if(magic(country,MA_MONST)==TRUE) {
 					newpower=MA_MONST;
@@ -1194,6 +1195,7 @@ printf("TEMP: %s chance of revolt is %d (tax=%d prest=%d)\n",
 					newpower=CAPTAIN;
 					i++;
 				}
+				/* FALLTHROUGH */
 			case CAPTAIN:
 				if(magic(country,WARLORD)==TRUE) {
 					newpower=WARLORD;
@@ -1205,6 +1207,7 @@ printf("TEMP: %s chance of revolt is %d (tax=%d prest=%d)\n",
 					newpower=WYZARD;
 					i++;
 				}
+				/* FALLTHROUGH */
 			case WYZARD:
 				if(magic(country,SORCERER)==TRUE) {
 					newpower=SORCERER;

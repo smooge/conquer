@@ -59,12 +59,14 @@
 - **Commit**: 4a24f6c - Enhanced test_warnings.sh and fixed implicit-fallthrough warnings
 - **Result**: All 4 implicit-fallthrough warnings eliminated, zero compilation warnings
 
-#### ☐ 3. randeven.c (3 warnings) - PRIORITY MEDIUM
-- **Status**: ⏳ Pending
+#### ✅ 3. randeven.c (3 warnings) - COMPLETED (2025-01-23)
+- **Status**: ✅ Complete
 - **Warning Type**: implicit-fallthrough (3 warnings)
 - **Lines**: 1182, 1193, 1204
 - **Issue**: Switch cases missing break statements in randomevent() function
-- **Solution**: Add explicit `break;` or `/* FALLTHROUGH */` comments
+- **Solution Applied**: Added `/* FALLTHROUGH */` comments at 3 locations to preserve intentional power upgrade fall-through behavior
+- **Commit**: [To be added]
+- **Result**: All 3 implicit-fallthrough warnings eliminated, zero compilation warnings
 
 #### ✅ 4. spew.c (1 warning) - COMPLETED (2025-01-22)
 - **Status**: ✅ Complete
@@ -214,22 +216,23 @@ gcc [game flags above] -c filename.c -o /tmp/filenameG.o
 
 ## Session Tracking
 
-**Phase 4.4 Progress**: 9/47 warnings fixed (19.1% complete)
-**Files Completed**: 3/15 files with warnings (20% complete)
-**Clean Files**: 13/24 total files (54.2% warning-free)
+**Phase 4.4 Progress**: 12/47 warnings fixed (25.5% complete)
+**Files Completed**: 4/15 files with warnings (26.7% complete)
+**Clean Files**: 14/24 total files (58.3% warning-free)
 
 **Recent Progress**:
 - ✅ **admin.c** (2025-01-22): 4 sign-compare warnings → 0 warnings (uid_t type fix)
 - ✅ **spew.c** (2025-01-22): 1 sign-compare warning → 0 warnings (size_t type fix)
 - ✅ **update.c** (2025-01-23): 4 implicit-fallthrough warnings → 0 warnings (FALLTHROUGH comments)
+- ✅ **randeven.c** (2025-01-23): 3 implicit-fallthrough warnings → 0 warnings (FALLTHROUGH comments)
 
 **Pattern Library Enhanced**:
 - ✅ **Sign-compare (uid_t)**: Change int to uid_t for user ID operations
 - ✅ **Sign-compare (size_t)**: Change int to size_t for memory/size operations
 - ✅ **Implicit-fallthrough**: Add `/* FALLTHROUGH */` comments to preserve intentional fall-through
 
-**Last Updated**: 2025-01-23 - update.c completed successfully + enhanced test_warnings.sh script
-**Next Session**: Continue with randeven.c (3 implicit-fallthrough warnings) or main.c (14 mixed warnings)
+**Last Updated**: 2025-01-23 - randeven.c completed successfully using proven implicit-fallthrough pattern
+**Next Session**: Continue with extcmds.c (6 implicit-fallthrough warnings) or main.c (14 mixed warnings)
 
 ---
 
