@@ -416,6 +416,7 @@ int	isupdate;	/* 0 if not update, 1 if update */
 void
 hangup (int sig)
 {
+	(void)sig;  /* Signal number not used in this handler */
 	char line[LINELTH];
 
 	if(country==0) writedata();
