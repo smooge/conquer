@@ -331,6 +331,7 @@ redesignate (void)
 				sptr->fortress=0;
 			}
 			/*will fall through as must change vegetation*/
+			/* FALLTHROUGH */
 		case 'v':
 			/*vegetation types*/
 			mvprintw(LINES-3,7,"VEGETATIONS: change to %c, %c, %c, %c, %c, %c, %c, %c, %c, %c, %c or %c?",
@@ -1542,7 +1543,7 @@ rmessage (void)
 	snprintf(tempfile, FILELTH, "%s%hd.tmp", msgfile, country);
 	if( (fptemp = fopen(tempfile,"w")) == NULL ) {
 		clear_bottom(0);
-		snprintf(mesgfile, FILELTH, "error: %s open", tempfile);
+		snprintf(mesgfile, FILELTH, "error: %.67s open", tempfile);
 		errormsg(mesgfile);
 		redraw=DONE;
 		makebottom();

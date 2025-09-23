@@ -114,12 +114,14 @@
 - **Issue**: Mixed format and string truncation warnings
 - **Solution**: Buffer size increases and safer string handling
 
-#### ☐ 10. commands.c (2 warnings) - PRIORITY LOW
-- **Status**: ⏳ Pending
+#### ✅ 10. commands.c (2 warnings) - COMPLETED (2025-01-23)
+- **Status**: ✅ Complete
 - **Warning Type**: implicit-fallthrough (1) + format-truncation (1)
 - **Lines**: 328, 1545
 - **Issue**: Switch fallthrough + format truncation
-- **Solution**: Add break statement + increase buffer or safer formatting
+- **Solution Applied**: Added `/* FALLTHROUGH */` comment + precision specifier `%.67s` for safe formatting
+- **Commit**: [To be added]
+- **Result**: All 2 warnings eliminated, zero compilation warnings
 
 #### ☐ 11. move.c (1 warning) - PRIORITY LOW
 - **Status**: ⏳ Pending
@@ -216,22 +218,24 @@ gcc [game flags above] -c filename.c -o /tmp/filenameG.o
 
 ## Session Tracking
 
-**Phase 4.4 Progress**: 12/47 warnings fixed (25.5% complete)
-**Files Completed**: 4/15 files with warnings (26.7% complete)
-**Clean Files**: 14/24 total files (58.3% warning-free)
+**Phase 4.4 Progress**: 14/47 warnings fixed (29.8% complete)
+**Files Completed**: 5/15 files with warnings (33.3% complete)
+**Clean Files**: 15/24 total files (62.5% warning-free)
 
 **Recent Progress**:
 - ✅ **admin.c** (2025-01-22): 4 sign-compare warnings → 0 warnings (uid_t type fix)
 - ✅ **spew.c** (2025-01-22): 1 sign-compare warning → 0 warnings (size_t type fix)
 - ✅ **update.c** (2025-01-23): 4 implicit-fallthrough warnings → 0 warnings (FALLTHROUGH comments)
 - ✅ **randeven.c** (2025-01-23): 3 implicit-fallthrough warnings → 0 warnings (FALLTHROUGH comments)
+- ✅ **commands.c** (2025-01-23): 2 mixed warnings → 0 warnings (FALLTHROUGH + format precision)
 
 **Pattern Library Enhanced**:
 - ✅ **Sign-compare (uid_t)**: Change int to uid_t for user ID operations
 - ✅ **Sign-compare (size_t)**: Change int to size_t for memory/size operations
 - ✅ **Implicit-fallthrough**: Add `/* FALLTHROUGH */` comments to preserve intentional fall-through
+- ✅ **Format-truncation**: Use precision specifiers (e.g., `%.67s`) to limit string length in snprintf
 
-**Last Updated**: 2025-01-23 - randeven.c completed successfully using proven implicit-fallthrough pattern
+**Last Updated**: 2025-01-23 - commands.c completed successfully using mixed-pattern approach (fallthrough + format)
 **Next Session**: Continue with extcmds.c (6 implicit-fallthrough warnings) or main.c (14 mixed warnings)
 
 ---
