@@ -712,7 +712,7 @@ void
 readdata (void)
 {
 	int fd;
-	int n_read;
+	ssize_t n_read;
 
 	/*read in existing nation army and navy data*/
 	/*check if file openable*/
@@ -724,10 +724,10 @@ readdata (void)
 	}
 
 /* read world structure */
-	if((n_read=read(fd,&world,sizeof(struct s_world)))!=sizeof(struct s_world))
+	if((n_read=read(fd,&world,sizeof(struct s_world)))!=(ssize_t)sizeof(struct s_world))
 	{
 		printf("error reading world data\n");
-		printf("wrong data format (%d vs. %zu)\n",n_read, sizeof(struct s_world) );
+		printf("wrong data format (%zd vs. %zu)\n",n_read, sizeof(struct s_world) );
 		abrt();
 	}
 #ifdef DEBUG
@@ -739,23 +739,23 @@ readdata (void)
 	if((n_read=read(fd,*sct,MAPX*MAPY*sizeof(struct s_sector)))==0)
 		printf("EOF\n");
 	else if(n_read==-1) printf("error reading sector data (sct)\n");
-	if(n_read != (MAPX*MAPY*sizeof(struct s_sector))) {
+	if(n_read != (ssize_t)(MAPX*MAPY*sizeof(struct s_sector))) {
 		printf("error reading sector data (sct)\n");
-		printf( "wrong data format (%d vs. %zu)\n",n_read,  MAPX*MAPY*sizeof(struct s_sector) );
+		printf( "wrong data format (%zd vs. %zu)\n",n_read,  MAPX*MAPY*sizeof(struct s_sector) );
 		abrt();
 	}
 #ifdef DEBUG
-	fprintf(stderr,"reading %d bytes of sector data\n",n_read);
+	fprintf(stderr,"reading %zd bytes of sector data\n",n_read);
 #endif /* DEBUG */
 	if((n_read=read(fd,ntn,NTOTAL*sizeof(struct s_nation))) == -1)
 		printf("error reading s_nation data (ntn)\n");
-	else if(n_read!= NTOTAL*sizeof(struct s_nation)) {
+	else if(n_read!= (ssize_t)(NTOTAL*sizeof(struct s_nation))) {
 		printf("error reading s_nation data (ntn)\n");
-		printf( "wrong data format (%d vs. %zu)\n",n_read, NTOTAL*sizeof(struct s_nation) );
+		printf( "wrong data format (%zd vs. %zu)\n",n_read, NTOTAL*sizeof(struct s_nation) );
 		abrt();
 	}
 #ifdef DEBUG
-	fprintf(stderr,"reading %d bytes of nation data\n",n_read);
+	fprintf(stderr,"reading %zd bytes of nation data\n",n_read);
 #endif /* DEBUG */
 	close(fd);
 } /* readdata() */

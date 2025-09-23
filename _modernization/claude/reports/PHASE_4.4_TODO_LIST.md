@@ -141,12 +141,14 @@
 - **Commit**: [To be added]
 - **Result**: All 2 implicit-fallthrough warnings eliminated, zero compilation warnings in both Admin and Game modes
 
-#### ☐ 13. io.c (1 warning) - PRIORITY LOW
-- **Status**: ⏳ Pending
+#### ✅ 13. io.c (1 warning) - COMPLETED (2025-01-23)
+- **Status**: ✅ Complete
 - **Warning Type**: sign-compare (1 warning)
 - **Lines**: 742
 - **Issue**: Comparing `int n_read` with sizeof expression
-- **Solution**: Cast to appropriate type or change variable type
+- **Solution Applied**: Changed `int n_read` to `ssize_t n_read` and added `(ssize_t)` casts to sizeof expressions
+- **Commit**: [To be added]
+- **Result**: All sign-compare warnings eliminated, zero compilation warnings in both Admin and Game modes
 
 #### ☐ 14. cexecute.c (1 warning) - PRIORITY LOW
 - **Status**: ⏳ Pending
@@ -220,9 +222,9 @@ gcc [game flags above] -c filename.c -o /tmp/filenameG.o
 
 ## Session Tracking
 
-**Phase 4.4 Progress**: 16/47 warnings fixed (34.0% complete)
-**Files Completed**: 6/15 files with warnings (40.0% complete)
-**Clean Files**: 16/24 total files (66.7% warning-free)
+**Phase 4.4 Progress**: 17/47 warnings fixed (36.2% complete)
+**Files Completed**: 7/15 files with warnings (46.7% complete)
+**Clean Files**: 17/24 total files (70.8% warning-free)
 
 **Recent Progress**:
 - ✅ **admin.c** (2025-01-22): 4 sign-compare warnings → 0 warnings (uid_t type fix)
@@ -231,14 +233,16 @@ gcc [game flags above] -c filename.c -o /tmp/filenameG.o
 - ✅ **randeven.c** (2025-01-23): 3 implicit-fallthrough warnings → 0 warnings (FALLTHROUGH comments)
 - ✅ **commands.c** (2025-01-23): 2 mixed warnings → 0 warnings (FALLTHROUGH + format precision)
 - ✅ **magic.c** (2025-01-23): 2 implicit-fallthrough warnings → 0 warnings (FALLTHROUGH comments)
+- ✅ **io.c** (2025-01-23): 1 sign-compare warning → 0 warnings (ssize_t type fix)
 
 **Pattern Library Enhanced**:
 - ✅ **Sign-compare (uid_t)**: Change int to uid_t for user ID operations
 - ✅ **Sign-compare (size_t)**: Change int to size_t for memory/size operations
+- ✅ **Sign-compare (ssize_t)**: Change int to ssize_t for read() operations, add (ssize_t) casts to sizeof
 - ✅ **Implicit-fallthrough**: Add `/* FALLTHROUGH */` comments to preserve intentional fall-through
 - ✅ **Format-truncation**: Use precision specifiers (e.g., `%.67s`) to limit string length in snprintf
 
-**Last Updated**: 2025-01-23 - magic.c completed successfully using proven implicit-fallthrough pattern
+**Last Updated**: 2025-01-23 - io.c completed successfully using advanced ssize_t sign-compare pattern
 **Next Session**: Continue with extcmds.c (6 implicit-fallthrough warnings) or main.c (14 mixed warnings)
 
 ---
