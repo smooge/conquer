@@ -69,8 +69,7 @@
  *   Complexity: Moderate - Bit manipulation requires careful boundary testing
  */
 int
-addwships (nvynum, shipsize, nships)
-	short nvynum, shipsize, nships;
+addwships(short nvynum, short shipsize, short nships)
 {
 	short hold=nships;
 

@@ -34,7 +34,7 @@ OPTIONS:
                 9: Level 8 + -Wold-style-declaration
                 10: Level 9 + -fanalyzer (intensive analysis)
 
-    -std STD    C standard (c89, c99, c11, c17, c2x, default: c99)
+    -x STD    C standard (c89, c99, c11, c17, c2x, default: c99)
 
     -p PHASE    Phase number for output file naming (default: 4)
     -s SUB      Subphase number for output file naming (default: 4)
@@ -46,18 +46,18 @@ OPTIONS:
 FILENAME:
     Optional: Test single file instead of all files
     Example: $0 update.c
-    Example: $0 -w 10 -std c2x main.c
+    Example: $0 -w 10 -x c2x main.c
 
 Examples:
     $0                           # Test all files with default settings
-    $0 -w 1 -std c99            # Test all files with -Wall and C99
+    $0 -w 1 -x c99            # Test all files with -Wall and C99
     $0 -w 10 update.c           # Intensive analysis on update.c only
-    $0 -w 2 -std c2x main.c     # Test main.c with -Wextra and C2x
+    $0 -w 2 -x c2x main.c     # Test main.c with -Wextra and C2x
 EOF
 }
 
 # Parse command line arguments
-while getopts "w:std:p:s:n:t:vh" opt; do
+while getopts "w:x:p:s:n:t:vh" opt; do
     case $opt in
         w)
             WARN_LEVEL=$OPTARG
@@ -66,7 +66,7 @@ while getopts "w:std:p:s:n:t:vh" opt; do
                 exit 1
             fi
             ;;
-        std)
+        x)
             case $OPTARG in
                 c89|c99|c11|c17|c2x)
                     STD=$OPTARG
@@ -125,7 +125,7 @@ if [[ -n "$SINGLE_FILE" ]]; then
     TYPE="SINGLE"
 fi
 
-OUTFILE=_modernization/claude/reports/PHASE_${PHASE}.${SUB}_${NAME}_${TYPE}.txt
+OUTFILE=_modernization/claude/scratch/PHASE_${PHASE}.${SUB}_${NAME}_${TYPE}.txt
 TEMPFILE=$(mktemp /tmp/my-app-data.XXXXXX)
 
 # Define compilation flags for each file type

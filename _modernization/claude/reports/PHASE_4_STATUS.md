@@ -1,8 +1,9 @@
 # Phase 4: Warning Elimination Status Tracking
 
-**Last Updated**: 2025-01-23 🎉 **PHASE 4.4 HISTORIC COMPLETION!** 🎉
-**Session**: -Wextra Warning Elimination - 100% SUCCESS!
-**Current Focus**: COMPLETED - All Phase 4 warning elimination goals achieved
+**Last Updated**: 2025-09-23 🚀 **PHASE 4.6 INITIATED - C2X COMPLIANCE CRITICAL** 🚀
+**Session**: C2x Standard Compliance Discovery & Planning
+**Current Focus**: Phase 4.6 - C2x Standard Compliance (Fundamental Modernization)
+**Strategic Breakthrough**: C2x reveals compilation errors hidden by C99 leniency
 **Strategy Reference**: `_modernization/claude/reports/PHASE_4_STRATEGY.md`
 
 ## 🎉 HISTORIC ACHIEVEMENT: PHASE 4.4 - 100% COMPLETION! 🎉
@@ -244,7 +245,7 @@ gcc [base flags] -DCONQUER -Wall -c filename.c
 
 ### Key Metrics:
 - **Compilation Health**: 100% success rate (34/34 files compile without errors)
-- **Warning Elimination**: 47.1% complete (16/34 files zero -Wall warnings)
+- **Warning Elimination**: Phase 4.4 - 100% complete (47/47 -Wextra warnings eliminated)
 - **Pattern Library**: Complete - all major warning types have proven solutions
 - **Quality Standards**: Zero regressions, consistent high-quality fixes
 - **Methodology**: Validated manual approach with dual compilation testing
@@ -256,8 +257,46 @@ gcc [base flags] -DCONQUER -Wall -c filename.c
 - **Readiness**: Can proceed to any next phase option with confidence
 
 ---
-**Status**: 🎉 **PHASE 4.4 COMPLETED** - Historic 100% -Wextra warning elimination achieved! 🎉
-**Achievement**: 47/47 -Wextra warnings eliminated across 15 files with zero regressions
-**Final Results**: 100% success rate using proven pattern-driven methodology
-**Next Phase**: Ready for Phase 5 (Modern Build System) or Phase 6 (Testing Infrastructure)
-**Updated**: 2025-01-23 after Phase 4.4 historic 100% completion
+## 🎯 PHASE 4.5: -WPEDANTIC WARNING ANALYSIS - INITIATED
+
+### Phase 4.5 Baseline Assessment (2025-09-23)
+
+**OUTSTANDING POSITION**: Excellent foundation for pedantic standard compliance
+
+#### Baseline Results:
+- **Total -Wpedantic warnings**: 6 warnings (highly manageable)
+- **Problem files**: 1/24 files (navy.c only)
+- **Clean files**: 23/24 files (95.8% already compliant)
+- **Scope**: Single function in one file (addwships in navy.c)
+
+#### Warning Analysis:
+**File**: `navy.c`
+**Function**: `addwships` (line 72-73)
+**Issue**: Promoted argument mismatch (K&R function style)
+**Root Cause**: Function uses `short` parameters but prototype declares them correctly
+
+**Specific Warnings**:
+1. `nvynum` promoted argument doesn't match prototype (Admin mode)
+2. `shipsize` promoted argument doesn't match prototype (Admin mode)
+3. `nships` promoted argument doesn't match prototype (Admin mode)
+4. `nvynum` promoted argument doesn't match prototype (Game mode)
+5. `shipsize` promoted argument doesn't match prototype (Game mode)
+6. `nships` promoted argument doesn't match prototype (Game mode)
+
+#### Fix Strategy:
+**Solution**: Convert K&R function definition to modern ANSI C prototype
+**Approach**: Change function definition from K&R style to match existing prototype
+**Expected Result**: All 6 warnings eliminated with single targeted fix
+
+#### Phase 4.5 Scope:
+- **Single session completion**: Highly achievable (1 function, 1 file)
+- **Zero risk**: Simple modernization with established pattern
+- **100% success probability**: Straightforward K&R to ANSI conversion
+
+---
+
+**Status**: 🎯 **PHASE 4.5 INITIATED** - Baseline complete, ready for targeted warning elimination
+**Achievement**: Phase 4.4 - 100% -Wextra warning elimination (47/47 warnings)
+**Current Scope**: 6 -Wpedantic warnings in single function (excellent position)
+**Next Step**: Apply K&R to ANSI function conversion in navy.c
+**Updated**: 2025-09-23 after Phase 4.5 baseline assessment

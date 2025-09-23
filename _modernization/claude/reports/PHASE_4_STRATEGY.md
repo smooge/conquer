@@ -1,9 +1,10 @@
 # Phase 4: Warning Elimination Strategy
 
-**Date**: 2025-01-20 (Updated 2025-01-21)
-**Based on**: Updated phase4_plan.md and review feedback
+**Date**: 2025-01-20 (Updated 2025-09-23 - C2x Strategy)
+**Based on**: C2x compliance discovery and enhanced warning analysis
 **Scope**: 26 .c files, 6 .h files (utilities moved to Unfinished - X11R1 incompatible)
-**Critical Path**: data.h (highest dependency)
+**Critical Path**: C2x compliance → Enhanced warning evaluation
+**Strategic Breakthrough**: C2x standard reveals true modernization requirements
 
 ## Strategy Overview
 
@@ -239,11 +240,71 @@ gcc -O2 -g -std=c99 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOU
 - **15/15 files completed with zero warnings**
 - **100% success rate with zero regressions**
 
-**⚠️ CRITICAL: STILL C99, ONE MORE FLAG ONLY**
+### ✅ Subphase 5: Third Warning Flag - Add -Wpedantic Only (COMPLETED!)
+**Focus**: Add ONLY -Wpedantic to existing -Wall -Wextra
+
+**🎉 STATUS: 100% COMPLETE (2025-09-23)**
+- **6/6 -Wpedantic warnings eliminated**
+- **24/24 files warning-free (100%)**
+- **Single K&R function modernization (navy.c)**
 
 **Compilation Command:**
 ```bash
-gcc -O2 -g -std=c99 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -Wall -Wextra -c filename.c -o /tmp/foo.o
+gcc -O2 -g -std=c99 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -Wall -Wextra -Wpedantic -c filename.c -o /tmp/foo.o
+```
+
+## 🚀 STRATEGIC BREAKTHROUGH: C2X COMPLIANCE DISCOVERY
+
+### 🎯 NEW CRITICAL PATH: C2x Standard Reveals Real Issues
+
+**DISCOVERY (2025-09-23)**: Testing with C2x standard (`-std=c2x`) reveals that many "warnings" in C99 are actually **compilation errors** in modern C standards.
+
+### C99 vs C2x Comparison Results:
+- **C99 + -Wpedantic**: 6 warnings → clean compilation
+- **C2x + -Wpedantic**: **Multiple compilation errors** (conflicting declarations, K&R functions)
+
+### Critical Issues Uncovered in C2x:
+1. **Conflicting function declarations**: K&R declarations conflict with system headers
+2. **Multiple K&R function definitions**: 8+ functions still using old-style definitions
+3. **Function call mismatches**: Wrong parameter counts due to prototype conflicts
+
+### Strategic Impact:
+- **C99 approach**: Masks real problems as "cosmetic warnings"
+- **C2x approach**: **Forces proper modernization** of fundamental issues
+- **Future compatibility**: Essential for modern compiler support
+
+## 📋 REVISED STRATEGY: PHASES 4.6-4.7
+
+### 🎯 Subphase 6: C2x Standard Compliance (INITIATED 2025-09-23)
+**Focus**: Achieve clean C2x compilation by fixing fundamental compatibility issues
+**Priority**: CRITICAL - blocks modern standard compliance
+**Reference**: `PHASE_4.6_C2X_COMPLIANCE_PLAN.md` for detailed implementation
+
+**Target Issues**:
+1. **Remove conflicting K&R declarations** (admin.c, cexecute.c, data.c)
+2. **Convert K&R function definitions** (8 functions across 4 files)
+3. **Achieve clean `-w 4 -x c2x` compilation**
+
+**Success Criteria**: Zero compilation errors with C2x standard
+
+### 🚀 Subphase 7: Enhanced Warning Level Evaluation (PLANNED)
+**Focus**: Systematic comparison of warning levels 5-8 with C2x standard
+**Approach**: Baseline testing to determine optimal scope for future phases
+
+**Evaluation Plan**:
+- **Level 5**: `-w 5 -x c2x` (Add -Wconversion)
+- **Level 6**: `-w 6 -x c2x` (Add -Wsign-conversion)
+- **Level 7**: `-w 7 -x c2x` (Add -Wimplicit-fallthrough)
+- **Level 8**: `-w 8 -x c2x` (Add -Wstrict-prototypes)
+
+**Strategic Benefits**:
+1. **Clean baseline**: C2x compliance eliminates false warnings
+2. **Informed planning**: Realistic scope assessment for future phases
+3. **Modern standards**: Future-proof approach for contemporary development
+
+**Compilation Command (C2x)**:
+```bash
+gcc -O2 -g -std=c2x -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -Wall -Wextra -Wpedantic -Wformat=2 -c filename.c -o /tmp/foo.o
 ```
 
 **File-Based Strategy:**
