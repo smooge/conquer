@@ -132,12 +132,14 @@
 
 ### 🟢 Dual-Compiled Files (3 warnings)
 
-#### ☐ 12. magic.c (2 warnings) - PRIORITY LOW
-- **Status**: ⏳ Pending
+#### ✅ 12. magic.c (2 warnings) - COMPLETED (2025-01-23)
+- **Status**: ✅ Complete
 - **Warning Type**: implicit-fallthrough (2 warnings)
 - **Lines**: 1618, 1621
 - **Issue**: Switch cases missing break statements in wizardry() function
-- **Solution**: Add explicit break statements
+- **Solution Applied**: Added `/* FALLTHROUGH */` comments at 2 locations to preserve intentional cascading choice logic
+- **Commit**: [To be added]
+- **Result**: All 2 implicit-fallthrough warnings eliminated, zero compilation warnings in both Admin and Game modes
 
 #### ☐ 13. io.c (1 warning) - PRIORITY LOW
 - **Status**: ⏳ Pending
@@ -218,9 +220,9 @@ gcc [game flags above] -c filename.c -o /tmp/filenameG.o
 
 ## Session Tracking
 
-**Phase 4.4 Progress**: 14/47 warnings fixed (29.8% complete)
-**Files Completed**: 5/15 files with warnings (33.3% complete)
-**Clean Files**: 15/24 total files (62.5% warning-free)
+**Phase 4.4 Progress**: 16/47 warnings fixed (34.0% complete)
+**Files Completed**: 6/15 files with warnings (40.0% complete)
+**Clean Files**: 16/24 total files (66.7% warning-free)
 
 **Recent Progress**:
 - ✅ **admin.c** (2025-01-22): 4 sign-compare warnings → 0 warnings (uid_t type fix)
@@ -228,6 +230,7 @@ gcc [game flags above] -c filename.c -o /tmp/filenameG.o
 - ✅ **update.c** (2025-01-23): 4 implicit-fallthrough warnings → 0 warnings (FALLTHROUGH comments)
 - ✅ **randeven.c** (2025-01-23): 3 implicit-fallthrough warnings → 0 warnings (FALLTHROUGH comments)
 - ✅ **commands.c** (2025-01-23): 2 mixed warnings → 0 warnings (FALLTHROUGH + format precision)
+- ✅ **magic.c** (2025-01-23): 2 implicit-fallthrough warnings → 0 warnings (FALLTHROUGH comments)
 
 **Pattern Library Enhanced**:
 - ✅ **Sign-compare (uid_t)**: Change int to uid_t for user ID operations
@@ -235,7 +238,7 @@ gcc [game flags above] -c filename.c -o /tmp/filenameG.o
 - ✅ **Implicit-fallthrough**: Add `/* FALLTHROUGH */` comments to preserve intentional fall-through
 - ✅ **Format-truncation**: Use precision specifiers (e.g., `%.67s`) to limit string length in snprintf
 
-**Last Updated**: 2025-01-23 - commands.c completed successfully using mixed-pattern approach (fallthrough + format)
+**Last Updated**: 2025-01-23 - magic.c completed successfully using proven implicit-fallthrough pattern
 **Next Session**: Continue with extcmds.c (6 implicit-fallthrough warnings) or main.c (14 mixed warnings)
 
 ---

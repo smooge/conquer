@@ -1616,9 +1616,11 @@ wizardry (void)
 		case 'f':
 		case 'F':
 			choice--;
+			/* FALLTHROUGH */
 		case 'a':
 		case 'A':
 			choice--;
+			/* FALLTHROUGH */
 		case 'd':
 		case 'D':
 			choice--;
