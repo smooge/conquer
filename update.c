@@ -1899,6 +1899,7 @@ updmil (void)
 				}
 				flag=FALSE;
 				/* should drop through to defend reset */
+				/* FALLTHROUGH */
 			case GARRISON:
 				if((flag==TRUE)
 				&&(fort_val(&sct[AX][AY]) > 0)
@@ -1909,6 +1910,7 @@ updmil (void)
 				}
 				flag=FALSE;
 				/* reset to defend for improper garrison */
+				/* FALLTHROUGH */
 			case RULE:
 				if((flag==TRUE)
 				&&(ISCITY(sct[AX][AY].designation))
@@ -1918,6 +1920,7 @@ updmil (void)
 					break;
 				}
 				/* reset to defend for improper Rule */
+				/* FALLTHROUGH */
 			case SIEGED:
 			case SORTIE:
 				/* reset besieged or sortie troops to DEFEND */
@@ -1926,6 +1929,7 @@ updmil (void)
 			case MAGATT:
 				/* reset magical stats to DEFEND */
 				A->stat=DEFEND;
+				/* FALLTHROUGH */
 			default:
 				A->smove=(curntn->maxmove * *(unitmove+(AT%UTYPE)))/10;
 				break;
