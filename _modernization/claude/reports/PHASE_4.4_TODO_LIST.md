@@ -77,12 +77,14 @@
 - **Commit**: c00e3c1 - size_t type modernization
 - **Result**: Sign-compare warning eliminated, zero compilation warnings
 
-#### ☐ 5. newlogin.c (1 warning) - PRIORITY LOW
-- **Status**: ⏳ Pending
+#### ✅ 5. newlogin.c (1 warning) - COMPLETED (2025-01-23)
+- **Status**: ✅ Complete
 - **Warning Type**: stringop-truncation (1 warning)
 - **Lines**: 1203
 - **Issue**: strncpy bound equals destination size
-- **Solution**: Use safer string handling or verify truncation is acceptable
+- **Solution Applied**: Replace strncpy with snprintf for safe string handling
+- **Commit**: [To be added]
+- **Result**: Warning eliminated, zero compilation warnings
 
 #### ☐ 6. makeworl.c (1 warning) - PRIORITY LOW
 - **Status**: ⏳ Pending
@@ -231,9 +233,9 @@ gcc [game flags above] -c filename.c -o /tmp/filenameG.o
 
 ## Session Tracking
 
-**Phase 4.4 Progress**: 39/47 warnings fixed (83.0% complete)
-**Files Completed**: 11/15 files with warnings (73.3% complete)
-**Clean Files**: 21/24 total files (87.5% warning-free)
+**Phase 4.4 Progress**: 40/47 warnings fixed (85.1% complete)
+**Files Completed**: 12/15 files with warnings (80.0% complete)
+**Clean Files**: 22/24 total files (91.7% warning-free)
 
 **Recent Progress**:
 - ✅ **admin.c** (2025-01-22): 4 sign-compare warnings → 0 warnings (uid_t type fix)
@@ -247,6 +249,7 @@ gcc [game flags above] -c filename.c -o /tmp/filenameG.o
 - ✅ **extcmds.c** (2025-01-23): 6 implicit-fallthrough warnings → 0 warnings (FALLTHROUGH comments)
 - ✅ **move.c** (2025-01-23): 1 maybe-uninitialized warning → 0 warnings (variable initialization)
 - ✅ **main.c** (2025-01-23): 14 mixed warnings → 0 warnings (uid_t + snprintf modernization)
+- ✅ **newlogin.c** (2025-01-23): 1 stringop-truncation warning → 0 warnings (snprintf pattern)
 
 **Pattern Library Enhanced**:
 - ✅ **Sign-compare (uid_t)**: Change int to uid_t for user ID operations
@@ -258,8 +261,8 @@ gcc [game flags above] -c filename.c -o /tmp/filenameG.o
 - ✅ **Maybe-uninitialized**: Initialize variables at declaration to prevent uninitialized usage warnings
 - ✅ **Stringop-truncation**: Replace strncpy with snprintf for safer string handling (standardized pattern)
 
-**Last Updated**: 2025-01-23 - main.c completed successfully, 8th pattern category mastered, 83% complete!
-**Next Session**: Continue with forms.c (6 mixed warnings) or newlogin.c/makeworl.c (1 each)
+**Last Updated**: 2025-01-23 - newlogin.c completed successfully, quick pattern application, 85.1% complete!
+**Next Session**: Continue with makeworl.c (1 stringop) or forms.c (6 mixed warnings)
 
 ---
 

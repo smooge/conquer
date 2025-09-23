@@ -1200,7 +1200,7 @@ newlogin (int realuser)
 				newerror("Invalid Password Match");
 			} else valid=TRUE;
 		}
-		strncpy(curntn->passwd,crypt(tempc,SALT),PASSLTH+1);
+		snprintf(curntn->passwd, PASSLTH+1, "%s", crypt(tempc,SALT));
 
 		/*get your name*/
 		valid=FALSE;
