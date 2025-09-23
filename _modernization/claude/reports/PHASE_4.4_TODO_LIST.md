@@ -50,12 +50,14 @@
 - **Commit**: 3c337b4 - uid_t type modernization
 - **Result**: All 4 sign-compare warnings eliminated, zero compilation warnings
 
-#### ☐ 2. update.c (4 warnings) - PRIORITY HIGH
-- **Status**: ⏳ Pending
+#### ✅ 2. update.c (4 warnings) - COMPLETED (2025-01-23)
+- **Status**: ✅ Complete
 - **Warning Type**: implicit-fallthrough (4 warnings)
 - **Lines**: 1900, 1910, 1913, 1928
 - **Issue**: Switch cases missing break statements in updmil() function
-- **Solution**: Add explicit `break;` or `/* FALLTHROUGH */` comments
+- **Solution Applied**: Added `/* FALLTHROUGH */` comments at 4 locations to preserve intentional fall-through behavior
+- **Commit**: 4a24f6c - Enhanced test_warnings.sh and fixed implicit-fallthrough warnings
+- **Result**: All 4 implicit-fallthrough warnings eliminated, zero compilation warnings
 
 #### ☐ 3. randeven.c (3 warnings) - PRIORITY MEDIUM
 - **Status**: ⏳ Pending
@@ -164,19 +166,44 @@
 
 **Total Clean Files**: 10/24 files (41.7% already warning-free)
 
-## Compilation Commands for Testing
+## Enhanced Testing Infrastructure (Updated 2025-01-23)
 
-### Admin-Only and Shared Files:
+### **CRITICAL: Use Enhanced test_warnings.sh Script**
+
+**Primary Testing Method**: Use the enhanced `_modernization/scripts/test_warnings.sh` script for all Phase 4.4 testing:
+
+```bash
+# Phase 4.4 Standard Testing (Level 2: -Wall -Wextra)
+_modernization/scripts/test_warnings.sh -w 2 filename.c
+
+# Examples:
+_modernization/scripts/test_warnings.sh -w 2 update.c     # Completed ✅
+_modernization/scripts/test_warnings.sh -w 2 randeven.c  # Next target
+_modernization/scripts/test_warnings.sh -w 2 main.c      # Complex file
+```
+
+### **Script Capabilities**:
+- **Automatic File Type Detection**: Handles admin-only, game-only, dual-compiled, shared, and PostScript files
+- **Proper Compilation Flags**: Uses correct flags for each file type automatically
+- **Single File Focus**: Prevents context overflow, ideal for systematic progress
+- **Results Logging**: Creates detailed reports in `_modernization/claude/reports/`
+- **Future-Proof**: Supports warning levels 0-10 for upcoming subphases
+
+### **Fallback: Manual Compilation Commands**
+
+**Only use if enhanced script unavailable**:
+
+#### Admin-Only and Shared Files:
 ```bash
 gcc -O2 -g -std=c99 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -DDEFAULTDIR="/home/ssmoogen/conquer/lib" -DEXEDIR="/home/ssmoogan/conquer/bin" -DLOGIN="ssmoogan" -DADMIN -DCONQUER -Wall -Wextra -c filename.c
 ```
 
-### Game-Only Files:
+#### Game-Only Files:
 ```bash
 gcc -O2 -g -std=c99 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -DDEFAULTDIR="/home/ssmoogan/conquer/lib" -DEXEDIR="/home/ssmoogan/conquer/bin" -DLOGIN="ssmoogan" -DCONQUER -Wall -Wextra -c filename.c
 ```
 
-### Dual-Compiled Files (Test Both Modes):
+#### Dual-Compiled Files (Test Both Modes):
 ```bash
 # Admin mode
 gcc [admin flags above] -c filename.c -o /tmp/filenameA.o
@@ -187,16 +214,22 @@ gcc [game flags above] -c filename.c -o /tmp/filenameG.o
 
 ## Session Tracking
 
-**Phase 4.4 Progress**: 5/47 warnings fixed (10.6% complete)
-**Files Completed**: 2/15 files with warnings (13.3% complete)
-**Clean Files**: 12/24 total files (50% warning-free)
+**Phase 4.4 Progress**: 9/47 warnings fixed (19.1% complete)
+**Files Completed**: 3/15 files with warnings (20% complete)
+**Clean Files**: 13/24 total files (54.2% warning-free)
 
 **Recent Progress**:
 - ✅ **admin.c** (2025-01-22): 4 sign-compare warnings → 0 warnings (uid_t type fix)
 - ✅ **spew.c** (2025-01-22): 1 sign-compare warning → 0 warnings (size_t type fix)
+- ✅ **update.c** (2025-01-23): 4 implicit-fallthrough warnings → 0 warnings (FALLTHROUGH comments)
 
-**Last Updated**: 2025-01-22 - spew.c completed successfully
-**Next Session**: Continue with high-priority admin-only files (update.c recommended - 4 implicit-fallthrough warnings)
+**Pattern Library Enhanced**:
+- ✅ **Sign-compare (uid_t)**: Change int to uid_t for user ID operations
+- ✅ **Sign-compare (size_t)**: Change int to size_t for memory/size operations
+- ✅ **Implicit-fallthrough**: Add `/* FALLTHROUGH */` comments to preserve intentional fall-through
+
+**Last Updated**: 2025-01-23 - update.c completed successfully + enhanced test_warnings.sh script
+**Next Session**: Continue with randeven.c (3 implicit-fallthrough warnings) or main.c (14 mixed warnings)
 
 ---
 
