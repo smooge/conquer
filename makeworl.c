@@ -271,7 +271,7 @@ makeworld (
 			if (getpwnam(newstring)!=NULL) {
 				(void) snprintf(tempc,sizeof(tempc),"The demi-god %s may administrate this new world.",newstring);
 				newmsg(tempc);
-				(void) strncpy(ntn[0].leader,newstring,LEADERLTH);
+				(void) snprintf(ntn[0].leader, LEADERLTH+1, "%s", newstring);
 				mvprintw(7,0,"Demi-God: %s",ntn[0].leader);
 				clrtoeol();
 				break;

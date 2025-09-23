@@ -655,6 +655,7 @@ change (void)
 	long	cost,men;
 	short armynum;
 	char passwd[PASSLTH+1];
+	char pass_input[PASSLTH+1];
 	short isgod=FALSE;
 #ifdef OGOD
 	FILE *ftmp;
@@ -794,8 +795,8 @@ change (void)
 		if(isgod!=TRUE){
 			mvaddstr(0,0,"What is your current password:");
 			refresh();
-			(void) get_pass(command);
-			strncpy(passwd,crypt(command,SALT),PASSLTH+1);
+			(void) get_pass(pass_input);
+			snprintf(passwd, PASSLTH+1, "%s", crypt(pass_input,SALT));
 			if((strncmp(passwd,ntn[0].passwd,PASSLTH)!=0)
 			&&(strncmp(passwd,curntn->passwd,PASSLTH)!=0)){
 				break;
@@ -803,7 +804,7 @@ change (void)
 		}
 		mvaddstr(2,0,"What is your new password:");
 		refresh();
-		i = get_pass(command);
+		i = get_pass(pass_input);
 		if (i<intval) {
 			errormsg("Password too short");
 			break;
@@ -811,11 +812,11 @@ change (void)
 			errormsg("Password too long");
 			break;
 		}
-		strncpy(passwd,command,PASSLTH);
+		snprintf(passwd, PASSLTH+1, "%s", pass_input);
 		mvaddstr(4,0,"Reenter your new password:");
 		refresh();
-		(void) get_pass(command);
-		if(strncmp(passwd,command,PASSLTH)!=0) {
+		(void) get_pass(pass_input);
+		if(strncmp(passwd,pass_input,PASSLTH)!=0) {
 			errormsg("Invalid password match; Password unchanged");
 			break;
 		}
@@ -985,12 +986,7 @@ change (void)
 				}
 				destroy(country);
 				fclose(fnews);
-				snprintf(command, sizeof(command), "%s/%s", EXEDIR, sortname);
-				{
-					char temp_command[BIGLTH];
-					snprintf(temp_command, sizeof(temp_command), "%s", command);
-					snprintf(command, sizeof(command), "%s %s %s", temp_command, filename, filename);
-				}
+				snprintf(command, sizeof(command), "%s/%s %s %s", EXEDIR, sortname, filename, filename);
 				system(command);
 			}
 		}
@@ -1056,7 +1052,7 @@ change (void)
 			refresh();
 			get_nname(string);
 			if (strlen(string)!=0 && getpwnam(string)!=NULL) {
-				strncpy(ntn[0].leader,string,LEADERLTH);
+				snprintf(ntn[0].leader, LEADERLTH+1, "%s", string);
 			}
 		}
 		break;
@@ -1083,7 +1079,7 @@ help (void)
 	int lineno;
 	FILE *fp;
 	int i,xcnt,ycnt,done=FALSE;
-	char line[LINELTH],fname[FILELTH];
+	char line[2*LINELTH],fname[FILELTH];
 
 	/*find out which helpfile to read in */
 	clear_bottom(0);
@@ -1091,7 +1087,7 @@ help (void)
 	xcnt = 0;
 	mvaddstr(LINES-4,0,"Help on which topic:");
 	for (i=0;i<MAXHELP;i++) {
-		sprintf(line,"  %d) %s",i,helplist[i]);
+		snprintf(line, sizeof(line), "  %d) %s", i, helplist[i]);
 		mvaddstr(ycnt,xcnt,line);
 		xcnt += 20;
 		if (i==2) {
