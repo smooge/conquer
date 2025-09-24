@@ -355,7 +355,7 @@ armyrpt(int repnum)
 				break;
 			case '2':	/* disband army */
 				clear_bottom(0);
-				if(P_ATYPE<MINLEADER) 
+				if(P_ATYPE<MINLEADER)
 					mvprintw(ypos++,0,"Disband your %s army %d?",*(unittype+(P_ATYPE%UTYPE)),armynum);
 				else 	mvprintw(ypos++,0,"Disband your %s %d?",*(unittype+(P_ATYPE%UTYPE)),armynum);
 				refresh();
@@ -383,7 +383,7 @@ armyrpt(int repnum)
 					/*mercs must be payed off*/
 					mvprintw(LINES-4,0,"Your mercenaries demand %ld talons to disband",
 					*(u_encost+(P_ATYPE%UTYPE)) * P_ASOLD);
-	
+
 					mvaddstr(LINES-3,0,"Give them severance pay? (y or n)");
 					clrtoeol();
 					refresh();
@@ -473,7 +473,7 @@ armyrpt(int repnum)
 					if (men < 0 || men > MAXMONSTER) break;
 					if (men > 44) men += TWOUTYPE;
 					else if (men > NOUNITTYPES) men += UTYPE;
-					
+
 					P_ATYPE = safe_int_to_uchar(men);
 				}
 				break;
@@ -599,7 +599,7 @@ armyrpt(int repnum)
  *   - Red highlighting warns of potential food shortages
  *   - Supports both player and administrative (god mode) perspectives
  */
-void 
+void
 budget (void)
 {
 	short armynum,nvynum;
@@ -619,7 +619,7 @@ budget (void)
 	mvaddstr(0,(COLS/2)-15,"NEXT SEASON'S BUDGET ESTIMATES");
 	standend();
 	spreadsheet(country);
-  
+
 	for(armynum=0;armynum<MAXARM;armynum++)
 	if(P_ASOLD>0) {
 		if(P_ATYPE<MINLEADER) {
@@ -788,7 +788,7 @@ budget (void)
  *   - Critical for preventing empire collapse due to resource shortages
  *   - Integration hub connecting production, military, and economic systems
  */
-void 
+void
 produce (void)
 {
 	FILE *fp;
@@ -830,12 +830,12 @@ produce (void)
 	fprintf(fp,"LINE %d FILE %s\n",__LINE__,__FILE__);
 	mvprintw(12,0, "%8ld people @ %3.1f eat.%8.0ld tons",spread.civilians,P_EATRATE,(long)(P_EATRATE*(float)spread.civilians));
 	fprintf(fp,"LINE %d FILE %s\n",__LINE__,__FILE__);
-	mvprintw(13,0, "%8ld soldiers eat.....%8.0ld tons",military,(long)(military*2*(double)P_EATRATE));
+	mvprintw(13,0, "%8ld soldiers eat.....%8.0ld tons",military,(long)(military*2*P_EATRATE));
 	military+= military+spread.civilians; /* military is amount eaten */
 	fprintf(fp,"LINE %d FILE %s\n",__LINE__,__FILE__);
 	standout();
-	mvprintw(15,0, "ESTIMATE NET FOOD.........%8.0f tons",spread.food-curntn->tfood-(double)P_EATRATE*(double)military);
-	mvprintw(16,0, "ESTIMATE FOOD SUPPLY......%8.0f tons",spread.food-(double)P_EATRATE*(double)military);
+	mvprintw(15,0, "ESTIMATE NET FOOD.........%8.0f tons",spread.food-curntn->tfood-P_EATRATE*(double)military);
+	mvprintw(16,0, "ESTIMATE FOOD SUPPLY......%8.0f tons",spread.food-P_EATRATE*(double)military);
 	standend();
 	fprintf(fp,"LINE %d FILE %s\n",__LINE__,__FILE__);
 
@@ -999,7 +999,7 @@ char *fltstr[]= {"Light", "Medium", "Heavy"};
  *   - Integration point for naval, military, and economic systems
  *   - Extensive use of packed data structures for efficient ship storage
  */
-void 
+void
 fleetrpt (void)
 {
 	short navy,armynum;
@@ -1229,7 +1229,7 @@ fleetrpt (void)
 				curntn->nvy[navy].crew=P_NCREW;
 				curntn->nvy[navy].people=P_NPEOP;
 				curntn->nvy[navy].smove=P_NMOVE;
-					
+
 				if (P_NWSHP != 0)
 				mvaddstr(LINES-2,0,"Do you wish to separate warships from remainder of fleet?");
 				refresh();
