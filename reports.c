@@ -111,6 +111,7 @@
 #include <curses.h>
 #include "header.h"
 #include "data.h"
+#include "safe_convert.h"
 
 extern FILE *fexe;
 extern short country;
@@ -244,7 +245,7 @@ armyrpt(int repnum)
 	while(done==FALSE) {
 		move(0,0);
 		clrtobot();
-		armynum=count2;
+		armynum=safe_int_to_short(count2);
 		xpos=BUF_COLS;
 		ypos=2;
 		count=0;
@@ -294,7 +295,7 @@ armyrpt(int repnum)
 
 		/*Operate on any armies that you wish*/
 		standout();
-		mvprintw(0,(COLS/2)-15-strlen(curntn->name)/2,"ARMY STATS SUMMARY FOR %s",curntn->name);
+		mvprintw(0,(COLS/2)-15-safe_size_to_int(strlen(curntn->name))/2,"ARMY STATS SUMMARY FOR %s",curntn->name);
 
 		ypos+=10;
 		mvaddstr(ypos++,(COLS/2)-14,"HIT SPACE KEY IF DONE");
@@ -304,14 +305,14 @@ armyrpt(int repnum)
 		refresh();
 
 		ypos++;
-		if ((inpkey = getch())==' ') done=TRUE;
+		if ((inpkey = safe_int_to_char(getch()))==' ') done=TRUE;
 		else if((inpkey=='\n')||(inpkey=='\r')) {
 			done=0;
 			mvaddstr(ypos++,0,"WHAT ARMY DO YOU WANT TO CHANGE:");
 			ypos++;
 			clrtoeol();
 			refresh();
-			armynum = get_number();
+			armynum = safe_long_to_short(get_number());
 			if((armynum<0)||(armynum>MAXARM)) {
 				continue;
 			}
@@ -345,7 +346,7 @@ armyrpt(int repnum)
 				oldarmy=armynum;
 				mvaddstr(ypos++,0,"TO WHAT ARMY: ");
 				refresh();
-				armynum = get_number();
+				armynum = safe_long_to_short(get_number());
 				if (armynum < 0) break;
 				combinearmies(armynum,oldarmy);
 				break;
@@ -391,7 +392,7 @@ armyrpt(int repnum)
 					/*mercs do not add to local populace*/
 					attset = MERCATT;
 					defset = MERCDEF;
-					bemerc = P_ASOLD;
+					bemerc = safe_long_to_int(P_ASOLD);
 					P_ASOLD=0;
 					AADJMEN;
 					AADJDISB;
@@ -401,7 +402,7 @@ armyrpt(int repnum)
 					break;
 				} else {
 					if (P_ATYPE < MINLEADER) {
-					bemerc = (P_ASOLD*15)/100;
+					bemerc = safe_long_to_int((P_ASOLD*15)/100);
 					/*15% become mercs*/
 					attset = curntn->aplus +
 						*(unitattack+(P_ATYPE%UTYPE));
@@ -427,15 +428,15 @@ armyrpt(int repnum)
 					/*X LOCATION*/
 					mvaddstr(ypos++,0,"What is the New X Loc: ");
 					refresh();
-					men = get_number();
+					men = safe_long_to_int(get_number());
 					if (men>=0 && men<MAPX)
-					P_AXLOC=men;
+					P_AXLOC=safe_int_to_uchar(men);
 					/*Y LOCATION*/
 					mvaddstr(ypos++,0,"What is the New Y Loc: ");
 					refresh();
-					men = get_number();
+					men = safe_long_to_int(get_number());
 					if (men>=0 && men<MAPY)
-					P_AYLOC=men;
+					P_AYLOC=safe_int_to_uchar(men);
 					AADJLOC;
 				}
 				break;
@@ -444,7 +445,7 @@ armyrpt(int repnum)
 					/*SOLDIERS*/
 					mvaddstr(ypos++,0,"What is the New Total Soldiers: ");
 					refresh();
-					men = get_number();
+					men = safe_long_to_int(get_number());
 					if (men>=0) {
 						P_ASOLD=men;
 						AADJMEN;
@@ -455,10 +456,10 @@ armyrpt(int repnum)
 				if (isgod == TRUE) {
 					mvaddstr(ypos, 0, "What is the new movement value?");
 					refresh();
-					men = get_number();
+					men = safe_long_to_int(get_number());
 
 					if (men >=0 && men <= 100) {
-						P_AMOVE = men;
+						P_AMOVE = safe_int_to_uchar(men);
 					}
 				}
 				break;
@@ -467,13 +468,13 @@ armyrpt(int repnum)
 					mvaddstr(ypos++, 0, "Change unit type; Normal 0-26, Leader 27-44, Monster 45-59");
 					mvaddstr(ypos++, 0, "[MajorHackEH?] New Type is? ");
 					refresh();
-					men = get_number();
+					men = safe_long_to_int(get_number());
 
 					if (men < 0 || men > MAXMONSTER) break;
 					if (men > 44) men += TWOUTYPE;
 					else if (men > NOUNITTYPES) men += UTYPE;
 					
-					P_ATYPE = men;
+					P_ATYPE = safe_int_to_uchar(men);
 				}
 				break;
 			case '0':
@@ -482,7 +483,7 @@ armyrpt(int repnum)
 					mvprintw(ypos++, 0, "11) Genrl 12) Sort 13) Sieg 14) Sgd 15) Onb 16) Rule 17+) Group (leader-=17)");
 					mvaddstr(ypos++, 0, "Set what status? ");
 					refresh();
-					men = get_number();
+					men = safe_long_to_int(get_number());
 
 					if (men < 0 || men > NUMSTATUS+MAXARM)
 					  break;
@@ -493,7 +494,7 @@ armyrpt(int repnum)
 					    break;
 					  }
 					}
-					P_ASTAT = men;
+					P_ASTAT = safe_int_to_uchar(men);
 				}
 				break;
 #endif /* OGOD */
@@ -829,12 +830,12 @@ produce (void)
 	fprintf(fp,"LINE %d FILE %s\n",__LINE__,__FILE__);
 	mvprintw(12,0, "%8ld people @ %3.1f eat.%8.0ld tons",spread.civilians,P_EATRATE,(long)(P_EATRATE*(float)spread.civilians));
 	fprintf(fp,"LINE %d FILE %s\n",__LINE__,__FILE__);
-	mvprintw(13,0, "%8ld soldiers eat.....%8.0ld tons",military,(long)(military*2*P_EATRATE));
+	mvprintw(13,0, "%8ld soldiers eat.....%8.0ld tons",military,(long)(military*2*(double)P_EATRATE));
 	military+= military+spread.civilians; /* military is amount eaten */
 	fprintf(fp,"LINE %d FILE %s\n",__LINE__,__FILE__);
 	standout();
-	mvprintw(15,0, "ESTIMATE NET FOOD.........%8.0f tons",spread.food-curntn->tfood-P_EATRATE*military);
-	mvprintw(16,0, "ESTIMATE FOOD SUPPLY......%8.0f tons",spread.food-P_EATRATE*military);
+	mvprintw(15,0, "ESTIMATE NET FOOD.........%8.0f tons",spread.food-curntn->tfood-(double)P_EATRATE*(double)military);
+	mvprintw(16,0, "ESTIMATE FOOD SUPPLY......%8.0f tons",spread.food-(double)P_EATRATE*(double)military);
 	standend();
 	fprintf(fp,"LINE %d FILE %s\n",__LINE__,__FILE__);
 
@@ -1035,7 +1036,7 @@ fleetrpt (void)
 		ypos=2;
 		xpos=BUF_COLS;
 		count=0;
-		nvynum=count2;
+		nvynum=safe_int_to_short(count2);
 		while((nvynum<MAXNAVY)&&(count<MAXINSCR)){
 			if((P_NWSHP!=0)||(P_NMSHP!=0)||(P_NGSHP!=0)) {
 
@@ -1088,7 +1089,7 @@ fleetrpt (void)
 
 		/*Operate on any navies that you wish*/
 		standout();
-		mvprintw(0,(COLS/2)-15-strlen(curntn->name)/2,"NAVY STATS SUMMARY FOR %s",curntn->name);
+		mvprintw(0,(COLS/2)-15-safe_size_to_int(strlen(curntn->name))/2,"NAVY STATS SUMMARY FOR %s",curntn->name);
 
 		ypos+=12;
 		mvaddstr(ypos++,(COLS/2)-14,"HIT SPACE KEY IF DONE");
@@ -1098,12 +1099,12 @@ fleetrpt (void)
 		standend();
 		refresh();
 
-		if ((navy=getch())==' ') done=TRUE;
+		if ((navy=safe_int_to_short(getch()))==' ') done=TRUE;
 		else if ((navy=='\n')||(navy=='\r')){
 			mvaddstr(ypos++,0,"WHAT NAVY DO YOU WANT TO CHANGE:");
 			clrtoeol();
 			refresh();
-			nvynum = get_number();
+			nvynum = safe_long_to_short(get_number());
 			if(nvynum<0) continue;
 #ifdef TRADE
 			if (isgod == FALSE && curntn->nvy[nvynum].commodity==TRADED) {
@@ -1128,7 +1129,7 @@ fleetrpt (void)
 				mvaddstr(ypos++,0,"TO WHAT NAVY: ");
 				clrtoeol();
 				refresh();
-				newnavy = get_number();
+				newnavy = safe_long_to_short(get_number());
 				if(newnavy < 0) break;
 				if(newnavy >= MAXNAVY) {
 					errormsg("Sorry - Invalid Navy unit");
@@ -1173,7 +1174,7 @@ fleetrpt (void)
 					crew += flthold(newnavy)*curntn->nvy[newnavy].crew;
 					people += fltmhold(newnavy)*curntn->nvy[newnavy].people;
 					for(i=N_LIGHT;i<=N_HEAVY;i++) {
-						(void) addwships(newnavy,i,P_NWAR(i));
+						(void) addwships(newnavy,safe_int_to_short(i),safe_int_to_short(P_NWAR(i)));
 						(void) addmships(newnavy,i,P_NMER(i));
 						(void) addgships(newnavy,i,P_NGAL(i));
 					}
@@ -1258,7 +1259,7 @@ fleetrpt (void)
 					mvprintw(ypos,0,"How Many %s Warships To Split?",fltstr[shipsize]);
 					clrtoeol();
 					refresh();
-					newnavy = get_number();
+					newnavy = safe_long_to_short(get_number());
 					if(newnavy>P_NWAR(shipsize)||newnavy<0) newnavy=0;
 					NSUB_WAR(newnavy);
 					(void) addwships(navy,shipsize,newnavy);
@@ -1268,7 +1269,7 @@ fleetrpt (void)
 					mvprintw(ypos,0,"How Many %s Merchants To Split?",fltstr[shipsize]);
 					clrtoeol();
 					refresh();
-					newnavy = get_number();
+					newnavy = safe_long_to_short(get_number());
 					if(newnavy>P_NMER(shipsize)||newnavy<0) newnavy=0;
 					NSUB_MER(newnavy);
 					(void) addmships(navy,shipsize,newnavy);
@@ -1278,7 +1279,7 @@ fleetrpt (void)
 					mvprintw(ypos,0,"How Many %s Galleys To Split?",fltstr[shipsize]);
 					clrtoeol();
 					refresh();
-					newnavy = get_number();
+					newnavy = safe_long_to_short(get_number());
 					if(newnavy>P_NGAL(shipsize)||newnavy<0) newnavy=0;
 					NSUB_GAL(newnavy);
 					(void) addgships(navy,shipsize,newnavy);
@@ -1338,9 +1339,9 @@ fleetrpt (void)
 							 fltstr[shipsize],P_NWAR(shipsize));
 						clrtoeol();
 						refresh();
-						newnavy = get_number();
+						newnavy = safe_long_to_short(get_number());
 						if (newnavy < 0 || newnavy > N_MASK) continue;
-						newnavy -= P_NWAR(shipsize);
+						newnavy -= safe_int_to_short(P_NWAR(shipsize));
 						if (newnavy > 0) {
 							(void) NADD_WAR(newnavy);
 						} else if (newnavy < 0) {
@@ -1353,9 +1354,9 @@ fleetrpt (void)
 							 fltstr[shipsize], P_NMER(shipsize));
 						clrtoeol();
 						refresh();
-						newnavy = get_number();
+						newnavy = safe_long_to_short(get_number());
 						if(newnavy>N_MASK||newnavy<0) continue;
-						newnavy -= P_NMER(shipsize);
+						newnavy -= safe_int_to_short(P_NMER(shipsize));
 						if (newnavy > 0) {
 						  (void) NADD_MER(newnavy);
 						} else if (newnavy < 0) {
@@ -1368,9 +1369,9 @@ fleetrpt (void)
 							 fltstr[shipsize], P_NGAL(shipsize));
 						clrtoeol();
 						refresh();
-						newnavy = get_number();
+						newnavy = safe_long_to_short(get_number());
 						if(newnavy>N_MASK||newnavy<0) continue;
-						newnavy -= P_NGAL(shipsize);
+						newnavy -= safe_int_to_short(P_NGAL(shipsize));
 						if (newnavy > 0) {
 						  (void) NADD_GAL(newnavy);
 						} else if (newnavy < 0) {
@@ -1388,16 +1389,16 @@ fleetrpt (void)
 					/*X LOCATION*/
 					mvaddstr(ypos++,0,"What Is The New X Loc: ");
 					refresh();
-					crew = get_number();
+					crew = safe_long_to_int(get_number());
 					if (crew>=0 && crew<MAPX)
-						P_NXLOC=crew;
+						P_NXLOC=safe_int_to_uchar(crew);
 					/*Y LOCATION*/
 					mvaddstr(ypos,0,"What Is The New Y Loc: ");
 					clrtoeol();
 					refresh();
-					crew = get_number();
+					crew = safe_long_to_int(get_number());
 					if (crew>=0 && crew<MAPY)
-						P_NYLOC=crew;
+						P_NYLOC=safe_int_to_uchar(crew);
 					NADJLOC;
 				}
 				break;
@@ -1406,9 +1407,9 @@ fleetrpt (void)
 					/* ADJUST CREWSIZE */
 					mvaddstr(ypos,0,"What value for crew/ship unit: ");
 					refresh();
-					crew = get_number();
+					crew = safe_long_to_int(get_number());
 					if (crew>=0 && crew<=SHIPCREW) {
-						P_NCREW = crew;
+						P_NCREW = safe_int_to_uchar(crew);
 						NADJCRW;
 					}
 				}
@@ -1417,9 +1418,9 @@ fleetrpt (void)
 				if (isgod == TRUE) {
 					mvaddstr(ypos, 0, "Set what move value? ");
 					refresh();
-					newnavy = get_number();
+					newnavy = safe_long_to_short(get_number());
 					if (newnavy <= 100 && newnavy >= 0) {
-						P_NMOVE = newnavy;
+						P_NMOVE = safe_short_to_uchar(newnavy);
 					}
 				}
 				break;
