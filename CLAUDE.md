@@ -27,7 +27,42 @@ This is a legacy code modernization project focused on upgrading legacy codebase
 - Use portable system calls and library functions
 - Avoid platform-specific extensions unless absolutely necessary
 
-## Build Commands
+## Build and Testing Commands
+
+**⚠️ CRITICAL**: Always use the standardized testing script first. Only fall back to manual gcc commands if the script is unavailable.
+
+### **PRIMARY METHOD: Standardized Warning Analysis Script**
+
+```bash
+# PREFERRED: Use standardized warning analysis script for all testing
+# This ensures consistent flags and proper reporting across all sessions
+
+# Phase 4 intensive warning analysis (Level 8 warnings - recommended for modernization)
+_modernization/scripts/test_warnings.sh -w 8 -x c2x -p 4 -s 8 -n c2x -t BASELINE filename.c
+
+# Admin-only file testing
+_modernization/scripts/test_warnings.sh -w 8 -x c2x -p 4 -s 8 -n c2x -t ADMIN filename.c
+
+# Game-mode file testing (for dual-compiled files)
+_modernization/scripts/test_warnings.sh -w 8 -x c2x -p 4 -s 8 -n c2x -t GAME filename.c
+
+# Progress update testing
+_modernization/scripts/test_warnings.sh -w 8 -x c2x -p 4 -s 8 -n c2x -t UPDATE filename.c
+
+# Final verification testing
+_modernization/scripts/test_warnings.sh -w 8 -x c2x -p 4 -s 8 -n c2x -t FINAL filename.c
+
+# Test all files in project (comprehensive analysis)
+_modernization/scripts/test_warnings.sh -w 8 -x c2x -p 4 -s 8 -n c2x -t PROJECT
+```
+
+**Script Benefits:**
+- **Consistent Flags**: Standardized warning levels and C standard enforcement
+- **Automated Reporting**: Results saved to `_modernization/claude/scratch/` for tracking
+- **Mode Testing**: Supports admin-only, game-mode, and dual-compiled file testing
+- **Progress Tracking**: Different test types for different phases of work
+
+### **FALLBACK METHOD: Manual GCC Commands** (Use only if script unavailable)
 
 ```bash
 # Basic compilation with strict warnings
@@ -36,12 +71,19 @@ gcc -std=c2x -D_POSIX_C_SOURCE=200809L -Wall -Wextra -Wpedantic -g -O2 *.c -o pr
 # Build with additional safety flags
 gcc -std=c2x -D_POSIX_C_SOURCE=200809L -Wall -Wextra -Wpedantic -Werror -g -O2 -fsanitize=address -fsanitize=undefined *.c -o program
 
-# INTENSIVE ANALYSIS - Comprehensive warning detection (use for thorough analysis)
+# INTENSIVE ANALYSIS - Comprehensive warning detection (Level 8 equivalent)
 gcc -O2 -g -Wall -Wextra -Wformat -Wformat=2 -Wstrict-prototypes -Wold-style-definition -Wold-style-declaration -Wconversion -Wimplicit-fallthrough -Wsign-conversion -fanalyzer -std=c2x -D_POSIX_C_SOURCE=200809L *.c -o program
 
-# INTENSIVE ANALYSIS - Single file testing (recommended for initial analysis)
-gcc -O2 -g -Wall -Wextra -Wformat -Wformat=2 -Wstrict-prototypes -Wold-style-definition -Wold-style-declaration -Wconversion -Wimplicit-fallthrough -Wsign-conversion -fanalyzer -std=c2x -D_POSIX_C_SOURCE=200809L -c filename.c
+# INTENSIVE ANALYSIS - Single file testing (admin mode)
+gcc -O2 -g -Wall -Wextra -Wformat -Wformat=2 -Wstrict-prototypes -Wold-style-definition -Wold-style-declaration -Wconversion -Wimplicit-fallthrough -Wsign-conversion -fanalyzer -std=c2x -D_POSIX_C_SOURCE=200809L -DADMIN -c filename.c
 
+# INTENSIVE ANALYSIS - Single file testing (game mode)
+gcc -O2 -g -Wall -Wextra -Wformat -Wformat=2 -Wstrict-prototypes -Wold-style-definition -Wold-style-declaration -Wconversion -Wimplicit-fallthrough -Wsign-conversion -fanalyzer -std=c2x -D_POSIX_C_SOURCE=200809L -c filename.c
+```
+
+### **Other Analysis Tools**
+
+```bash
 # Static analysis with clang
 clang --analyze -std=c2x -D_POSIX_C_SOURCE=200809L -Wall -Wextra *.c
 
@@ -446,6 +488,7 @@ All functions must be documented before modernization using this standard format
 - **Preserve original functionality during modernization**
 - **Test each modernized component thoroughly**
 - **Create regression tests before making changes**
+- **Use standardized warning analysis**: Always use `_modernization/scripts/test_warnings.sh` for compilation testing
 - Use compiler warnings as early error detection
 - Add unit tests for all critical functions
 - Test with different compiler versions and flags
