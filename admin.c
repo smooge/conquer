@@ -73,12 +73,69 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <crypt.h>
+#include <termios.h>
 #include "header.h"
 #include "data.h"
 
 /*Declarations*/
-char	*getpass();
 struct	s_sector **sct;
+
+/*
+ * get_password - Modern replacement for deprecated getpass() function
+ *
+ * Securely reads a password from stdin without echoing characters.
+ * Uses termios to disable terminal echo during input.
+ *
+ * Parameters:
+ *   prompt - Text prompt to display to user
+ *
+ * Returns:
+ *   Pointer to password string (caller must not free)
+ *
+ * Notes:
+ *   - Uses static buffer (not thread-safe)
+ *   - Automatically restores terminal echo state
+ *   - POSIX-compliant replacement for getpass()
+ */
+static char *get_password(const char *prompt) {
+    static char password[256];
+    struct termios old_termios, new_termios;
+
+    printf("%s", prompt);
+    fflush(stdout);
+
+    /* Get current terminal settings */
+    if (tcgetattr(STDIN_FILENO, &old_termios) != 0) {
+        return NULL;
+    }
+
+    /* Disable echo */
+    new_termios = old_termios;
+    new_termios.c_lflag &= ~ECHO;
+
+    if (tcsetattr(STDIN_FILENO, TCSANOW, &new_termios) != 0) {
+        return NULL;
+    }
+
+    /* Read password */
+    if (fgets(password, sizeof(password), stdin) == NULL) {
+        tcsetattr(STDIN_FILENO, TCSANOW, &old_termios);
+        return NULL;
+    }
+
+    /* Restore terminal settings */
+    tcsetattr(STDIN_FILENO, TCSANOW, &old_termios);
+    printf("\n");
+
+    /* Remove newline if present */
+    size_t len = strlen(password);
+    if (len > 0 && password[len-1] == '\n') {
+        password[len-1] = '\0';
+    }
+
+    return password;
+}
 struct	s_nation ntn[NTOTAL];   /* player nation stats */
 struct	s_world	world;
 /*is sector occupied by an army?*/
@@ -107,7 +164,7 @@ extern char datadir[FILELTH];
 int	remake=FALSE;
 #endif /*REMAKE*/
 
-FILE *fexe, *fopen();
+FILE *fexe;
 
 /*
  * main - Primary administrative entry point for Conquer game management
@@ -202,9 +259,7 @@ FILE *fexe, *fopen();
  *   Mock Requirements: Mock filesystem, user database, permission system
  *   Complexity: Complex - Multi-user security, file operations, process coordination
  */
-int
-main (int argc, char **argv)
-{
+int main (int argc, char **argv) {
 	uid_t realuser;
 	int l;
 	register int i,j;
@@ -212,15 +267,13 @@ main (int argc, char **argv)
 #ifndef __STDC__
 	void srand();
 #endif
-	int getopt();
-	long time();
 	/* mflag = make world, a=add player, x=execute, p=print */
 	/* rflag = make world from read in files */
 	int mflag, aflag, xflag, rflag;
 	char string[FILELTH];
 	extern char *optarg;
 	char defaultdir[BIGLTH],cq_opts[BIGLTH];
-	struct passwd *getpwnam(), *pwent;
+	struct passwd *pwent;
 
 	umask (MASK);
 	mflag = aflag = xflag = rflag = 0;
@@ -430,7 +483,7 @@ main (int argc, char **argv)
 		if( TURN > LASTADD ){
 			printf("more than %d turns have passed since game start!\n", LASTADD);
 			printf("permission of game administrator required\n");
-			if(strncmp(crypt(getpass("\nwhat is conquer super user password:"),SALT),ntn[0].passwd,PASSLTH)!=0)
+			if(strncmp(crypt(get_password("\nwhat is conquer super user password:"),SALT),ntn[0].passwd,PASSLTH)!=0)
 			{
 				printf("sorry...\n");
 				exit(FAIL);
@@ -570,9 +623,7 @@ main (int argc, char **argv)
  *   Mock Requirements: Mock magic system, mock nation data structures
  *   Complexity: Simple - Direct attribute assignment with conditional logic
  */
-void
-att_setup (int cntry)
-{
+void att_setup (int cntry) {
 	int	nat;
 	for( nat= 0; nat<NTOTAL;nat++) if( isntn( ntn[nat].active ))
 	if( (cntry==0) || (nat==cntry) ){
@@ -689,9 +740,7 @@ att_setup (int cntry)
  *   Mock Requirements: Full world map, complete nation setup, magic power system
  *   Complexity: Complex - Multi-system integration with extensive calculations
  */
-void
-att_base (void)
-{
+void att_base (void) {
 	long	cityfolk,townfolk,scholars,foodpts,minepts,roads,clerics,ngrain;
 	long	blksmths;
 	long	mercs,armynum,ncities;
@@ -1001,9 +1050,7 @@ att_base (void)
  *   Mock Requirements: Mock world map with trade goods, mock trade good value tables
  *   Complexity: Moderate - Map processing with trade good validation and bonus application
  */
-void
-att_bonus (void)
-{
+void att_bonus (void) {
 	short	x,y,nation,good;
 	struct	s_sector	*sptr;
 	printf("working on exotic trade goods\n");

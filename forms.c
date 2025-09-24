@@ -191,9 +191,7 @@ static char helplist[MAXHELP][20]={"Commands", "General Info",
  *   Mock Requirements: Mock nation database, mock screen dimensions, mock user input
  *   Complexity: Moderate - Multi-column layout with responsive design and pagination
  */
-void
-showscore()
-{
+void showscore() {
 	int i;
 	int done=FALSE;
 	int xpos,ypos;
@@ -408,9 +406,7 @@ showscore()
  *   Mock Requirements: Mock diplomatic state, mock mail system, mock file operations
  *   Complexity: Complex - Multi-system integration with financial transactions and cascading effects
  */
-void 
-diploscrn (void)
-{
+void diploscrn (void) {
 	int i,j;
 	char k,name[LINELTH];
 	short nation, offset, count, count2, temp;
@@ -646,9 +642,9 @@ diploscrn (void)
 }
 
 int terror_adj=0;
-void 
-change (void)
-{
+
+/* TODO: Document */
+void change (void) {
 	float temp;
 	char string[LINELTH], command[BIGLTH];
 	int i, intval;
@@ -1073,9 +1069,8 @@ change (void)
 	} /* end of continuous loop */
 }
 
-void 
-help (void)
-{
+/* TODO: DOCUMENT */
+void help (void) {
 	int lineno;
 	FILE *fp;
 	int i,xcnt,ycnt,done=FALSE;
@@ -1309,9 +1304,7 @@ void mvaddstrnahil(int li,int col,char *p)
  *   - Robust error handling for missing or corrupted news files
  *   - Performance considerations for large news archives
  */
-void 
-newspaper (void)
-{
+void newspaper (void) {
 	int lineno;
 	FILE *fp;
 	int newpage,choice,done;

@@ -181,10 +181,7 @@ extern FILE *fnews;
  *   - Historical: Complex evolution of power system with accumulated restrictions
  */
 
-long
-getmagic(type)
-int type;
-{
+long getmagic(int type) {
 	long newpower;
 	int start,end;
 	switch(type){
@@ -387,9 +384,7 @@ int type;
  *   - User experience: Central magic system interface - critical for gameplay
  *   - Conditional compilation: Features vary based on compile-time options (OGOD, ORCTAKE)
  */
-void 
-domagic (void)
-{
+void domagic (void) {
 	int county, countx, done=FALSE, loop=0, i,type;
 	long price,x;
 #ifdef OGOD
@@ -547,9 +542,7 @@ domagic (void)
  *   - Game balance: High-impact feature requiring careful probability tuning
  *   - Conditional: Only available when ORCTAKE compile option enabled
  */
-int 
-takeover (int percent, int target)
-{
+int takeover (int percent, int target) {
 	int loop=1,y,save,isupdate=0;
 	save=country;
 	if(target==country) return(0);
@@ -650,9 +643,7 @@ takeover (int percent, int target)
  *   - Game balance: Critical function affecting core game mechanics
  *   - Conditional compilation: Some effects depend on ADMIN flag for update vs player mode
  */
-void 
-exenewmgk (long newpower)
-{
+void exenewmgk (long newpower) {
 	short x,armynum;
 #ifdef ADMIN
 	short y;
@@ -854,9 +845,7 @@ exenewmgk (long newpower)
  *   - Game balance: Resource costs prevent summoning abuse
  *   - Army management: Finds first available slot or reports "NO FREE ARMIES"
  */
-void 
-dosummon (void)
-{
+void dosummon (void) {
 	int x,count,i,armynum;
 	long e_cost;
 	int newtype,s_cost;
@@ -993,9 +982,7 @@ dosummon (void)
  *   - Game balance: High-cost, low-probability feature requiring strategic resource use
  *   - ORC-specific: Unique racial ability providing alternative conquest mechanism
  */
-int 
-orctake (int *count)
-{
+int orctake (int *count) {
 	int chance=0,done=TRUE,i,s_cost;
 	if((*count)>20) {
 		(*count)=2;
@@ -1110,9 +1097,7 @@ orctake (int *count)
  *   - Game balance: Critical function controlling unit availability and strategic options
  *   - Integration: Used by recruitment, summoning, and army management systems
  */
-int 
-unitvalid (int type)
-{
+int unitvalid (int type) {
 	int valid=FALSE;
 	switch(type){
 		case A_INFANTRY: /* not everyone gets infantry now */
@@ -1247,9 +1232,7 @@ unitvalid (int type)
  *   - Pairing requirement: Must exactly reverse effects applied by exenewmgk()
  *   - Administrative usage: Called during god-mode power manipulation and game events
  */
-void 
-removemgk (long oldpower)
-{
+void removemgk (long oldpower) {
 	short x,y,armynum;
 	if((oldpower==WARRIOR)
 	||(oldpower==CAPTAIN)
@@ -1418,9 +1401,7 @@ removemgk (long oldpower)
  *   - Power management: Provides complete administrative control over magic systems
  *   - Game testing: Essential tool for game balance testing and debugging
  */
-void 
-god_magk (void)
-{
+void god_magk (void) {
 	int county,countx,choice;
 	int remove,i,done=FALSE;
 
@@ -1578,9 +1559,7 @@ int magiccost[NUMSPELLS]={0,100,300,300};
  *   - Integration: Works closely with army management and combat systems
  *   - Conditional compilation: Only available when CONQUER flag is enabled
  */
-void 
-wizardry (void)
-{
+void wizardry (void) {
 	int i,xspt,yspt,choice,armynum,s_cost;
 	char line[LINELTH+1];
 	void dosummon();

@@ -233,9 +233,7 @@ static char *hasseen;
  *   - BSD vs non-BSD conditional compilation for memory clearing
  *   - Critical function - program exits on allocation failure
  */
-void
-init_hasseen()
-{
+void init_hasseen() {
 	hasseen = (char *)malloc(((COLS-10)/2) * (LINES-5));
 #ifdef BSD
 	bzero(hasseen,((COLS-10)/2) * (LINES-5));
@@ -287,9 +285,7 @@ init_hasseen()
  *   - Cursor positioning uses 2x horizontal scaling for dual-character display
  *   - Must be called after whatcansee() to ensure proper visibility state
  */
-void 
-makemap (void)
-{
+void makemap (void) {
 	register int x,y;
 
 	for(x=0;x<SCREEN_X_SIZE;x++) for(y=0;y<SCREEN_Y_SIZE;y++)
@@ -350,9 +346,7 @@ makemap (void)
  *   - Army preparation required for army-based highlighting modes
  *   - Dual display mode signs control which display is active
  */
-void 
-get_display_mode (short *dmode, short *hmode, short *odmode, short *ohmode)
-{
+void get_display_mode (short *dmode, short *hmode, short *odmode, short *ohmode) {
 	short temp;
 	
 	mvaddstr(LINES-4,0,"viewing options:  (d)esignation, (r)ace, (M)ove cost, (p)eople, (D)efense");
@@ -504,9 +498,7 @@ get_display_mode (short *dmode, short *hmode, short *odmode, short *ohmode)
  *   - Ensures screen consistency through makebottom() call
  *   - Part of the user command processing workflow
  */
-void 
-newdisplay (void)
-{
+void newdisplay (void) {
 	get_display_mode(&dismode,&hilmode,&otherdismode,&otherhilmode);
 	makebottom();
 }
@@ -561,8 +553,7 @@ newdisplay (void)
  *   - Defense mode performs complex terrain bonus calculations
  *   - Resource modes check accessibility and availability
  */
-char
-get_display_for(int x,int y,short dmode)
+char get_display_for(int x,int y,short dmode)
 {
 	int armbonus;
 
@@ -743,9 +734,7 @@ get_display_for(int x,int y,short dmode)
  *   - Bounds checking prevents crashes when rendering near map boundaries
  *   - Performance critical - called frequently during map updates
  */
-void
-see(int x,int y)
-{
+void see(int x,int y) {
 	char ch;
 	if((x<0)||(y<0)||(x>=SCREEN_X_SIZE)||(y>=SCREEN_Y_SIZE)
 	||((y+yoffset)>=MAPY)||((x+xoffset)>=MAPX)) return;
@@ -810,9 +799,7 @@ see(int x,int y)
  *   - Bounds checking prevents crashes at map edges
  *   - Performance impact when highlighting large areas with many armies
  */
-void
-highlight(int x,int y,short hmode)
-{
+void highlight(int x,int y,short hmode) {
 	int	armynum;
 	if((x<0)||(y<0)||(x>=SCREEN_X_SIZE)||(y>=SCREEN_Y_SIZE)
 	||((y+yoffset)>=MAPY)||((x+xoffset)>=MAPX)) return;
@@ -903,9 +890,7 @@ highlight(int x,int y,short hmode)
  *   - Cursor positioning uses 2x horizontal scaling for dual-character display
  *   - Complete screen update cycle ensures all display elements stay synchronized
  */
-void 
-coffmap (void)
-{
+void coffmap (void) {
 	if( xcurs<0 || (XREAL!=0 && xcurs==0) || (ycurs<0) ||
 	   (YREAL!=0 && ycurs==0) || xcurs>=SCREEN_X_SIZE-1 ||
 	   ycurs>=SCREEN_Y_SIZE-1 || XREAL>=MAPX || YREAL>=MAPY) {
@@ -972,9 +957,7 @@ coffmap (void)
  *   - Depends on proper initialization of hasseen array by whatcansee()
  *   - Performance optimized - minimal overhead for frequent visibility checks
  */
-int 
-canbeseen (int x, int y)
-{
+int canbeseen (int x, int y) {
 	if(!ONMAP(x,y)) return(FALSE);
 	return( (int) HAS_SEEN(x-xoffset,y-yoffset) );
 }
@@ -1029,9 +1012,7 @@ canbeseen (int x, int y)
  *   - Screen-relative calculations require careful coordinate translation
  *   - Must be called before map rendering to ensure accurate visibility state
  */
-void 
-whatcansee (void)
-{
+void whatcansee (void) {
 	register int x,y;
 	int	i,j;
 	short	armynum,nvynum;

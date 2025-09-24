@@ -121,9 +121,7 @@ int roads_this_turn = 0;
  *   - Extensibility: Clear structure allows easy addition of new rules
  */
 /* routine to determine if the given designation is ok; TRUE for ok */
-int
-desg_ok(int prtflag, char desg, struct s_sector *sptr)
-{
+int desg_ok(int prtflag, char desg, struct s_sector *sptr) {
 	/* check vegetation */
 	if((desg!=DNODESIG)&&(desg!=DROAD)&&(desg!=DFORT)
 	&&(desg!=DSTOCKADE)&&(tofood(sptr,country)<DESFOOD)) {
@@ -292,9 +290,7 @@ desg_ok(int prtflag, char desg, struct s_sector *sptr)
  *   - SADJDES macro updates influence on adjacent sectors after changes
  */
 /*change current hex designation*/
-void
-redesignate (void)
-{
+void redesignate (void) {
 	char	newdes;
 	char	tgtype[NAMELTH+1];
 	struct s_sector *sptr= &sct[XREAL][YREAL];
@@ -646,9 +642,7 @@ redesignate (void)
  *   - Heavy Ship Restriction: Towns cannot construct heavy class ships
  */
 /*build fort or ship-type */
-void
-construct (void)
-{
+void construct (void) {
 	int	tmpvar,tmpvar2,onboard;
 	long	cost;
 	int	armbonus = 0;
@@ -1113,9 +1107,7 @@ construct (void)
  *   - Resource Management: Careful validation prevents over-recruitment
  */
 /*DRAFT IF IN A CITY*/
-void
-draft (void)
-{
+void draft (void) {
 	short	armynum,x,y,i;
 	long	men=0,mercs;
 	short	army=(-1), isgod=FALSE, newtype=0;
@@ -1524,9 +1516,7 @@ draft (void)
  */
 /*go through msgfile not rewriting to temp messages you discard*/
 /* then move temp to msgfile*/
-void
-rmessage (void)
-{
+void rmessage (void) {
 	FILE *mesgfp;
 	FILE *fptemp;
 	int i;
@@ -1757,9 +1747,7 @@ rmessage (void)
  *   - Input handling: Comprehensive character processing for editing
  *   - Screen management: Complex screen state management for editing interface
  */
-void
-wmessage (void)
-{
+void wmessage (void) {
 	int x,y;
 	int done=FALSE;
 	char ch;
@@ -2197,9 +2185,7 @@ moveciv (void)
  *   - Performance: Optimized for typical army counts in gameplay
  *   - User Experience: Provides smooth army cycling for player convenience
  */
-int
-armygoto (void)
-{
+int armygoto (void) {
 	short armynum=0,loop=0;
 	armynum=getselunit();
 	if((armynum<0)||(armynum>MAXARM)) armynum=0;
@@ -2339,9 +2325,7 @@ armygoto (void)
  *   - Ship Types: Supports three distinct ship categories for tactical diversity
  *   - User Experience: Provides smooth fleet cycling for naval operations
  */
-int
-navygoto (void)
-{
+int navygoto (void) {
 	short nvynum=0,loop=0;
 	nvynum=getselunit()-MAXARM;
 	if((nvynum<0)||(nvynum>MAXNAVY)) nvynum=0;

@@ -153,9 +153,7 @@ int	count=0;                /* Total number of units in battle sector */
  * - Thread safety issues due to global variable usage
  * - Consider refactoring to use context structure
  */
-void
-combat()
-{
+void combat() {
 	register int i,j;
 	char	**fought; 		/* SET: if already fought in sctr */
 	int	temp,ctry;
@@ -387,9 +385,7 @@ combat()
  * - Performance critical for large battles
  * - Historical combat balance maintained for game compatibility
  */
-void
-fight (void)
-{
+void fight (void) {
 	int	roll,strength,fortdam=FALSE;
 	int	odds=0;			/* odds (asold/dsold) times 100 */
 	int	done=0;
@@ -945,9 +941,7 @@ printf("I AM VERY CONFUSED - PLEASE HELP... combat.c\n");
  * - Consider caching results for performance in large battles
  * - Unit type arrays must be properly initialized
  */
-int
-cbonus(int num)
-{
+int cbonus(int num) {
 	short	armynum;
 	int	armbonus;
 
@@ -1099,9 +1093,7 @@ cbonus(int num)
  *   - Diplomatic integration: Respects alliance/war status for safe passage
  *   - Town/city sectors block retreats (defensive advantage mechanic)
  */
-void
-fdxyretreat (void)	/* finds retreat location */
-{
+void fdxyretreat (void) {	/* finds retreat location */
 	int	x,y,nation=(-1);
 	int	xsctr= xspot;
 	int	ysctr= yspot;
@@ -1193,11 +1185,7 @@ fdxyretreat (void)	/* finds retreat location */
  *   - Casualty asymmetry: Naval units suffer retreat losses, land units don't
  *   - Used for: Battle retreats, mercenary desertion, diplomatic withdrawals
  */
-void
-retreat (
-    int unitnum	/* if -1 then normal, else retreat only unit ismerc */
-)
-{
+void retreat ( int unitnum ){	/* if -1 then normal, else retreat only unit ismerc */
 	int cnum;
 
 	if(retreatside == 0) return;
@@ -1306,9 +1294,7 @@ retreat (
 #define QMER 3
 /* just like fight, this takes array of owner,side,unit and calculates */
 /* a random battle based on the strengths of the combatants.           */
-void
-navalcbt (void)
-{
+void navalcbt (void) {
 	int acrew=0,dcrew=0;	/*a's and d's crew and soldier strength*/
 	int ahold=0,dhold=0;	/*a's and d's warship strength*/
 	int awsunk=0,dwsunk=0;	/*a's and d's warship losses for the round*/
@@ -1846,9 +1832,7 @@ navalcbt (void)
  *   - Ship types: Supports all three naval vessel categories
  */
 /* routine to distribute a captured ship */
-void
-capture (int type, int to, int shipsize, int holdcount)
-{
+void capture (int type, int to, int shipsize, int holdcount) {
 	int i,nvynum;
 	struct s_nation *saventn=curntn;
 #ifdef DEBUG
@@ -1949,9 +1933,7 @@ capture (int type, int to, int shipsize, int holdcount)
  *   - User experience: Clear, readable battle outcome presentation
  */
 /* routine to display combat results */
-void
-show_ships (char *who, char *what, int war, int gal, int mer)
-{
+void show_ships (char *who, char *what, int war, int gal, int mer) {
 	if (war+gal+mer>0) {
 		fprintf(fm,"%s ships %s: ",who,what);
 		if (war) fprintf(fm,"%d Warships ",war);

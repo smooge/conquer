@@ -110,9 +110,7 @@ FILE *fexe;
  *   - Complex authentication with password encryption
  *   - Legacy K&R function definition style needs modernization
  */
-int
-main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
 #ifdef  USERLOG
 	FILE *userlog;
 #endif
@@ -672,9 +670,7 @@ main(int argc, char **argv)
  *   - Different display for god mode (country==0) vs normal nations
  *   - Conditional compilation for SYSMAIL feature
  */
-void
-makebottom()
-{
+void makebottom() {
 	standend();
 	move(LINES-4,0);
 	clrtoeol();
@@ -755,9 +751,7 @@ makebottom()
  *   - Movement commands use vi-like keybindings
  *   - Legacy K&R function definition style
  */
-int
-parse(int ch)
-{
+int parse(int ch) {
 	char	name[LINELTH+1];
 	char	passwd[PASSLTH+1];
 	struct passwd *pwent;
@@ -1194,9 +1188,7 @@ parse(int ch)
  *   - Provides detailed internal state visibility
  *   - Used for development and debugging purposes
  */
-void
-sect_info()
-{
+void sect_info() {
 	int i,j,acnt1=0,acnt2=0,ncnt1=0,ncnt2=0,x,y;
 
 	/* erase prior information */
@@ -1292,9 +1284,7 @@ sect_info()
  *   - Different display modes for different nation relationships
  *   - Magic effects influence information visibility
  */
-void
-makeside(int alwayssee)	/* see even if cant really see sector */
-{
+void makeside(int alwayssee) {	/* see even if cant really see sector */
 	int	i;
 	int	armbonus;
 	int	found=0,nvyfnd=0;
@@ -1614,9 +1604,7 @@ makeside(int alwayssee)	/* see even if cant really see sector */
  *   - Used in conjunction with check_lock() function
  *   - Different behavior for god mode vs normal nations
  */
-int
-aretheyon(void)
-{
+int aretheyon(void) {
 	/* return file descriptor for lock file */
 	sprintf(fison,"%s%d",isonfile,country);
 	return(check_lock(fison,TRUE));
@@ -1663,9 +1651,7 @@ aretheyon(void)
  *   - Must be displayed to every player on every login
  *   - Part of legal compliance for GPL v3 licensing
  */
-void
-copyscreen(void)
-{
+void copyscreen(void) {
 #ifdef TIMELOG
     FILE *timefp;
     char string[LINELTH+1];
@@ -1737,9 +1723,7 @@ copyscreen(void)
  *   - Does not return (calls exit())
  *   - Thread-safe cleanup sequence
  */
-void
-bye(int dounlink)	/* TRUE if want to do unlink */
-{
+void bye(int dounlink) {	/* TRUE if want to do unlink */
 	if( dounlink ) if(strcmp(fison,"START")!=0) unlink(fison);
 	clear();
 	refresh();
@@ -1789,9 +1773,7 @@ bye(int dounlink)	/* TRUE if want to do unlink */
  *   - Non-interactive display (waits for single keypress)
  *   - Accessible from main game loop via 'v' command
  */
-void
-credits(void)
-{
+void credits(void) {
 	clear();
 	mvprintw(4,0,"Conquer %s.%s",VERSION,PATCHLEVEL);
 	mvaddstr(5,0,"Original Copyright (c) 1988 by Edward M Barlow");
@@ -1859,9 +1841,7 @@ credits(void)
  *   - Shows both world configuration and player-specific data
  *   - Accessible from main game loop via 'I' command
  */
-void
-camp_info(void)
-{
+void camp_info(void) {
 	int mercs=0,solds=0,armynum,nvynum,nontn=0;
 	int numarm=0,numnvy=0,numlead=0;
 

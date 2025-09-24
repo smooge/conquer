@@ -102,9 +102,7 @@
  *   - Enforces automatic WAR status for all NPC nations (active >= NPC_PEASANT)
  *   - Thread safety: Not thread-safe due to global data modification
  */
-void
-verify_ntn(char __file__[], int __line__)
-{
+void verify_ntn(char __file__[], int __line__) {
 	register struct s_nation	*nptr;
 	register int	i;
 	register int	country;
@@ -245,9 +243,7 @@ verify_ntn(char __file__[], int __line__)
  *   - Handles population overflow and underflow with appropriate corrections
  *   - Thread safety: Not thread-safe due to global map data modification
  */
-void 
-verify_sct (char __file__[], int __line__)
-{
+void verify_sct (char __file__[], int __line__) {
 	register struct s_sector	*sptr;
 	register int		x, y;
 
@@ -331,9 +327,7 @@ verify_sct (char __file__[], int __line__)
  *   - Part of defensive programming strategy for data integrity
  *   - Thread safety: Inherits thread safety characteristics of called functions
  */
-void 
-verifydata (char __file__[], int __line__)
-{
+void verifydata (char __file__[], int __line__) {
 	/* check for invalid values */
 	verify_ntn( __file__, __line__ );
 	verify_sct( __file__, __line__ );
@@ -375,9 +369,7 @@ verifydata (char __file__[], int __line__)
  *   - Parameter order differs from other functions (line, file vs file, line)
  *   - Thread safety: Inherits characteristics from verifydata() and fprintf()
  */
-void 
-checkout (char *file, int line)
-{
+void checkout (char *file, int line) {
 	fprintf(stderr,"file %s line %d\n",file,line);
 	verifydata(file,line);
 }
@@ -433,9 +425,7 @@ checkout (char *file, int line)
  *   - Critical error conditions cause program termination (defensive programming)
  *   - Thread safety: Platform-dependent (filesystem operations)
  */
-int 
-check_lock (char *filename, int keeplock)
-{
+int check_lock (char *filename, int keeplock) {
 	int hold=FALSE;
 #ifdef FILELOCK
 	int fd;

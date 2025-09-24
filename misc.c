@@ -80,11 +80,7 @@ char    *memset();
  *   - Error handling includes user feedback and delay
  *   - Only available when CONQUER is defined
  */
-int
-move_file( from, to )
-register char	*from;
-register char	*to;
-{
+int move_file(char *from, char *to) {
 	if( unlink( to ) < 0 ) {
 		fprintf( stderr, "unlink( %s ) failed \n", to );
 		sleep( 2 );
@@ -512,11 +508,7 @@ land_reachp (int ax, int ay, int gx, int gy, int move_points, int movee)
 		return( 0 );
 
 	history_reachp = (unsigned char **) m2alloc(MAPX,MAPY,sizeof(char));
-#ifdef BSD
-	bzero((char *) *history_reachp,MAPX*MAPY);
-#else
 	memset((char *) *history_reachp, 0, MAPX*MAPY );
-#endif
 
 	history_reachp[ax][ay] = move_points;
 

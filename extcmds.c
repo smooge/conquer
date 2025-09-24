@@ -109,10 +109,7 @@ extern short xcurs, ycurs, xoffset, yoffset;
  *   - Validates army capabilities before allowing operations
  *   - Uses curses for interactive display and input
  */
-void
-ext_cmd(armie)
-int	armie;
-{
+void ext_cmd(int armie) {
 	int stat=0,armynum,army2,men;
 
 	clear_bottom(0);
@@ -205,9 +202,7 @@ int	armie;
  *   - TRADE compilation flag affects TRADED status handling
  *   - Pure function suitable for optimization
  */
-int 
-nocomb_stat (int astat)
-{
+int nocomb_stat (int astat) {
 	int hold;
 
 	switch(astat) {
@@ -266,10 +261,7 @@ nocomb_stat (int astat)
  *   - Handles complex group leadership scenarios
  *   - Critical for army management efficiency
  */
-void 
-combinearmies (int armynum, int army2)
-{
-	int nocomb_stat();
+void combinearmies (int armynum, int army2) {
 
 	if (armynum < 0 || armynum >= MAXARM
 	    || army2 < 0 || army2 >= MAXARM || P_ASOLD == 0
@@ -350,9 +342,7 @@ combinearmies (int armynum, int army2)
  *   - Movement penalty system prevents status change exploitation
  *   - Critical for maintaining game balance and realism
  */
-void 
-change_status (int armynum, int new_stat)
-{
+void change_status (int armynum, int new_stat) {
 	int	i;
 	if(armynum<0 || armynum >= MAXARM || P_ASTAT==SCOUT ||
 		P_ASTAT==TRADED || P_ASTAT==ONBOARD || P_ASTAT==SORTIE){
@@ -481,9 +471,7 @@ change_status (int armynum, int new_stat)
  *   - New army gets same movement points as source army
  *   - Critical for tactical army management and positioning
  */
-void 
-reducearmy (int armynum, int men)
-{
+void reducearmy (int armynum, int men) {
 	int army2;
 	int oldx, oldy, army;
 
@@ -573,10 +561,7 @@ reducearmy (int armynum, int men)
  *   - User can cancel operation by entering zero or negative value
  *   - Delegates actual splitting logic to reducearmy function
  */
-void
-splitarmy(armynum)
-int armynum;
-{
+void splitarmy(int armynum) {
 	int men;
 	clear_bottom(2);
 	mvaddstr(LINES-2, 0, "How many men to split? ");
@@ -624,10 +609,7 @@ int armynum;
  *   - Blocking input ensures user acknowledges error before continuing
  *   - Critical for user experience and error communication
  */
-void
-errormsg(str)
-char *str;
-{
+void errormsg(char *str) {
 	mvaddstr(LINES-1, 0, str);
 	clrtoeol();
 	mvaddstr(LINES-1, COLS-16, "PRESS ANY KEY");
@@ -668,10 +650,7 @@ char *str;
  *   - Used extensively throughout extended command system
  *   - Simple but critical for user experience
  */
-void
-clear_bottom(i)
-int i;
-{
+void clear_bottom(int i) {
 	if(i==0) i=4;
 	for (; i>0 ; i--) {
 		move( LINES-i, 0);
@@ -716,10 +695,7 @@ int i;
  *   - Leader becomes GENERAL when first army joins group
  *   - Essential for advanced tactical gameplay and army coordination
  */
-void
-addgroup(armynum)
-int	armynum;
-{
+void addgroup(int armynum) {
 	int	moverate,group;
 
 	if((P_ATYPE>=MINLEADER)&&(P_ATYPE<MINMONSTER)){

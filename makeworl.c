@@ -87,9 +87,7 @@ nmountains--; \
  *   - Initializes exactly NTOTAL nations as defined in game constants
  *   - Sets default DEFEND status for all armies
  */
-void
-zeroworld()
-{
+void zeroworld() {
 	int i,armynum,nvynum;
 
 	/* initialize all countries */
@@ -162,11 +160,7 @@ zeroworld()
  *   - Supports conditional compilation with REMAKE and CHECKUSER flags
  *   - Creates god nation (index 0) with special powers and administrator access
  */
-void
-makeworld (
-    int rflag		/* TRUE if you wish to read in a map from mapfiles */
-)
-{
+void makeworld ( int rflag ){		/* TRUE if you wish to read in a map from mapfiles */
 	char passwd[PASSLTH+1];
 	char newstring[BIGLTH],tempc[BIGLTH];
 	int i,valid;
@@ -398,9 +392,7 @@ makeworld (
  *   - Memory-intensive operation requiring careful allocation/deallocation
  *   - Algorithm quality directly affects game playability and balance
  */
-void
-createworld (void)	/* create world */
-{
+void createworld (void) {	/* create world */
 	int	i,j;
 	register int x,y;
 	int	n;		/*count used in string searches*/

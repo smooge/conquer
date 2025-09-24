@@ -691,7 +691,7 @@ long powers[] = {
  * File Handles and I/O Systems
  * Global file pointers and I/O state variables for game operation
  */
-FILE *fnews, *fopen();           /* News file handle and file operation function */
+FILE *fnews;                     /* News file handle */
 struct sprd_sht spread;          /* Spreadsheet/data structure for game calculations */
 
 FILE *fm;                        /* Main communication file handle */
