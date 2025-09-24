@@ -41,6 +41,7 @@
 
 #include <limits.h>
 #include <sys/types.h>
+#include <math.h>
 
 /*
  * Game-specific constants for value range validation
@@ -374,6 +375,90 @@ static inline short safe_long_to_short(long value) {
     if (value > SHRT_MAX) return SHRT_MAX;
     if (value < SHRT_MIN) return SHRT_MIN;
     return (short)value;
+}
+
+/*
+ * safe_float_to_long - Convert float to long with bounds checking
+ *
+ * Safely converts float values to long integers with range validation.
+ * Used when floating-point calculations need to be stored in long variables
+ * such as food consumption calculations and economic computations.
+ *
+ * This function handles the conversion safely, clamping values to the
+ * valid long integer range and handling NaN/infinity cases.
+ *
+ * Parameters:
+ *   value - float value to convert
+ *
+ * Returns:
+ *   long value clamped to [LONG_MIN, LONG_MAX] range, 0 for NaN/infinity
+ *
+ * Example Usage:
+ *   curntn->tfood -= safe_float_to_long(curntn->tmil * P_EATRATE * 2.0f);
+ *   long food_consumed = safe_float_to_long(population * consumption_rate);
+ */
+static inline long safe_float_to_long(float value) {
+    /* Handle NaN and infinity cases */
+    if (value != value || value == INFINITY || value == -INFINITY) return 0;
+
+    if (value > (float)LONG_MAX) return LONG_MAX;
+    if (value < (float)LONG_MIN) return LONG_MIN;
+    return (long)value;
+}
+
+/*
+ * safe_double_to_long - Convert double to long with bounds checking
+ *
+ * Safely converts double values to long integers with range validation.
+ * Used when double-precision floating-point calculations need to be stored
+ * in long variables such as food consumption and economic computations.
+ *
+ * This function handles the conversion safely, clamping values to the
+ * valid long integer range and handling NaN/infinity cases.
+ *
+ * Parameters:
+ *   value - double value to convert
+ *
+ * Returns:
+ *   long value clamped to [LONG_MIN, LONG_MAX] range, 0 for NaN/infinity
+ *
+ * Example Usage:
+ *   curntn->tfood -= safe_double_to_long(curntn->tmil * P_EATRATE * 2.0);
+ *   long food_consumed = safe_double_to_long(population * consumption_rate);
+ */
+static inline long safe_double_to_long(double value) {
+    /* Handle NaN and infinity cases */
+    if (value != value || value == INFINITY || value == -INFINITY) return 0;
+
+    if (value > (double)LONG_MAX) return LONG_MAX;
+    if (value < (double)LONG_MIN) return LONG_MIN;
+    return (long)value;
+}
+
+/*
+ * safe_long_to_uchar - Convert long to unsigned char with bounds checking
+ *
+ * Safely converts long integers to unsigned char with range validation.
+ * Used when long calculations need to be stored in unsigned char variables
+ * such as popularity, poverty, and other small-value nation attributes.
+ *
+ * This function handles the conversion safely, clamping values to the
+ * valid unsigned char range to prevent overflow conditions.
+ *
+ * Parameters:
+ *   value - long value to convert
+ *
+ * Returns:
+ *   unsigned char value clamped to [0, UCHAR_MAX] range
+ *
+ * Example Usage:
+ *   curntn->popularity = safe_long_to_uchar(calculation_result);
+ *   curntn->poverty = safe_long_to_uchar(poverty_calculation);
+ */
+static inline unsigned char safe_long_to_uchar(long value) {
+    if (value < 0) return 0;
+    if (value > UCHAR_MAX) return UCHAR_MAX;
+    return (unsigned char)value;
 }
 
 /*

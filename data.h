@@ -657,7 +657,7 @@ struct	s_nation		/* player nation stats	*/
 	unsigned char	reputation;	/* reputation of nation	*/
 };
 #define	P_NTNCOM	((((float) curntn->communications)/ 50.0 ))
-#define	P_EATRATE	((((float) curntn->eatrate) / 25.0 ))
+#define	P_EATRATE	((((double) curntn->eatrate) / 25.0 ))
 #define	P_REPRORATE	( ((float) (100.0 + 25.0*curntn->repro )/100.0))
 
 #define	P_ATYPE	curntn->arm[armynum].unittyp

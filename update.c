@@ -31,6 +31,7 @@
 #include <unistd.h>
 #include "header.h"
 #include "data.h"
+#include "safe_convert.h"
 
 extern FILE *fnews;
 
@@ -543,7 +544,7 @@ armymove (int armynum)
 			&&( curntn->arm[x].unittyp!=A_ZOMBIE )
 			&&( P_AXLOC==curntn->arm[x].xloc )
 			&&( P_AYLOC==curntn->arm[x].yloc )){
-				curntn->arm[x].stat=NUMSTATUS+armynum;
+				curntn->arm[x].stat=safe_int_to_uchar(NUMSTATUS+armynum);
 				P_ASTAT=GENERAL;
 				break;
 			}
@@ -560,8 +561,8 @@ armymove (int armynum)
 			&& movecost[x][y]>=1
 			&& movecost[x][y]<=P_AMOVE
 			&&(land_reachp((int)P_AXLOC,(int)P_AYLOC,x,y,P_AMOVE,country))){
-				P_AXLOC=x;
-				P_AYLOC=y;
+				P_AXLOC=safe_int_to_uchar(x);
+				P_AYLOC=safe_int_to_uchar(y);
 				if(P_ATYPE == getleader(curntn->class)-1 ){
 					P_AXLOC=curntn->capx;
 					P_AYLOC=curntn->capy;
@@ -581,7 +582,7 @@ armymove (int armynum)
 #endif /*XENIX*/
 				}
 				if(sct[x][y].owner==0){
-					sct[x][y].owner=country;
+					sct[x][y].owner=safe_int_to_uchar(country);
 					if (curntn->popularity<MAXTGVAL) curntn->popularity++;
 #ifdef XENIX
 					z = attr[x][y];
@@ -617,11 +618,11 @@ armymove (int armynum)
 			&& movecost[x][y]>=1
 			&& movecost[x][y]<=P_AMOVE
 			&&(land_reachp(P_AXLOC,P_AYLOC,x,y,P_AMOVE,country))){
-				P_AXLOC=x;
-				P_AYLOC=y;
+				P_AXLOC=safe_int_to_uchar(x);
+				P_AYLOC=safe_int_to_uchar(y);
 				if(sct[x][y].owner==0){
 					if (curntn->popularity<MAXTGVAL) curntn->popularity++;
-					sct[x][y].owner=country;
+					sct[x][y].owner=safe_int_to_uchar(country);
 					attr[x][y] = 1;
 					takesctr++;
 				}
@@ -774,7 +775,7 @@ cheat (void)
 	for(x=1;x<NTOTAL;x++)
 		if(realnpc[x]==FALSE)  {
 			bonus+=ntn[x].aplus+ntn[x].dplus;
-			avgscore+=ntn[x].score;
+			avgscore+=safe_long_to_int(ntn[x].score);
 			count++;
 		}
 
@@ -995,7 +996,7 @@ printf("checking for leader in nation %s: armynum=%d\n",curntn->name,armynum);
 				for(armynum=0;armynum<MAXARM;armynum++)
 					if(P_ATYPE == x && P_ASOLD > 0) break;
 				if( armynum<MAXARM) {
-					P_ATYPE=x-1;
+					P_ATYPE=safe_int_to_uchar(x-1);
 					P_ASOLD= *(unitminsth+(x-1)%UTYPE);
 					disarray=FALSE;
 					fprintf(stderr,"new leader in nation %s\n",curntn->name);
@@ -1186,8 +1187,8 @@ do_lizard (void)
 					&&(sct[i][j].altitude!=PEAK)
 					&&(sct[i][j].owner != country)
 					&&(rand()%3==0)){
-						P_AXLOC = i;
-						P_AYLOC = j;
+						P_AXLOC = safe_int_to_uchar(i);
+						P_AYLOC = safe_int_to_uchar(j);
 					}
 				}
 			}
@@ -1322,7 +1323,7 @@ updcapture (void)
 				if(occ[P_AXLOC][P_AYLOC] != country) continue;
 				sptr = &sct[P_AXLOC][P_AYLOC];
 				if(sptr->owner==0){
-					sptr->owner=country;
+					sptr->owner=safe_short_to_uchar(country);
 					if (curntn->popularity<MAXTGVAL) curntn->popularity++;
 				} else if((sptr->owner!=country)
 				&&(curntn->dstatus[sptr->owner]>=WAR)) {
@@ -1342,7 +1343,7 @@ updcapture (void)
 						fprintf(fnews,"3.\tarea %d,%d captured by %s from %s\n",P_AXLOC,P_AYLOC,curntn->name,ntn[sptr->owner].name);
 #endif /* HIDELOC */
 					}
-					sptr->owner=country;
+					sptr->owner=safe_int_to_uchar(country);
 					curntn->popularity++;
 				}
 			}
@@ -1604,9 +1605,9 @@ updsectors (void)
 
 			spreadsheet(country);
 			if ((int)curntn->popularity-2*curntn->inflation < (int)MAXTGVAL) {
-				curntn->popularity = max(0,(int)(curntn->popularity-2*curntn->inflation));
+				curntn->popularity = safe_int_to_uchar(max(0,(int)(curntn->popularity-2*curntn->inflation)));
 			} else curntn->popularity = (char) MAXTGVAL;
-			curntn->tsctrs = spread.sectors;
+			curntn->tsctrs = safe_int_to_short(spread.sectors);
 			curntn->tciv=spread.civilians;
 			curntn->tfood=spread.food;
 
@@ -1638,24 +1639,24 @@ updsectors (void)
 			}
 
 			/* charity increase to popularity */
-			curntn->popularity = min(curntn->popularity+5*charity,MAXTGVAL);
+			curntn->popularity = safe_long_to_uchar(min(curntn->popularity+5*charity,MAXTGVAL));
 
 			/* charity adjustment to poverty; rounding upward */
 			if(curntn->poverty < (charity+1)/2 )
 				curntn->poverty = 0;
-			else	curntn->poverty -= (charity+1)/2;
+			else	curntn->poverty -= safe_long_to_uchar((charity+1)/2);
 
 			/* Calculate inflation base */
 			if(curntn->inflation > 0)
-				curntn->inflation = rand()%(curntn->inflation/2+1);
+				curntn->inflation = safe_int_to_short(rand()%(curntn->inflation/2+1));
 			else curntn->inflation = 0;
-			curntn->inflation += (curntn->tax_rate/4 + (rand()%(curntn->tax_rate*3/4+1)));
+			curntn->inflation += safe_int_to_short(curntn->tax_rate/4 + (rand()%(curntn->tax_rate*3/4+1)));
 
 			/* adjustment for military */
 			if (spread.civilians>0)
-				curntn->inflation += ((curntn->tmil*100/spread.civilians - 15)/5);
+				curntn->inflation += safe_long_to_short((curntn->tmil*100/spread.civilians - 15)/5);
 			/* adjustment for poverty */
-			curntn->inflation += (curntn->poverty-50)/2;
+			curntn->inflation += safe_int_to_short((curntn->poverty-50)/2);
 
 			/* plus maybe an adjustment for jewel production as a ratio */
 			/* for whatever is produced by the country.                 */
@@ -1817,7 +1818,7 @@ updmil (void)
 
 		if(ispc(curntn->active)) {
 		prep( country, TRUE );	/* occ[][] now >0 if leader near */
-		dfltunit = defaultunit(country);
+		dfltunit = safe_long_to_int(defaultunit(country));
 		} else dfltunit = A_INFANTRY;
 
 		for(armynum=0;armynum<MAXARM;armynum++) if(P_ASOLD>0) {
@@ -1826,7 +1827,7 @@ updmil (void)
 			AX = A->xloc;
 			AY = A->yloc;
 			if(A->unittyp==A_INFANTRY)
-				A->unittyp = dfltunit;
+				A->unittyp = safe_int_to_uchar(dfltunit);
 			AT=A->unittyp;
 
 			if( AT< MINLEADER ) {
@@ -1847,7 +1848,7 @@ updmil (void)
 			if(disarray) A->smove=0;
 			else switch(A->stat) {
 			case MARCH:
-				A->smove=(curntn->maxmove * *(unitmove+(AT%UTYPE)))/5;
+				A->smove=safe_int_to_uchar((curntn->maxmove * *(unitmove+(AT%UTYPE)))/5);
 				break;
 			case MILITIA:
 			case ONBOARD:
@@ -1863,8 +1864,8 @@ updmil (void)
 						&&(AY==siegey[army2])) flag=TRUE;
 					/* if this is a new SIEGE... check it */
 					if (flag==FALSE && sieges<MAXSIEGE) {
-						siegex[sieges]=AX;
-						siegey[sieges]=AY;
+						siegex[sieges]=safe_int_to_uchar(AX);
+						siegey[sieges]=safe_int_to_uchar(AY);
 						siegok[sieges]=FALSE;
 						asmen=0;
 						dsmen=0;
@@ -1874,8 +1875,8 @@ updmil (void)
 							&&(ntn[nation].arm[army2].yloc==AY)
 							&&(ntn[nation].arm[army2].stat==SIEGE)){
 								if (ntn[nation].arm[army2].unittyp==A_SIEGE)
-								asmen+=3*ntn[nation].arm[army2].sold;
-								else asmen+=ntn[nation].arm[army2].sold;
+								asmen+=safe_long_to_int(3*ntn[nation].arm[army2].sold);
+								else asmen+=safe_long_to_int(ntn[nation].arm[army2].sold);
 							}
 						}
 						nation=sct[siegex[sieges]][siegey[sieges]].owner;
@@ -1883,8 +1884,8 @@ updmil (void)
 						if((ntn[nation].arm[army2].xloc==AX)
 						&&(ntn[nation].arm[army2].yloc==AY)){
 							if (ntn[nation].arm[army2].unittyp==A_MILITIA)
-							dsmen+=ntn[nation].arm[army2].sold/2;
-							else dsmen+=ntn[nation].arm[army2].sold;
+							dsmen+=safe_long_to_int(ntn[nation].arm[army2].sold/2);
+							else dsmen+=safe_long_to_int(ntn[nation].arm[army2].sold);
 						}
 						if(asmen > 2*dsmen) {
 							siegok[sieges]=TRUE;
@@ -1931,7 +1932,7 @@ updmil (void)
 				A->stat=DEFEND;
 				/* FALLTHROUGH */
 			default:
-				A->smove=(curntn->maxmove * *(unitmove+(AT%UTYPE)))/10;
+				A->smove=safe_int_to_uchar((curntn->maxmove * *(unitmove+(AT%UTYPE)))/10);
 				break;
 			}
 
@@ -2032,10 +2033,10 @@ updmil (void)
 				}
 #endif
 				if(disarray) P_NMOVE=0;
-				else P_NMOVE = (fltspeed(nvynum)*P_NCREW)/SHIPCREW;
+				else P_NMOVE = safe_int_to_uchar((fltspeed(nvynum)*P_NCREW)/SHIPCREW);
 				if(magic(country,SAILOR)==TRUE) P_NMOVE*=2;
 
-				curntn->tships += fltships(country,nvynum);
+				curntn->tships += safe_int_to_short(fltships(country,nvynum));
 				curntn->tgold -= flthold(nvynum)*SHIPMAINT;
 			} else {
 				P_NWSHP=0;
@@ -2198,8 +2199,8 @@ updcomodities (void)
 	if(isntn(ntn[country].active)){
 		curntn = &ntn[country];
 		/*soldiers eat  2 times as much */
-		curntn->tfood-=curntn->tmil*P_EATRATE*2;
-		curntn->tfood-=curntn->tciv*P_EATRATE;
+		curntn->tfood-=safe_double_to_long((double)curntn->tmil * P_EATRATE * 2.0);
+		curntn->tfood-=safe_double_to_long((double)curntn->tciv * P_EATRATE);
 
 		/*starve people*/
 		if(curntn->tfood<0) for(x=0;x<MAPX;x++) for(y=0;y<MAPY;y++) {
@@ -2241,7 +2242,7 @@ updcomodities (void)
 		tempflt = (float) curntn->tfood * (100-curntn->spoilrate);
 		curntn->tfood = (long) (tempflt / 100.0);
 
-		if((0.0+curntn->tgold) - GOLDTHRESH*(0.0+curntn->jewels) > 0.0){
+		if(((double)curntn->tgold) - GOLDTHRESH*((double)curntn->jewels) > 0.0){
 			/* buy jewels off commodities board */
 			xx=curntn->tgold-GOLDTHRESH*curntn->jewels;
 			if (ispc(curntn->active)) {
@@ -2401,7 +2402,7 @@ updleader (void)
 
 			for(armynum=0;armynum < MAXARM;armynum++) {
 				if(P_ASOLD != 0) continue;
-				P_ATYPE = type;
+				P_ATYPE = safe_int_to_uchar(type);
 				P_ASOLD = *(unitminsth+(type%UTYPE));
 				P_AXLOC = curntn->capx;
 				P_AYLOC = curntn->capy;
@@ -2440,7 +2441,7 @@ updleader (void)
 
 		for(armynum=0;armynum < MAXARM;armynum++) { /* add one leader */
 			if(P_ASOLD != 0) continue;
-			P_ATYPE = getleader(curntn->class);
+			P_ATYPE = safe_int_to_uchar(getleader(curntn->class));
 			P_ASOLD = *(unitminsth+(P_ATYPE%UTYPE));
 			P_AXLOC = curntn->capx;
 			P_AYLOC = curntn->capy;
