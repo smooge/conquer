@@ -677,7 +677,20 @@ struct	s_nation		/* player nation stats	*/
 #define	P_NMOVE	curntn->nvy[nvynum].smove
 
 /* naval routine macros */
-#define	SHIPS(x,y)	(short)( ((x)&(N_MASK<<((y)*N_BITSIZE))) >> ((y)*N_BITSIZE) )
+/*
+ * SHIPS macro modernization: Changed return type from (short) to (int)
+ *
+ * Original: #define SHIPS(x,y) (short)( ((x)&(N_MASK<<((y)*N_BITSIZE))) >> ((y)*N_BITSIZE) )
+ * Updated:  #define SHIPS(x,y) (int)( ((x)&(N_MASK<<((y)*N_BITSIZE))) >> ((y)*N_BITSIZE) )
+ *
+ * Rationale for change:
+ * - Eliminates C2023 conversion warnings (int → short) in naval operations
+ * - Values are always 0-31 (N_MASK = 0x001f), so int and short are functionally identical
+ * - int is the natural calculation type in C, avoiding forced conversions
+ * - Maintains all existing functionality while enabling warning-free compilation
+ * - Part of Phase 4.8 modernization effort for clean C2023 compliance
+ */
+#define	SHIPS(x,y)	(int)( ((x)&(N_MASK<<((y)*N_BITSIZE))) >> ((y)*N_BITSIZE) )
 #define	P_NWAR(x)	SHIPS(P_NWSHP,x)
 #define	P_NMER(x)	SHIPS(P_NMSHP,x)
 #define	P_NGAL(x)	SHIPS(P_NGSHP,x)
@@ -837,12 +850,12 @@ struct	s_nation		/* player nation stats	*/
 
 #ifdef SYSV
 extern	long		lrand48(void);
-#define	rand()		lrand48()
+#define	rand()		((int)(lrand48() & 0x7FFFFFFF))
 #define	srand(x)	srand48(x)
 #endif
 
 #ifdef	BSD
-#define	rand()		random()
+#define	rand()		((int)(random() & 0x7FFFFFFF))
 #define	srand(x)	srandom(x)
 #endif
 

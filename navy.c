@@ -25,6 +25,7 @@
 #include <curses.h>
 #include "header.h"
 #include "data.h"
+#include "safe_convert.h"
 
 /*
  * addwships - Add warships to naval fleet using bit manipulation
@@ -71,7 +72,7 @@
 int
 addwships(short nvynum, short shipsize, short nships)
 {
-	short hold=nships;
+	int hold=nships;
 
 	/* return FALSE if fails, TRUE otherwise */
 
@@ -89,13 +90,13 @@ addwships(short nvynum, short shipsize, short nships)
 	hold <<= (N_BITSIZE*shipsize);
 
 	/* set it in variable */
-	P_NWSHP |= hold;
+	P_NWSHP |= safe_int_to_ushort(hold);
 
 	/* form mask so other values won't be changed */
 	hold |= ~(N_MASK<<(N_BITSIZE*shipsize));
 
 	/* now change the variable */
-	P_NWSHP &= hold;
+	P_NWSHP &= safe_int_to_ushort(hold);
 	return(TRUE);
 }
 
@@ -143,7 +144,7 @@ addwships(short nvynum, short shipsize, short nships)
 int 
 addmships (int nvynum, int shipsize, int nships)
 {
-	short hold=nships;
+	int hold=nships;
 
 	/* return FALSE if fails, TRUE otherwise */
 
@@ -161,13 +162,13 @@ addmships (int nvynum, int shipsize, int nships)
 	hold <<= (N_BITSIZE*shipsize);
 
 	/* set it in variable */
-	P_NMSHP |= hold;
+	P_NMSHP |= safe_int_to_ushort(hold);
 
 	/* form mask so other values won't be changed */
 	hold |= ~(N_MASK<<(N_BITSIZE*shipsize));
 
 	/* now change the variable */
-	P_NMSHP &= hold;
+	P_NMSHP &= safe_int_to_ushort(hold);
 	return(TRUE);
 }
 
@@ -216,7 +217,7 @@ addmships (int nvynum, int shipsize, int nships)
 int 
 addgships (int nvynum, int shipsize, int nships)
 {
-	short hold=nships;
+	int hold=nships;
 
 	/* return FALSE if fails, TRUE otherwise */
 
@@ -234,13 +235,13 @@ addgships (int nvynum, int shipsize, int nships)
 	hold <<= (N_BITSIZE*shipsize);
 
 	/* set it in variable */
-	P_NGSHP |= hold;
+	P_NGSHP |= safe_int_to_ushort(hold);
 
 	/* form mask so other values won't be changed */
 	hold |= ~(N_MASK<<(N_BITSIZE*shipsize));
 
 	/* now change the variable */
-	P_NGSHP &= hold;
+	P_NGSHP &= safe_int_to_ushort(hold);
 	return(TRUE);
 }
 
@@ -289,7 +290,7 @@ addgships (int nvynum, int shipsize, int nships)
 void 
 subwships (int nvynum, int shipsize, int nships)
 {
-	short hold;
+	int hold;
 
 	/* return FALSE if fails, TRUE otherwise */
 
@@ -307,13 +308,13 @@ subwships (int nvynum, int shipsize, int nships)
 	hold <<= (N_BITSIZE*shipsize);
 
 	/* set it in variable */
-	P_NWSHP |= hold;
+	P_NWSHP |= safe_int_to_ushort(hold);
 
 	/* form mask so other values won't be changed */
 	hold |= ~(N_MASK<<(N_BITSIZE*shipsize));
 
 	/* now change the variable */
-	P_NWSHP &= hold;
+	P_NWSHP &= safe_int_to_ushort(hold);
 }
 
 /*
@@ -362,7 +363,7 @@ subwships (int nvynum, int shipsize, int nships)
 void 
 submships (int nvynum, int shipsize, int nships)
 {
-	short hold;
+	int hold;
 
 	/* return FALSE if fails, TRUE otherwise */
 
@@ -379,13 +380,13 @@ submships (int nvynum, int shipsize, int nships)
 	hold <<= (N_BITSIZE*shipsize);
 
 	/* set it in variable */
-	P_NMSHP |= hold;
+	P_NMSHP |= safe_int_to_ushort(hold);
 
 	/* form mask so other values won't be changed */
 	hold |= ~(N_MASK<<(N_BITSIZE*shipsize));
 
 	/* now change the variable */
-	P_NMSHP &= hold;
+	P_NMSHP &= safe_int_to_ushort(hold);
 }
 
 /*
@@ -434,7 +435,7 @@ submships (int nvynum, int shipsize, int nships)
 void 
 subgships (int nvynum, int shipsize, int nships)
 {
-	short hold;
+	int hold;
 
 	/* return FALSE if fails, TRUE otherwise */
 
@@ -451,13 +452,13 @@ subgships (int nvynum, int shipsize, int nships)
 	hold <<= (N_BITSIZE*shipsize);
 
 	/* set it in variable */
-	P_NGSHP |= hold;
+	P_NGSHP |= safe_int_to_ushort(hold);
 
 	/* form mask so other values won't be changed */
 	hold |= ~(N_MASK<<(N_BITSIZE*shipsize));
 
 	/* now change the variable */
-	P_NGSHP &= hold;
+	P_NGSHP &= safe_int_to_ushort(hold);
 	return;
 }
 
@@ -583,7 +584,7 @@ fltspeed (int nvynum)
 		if (P_NGAL(i)>0) hold=N_GSPD+(2-i)*N_SIZESPD;
 
 	if (hold==99) hold=N_NOSPD;
-	return(hold);
+	return(safe_int_to_ushort(hold));
 }
 #endif /* ADMIN */
 
@@ -1061,7 +1062,7 @@ loadfleet (void)
 	int gcargo, mcargo, amount, armynum;
 
 	clear_bottom(0);
-	if((nvynum=getselunit()-MAXARM)>=0){
+	if((nvynum=safe_int_to_short(getselunit()-MAXARM))>=0){
 		if(nvynum>=MAXNAVY){
 			errormsg("Invalid Navy");
 			return;
@@ -1149,7 +1150,7 @@ loadfleet (void)
 			}
 			mvaddstr(LINES-2,0,"Unload how many people?");
 			refresh();
-			amount=get_number();
+			amount=safe_long_to_int(get_number());
 			if(amount > mhold*P_NPEOP) {
 				errormsg("There are not that many on board");
 			} else if (amount > 0) {
@@ -1169,7 +1170,7 @@ loadfleet (void)
 		}
 	} else {
 		clear_bottom(0);
-		mcargo = mhold*(SHIPHOLD-P_NPEOP);
+		mcargo = safe_long_to_int(mhold*(SHIPHOLD-P_NPEOP));
 		if(P_NARMY==MAXARM) {
 			gcargo = ghold*SHIPHOLD;
 			mvprintw(LINES-4,0,"Available Space:  %d soldiers  %d people", gcargo, mcargo);
@@ -1185,7 +1186,7 @@ loadfleet (void)
 		if(doarmy==TRUE) {
 			mvaddstr(LINES-2,0,"Load what army?");
 			refresh();
-			armynum = get_number();
+			armynum = safe_long_to_int(get_number());
 			if(armynum<0) {
 				;
 			} else if((armynum>=MAXARM)||(P_ASOLD<=0)
@@ -1199,7 +1200,7 @@ loadfleet (void)
 			} else {
 				P_ASTAT=ONBOARD;
 				P_AMOVE=0;
-				P_NARMY=armynum;
+				P_NARMY=safe_int_to_uchar(armynum);
 				if (!((sct[XREAL][YREAL].designation==DCITY
 				|| sct[XREAL][YREAL].designation==DCAPITOL)
 				&& (sct[XREAL][YREAL].owner==country
@@ -1218,7 +1219,7 @@ loadfleet (void)
 		} else if(doarmy==FALSE && mcargo!=0){
 			mvaddstr(LINES-2,0,"Load how many people?");
 			refresh();
-			amount=get_number();
+			amount=safe_long_to_int(get_number());
 			if(sct[XREAL][YREAL].owner!=country) {
 				errormsg("The people refuse to board");
 			} else if(amount > mcargo) {

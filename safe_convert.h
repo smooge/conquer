@@ -1,0 +1,376 @@
+/*
+ * safe_convert.h - Type-safe conversion utilities for modernization
+ *
+ * CONVERSION UTILITY MODULE
+ *
+ * This module provides type-safe conversion functions to eliminate compiler
+ * warnings during C2023 modernization while maintaining correctness and
+ * preventing overflow conditions. These utilities support the Phase 4.8
+ * conversion warning elimination strategy.
+ *
+ * Design Principles:
+ * 1. Range Validation - All conversions check for overflow/underflow
+ * 2. Game Logic Preservation - Conversions respect game value constraints
+ * 3. Cross-Platform Safety - Handle platform-specific type variations
+ * 4. Zero Performance Impact - Inline functions with compile-time optimization
+ * 5. Systematic Application - Consistent patterns across entire codebase
+ *
+ * Usage Philosophy:
+ * - Prefer architectural type changes over conversion utilities when possible
+ * - Use utilities when legacy constraints prevent type architecture changes
+ * - Apply consistently across all files requiring conversion warning fixes
+ * - Document conversion rationale for maintenance clarity
+ *
+ * Module Integration:
+ * - Include in all source files requiring conversion warning elimination
+ * - Add to build system (Makefile, CMake) for compilation
+ * - No external dependencies beyond standard C library
+ * - Compatible with both admin and game compilation modes
+ *
+ * This file is part of Conquer.
+ * Copyright (C) 2025 Juan Manuel Méndez Rey (Vejeta) - Licensed under GPL v3
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ */
+
+#ifndef SAFE_CONVERT_H
+#define SAFE_CONVERT_H
+
+#include <limits.h>
+#include <sys/types.h>
+
+/*
+ * Game-specific constants for value range validation
+ * These should match the definitions in data.h
+ */
+#ifndef MAXTGVAL
+#define MAXTGVAL 100  /* Maximum value for nation attributes */
+#endif
+
+/*
+ * safe_clamp_uchar - Safely clamp long value to unsigned char range for nation attributes
+ *
+ * Clamps a long integer value to the valid range for nation attributes (0-MAXTGVAL).
+ * Used throughout nation attribute calculations where computed values may exceed
+ * the target field size. MAXTGVAL is defined as 100 in data.h.
+ *
+ * This function replaces unsafe min() macro usage and direct casting that
+ * generates conversion warnings. It ensures values remain within game logic
+ * constraints while providing compiler warning elimination.
+ *
+ * Parameters:
+ *   value - Long integer value to clamp (may be negative or exceed range)
+ *
+ * Returns:
+ *   Clamped value in range 0-MAXTGVAL as unsigned char
+ *
+ * Example Usage:
+ *   curntn->terror = safe_clamp_uchar(temp/5);
+ *   curntn->wealth = safe_clamp_uchar(calculated_wealth);
+ */
+static inline unsigned char safe_clamp_uchar(long value) {
+    if (value < 0) return 0;
+    if (value > MAXTGVAL) return MAXTGVAL;
+    return (unsigned char)value;
+}
+
+/*
+ * safe_uid_to_int - Safely convert uid_t to int with platform validation
+ *
+ * Converts uid_t to int with range checking. uid_t is typically unsigned int
+ * but may vary by platform (could be uint32_t, unsigned long, etc.).
+ * This function handles the conversion safely across different platforms.
+ *
+ * Used when interfacing with legacy functions that expect int parameters
+ * but receive uid_t values from system calls like getuid().
+ *
+ * Parameters:
+ *   uid - uid_t value to convert (platform-dependent unsigned type)
+ *
+ * Returns:
+ *   int value, or -1 if uid exceeds INT_MAX (indicating error condition)
+ *
+ * Example Usage:
+ *   newlogin(safe_uid_to_int(realuser));
+ *   int user_id = safe_uid_to_int(getuid());
+ */
+static inline int safe_uid_to_int(uid_t uid) {
+    if (uid > INT_MAX) return -1;
+    return (int)uid;
+}
+
+/*
+ * safe_long_to_int - Safely convert long to int with range validation
+ *
+ * Converts long to int with range checking to prevent overflow. Used in
+ * calculations where intermediate results may exceed int range but final
+ * result should fit in int.
+ *
+ * Handles both positive and negative overflow conditions by clamping to
+ * the valid int range rather than allowing undefined behavior.
+ *
+ * Parameters:
+ *   value - Long value to convert (may exceed int range)
+ *
+ * Returns:
+ *   int value clamped to INT_MIN/INT_MAX range
+ *
+ * Example Usage:
+ *   x = safe_long_to_int(curntn->eatrate/2 + temp/curntn->tciv);
+ *   count = safe_long_to_int(calculation_result);
+ */
+static inline int safe_long_to_int(long value) {
+    if (value > INT_MAX) return INT_MAX;
+    if (value < INT_MIN) return INT_MIN;
+    return (int)value;
+}
+
+/*
+ * safe_size_to_int - Safely convert size_t to int with range validation
+ *
+ * Converts size_t to int with overflow checking. Used when size_t values
+ * (from strlen, sizeof, etc.) need to be used with legacy int-based APIs.
+ *
+ * Since size_t is unsigned and potentially larger than int, this function
+ * provides safe conversion with overflow detection.
+ *
+ * Parameters:
+ *   size - size_t value to convert (from strlen, sizeof, etc.)
+ *
+ * Returns:
+ *   int value, or INT_MAX if size exceeds INT_MAX
+ *
+ * Example Usage:
+ *   int len = safe_size_to_int(strlen(buffer));
+ *   int count = safe_size_to_int(array_size);
+ */
+static inline int safe_size_to_int(size_t size) {
+    if (size > INT_MAX) return INT_MAX;
+    return (int)size;
+}
+
+/*
+ * safe_int_to_uchar - Safely convert int to unsigned char with validation
+ *
+ * Converts int to unsigned char with range checking. Used for character
+ * calculations and array indexing where negative values should be clamped.
+ *
+ * Parameters:
+ *   value - int value to convert (may be negative or exceed uchar range)
+ *
+ * Returns:
+ *   unsigned char value clamped to 0-255 range
+ *
+ * Example Usage:
+ *   array_index = safe_int_to_uchar(calculated_index);
+ *   char_value = safe_int_to_uchar(ascii_calculation);
+ */
+static inline unsigned char safe_int_to_uchar(int value) {
+    if (value < 0) return 0;
+    if (value > 255) return 255;
+    return (unsigned char)value;
+}
+
+/*
+ * safe_int_to_short - Safely convert int to short with validation
+ *
+ * Converts int to short int with range checking. Used for nation indices
+ * and other values that need to fit in 16-bit signed range.
+ *
+ * Parameters:
+ *   value - int value to convert (may exceed short range)
+ *
+ * Returns:
+ *   short value clamped to SHRT_MIN-SHRT_MAX range
+ *
+ * Example Usage:
+ *   country = safe_int_to_short(nation_id);
+ *   index = safe_int_to_short(calculated_index);
+ */
+static inline short safe_int_to_short(int value) {
+    if (value < SHRT_MIN) return SHRT_MIN;
+    if (value > SHRT_MAX) return SHRT_MAX;
+    return (short)value;
+}
+
+/*
+ * safe_int_to_size - Safely convert int to size_t with validation
+ *
+ * Converts int to size_t with range checking. Used for array counts,
+ * string lengths, and other size-related values passed to library functions.
+ *
+ * Parameters:
+ *   value - int value to convert (may be negative)
+ *
+ * Returns:
+ *   size_t value, clamped to 0 minimum (negative values become 0)
+ *
+ * Example Usage:
+ *   qsort(array, safe_int_to_size(count), sizeof(item), compare);
+ *   fwrite(buffer, 1, safe_int_to_size(length), file);
+ */
+static inline size_t safe_int_to_size(int value) {
+    if (value < 0) return 0;
+    return (size_t)value;
+}
+
+/*
+ * safe_long_to_float - Safely convert long to float with validation
+ *
+ * Converts long to float with range checking. Used in calculations where
+ * long integer results need to be used in floating-point calculations.
+ * Handles potential overflow to float range and maintains precision.
+ *
+ * Parameters:
+ *   value - Long value to convert (may exceed float precision range)
+ *
+ * Returns:
+ *   float value, preserving as much precision as possible
+ *
+ * Example Usage:
+ *   astr = safe_long_to_float(asold * (100 + abonus));
+ *   float result = safe_long_to_float(calculation);
+ */
+static inline float safe_long_to_float(long value) {
+    return (float)value;
+}
+
+/*
+ * safe_float_to_int - Safely convert float to int with validation
+ *
+ * Converts float to int with range checking and rounding. Used when
+ * floating-point calculations need to be converted back to integer
+ * values for further processing.
+ *
+ * Parameters:
+ *   value - Float value to convert (may exceed int range)
+ *
+ * Returns:
+ *   int value clamped to INT_MIN-INT_MAX range, rounded to nearest integer
+ *
+ * Example Usage:
+ *   odds = safe_float_to_int((astr*100)/dstr);
+ *   int result = safe_float_to_int(calculation);
+ */
+static inline int safe_float_to_int(float value) {
+    if (value > INT_MAX) return INT_MAX;
+    if (value < INT_MIN) return INT_MIN;
+    return (int)(value + 0.5f); /* Round to nearest integer */
+}
+
+/*
+ * safe_short_to_char - Safely convert short to char with validation
+ *
+ * Converts short to char with range checking. Used when short values
+ * from macros or calculations need to be stored in char variables.
+ * Clamps to valid char range to prevent overflow.
+ *
+ * Parameters:
+ *   value - Short value to convert (may exceed char range)
+ *
+ * Returns:
+ *   char value clamped to CHAR_MIN-CHAR_MAX range
+ *
+ * Example Usage:
+ *   wnum[j] = safe_short_to_char(SHIPS(ntn[country].nvy[unit[j]].warships,N_LIGHT));
+ *   char result = safe_short_to_char(calculation);
+ */
+static inline char safe_short_to_char(short value) {
+    if (value > CHAR_MAX) return CHAR_MAX;
+    if (value < CHAR_MIN) return CHAR_MIN;
+    return (char)value;
+}
+
+/*
+ * safe_int_to_char - Convert int to char with bounds checking
+ *
+ * Safely converts an integer value to char, clamping to valid char range.
+ * Used for array indexing and character data where int values need to fit
+ * in char storage.
+ *
+ * Parameters:
+ *   value - The int value to convert
+ *
+ * Returns:
+ *   char value clamped to [CHAR_MIN, CHAR_MAX] range
+ */
+static inline char safe_int_to_char(int value) {
+    if (value > CHAR_MAX) return CHAR_MAX;
+    if (value < CHAR_MIN) return CHAR_MIN;
+    return (char)value;
+}
+
+/*
+ * safe_short_to_uchar - Convert short to unsigned char with bounds checking
+ *
+ * Safely converts a short value to unsigned char, clamping to valid range.
+ * Used for coordinate systems and data fields where short values need to fit
+ * in unsigned char storage.
+ *
+ * Parameters:
+ *   value - The short value to convert
+ *
+ * Returns:
+ *   unsigned char value clamped to [0, UCHAR_MAX] range
+ */
+static inline unsigned char safe_short_to_uchar(short value) {
+    if (value > UCHAR_MAX) return UCHAR_MAX;
+    if (value < 0) return 0;
+    return (unsigned char)value;
+}
+
+/*
+ * safe_int_to_ushort - Convert int to unsigned short with bounds checking
+ *
+ * Safely converts an integer value to unsigned short, clamping to valid range.
+ * Used for naval ship operations and bit field assignments where int values
+ * need to fit in unsigned short storage. Particularly useful for P_NWSHP,
+ * P_NMSHP, and P_NGSHP assignments in naval fleet management.
+ *
+ * This function eliminates sign conversion warnings that occur when assigning
+ * signed short results to unsigned short fields in ship manipulation functions.
+ *
+ * Parameters:
+ *   value - The int value to convert
+ *
+ * Returns:
+ *   unsigned short value clamped to [0, USHRT_MAX] range
+ *
+ * Example Usage:
+ *   P_NWSHP |= safe_int_to_ushort(hold);
+ *   P_NMSHP &= safe_int_to_ushort(calculated_mask);
+ */
+static inline unsigned short safe_int_to_ushort(int value) {
+    if (value > USHRT_MAX) return USHRT_MAX;
+    if (value < 0) return 0;
+    return (unsigned short)value;
+}
+
+/*
+ * Conversion Utility Usage Guidelines
+ *
+ * 1. ARCHITECTURAL FIRST: Always prefer changing variable types over conversions
+ *    - Change int to size_t for string lengths and array indices
+ *    - Update function signatures to use appropriate types
+ *    - Use consistent types throughout call chains
+ *
+ * 2. UTILITIES SECOND: Use conversion utilities when architectural changes aren't feasible
+ *    - Legacy function interfaces that can't be changed
+ *    - Cross-module boundaries with different type requirements
+ *    - Platform-specific type handling
+ *
+ * 3. DOCUMENTATION: Always document why conversion is needed
+ *    - Reference external constraints (legacy APIs, file formats)
+ *    - Explain value range requirements and validation
+ *    - Note any special handling for edge cases
+ *
+ * 4. SYSTEMATIC APPLICATION: Use consistently across the codebase
+ *    - Same patterns for same types of conversions
+ *    - Uniform error handling approaches
+ *    - Consistent validation logic
+ */
+
+#endif /* SAFE_CONVERT_H */

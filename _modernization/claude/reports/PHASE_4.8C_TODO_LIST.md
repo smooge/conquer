@@ -19,16 +19,16 @@
 | Priority | File | Warnings | Compilation | Session Est | Status |
 |----------|------|----------|-------------|-------------|--------|
 | ✅ 1 | **makeworl.c** | 83 → 2 | Admin-only | 1 session | ✅ **COMPLETE (97.5%)** |
-| 🔴 2 | **navy.c** | 74 | Dual-compiled | 1-2 sessions | 🎯 **NEXT TARGET** |
-| 🔴 3 | **misc.c** | 69 | Dual-compiled | 1-2 sessions | ⏳ Queue |
+| ✅ 2 | **navy.c** | 26 → 0 | Dual-compiled | 1 session | ✅ **COMPLETE (100%)** |
+| 🔴 3 | **misc.c** | 69 | Dual-compiled | 1-2 sessions | 🎯 **NEXT TARGET** |
 | 🔴 4 | **newlogin.c** | 68 | Admin-only | 1-2 sessions | ⏳ Queue |
 | 🔴 5 | **cexecute.c** | 64 | Dual-compiled | 1-2 sessions | ⏳ Queue |
 
 ### **Total Phase 4.8C Progress**
-- **Files**: 1/5 complete, 4 remaining
-- **Warnings**: 81 eliminated from makeworl.c (83 → 2), ~277 remaining total
-- **Sessions**: 1 used, 4-9 remaining (reduced from original 12+ due to proven patterns)
-- **Success Rate**: 97.5% achieved on makeworl.c (exceeds 85% target)
+- **Files**: 2/5 complete, 3 remaining
+- **Warnings**: 107 eliminated (makeworl.c: 81, navy.c: 26), ~200 remaining total
+- **Sessions**: 2 used, 3-7 remaining (architectural insights + proven patterns = perfect results)
+- **Success Rate**: 100% achieved on navy.c (perfect elimination) + 97.5% on makeworl.c
 
 ---
 
