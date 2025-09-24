@@ -73,6 +73,7 @@
 #include <string.h>
 #include <unistd.h>
 #include "psmap.h"
+#include "safe_convert.h"
 
 char buffer[BUFSIZ];
 int c, xsize, ysize;
@@ -932,7 +933,7 @@ main(int argc, char *argv[])
 	    break;
     }
 
-    strncpy(foot, firstline, c);
+    strncpy(foot, firstline, safe_int_to_size(c));
     foot[c] = '\0';
     if (title[0] == '\0') {
 	strncpy(title, &firstline[c + 1], 80);
