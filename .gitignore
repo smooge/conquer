@@ -86,3 +86,6 @@ Thumbs.db
 */target/
 */.deps/
 */.libs/
+
+# Modernization scratch/temporary files
+_modernization/claude/scratch/
