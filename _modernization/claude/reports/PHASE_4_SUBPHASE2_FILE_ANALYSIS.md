@@ -195,7 +195,7 @@
 **CRITICAL**: All files require these flags (from strategy analysis):
 ```bash
 FEATURE_TEST_MACROS='-D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE'
-ESSENTIAL_FLAGS='-DDEFAULTDIR="/home/ssmoogen/conquer/lib" -DEXEDIR="/home/ssmoogen/conquer/bin" -DPATCHLEVEL="12" -DLOGIN="ssmoogen"'
+ESSENTIAL_FLAGS='-DDEFAULTDIR="/projects/conquer/lib" -DEXEDIR="/home/ssmoogen/conquer/bin" -DPATCHLEVEL="12" -DLOGIN="ssmoogen"'
 CONFIG_FLAGS='-DCONQUER -DADMIN'  # For shared files
 ```
 

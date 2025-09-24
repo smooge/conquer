@@ -721,7 +721,7 @@ do_pirate (void)
 #ifdef MORE_MONST
 		if(rand()%15==0) {
 			/*randomly add one warship to pirate fleet*/
-			shipsize = rand()%(N_HEAVY-N_LIGHT+1);
+			shipsize = safe_rand_short(N_HEAVY-N_LIGHT+1);
 			(void) NADD_WAR(1);
 		}
 #endif /* MORE_MONST */

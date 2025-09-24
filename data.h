@@ -656,7 +656,7 @@ struct	s_nation		/* player nation stats	*/
 	unsigned char	terror;		/* peoples terror of you*/
 	unsigned char	reputation;	/* reputation of nation	*/
 };
-#define	P_NTNCOM	((((float) curntn->communications)/ 50.0 ))
+#define	P_NTNCOM	((((double) curntn->communications)/ 50.0 ))
 #define	P_EATRATE	((((double) curntn->eatrate) / 25.0 ))
 #define	P_REPRORATE	( ((float) (100.0 + 25.0*curntn->repro )/100.0))
 

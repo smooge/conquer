@@ -34,6 +34,7 @@
 #include "header.h"
 #include "data.h"
 #include "patchlevel.h"
+#include "safe_convert.h"
 
 extern	int armornvy,roads_this_turn,terror_adj;
 
@@ -1406,7 +1407,7 @@ void makeside(int alwayssee) {	/* see even if cant really see sector */
 				else if(magic(i,THE_VOID)==TRUE)
 				mvprintw(nfound2*2+count,COLS-20,"%s: ?? men  ",ntn[i].name);
 				else {
-					srand(i*17+enemy+TURN*3);
+					srand(safe_long_to_uint(i*17+enemy+TURN*3));
 					mvprintw(nfound2*2+count,COLS-20,"%s: %ld men  ",ntn[i].name,(enemy*(rand()%60+70)/100));
 					srand((unsigned) time((long *) 0));
 				}
@@ -1428,7 +1429,7 @@ void makeside(int alwayssee) {	/* see even if cant really see sector */
 				else if(magic(i,THE_VOID)==TRUE)
 				mvprintw(nfound2*2+count,COLS-20,"%s: ?? ships",ntn[i].name);
 				else {
-					srand(i*17+enemy+TURN*3);
+					srand(safe_long_to_uint(i*17+enemy+TURN*3));
 					mvprintw(nfound2*2+count,COLS-20,"%s: %ld ships",ntn[i].name,(enemy*(rand()%60+70)/100));
 					srand((unsigned) time((long *) 0));
 				}
@@ -1472,7 +1473,7 @@ void makeside(int alwayssee) {	/* see even if cant really see sector */
 		if((sptr->owner==country)||(country==0)||(magic(country,NINJA)==TRUE))
 		mvprintw(LINES-9,COLS-20,"people: %6ld",sptr->people);
 		else {
-			srand(country*17+TURN*3+sptr->people);
+			srand(safe_long_to_uint(country*17+TURN*3+sptr->people));
 			mvprintw(LINES-9,COLS-20,"people: %6ld",sptr->people*(rand()%60+70)/100);
 			srand((unsigned) time((long *) 0));
 		}

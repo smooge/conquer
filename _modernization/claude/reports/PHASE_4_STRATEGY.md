@@ -90,7 +90,7 @@ find . -name "*.c" -o -name "*.h" | sort > _modernization/claude/reports/FILE_IN
 
 # STEP 3: Baseline compilation test with essential -D flags
 # Extract essential flags from Makefile analysis:
-ESSENTIAL_FLAGS='-DDEFAULTDIR="/home/ssmoogen/conquer/lib" -DEXEDIR="/home/ssmoogen/conquer/bin" -DPATCHLEVEL="12" -DLOGIN="ssmoogen"'
+ESSENTIAL_FLAGS='-DDEFAULTDIR="/projects/conquer/lib" -DEXEDIR="/home/ssmoogen/conquer/bin" -DPATCHLEVEL="12" -DLOGIN="ssmoogen"'
 
 # CRITICAL: Essential Feature Test Macros (discovered during Phase 4 implementation)
 # These feature test macros are REQUIRED for legacy code compilation:
@@ -902,12 +902,12 @@ These files are compiled as standalone utilities with specific PostScript flags:
 
 #### Admin-Only and Shared Files:
 ```bash
-gcc -O2 -g -std=c99 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -DDEFAULTDIR='"/home/ssmoogen/conquer/lib"' -DEXEDIR='"/home/ssmoogen/conquer/bin"' -DPATCHLEVEL='"12"' -DLOGIN='"ssmoogen"' -DADMIN -DCONQUER -c filename.c -o /tmp/filename.o
+gcc -O2 -g -std=c99 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -DDEFAULTDIR='"/projects/conquer/lib"' -DEXEDIR='"/home/ssmoogen/conquer/bin"' -DPATCHLEVEL='"12"' -DLOGIN='"ssmoogen"' -DADMIN -DCONQUER -c filename.c -o /tmp/filename.o
 ```
 
 #### Game-Only Files:
 ```bash
-gcc -O2 -g -std=c99 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -DDEFAULTDIR='"/home/ssmoogen/conquer/lib"' -DEXEDIR='"/home/ssmoogen/conquer/bin"' -DPATCHLEVEL='"12"' -DLOGIN='"ssmoogen"' -DCONQUER -c filename.c -o /tmp/filename.o
+gcc -O2 -g -std=c99 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -DDEFAULTDIR='"/projects/conquer/lib"' -DEXEDIR='"/home/ssmoogen/conquer/bin"' -DPATCHLEVEL='"12"' -DLOGIN='"ssmoogen"' -DCONQUER -c filename.c -o /tmp/filename.o
 ```
 
 #### Dual-Compiled Files (Test Both):
@@ -921,7 +921,7 @@ gcc [game flags above] -c filename.c -o /tmp/filenameG.o
 
 #### PostScript Utility Files:
 ```bash
-gcc -g -fno-strict-aliasing -fwrapv -Wall -Wextra -O2 -DPSFILE='"/home/ssmoogen/conquer/bin/psmap.ps"' -DLETTER -c psmap.c -o /tmp/psmap.o
+gcc -g -fno-strict-aliasing -fwrapv -Wall -Wextra -O2 -DPSFILE='"/projects/conquer/bin/psmap.ps"' -DLETTER -c psmap.c -o /tmp/psmap.o
 ```
 
 ### Key Insights from admin.c Analysis
@@ -939,7 +939,7 @@ gcc -g -fno-strict-aliasing -fwrapv -Wall -Wextra -O2 -DPSFILE='"/home/ssmoogen/
 - ❌ **Wrong**: Testing admin.c without `-DADMIN` (will fail due to missing variable declarations)
 - ✅ **Right**: Testing admin.c with `-DADMIN -DCONQUER`
 - ❌ **Wrong**: Testing psmap.c with standard flags (will fail due to missing PSFILE/DEFAULTPAGE)
-- ✅ **Right**: Testing psmap.c with PostScript flags `-DPSFILE='"/home/ssmoogen/conquer/bin/psmap.ps"' -DLETTER`
+- ✅ **Right**: Testing psmap.c with PostScript flags `-DPSFILE='"/projects/conquer/bin/psmap.ps"' -DLETTER`
 
 ### Enhanced test_warnings.sh Script (Phase 4.4 Update)
 

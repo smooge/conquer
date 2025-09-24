@@ -33,8 +33,8 @@ FEATURE_TEST_MACROS = [
 ]
 
 ESSENTIAL_FLAGS = [
-    '-DDEFAULTDIR="/home/ssmoogen/conquer/lib"',
-    '-DEXEDIR="/home/ssmoogen/conquer/bin"',
+    '-DDEFAULTDIR="/projects/conquer/lib"',
+    '-DEXEDIR="/projects/conquer/bin"',
     '-DVERSION="4"',
     '-DPATCHLEVEL="12"',
     '-DLOGIN="ssmoogen"'

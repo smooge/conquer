@@ -81,7 +81,7 @@ typedef struct L_DATA {
 
 ## Verification Command
 ```bash
-gcc -O2 -g -std=c99 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -DDEFAULTDIR="/home/ssmoogen/conquer/lib" -DEXEDIR="/home/ssmoogen/conquer/bin" -DPATCHLEVEL="12" -DLOGIN="ssmoogen" -DCONQUER -c commands.c -o /tmp/foo.o
+gcc -O2 -g -std=c99 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -DDEFAULTDIR="/projects/conquer/lib" -DEXEDIR="/home/ssmoogen/conquer/bin" -DPATCHLEVEL="12" -DLOGIN="ssmoogen" -DCONQUER -c commands.c -o /tmp/foo.o
 ```
 
 **Note**: The cproto approach is working well - these are just minor cleanup issues to resolve.

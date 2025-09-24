@@ -488,6 +488,154 @@ static inline short safe_uid_to_short(uid_t uid) {
 }
 
 /*
+ * safe_rand_short - Generate random short int value with bounds checking
+ *
+ * Safely generates a random short integer in the range [0, max_val).
+ * Used for country selection, nation indices, and other values that need
+ * to fit in 16-bit signed range. Provides type-safe alternative to
+ * rand()%max casting that generates conversion warnings.
+ *
+ * This function eliminates the need for explicit casting when rand() results
+ * need to be stored in short variables, particularly for nation/country
+ * selection and array indexing operations.
+ *
+ * Parameters:
+ *   max_val - Maximum value (exclusive), must be positive and <= SHRT_MAX
+ *
+ * Returns:
+ *   short value in range [0, max_val), or 0 if max_val is invalid
+ *
+ * Example Usage:
+ *   country = safe_rand_short(NTOTAL);        // Instead of: country=rand()%NTOTAL;
+ *   nation_id = safe_rand_short(active_nations);
+ */
+static inline short safe_rand_short(int max_val) {
+    if (max_val <= 0 || max_val > SHRT_MAX) {
+        return 0;  /* Return 0 for invalid range */
+    }
+    int result = rand() % max_val;
+    return (short)result;
+}
+
+/*
+ * safe_rand_uchar - Generate random unsigned char value with bounds checking
+ *
+ * Safely generates a random unsigned char in the range [0, max_val).
+ * Used for resource generation (metal, jewels), sector attributes, and other
+ * small-value assignments that need to fit in 8-bit unsigned range.
+ * Provides type-safe alternative to rand()%max casting.
+ *
+ * This function is particularly useful for resource assignment operations
+ * where rand() results determine quantities that must fit in unsigned char
+ * storage fields.
+ *
+ * Parameters:
+ *   max_val - Maximum value (exclusive), must be positive and <= UCHAR_MAX
+ *
+ * Returns:
+ *   unsigned char value in range [0, max_val), or 0 if max_val is invalid
+ *
+ * Example Usage:
+ *   sptr->metal = safe_rand_uchar(7) + 2;     // Instead of: sptr->metal = rand()%7 + 2;
+ *   sptr->jewels = safe_rand_uchar(3) + 1;    // Instead of: sptr->jewels = rand()%3 + 1;
+ */
+static inline unsigned char safe_rand_uchar(int max_val) {
+    if (max_val <= 0 || max_val > UCHAR_MAX) {
+        return 0;  /* Return 0 for invalid range */
+    }
+    int result = rand() % max_val;
+    return (unsigned char)result;
+}
+
+/*
+ * safe_rand_uint - Generate random unsigned int value with bounds checking
+ *
+ * Safely generates a random unsigned int for seeding operations and large
+ * range random number generation. Used primarily with srand() for random
+ * number generator seeding and other operations requiring unsigned int values.
+ *
+ * This function handles the conversion from signed int (rand result) to
+ * unsigned int safely, eliminating sign conversion warnings in seeding
+ * operations.
+ *
+ * Parameters:
+ *   max_val - Maximum value (exclusive), must be positive
+ *
+ * Returns:
+ *   unsigned int value in range [0, max_val), or 0 if max_val is 0
+ *
+ * Example Usage:
+ *   srand(safe_rand_uint(i*17+enemy+TURN*3));  // For seeding operations
+ *   seed_value = safe_rand_uint(calculation);
+ */
+static inline unsigned int safe_rand_uint(unsigned int max_val) {
+    if (max_val == 0) {
+        return 0;
+    }
+    /* Handle potential overflow in modulo operation */
+    if (max_val > INT_MAX) {
+        return (unsigned int)rand();  /* Return raw rand() for very large ranges */
+    }
+    return (unsigned int)(rand() % (int)max_val);
+}
+
+/*
+ * safe_rand_int - Generate random int value for probability calculations
+ *
+ * Returns the raw rand() result as int without conversion. Used for probability
+ * checks and percentage calculations where the full int range is needed and
+ * no type conversion is required. Provides a clear semantic distinction from
+ * raw rand() calls.
+ *
+ * This function serves as a semantic marker for probability-based rand() usage
+ * while maintaining the same behavior as direct rand() calls. It helps
+ * distinguish probability calculations from value generation.
+ *
+ * Returns:
+ *   int value from rand() in range [0, RAND_MAX]
+ *
+ * Example Usage:
+ *   if (safe_rand_int() % 100 < chance) { ... }  // Instead of: if(rand()%100 < chance)
+ *   if (safe_rand_int() % 4 == 0) { ... }        // Instead of: if(rand()%4 == 0)
+ */
+static inline int safe_rand_int(void) {
+    return rand();
+}
+
+/*
+ * safe_long_to_uint - Safe conversion from long int to unsigned int
+ *
+ * Converts long int values to unsigned int with proper handling of negative
+ * values and potential overflow. This function is commonly needed for
+ * arithmetic expressions that result in long int but need to be passed to
+ * functions expecting unsigned int (such as srand/srandom).
+ *
+ * For negative values, converts to absolute value to ensure valid unsigned
+ * result. For values exceeding UINT_MAX, truncates while preserving
+ * randomization properties for seeding operations.
+ *
+ * Parameters:
+ *   value - The long int value to convert
+ *
+ * Returns:
+ *   unsigned int value safe for use with unsigned int parameters
+ *
+ * Example Usage:
+ *   srand(safe_long_to_uint(i*17+enemy+TURN*3));     // Instead of: srand(i*17+enemy+TURN*3);
+ *   func(safe_long_to_uint(calculation));            // Instead of: func(calculation);
+ */
+static inline unsigned int safe_long_to_uint(long value) {
+    // Handle negative values by converting to absolute value
+    if (value < 0) {
+        value = -value;
+    }
+
+    // Convert to unsigned int, truncating if necessary
+    // This preserves useful properties while eliminating warnings
+    return (unsigned int)value;
+}
+
+/*
  * Conversion Utility Usage Guidelines
  *
  * 1. ARCHITECTURAL FIRST: Always prefer changing variable types over conversions
@@ -509,6 +657,12 @@ static inline short safe_uid_to_short(uid_t uid) {
  *    - Same patterns for same types of conversions
  *    - Uniform error handling approaches
  *    - Consistent validation logic
+ *
+ * 5. RANDOM NUMBER GENERATION: Use type-specific safe_rand functions
+ *    - safe_rand_short() for country/nation selection
+ *    - safe_rand_uchar() for resource generation (metal, jewels)
+ *    - safe_rand_uint() for seeding operations
+ *    - safe_rand_int() for probability calculations and percentage checks
  */
 
 #endif /* SAFE_CONVERT_H */

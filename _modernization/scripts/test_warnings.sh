@@ -129,11 +129,11 @@ OUTFILE=_modernization/claude/scratch/PHASE_${PHASE}.${SUB}_${NAME}_${TYPE}.txt
 TEMPFILE=$(mktemp /tmp/my-app-data.XXXXXX)
 
 # Define compilation flags for each file type
-ADMIN_FLAGS="-O2 -g -std=${STD} -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -DDEFAULTDIR=\"/home/ssmoogen/conquer/lib\" -DEXEDIR=\"/home/ssmoogen/conquer/bin\" -DLOGIN=\"ssmoogen\" -DADMIN -DCONQUER ${WARN}"
+ADMIN_FLAGS="-O2 -g -std=${STD} -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -DDEFAULTDIR=\"/projects/conquer/lib\" -DEXEDIR=\"/projects/conquer/bin\" -DLOGIN=\"ssmoogen\" -DADMIN -DCONQUER ${WARN}"
 
-GAME_FLAGS="-O2 -g -std=${STD} -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -DDEFAULTDIR=\"/home/ssmoogen/conquer/lib\" -DEXEDIR=\"/home/ssmoogen/conquer/bin\"  -DLOGIN=\"ssmoogen\" -DCONQUER ${WARN}"
+GAME_FLAGS="-O2 -g -std=${STD} -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -DDEFAULTDIR=\"/projects/conquer/lib\" -DEXEDIR=\"/projects/conquer/bin\"  -DLOGIN=\"ssmoogen\" -DCONQUER ${WARN}"
 
-PSMAP_FLAGS="-O2 -g -std=${STD} -O2 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -DDEFAULTDIR=\"/home/ssmoogen/conquer/lib\" -DEXEDIR=\"/home/ssmoogen/conquer/bin\" -DLOGIN=\"ssmoogen\" -DPSFILE=\"/home/ssmoogen/conquer/bin/psmap.ps\" -DLETTER ${WARN}"
+PSMAP_FLAGS="-O2 -g -std=${STD} -O2 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -DDEFAULTDIR=\"/projects/conquer/lib\" -DEXEDIR=\"/projects/conquer/bin\" -DLOGIN=\"ssmoogen\" -DPSFILE=\"/projects/conquer/bin/psmap.ps\" -DLETTER ${WARN}"
 
 
 # Verbose output function

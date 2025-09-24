@@ -220,7 +220,7 @@ _modernization/scripts/test_warnings.sh -w 2 main.c      # Complex file
 
 #### Admin-Only and Shared Files:
 ```bash
-gcc -O2 -g -std=c99 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -DDEFAULTDIR="/home/ssmoogen/conquer/lib" -DEXEDIR="/home/ssmoogan/conquer/bin" -DLOGIN="ssmoogan" -DADMIN -DCONQUER -Wall -Wextra -c filename.c
+gcc -O2 -g -std=c99 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -DDEFAULTDIR="/projects/conquer/lib" -DEXEDIR="/home/ssmoogan/conquer/bin" -DLOGIN="ssmoogan" -DADMIN -DCONQUER -Wall -Wextra -c filename.c
 ```
 
 #### Game-Only Files:

@@ -34,6 +34,7 @@
 #include "header.h"
 #include "data.h"
 #include "trade.h"
+#include "safe_convert.h"
 
 extern FILE *fnews;
 extern short country,redraw;
@@ -3065,32 +3066,32 @@ void
 getmetal (struct s_sector *sptr)
 {
 	int randval;
-	randval = rand()%100;
+	randval = safe_rand_int()%100;
 	if((sptr->tradegood != TG_none)&&(sptr->tradegood != 0)) return;
 	if( randval < 20 ) {
 		sptr->tradegood = TG_copper;
-		sptr->metal = rand()%2 + 1;
+		sptr->metal = safe_rand_uchar(2) + 1;
 	} else if( randval < 30 ) {
 		sptr->tradegood = TG_lead;
-		sptr->metal = rand()%4 + 1;
+		sptr->metal = safe_rand_uchar(4) + 1;
 	} else if( randval < 40 ) {
 		sptr->tradegood = TG_tin;
-		sptr->metal = rand()%4 + 2;
+		sptr->metal = safe_rand_uchar(4) + 2;
 	} else if( randval < 55 ) {
 		sptr->tradegood = TG_bronze;
-		sptr->metal = rand()%4 + 2;
+		sptr->metal = safe_rand_uchar(4) + 2;
 	} else if( randval < 80 ) {
 		sptr->tradegood = TG_iron;
-		sptr->metal = rand()%7 + 2;
+		sptr->metal = safe_rand_uchar(7) + 2;
 	} else if( randval < 95 ) {
 		sptr->tradegood = TG_steel;
-		sptr->metal = rand()%8 + 3;
+		sptr->metal = safe_rand_uchar(8) + 3;
 	} else if( randval < 99 ) {
 		sptr->tradegood = TG_mithral;
-		sptr->metal = rand()%11 + 5;
+		sptr->metal = safe_rand_uchar(11) + 5;
 	} else {
 		sptr->tradegood = TG_adamantine;
-		sptr->metal = rand()%13 + 8;
+		sptr->metal = safe_rand_uchar(13) + 8;
 	}
 }
 
@@ -3099,37 +3100,37 @@ getjewel (struct s_sector *sptr)
 {
 	int randval;
 	if((sptr->tradegood != TG_none)&&(sptr->tradegood != 0)) return;
-	randval = rand()%100;
+	randval = safe_rand_int()%100;
 	if( randval < 20 ) {
 		sptr->tradegood = TG_spice;
-		sptr->jewels = rand()%2 + 1;
+		sptr->jewels = safe_rand_uchar(2) + 1;
 	} else if( randval < 40 ) {
 		sptr->tradegood = TG_silver;
-		sptr->jewels = rand()%3 + 1;
+		sptr->jewels = safe_rand_uchar(3) + 1;
 	} else if( randval < 48 ) {
 		sptr->tradegood = TG_pearls;
-		sptr->jewels = rand()%3 + 1;
+		sptr->jewels = safe_rand_uchar(3) + 1;
 	} else if( randval < 56 ) {
 		sptr->tradegood = TG_dye;
-		sptr->jewels = rand()%5 + 1;
+		sptr->jewels = safe_rand_uchar(5) + 1;
 	} else if( randval < 64 ) {
 		sptr->tradegood = TG_silk;
-		sptr->jewels = rand()%5 + 1;
+		sptr->jewels = safe_rand_uchar(5) + 1;
 	} else if( randval < 84 ) {
 		sptr->tradegood = TG_gold;
-		sptr->jewels = rand()%6 + 1;
+		sptr->jewels = safe_rand_uchar(6) + 1;
 	} else if( randval < 91 ) {
 		sptr->tradegood = TG_rubys;
-		sptr->jewels = rand()%6 + 1;
+		sptr->jewels = safe_rand_uchar(6) + 1;
 	} else if( randval < 96 ) {
 		sptr->tradegood = TG_ivory;
-		sptr->jewels = rand()%7 + 2;
+		sptr->jewels = safe_rand_uchar(7) + 2;
 	} else if( randval < 99 ) {
 		sptr->tradegood = TG_diamonds;
-		sptr->jewels = rand()%11 + 2;
+		sptr->jewels = safe_rand_uchar(11) + 2;
 	 } else {
 		sptr->tradegood = TG_platinum;
-		sptr->jewels = rand()%17 + 4;
+		sptr->jewels = safe_rand_uchar(17) + 4;
 	}
 }
 #endif /* ADMIN */

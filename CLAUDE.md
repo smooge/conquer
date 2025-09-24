@@ -5,9 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with le
 ## CRITICAL PATH REQUIREMENTS
 
 **ALWAYS USE CORRECT PROJECT PATH:**
-- **Correct path**: `/home/ssmoogen/conquer-project/conquer-4.x/`
-- **NEVER use**: `/home/ssmoogan/` (common typo - incorrect spelling)
-- **ALWAYS verify**: All file paths start with `/home/ssmoogen/` (double-o, not single-o)
+- **Correct path**: `/projects/conquer-4.x/`
 - **Apply to**: All file operations, session memory files, documentation paths
 
 ## Project Overview

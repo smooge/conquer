@@ -96,8 +96,8 @@ class FilePrioritizer:
         base_flags = [
             'gcc', '-O2', '-g', '-std=c99',
             '-D_POSIX_C_SOURCE=200809L', '-D_XOPEN_SOURCE=700', '-D_DEFAULT_SOURCE',
-            '-DDEFAULTDIR="/home/ssmoogen/conquer/lib"',
-            '-DEXEDIR="/home/ssmoogen/conquer/bin"',
+            '-DDEFAULTDIR="/projects/conquer/lib"',
+            '-DEXEDIR="/projects/conquer/bin"',
             '-DVERSION="4"', '-DPATCHLEVEL="12"', '-DLOGIN="ssmoogen"',
             '-DCONQUER'
         ]

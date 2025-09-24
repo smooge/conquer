@@ -131,6 +131,7 @@
 #include <unistd.h>
 #include "header.h"
 #include "data.h"
+#include "safe_convert.h"
 
 extern short country;
 extern short redraw;
@@ -553,7 +554,7 @@ int takeover (int percent, int target) {
 		y=0;
 		if (target==0) while(loop==FALSE){
 			y++;
-			country=rand()%NTOTAL;
+			country=safe_rand_short(NTOTAL);
 			if((ntn[country].race==ntn[save].race)
 			&&(isnpc(ntn[country].active))
 			&&(curntn->dstatus[country]<HOSTILE)

@@ -5,7 +5,7 @@ Phase: 4 Subphase 0 - Updated Strategy with Essential -D Flags
 Scope: 26 .c files, 6 .h files
 
 ESSENTIAL FLAGS USED:
--DDEFAULTDIR="/home/ssmoogen/conquer/lib" -DEXEDIR="/home/ssmoogen/conquer/bin" -DVERSION="4" -DPATCHLEVEL="12" -DLOGIN="ssmoogen"
+-DDEFAULTDIR="/projects/conquer/lib" -DEXEDIR="/home/ssmoogen/conquer/bin" -DVERSION="4" -DPATCHLEVEL="12" -DLOGIN="ssmoogen"
 
 === Testing data.h ===
 In file included from <command-line>:

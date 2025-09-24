@@ -131,12 +131,12 @@
 
 ### Admin-Only and Shared Files:
 ```bash
-gcc -O2 -g -std=c99 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -DDEFAULTDIR='"/home/ssmoogen/conquer/lib"' -DEXEDIR='"/home/ssmoogen/conquer/bin"' -DPATCHLEVEL='"12"' -DLOGIN='"ssmoogen"' -DADMIN -DCONQUER -c filename.c -o /tmp/filename.o
+gcc -O2 -g -std=c99 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -DDEFAULTDIR='"/projects/conquer/lib"' -DEXEDIR='"/home/ssmoogen/conquer/bin"' -DPATCHLEVEL='"12"' -DLOGIN='"ssmoogen"' -DADMIN -DCONQUER -c filename.c -o /tmp/filename.o
 ```
 
 ### Game-Only Files:
 ```bash
-gcc -O2 -g -std=c99 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -DDEFAULTDIR='"/home/ssmoogen/conquer/lib"' -DEXEDIR='"/home/ssmoogen/conquer/bin"' -DPATCHLEVEL='"12"' -DLOGIN='"ssmoogen"' -DCONQUER -c filename.c -o /tmp/filename.o
+gcc -O2 -g -std=c99 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -DDEFAULTDIR='"/projects/conquer/lib"' -DEXEDIR='"/home/ssmoogen/conquer/bin"' -DPATCHLEVEL='"12"' -DLOGIN='"ssmoogen"' -DCONQUER -c filename.c -o /tmp/filename.o
 ```
 
 ### Dual-Compiled Files (Test Both):
