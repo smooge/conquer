@@ -52,6 +52,7 @@
 #include <ctype.h>
 #include "header.h"
 #include "data.h"
+#include "safe_convert.h"
 
 extern FILE *fnews;
 
@@ -307,18 +308,21 @@ monster (void)
 				 * npc.c routines. yeuch.
 				 */
 
-	neededtroops= ((NUMSECTS)/MONSTER)*( /* number of armies */
+	{
+		long temp_troops = safe_double_to_long(((NUMSECTS)/MONSTER)*( /* number of armies */
 					    (5.0/12)*450 + /* nomads */
-					    (1.0/4)*250 );	/* savages */
+					    (1.0/4)*250 )); /* savages */
+		neededtroops = safe_long_to_int(temp_troops);
+	}
 
 
 	actualtroops=0;
 	for(i=0;i<MAXARM;i++)
 	    {
 	    if (ntn[nomads].arm[i].sold > 0)
-		actualtroops += ntn[nomads].arm[i].sold;
+		actualtroops += safe_long_to_int(ntn[nomads].arm[i].sold);
 	    if (ntn[savages].arm[i].sold > 0)
-		actualtroops += ntn[savages].arm[i].sold;
+		actualtroops += safe_long_to_int(ntn[savages].arm[i].sold);
 	    }
 	
 #ifdef DEBUG
@@ -349,12 +353,12 @@ monster (void)
 		
 	    found_free_nomad_army:
 
-		ntn[nomads].arm[i].xloc=x;
-		ntn[nomads].arm[i].yloc=y;
+		ntn[nomads].arm[i].xloc=safe_int_to_uchar(x);
+		ntn[nomads].arm[i].yloc=safe_int_to_uchar(y);
 		ntn[nomads].arm[i].sold=100+100*(rand()%6);
 		ntn[nomads].arm[i].unittyp=A_LT_CAV;
 		ntn[nomads].arm[i].stat=ATTACK;
-		neededtroops -= ntn[nomads].arm[i].sold;
+		neededtroops -= safe_long_to_int(ntn[nomads].arm[i].sold);
 #ifdef DEBUG
 		printf("\t\tAdding nomad army %d size %d at (%d,%d)\n",i,
 		       ntn[nomads].arm[i].sold,x,y);
@@ -383,12 +387,12 @@ monster (void)
 		
 	    found_free_savage_army:
 
-		ntn[savages].arm[i].xloc=x;
-		ntn[savages].arm[i].yloc=y;
+		ntn[savages].arm[i].xloc=safe_int_to_uchar(x);
+		ntn[savages].arm[i].yloc=safe_int_to_uchar(y);
 		ntn[savages].arm[i].sold=100+100*(rand()%3);
-		ntn[savages].arm[i].unittyp=defaultunit(savages);
+		ntn[savages].arm[i].unittyp=safe_long_to_uchar(defaultunit(savages));
 		ntn[savages].arm[i].stat=ATTACK;
-		neededtroops -= ntn[savages].arm[i].sold;
+		neededtroops -= safe_long_to_int(ntn[savages].arm[i].sold);
 #ifdef DEBUG
 		printf("\t\tAdding savage army %d size %d at (%d,%d)\n",i,
 		       ntn[savages].arm[i].sold,x,y);
@@ -472,7 +476,7 @@ do_nomad (void)
 	printf("updating nomad (nation %d)\n",country);
 	for(armynum=0;armynum<MAXARM;armynum++) if(P_ASOLD>0){
 		P_ASTAT=ATTACK;
-		P_AMOVE=(curntn->maxmove * *(unitmove+P_ATYPE%UTYPE))/10;
+		P_AMOVE=safe_int_to_uchar((curntn->maxmove * *(unitmove+P_ATYPE%UTYPE))/10);
 		if(P_ATYPE<MINLEADER) {
 			P_ASOLD *= 102;
 			P_ASOLD /= 100;
@@ -493,15 +497,15 @@ do_nomad (void)
 			||(!land_reachp((int)P_AXLOC,(int)P_AYLOC,
 				x,y,curntn->maxmove,country))) continue;
 
-			P_AXLOC=x;
-			P_AYLOC=y;
+			P_AXLOC=safe_int_to_uchar(x);
+			P_AYLOC=safe_int_to_uchar(y);
 			/*if owned & unoccupied you take & people flee*/
 			if( ((sct[x][y].owner) == 0
 			|| solds_in_sector( x, y, sct[x][y].owner) == 0 )
 			&& (ntn[sct[x][y].owner].active!=NPC_NOMAD) ) {
 				fprintf(fnews,"3:\tnomads capture sector %d,%d\n",x,y);
 				if(sct[x][y].owner!=0) flee(x,y,1,FALSE);
-				sct[x][y].owner=country;
+				sct[x][y].owner=safe_short_to_uchar(country);
 				DEVASTATE(x,y);
 			}
 			break;
@@ -583,13 +587,13 @@ do_savage (void)
 			P_ASOLD *= 102;
 			P_ASOLD /= 100;
 		}
-		P_AMOVE=(curntn->maxmove * *(unitmove+P_ATYPE%UTYPE))/10;
+		P_AMOVE=safe_int_to_uchar((curntn->maxmove * *(unitmove+P_ATYPE%UTYPE))/10);
 		x=(int)P_AXLOC+rand()%3-1;
 		y=(int)P_AYLOC+rand()%3-1;
 		if(ONMAP(x,y)&&(is_habitable(x,y)) 
 		&&(land_reachp((int)P_AXLOC,(int)P_AYLOC,x,y,P_AMOVE,country))){
-			P_AXLOC=x;
-			P_AYLOC=y;
+			P_AXLOC=safe_int_to_uchar(x);
+			P_AYLOC=safe_int_to_uchar(y);
 			/*if owned & unoccupied you take & people flee*/
 			if( ((sct[x][y].owner == 0)
 			|| (solds_in_sector( x, y, sct[x][y].owner) == 0))
@@ -597,7 +601,7 @@ do_savage (void)
 				fprintf(fnews,"3:\tsavages capture sector %d,%d\n",x,y);
 				if(P_ATYPE<MINLEADER) {
 					if(sct[x][y].owner!=0) flee(x,y,1,FALSE);
-					sct[x][y].owner=country;
+					sct[x][y].owner=safe_short_to_uchar(country);
 				}
 				DEVASTATE(x,y);
 			}
@@ -697,8 +701,8 @@ do_pirate (void)
 			if (sct[campx][campy].designation!=DBASECAMP) {
 				fprintf(stderr,"BASECAMP NOT FOUND!!!\n");
 			} else {
-				P_NXLOC=campx;
-				P_NYLOC=campy;
+				P_NXLOC=safe_int_to_uchar(campx);
+				P_NYLOC=safe_int_to_uchar(campy);
 			}
 		}
 	}
@@ -937,7 +941,7 @@ redomil (void)
 	}
 	/* oh well... wipe out army zero; c'est la vie */
 	if (armynum == MAXARM) armynum = 0;
-	P_ATYPE=defaultunit(country);
+	P_ATYPE=safe_long_to_uchar(defaultunit(country));
 	P_ASTAT=GARRISON;
 	P_AXLOC=curntn->capx;
 	P_AYLOC=curntn->capy;
@@ -1057,7 +1061,7 @@ redomil (void)
 		for(armynum=1;armynum<MAXARM;armynum++)
 		if((done==FALSE)&&(P_ASOLD==0)) {
 			done=TRUE;
-			P_ATYPE = defaultunit(country);
+			P_ATYPE = safe_long_to_uchar(defaultunit(country));
 			P_ASOLD = min ((int) (ideal-curntn->tmil), (int) (curntn->metals/ (*(u_enmetal + (P_ATYPE%UTYPE)))));
 
 			P_ASOLD = min (P_ASOLD,sct[curntn->capx][curntn->capy].people/2);
@@ -1168,7 +1172,7 @@ redomil (void)
 
 	/* assure that a militia unit resides in each city */
 	if(curntn->tgold > 0)
-	for(x=stx;x<endx;x++) for(y=sty;y<endy;y++)
+	for(x=safe_int_to_short(stx);x<endx;x++) for(y=safe_int_to_short(sty);y<endy;y++)
 	if((sct[x][y].owner==country)
 	&&((sct[x][y].designation==DTOWN)||(sct[x][y].designation==DCITY)||(sct[x][y].designation==DCAPITOL))){
 		free=FALSE;
@@ -1182,8 +1186,8 @@ redomil (void)
 		}
 		if(free==FALSE) {	 /* draft new militia army */
 			for(armynum=0;armynum<MAXARM;armynum++) if(P_ASOLD==0){
-				P_AXLOC=x;
-				P_AYLOC=y;
+				P_AXLOC=safe_int_to_uchar(x);
+				P_AYLOC=safe_int_to_uchar(y);
 				P_ATYPE=A_MILITIA;
 				free=TRUE;
 				break;
@@ -1220,8 +1224,8 @@ redomil (void)
 
 	/* setup default units */
 	for(armynum=1;armynum<MAXARM;armynum++) 
-	if((P_ASOLD>0)&&(P_ATYPE!=A_MILITIA)&&(P_ATYPE<MINLEADER)) 
-		P_ATYPE=defaultunit(country);
+	if((P_ASOLD>0)&&(P_ATYPE!=A_MILITIA)&&(P_ATYPE<MINLEADER))
+		P_ATYPE=safe_long_to_uchar(defaultunit(country));
 }
 
 /*
@@ -1509,8 +1513,8 @@ find_avg_sector (void)
 		}
 	}
 	if (useable_land>0) {
-		Avg_food = total_food / useable_land;
-		Avg_tradegood = total_tg / useable_land;
+		Avg_food = safe_long_to_int(total_food / useable_land);
+		Avg_tradegood = safe_long_to_int(total_tg / useable_land);
 	} else {
 		/* for stupidities sake */
 		Avg_food = 0;
@@ -1537,7 +1541,7 @@ find_avg_sector (void)
 						total_sectors++;
 				}
 			if (total_sectors > 0)
-				Avg_soldiers[nation] = ntn[nation].tmil / total_sectors;
+				Avg_soldiers[nation] = safe_long_to_int(ntn[nation].tmil / total_sectors);
 			else Avg_soldiers[nation] = 0;
 		}
 	}
@@ -1791,7 +1795,7 @@ nationrun (void)
 		if( curntn->tax_rate < 10 )
 			curntn->tax_rate = 10;
 	} else {
-		curntn->tax_rate = (int)min((int)(curntn->prestige/5),(int)((curntn->popularity+curntn->terror+3*curntn->charity)/10));
+		curntn->tax_rate = safe_int_to_uchar((int)min((int)(curntn->prestige/5),(int)((curntn->popularity+curntn->terror+3*curntn->charity)/10)));
 		curntn->tax_rate = (int)min(curntn->tax_rate,20);
 		if(curntn->tax_rate < 4)
 			curntn->tax_rate = 4;
@@ -1822,7 +1826,7 @@ nationrun (void)
 		spreadsheet(country);
 
 		if (spread.civilians+2*curntn->tmil > 0) {
-			hunger = spread.food/((float)(spread.civilians+2*curntn->tmil));
+			hunger = spread.food/((float)(safe_long_to_int(spread.civilians+2*curntn->tmil)));
 		} else hunger = 0.0;
 		if(hunger < P_EATRATE ) {
 			goldthresh++;
@@ -2298,7 +2302,7 @@ n_defend (int natn)
 		for(x=1;x<MAXARM;x++) if(ntn[natn].arm[x].sold > 0)
 			if(sct[ntn[natn].arm[x].xloc][ntn[natn].arm[x].yloc].owner==country)
 				attr[ntn[natn].arm[x].xloc][ntn[natn].arm[x].yloc] +=
-					ntn[natn].arm[x].sold/10;
+					safe_long_to_int(ntn[natn].arm[x].sold/10);
 	}
 	else {
 		/* For every of this country's sectors that has a 'natn' army
@@ -2340,7 +2344,7 @@ n_defend (int natn)
 				attr[x][y] += 50;
 			/* should spread 3000 points over country */
 			if (ntn[country].tciv>0)
-			attr[x][y]+=3000*sct[x][y].people/ntn[country].tciv;
+			attr[x][y]+=safe_long_to_int(3000*sct[x][y].people/ntn[country].tciv);
 		}
 	}
 }
@@ -2695,8 +2699,8 @@ n_people (
 	if(sct[x][y].owner==country){
 		if(is_habitable(x,y)){
 			if(doadd==TRUE) {
-				attr[x][y] += sct[x][y].people/4;
-			} else	attr[x][y] -= sct[x][y].people/4;
+				attr[x][y] += safe_long_to_int(sct[x][y].people/4);
+			} else	attr[x][y] -= safe_long_to_int(sct[x][y].people/4);
 		}
 	}
 }
@@ -2862,10 +2866,10 @@ n_survive (void)
 			&&( ntn[nation].arm[armynum].yloc>=capy-2)){
 				if((ntn[nation].arm[armynum].xloc==capx)
 				&&(ntn[nation].arm[armynum].yloc==capy)){
-					attr[capx][capy]+=2*ntn[nation].arm[armynum].sold;
+					attr[capx][capy]+=safe_long_to_int(2*ntn[nation].arm[armynum].sold);
 				}
 				else {
-					attr[ntn[nation].arm[armynum].xloc][ntn[nation].arm[armynum].yloc]+=ntn[nation].arm[armynum].sold;
+					attr[ntn[nation].arm[armynum].xloc][ntn[nation].arm[armynum].yloc]+=safe_long_to_int(ntn[nation].arm[armynum].sold);
 				}
 			}
 		} else {
