@@ -144,17 +144,121 @@
 
 ## 🔧 CONVERSION WARNING PATTERNS
 
-### Common -Wconversion Issues
-1. **size_t to int conversion**: Use appropriate casting
-2. **long to int conversion**: Validate range or use proper types
-3. **unsigned to signed conversion**: Add explicit casts
-4. **Array index conversions**: Use size_t consistently
+### ⚠️ ARCHITECTURAL APPROACH TO CONVERSION WARNINGS
 
-### Systematic Fix Approaches
-1. **Type Analysis**: Understand the intended data ranges
-2. **Safe Casting**: Add explicit casts with range validation
-3. **Type Modernization**: Update variable types where appropriate
-4. **Macro Updates**: Fix conversion issues in data.h macros
+**CRITICAL**: Conversion warnings often reveal deeper design issues that require thoughtful solutions, not superficial casting.
+
+### Sign Conversion Analysis Framework
+**Before fixing any sign conversion warning, ask:**
+
+1. **Should this variable be signed or unsigned?**
+   - Counts, sizes, array indices → usually unsigned
+   - Error codes, differences → may need signed
+   - File positions, memory addresses → context-dependent
+
+2. **Is the API boundary consistent?**
+   - Functions returning counts should return unsigned types
+   - Array parameters should use size_t for indices
+   - Range validation should happen at API boundaries
+
+3. **What's the intended value range?**
+   - If always non-negative → change to unsigned type
+   - If can be negative → add explicit range validation
+   - If mixing signed/unsigned → create safe conversion routines
+
+### Systematic Fix Approaches (Architectural Priority)
+
+#### **Tier 1: Type Architecture Changes** (Preferred)
+1. **Variable Type Modernization**:
+   ```c
+   // BEFORE: Sign conversion warning
+   int count = get_array_size();
+   for (int i = 0; i < count; i++) { ... }
+
+   // AFTER: Architectural fix
+   size_t count = get_array_size();  // Change function return type
+   for (size_t i = 0; i < count; i++) { ... }
+   ```
+
+2. **Function Signature Updates**:
+   - Change return types: `int get_count()` → `size_t get_count()`
+   - Update parameters: `void process(int size, ...)` → `void process(size_t size, ...)`
+   - Cascade changes through call chains systematically
+
+3. **Consistent API Design**:
+   - Array functions use size_t for indices and counts
+   - Error functions use int for status codes
+   - Memory functions use size_t for sizes
+
+#### **Tier 2: Safe Conversion Routines** (When type changes aren't feasible)
+1. **Range Validation Functions**:
+   ```c
+   // Create safe conversion utilities
+   unsigned int safe_int_to_uint(int value) {
+       if (value < 0) {
+           // Handle error appropriately
+           return 0; // or error handling
+       }
+       return (unsigned int)value;
+   }
+
+   int safe_size_to_int(size_t value) {
+       if (value > INT_MAX) {
+           // Handle overflow
+           return INT_MAX; // or error handling
+       }
+       return (int)value;
+   }
+   ```
+
+2. **Centralized Conversion Logic**:
+   - Create conversion utilities in a central header
+   - Document the conversion policies
+   - Use consistently across the codebase
+
+#### **Tier 3: Explicit Casts** (Last resort, with validation)
+1. **Validated Explicit Casts**:
+   ```c
+   // AVOID: Blind casting
+   unsigned int size = (unsigned int)signed_value;
+
+   // PREFER: Validated casting
+   if (signed_value < 0) {
+       handle_negative_error();
+       return;
+   }
+   unsigned int size = (unsigned int)signed_value;
+   ```
+
+2. **Documented Cast Rationale**:
+   - Add comments explaining why the cast is safe
+   - Document the value range assumptions
+   - Reference validation that occurs elsewhere
+
+### Legacy-Specific Considerations
+
+#### **32-bit to 64-bit Issues**
+- `int` vs `long` confusion on 64-bit systems
+- Pointer-to-integer conversions
+- File offset and memory size handling
+
+#### **Data Structure Modernization**
+- Array indices: `int` → `size_t`
+- Buffer sizes: `int` → `size_t`
+- Count variables: `int` → `unsigned int` or `size_t`
+- Loop variables: `int` → `size_t` for array traversal
+
+#### **Macro and Header Impact**
+- Update data.h macros to use proper types
+- Ensure header consistency across compilation modes
+- Consider impact on dual-compiled files (admin/game modes)
+
+### Implementation Strategy
+1. **Start with foundation files** to establish patterns
+2. **Document type decisions** for consistency
+3. **Create conversion utilities** early in process
+4. **Apply systematically** across file tiers
+5. **Validate no functional changes** in behavior
 
 ## 📈 SUCCESS METRICS
 
