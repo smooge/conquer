@@ -26,8 +26,10 @@
 #include <ctype.h>
 #include <pwd.h>
 #include <unistd.h>
+#include <crypt.h>
 #include "header.h"
 #include "data.h"
+#include "safe_convert.h"
 
 #define HALF 2
 #define LAND 3
@@ -88,7 +90,8 @@ nmountains--; \
  *   - Sets default DEFEND status for all armies
  */
 void zeroworld() {
-	int i,armynum,nvynum;
+	int i,armynum;
+	short nvynum=0;
 
 	/* initialize all countries */
 	for (i = 0; i < NTOTAL; i++) {
@@ -278,7 +281,7 @@ void makeworld ( int rflag ){		/* TRUE if you wish to read in a map from mapfile
 		}
 	}
 #ifdef CHECKUSER
-	ntn[0].uid = getuid();
+	ntn[0].uid = safe_int_to_short(safe_uid_to_int(getuid()));
 #endif
 	mvaddstr(8,0,"Please Enter the Size of the World.  [Divisible by 8 and > 23]");
 	clrtoeol();
@@ -286,7 +289,7 @@ void makeworld ( int rflag ){		/* TRUE if you wish to read in a map from mapfile
 		mvaddstr(9,0,"Enter number of X sectors: ");
 		clrtoeol();
 		refresh();
-		world.mapx = get_number();
+		world.mapx = safe_int_to_short(safe_long_to_int(get_number()));
 		if(((world.mapx % 8) != 0 ) || (world.mapx<24)){
 			newerror("Invalid X Value Entered");
 			continue;
@@ -297,7 +300,7 @@ void makeworld ( int rflag ){		/* TRUE if you wish to read in a map from mapfile
 		mvaddstr(10,0,"Enter number of Y sectors: ");
 		clrtoeol();
 		refresh();
-		world.mapy = get_number();
+		world.mapy = safe_int_to_short(safe_long_to_int(get_number()));
 		if(((world.mapy % 8) != 0 ) || (world.mapy<24)){
 			newerror("Invalid Y Value Entered");
 			continue;
@@ -316,7 +319,7 @@ void makeworld ( int rflag ){		/* TRUE if you wish to read in a map from mapfile
 		mvaddstr(9,0,"Enter percent water to have in world (0-100): ");
 		clrtoeol();
 		refresh();
-		pwater = get_number();
+		pwater = safe_long_to_int(get_number());
 		if((pwater<0) || (pwater>100 )){
 			newerror("Invalid Percentage Entered");
 			continue;
@@ -427,7 +430,7 @@ void createworld (void) {	/* create world */
 	clrtoeol();
 	move(14,0);
 	clrtoeol();
-	avvalue = (((float) (100-pwater)/25.0)); /*Average water tvalue of sectors*/
+	avvalue = safe_long_to_float((100-pwater))/25.0f; /*Average water tvalue of sectors*/
 	for(i=0;i<MAXX;i++) for(j=0;j<MAXY;j++)
 		tplace[i][j] = area_map[i][j] = 0;
 
@@ -529,7 +532,7 @@ void createworld (void) {	/* create world */
 		while(tplace[X][Y] == 0) {
 			rnd = rand()%5; /*(0 to 4)*/
 			if(number[rnd]>0) {
-				area_map[X][Y]=rnd;
+				area_map[X][Y]=safe_int_to_char(rnd);
 				number[rnd]=number[rnd]-1;
 				tplace[X][Y]=1;
 			}
@@ -938,7 +941,7 @@ rawmaterials (void) 		 /*PLACE EACH SECTOR'S RAW MATERIALS */
 				&&(sptr->vegetation!=WOOD)) continue;
 
 				valid = TRUE;
-				sptr->tradegood = i;
+				sptr->tradegood = safe_int_to_uchar(i);
 			}
 			if(sptr->tradegood == TG_none)
 				newerror("??? DEBUG -tradegood==NONE");
@@ -1140,7 +1143,8 @@ void
 populate (void)
 {
 	int	i=0,x=0,y=0,j=0,xloc,yloc,xpos,ypos;
-	int	nvynum=0,armynum=0,points,shipsize,temp,cnum;
+	int	armynum=0,points,temp,cnum;
+	short   nvynum=0,shipsize=0;
 	short	short1,short2;			/*temporary short variables */
 	short	class;
 
@@ -1280,7 +1284,7 @@ populate (void)
 		if(sct[x][y].owner!=0)	continue;
 		if(!is_habitable(x,y))	continue;
 
-		sct[x][y].owner = country;
+		sct[x][y].owner = safe_short_to_uchar(country);
 
 		/* now place people*/
 		switch( curntn->active ) {
@@ -1288,27 +1292,27 @@ populate (void)
 			nlizards--;
 			sct[x][y].designation = DFORT;
 			sct[x][y].metal = 0;
-			sct[x][y].jewels = 8 + (i=rand()%30);
+			sct[x][y].jewels = safe_int_to_uchar(8 + (i=rand()%30));
 			sct[x][y].tradegood = TG_platinum;
 			/* make fortificaton consistant with gold */
-			sct[x][y].fortress = 6+i/5;
+			sct[x][y].fortress = safe_int_to_uchar(6+i/5);
 			for(i=x-1;i<=x+1;i++) for(j=y-1;j<=y+1;j++)
 				if((ONMAP(i,j))&&(sct[i][j].altitude!=WATER))
-					sct[i][j].owner = country;
+					sct[i][j].owner = safe_short_to_char(country);
 			P_AMOVE=0;
-			P_AXLOC=x;
-			P_AYLOC=y;
+			P_AXLOC=safe_int_to_uchar(x);
+			P_AYLOC=safe_int_to_uchar(y);
 			P_ASTAT=GARRISON;
 			P_ASOLD=750+100*(rand()%10);
-			P_ATYPE=defaultunit(country);
+			P_ATYPE=safe_clamp_uchar(defaultunit(country));
 			armynum++;
 			lizarmy++;
 			P_AMOVE=8;
-			P_AXLOC=x;
-			P_AYLOC=y;
+			P_AXLOC=safe_int_to_uchar(x);
+			P_AYLOC=safe_int_to_uchar(y);
 			P_ASTAT=ATTACK;
 			P_ASOLD=750+100*(rand()%10);
-			P_ATYPE=defaultunit(country);
+			P_ATYPE=safe_clamp_uchar(defaultunit(country));
 			lizarmy++;
 			break;
 		case NPC_PIRATE:
@@ -1342,20 +1346,20 @@ populate (void)
 			npirates--;
 			sct[x][y].designation = DBASECAMP;
 			P_AMOVE=8;
-			P_AXLOC=x;
-			P_AYLOC=y;
+			P_AXLOC=safe_int_to_uchar(x);
+			P_AYLOC=safe_int_to_uchar(y);
 			P_ASTAT=ATTACK;
 			P_ASOLD=150+100*(rand()%3);
-			P_ATYPE=defaultunit(country);
+			P_ATYPE=safe_clamp_uchar(defaultunit(country));
 			pirarmy++;
-			P_NXLOC=x;
-			P_NYLOC=y;
+			P_NXLOC=safe_int_to_uchar(x);
+			P_NYLOC=safe_int_to_uchar(y);
 			P_NPEOP=0;
 			P_NARMY=MAXARM;
 			shipsize = N_LIGHT;
-			(void) NADD_WAR( rand()%5+2 );
+			(void) NADD_WAR( safe_int_to_short(rand()%5+2) );
 			shipsize = N_MEDIUM;
-			(void) NADD_WAR( rand()%3+1 );
+			(void) NADD_WAR( safe_int_to_short(rand()%3+1) );
 			shipsize = N_HEAVY;
 			(void) NADD_WAR( rand()%2 );
 			P_NCREW=SHIPCREW;
@@ -1363,20 +1367,20 @@ populate (void)
 			break;
 		case NPC_NOMAD:
 			nnomads--;
-			P_AXLOC=x;
-			P_AYLOC=y;
+			P_AXLOC=safe_int_to_uchar(x);
+			P_AYLOC=safe_int_to_uchar(y);
 			P_ASTAT=ATTACK;
 			P_ASOLD=100+100*(rand()%8);
-			P_ATYPE=defaultunit(country);
+			P_ATYPE=safe_clamp_uchar(defaultunit(country));
 			nomadarmy++;
 			break;
 		case NPC_SAVAGE:
 			nbarbarians--;
-			P_AXLOC=x;
-			P_AYLOC=y;
+			P_AXLOC=safe_int_to_uchar(x);
+			P_AYLOC=safe_int_to_uchar(y);
 			P_ASTAT=ATTACK;
 			P_ASOLD=100+100*(rand()%4);
-			P_ATYPE=defaultunit(country);
+			P_ATYPE=safe_clamp_uchar(defaultunit(country));
 			barbarmy++;
 			break;
 		}
@@ -1391,13 +1395,13 @@ populate (void)
 			x = rand()%MAPX;
 			y = rand()%MAPY;
 			if (is_habitable(x,y)&&sct[x][y].owner==0) {
-				sct[x][y].owner = country;
+				sct[x][y].owner = safe_short_to_char(country);
 				if( sct[x][y].jewels==0 )
 					getjewel( &(sct[x][y]) );
-				P_AXLOC= x;
-				P_AYLOC= y;
+				P_AXLOC= safe_int_to_uchar(x);
+				P_AYLOC= safe_int_to_uchar(y);
 				P_ASTAT= ATTACK;
-				P_ATYPE= MINMONSTER + rand()%(MAXMONSTER-MINMONSTER+1);
+				P_ATYPE= safe_int_to_uchar(MINMONSTER + rand()%(MAXMONSTER-MINMONSTER+1));
 				P_ASOLD= *(unitminsth+(P_ATYPE%UTYPE));
 				P_AMOVE= 10;
 				armynum++;
@@ -1463,12 +1467,12 @@ populate (void)
 			&ntn[cnum].tmil,&points,&short2,&allign,&xloc,&yloc,
 			&class);
 
-			country=cnum;
+			country=safe_int_to_short(cnum);
 			curntn = &ntn[country];
 			curntn->class = (short)class;
 			sprintf(line," %s (%s)",curntn->name,*(Class+curntn->class));
 			mvaddstr(ypos,xpos,line);
-			xpos += strlen(line);
+			xpos += safe_size_to_int(strlen(line));
 			if (xpos > COLS-20) {
 				xpos = 5;
 				ypos++;
@@ -1484,8 +1488,8 @@ populate (void)
 				newerror(line);
 				continue;
 			}
-			curntn->maxmove = short1;
-			curntn->repro = short2;
+			curntn->maxmove = safe_short_to_char(short1);
+			curntn->repro = safe_short_to_char(short2);
 			if( allign == 'G' )
 				curntn->active = PC_GOOD;
 			else if( allign == 'N' )
