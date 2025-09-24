@@ -63,6 +63,7 @@
 #include <unistd.h>
 #include "header.h"
 #include "data.h"
+#include "safe_convert.h"
 
 extern long startgold;
 extern short country;
@@ -138,7 +139,7 @@ int execute(int isupdate) {	/* 0 if not update, 1 if update */
 			||( sct[x][y].designation == DCAPITOL)
 			||( sct[x][y].designation == DCITY)))
 /* note: i_people is a short, so we must scale to allow for people >= 32K */
-				sct[x][y].i_people = sct[x][y].people/256;
+				sct[x][y].i_people = safe_long_to_short(sct[x][y].people/256);
 			else
 				sct[x][y].i_people = -1;
 
@@ -167,12 +168,12 @@ int execute(int isupdate) {	/* 0 if not update, 1 if update */
 		execed=1;
 		switch(cmd){
 		case XASTAT:		/*Aadjstat*/
-			if(x>0)  P_ASTAT=x;
+			if(x>0)  P_ASTAT=safe_short_to_uchar(x);
 			break;
 		case XAMEN:	/*Aadjmen*/
 			armynum= (int) longvar;
 			P_ASOLD= (int) long2var;
-			P_ATYPE= y;
+			P_ATYPE= safe_short_to_uchar(y);
 			break;
 		case XBRIBE:	/* nation has been bribed */
 			if(!isupdate) break;	/* only work on update */
@@ -195,8 +196,8 @@ int execute(int isupdate) {	/* 0 if not update, 1 if update */
 			}
 			break;
 		case XALOC:	/*Aadjloc*/
-			P_AXLOC=x;
-			P_AYLOC=y;
+			P_AXLOC=safe_short_to_uchar(x);
+			P_AYLOC=safe_short_to_uchar(y);
 			break;
 		case MSETA:	/*Aadjmerc*/
 #ifdef CONQUER
@@ -209,27 +210,27 @@ int execute(int isupdate) {	/* 0 if not update, 1 if update */
 		case MSETB:	/*Aadjdisb*/
 			/* only allow raising of merc bonus */
 			if (x>MERCATT)
-			MERCATT=(MERCMEN*MERCATT+armynum*x)/(MERCMEN+armynum);
+			MERCATT=safe_long_to_short((MERCMEN*MERCATT+armynum*x)/(MERCMEN+armynum));
 			if (y>MERCDEF)
-			MERCDEF=(MERCMEN*MERCDEF+armynum*y)/(MERCMEN+armynum);
+			MERCDEF=safe_long_to_short((MERCMEN*MERCDEF+armynum*y)/(MERCMEN+armynum));
 			MERCMEN+=armynum;
 			break;
 		case XNLOC: /*nadjloc*/
-			curntn->nvy[armynum].xloc=x;
-			curntn->nvy[armynum].yloc=y;
+			curntn->nvy[armynum].xloc=safe_short_to_uchar(x);
+			curntn->nvy[armynum].yloc=safe_short_to_uchar(y);
 			break;
 		case XNACREW:
-			curntn->nvy[armynum].crew=x;
-			curntn->nvy[armynum].armynum=y;
+			curntn->nvy[armynum].crew=safe_short_to_uchar(x);
+			curntn->nvy[armynum].armynum=safe_short_to_uchar(y);
 			break;
 		case XNAMER: /*nadjmer*/
-			curntn->nvy[armynum].merchant=x;
+			curntn->nvy[armynum].merchant=safe_int_to_ushort(x);
 			break;
 		case XNAWAR: /*nadjwar*/
-			curntn->nvy[armynum].warships=x;
+			curntn->nvy[armynum].warships=safe_int_to_ushort(x);
 			break;
 		case XNAGAL: /*nadjgal*/
-			curntn->nvy[armynum].galleys=x;
+			curntn->nvy[armynum].galleys=safe_int_to_ushort(x);
 			break;
 		case XNAHOLD: /*nadjhld*/
 			curntn->nvy[armynum].people=(unsigned char)y;
@@ -245,9 +246,9 @@ int execute(int isupdate) {	/* 0 if not update, 1 if update */
 #ifdef CONQUER
 			terror_adj++;
 #endif /* CONQUER */
-			curntn->popularity = armynum;
-			curntn->terror = x;
-			curntn->reputation = y;
+			curntn->popularity = safe_int_to_uchar(armynum);
+			curntn->terror = safe_short_to_uchar(x);
+			curntn->reputation = safe_short_to_uchar(y);
 			break;
 		case NTAX:	/* set nations tax rate */
 #ifdef ADMIN
@@ -258,12 +259,12 @@ int execute(int isupdate) {	/* 0 if not update, 1 if update */
 			  fprintf(fnews, "1.\tNation %s is no longer being run by the computer.\n", curntn->name);
 			}
 #endif /*ADMIN*/
-			curntn->tax_rate = armynum;
-			curntn->active = x;
-			curntn->charity = y;
+			curntn->tax_rate = safe_int_to_uchar(armynum);
+			curntn->active = safe_short_to_uchar(x);
+			curntn->charity = safe_short_to_uchar(y);
 			break;
 		case EDSPL:	/*Edecspl*/
-			curntn->spellpts-=armynum;
+			curntn->spellpts-=safe_int_to_short(armynum);
 			break;
 		case XSADES:	/*Sadjdes*/
 			if((sct[x][y].owner!=country)&&(country!=0)) {
@@ -273,8 +274,8 @@ int execute(int isupdate) {	/* 0 if not update, 1 if update */
 
 			sct[x][y].designation=comment[0];
 			if(sct[x][y].designation==DCAPITOL){
-				curntn->capx=x;
-				curntn->capy=y;
+				curntn->capx=safe_short_to_uchar(x);
+				curntn->capy=safe_short_to_uchar(y);
 			}
 #ifdef CONQUER
 			if (sct[x][y].designation==DROAD)
@@ -307,10 +308,10 @@ int execute(int isupdate) {	/* 0 if not update, 1 if update */
 			curntn->tgold = longvar;
 			break;
 		case XAMOV:
-			P_AMOVE=x;
+			P_AMOVE=safe_short_to_uchar(x);
 			break;
 		case XNMOV:
-			curntn->nvy[armynum].smove=x;
+			curntn->nvy[armynum].smove=safe_short_to_uchar(x);
 			break;
 		case XSAOWN:
 			/* if not own it, and if people there, problem */
@@ -325,10 +326,10 @@ int execute(int isupdate) {	/* 0 if not update, 1 if update */
 				fprintf(stderr,"ERROR: <%s> taking sector %d %d but civilians exist of other race - puting them in their capitol\n",curntn->name,x,y);
 			}
 			if(curntn->popularity<MAXTGVAL) curntn->popularity++;
-			sct[x][y].owner=country;
+			sct[x][y].owner=safe_short_to_uchar(country);
 			break;
 		case EDADJ:
-			curntn->dstatus[armynum]=x;
+			curntn->dstatus[armynum]=safe_short_to_char(x);
 			break;
 		case XNARGOLD:
 			curntn->jewels = longvar;
@@ -343,10 +344,10 @@ int execute(int isupdate) {	/* 0 if not update, 1 if update */
 			curntn->dplus++;
 			break;
 		case DESTRY:
-			sct[ntn[armynum].capx][ntn[armynum].capy].owner=savectry;
-			country=armynum;
+			sct[ntn[armynum].capx][ntn[armynum].capy].owner=safe_int_to_uchar(savectry);
+			country=safe_int_to_short(armynum);
 			if (isupdate) destroy(country);
-			country=savectry;
+			country=safe_int_to_short(savectry);
 			break;
 		case CHG_MGK:
 			curntn->powers|=long2var;
@@ -366,7 +367,7 @@ int execute(int isupdate) {	/* 0 if not update, 1 if update */
 	}
 	fclose(fp);
 	/*return 1 if it did something*/
-	country=savectry;
+	country=safe_int_to_short(savectry);
 	curntn = &ntn[country];
 	if(execed==1) return(1);
 	else return(0);

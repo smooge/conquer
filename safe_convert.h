@@ -350,6 +350,33 @@ static inline unsigned short safe_int_to_ushort(int value) {
 }
 
 /*
+ * safe_long_to_short - Convert long to short with bounds checking
+ *
+ * Safely converts a long integer value to short, clamping to valid short range.
+ * Used for calculations where long intermediate results need to be stored in
+ * short variables, particularly in legacy data structures and game calculations.
+ *
+ * This function eliminates conversion warnings when long arithmetic results
+ * (such as division operations or mercenary calculations) need to fit in
+ * short storage fields like i_people, MERCATT, and MERCDEF.
+ *
+ * Parameters:
+ *   value - The long value to convert
+ *
+ * Returns:
+ *   short value clamped to [SHRT_MIN, SHRT_MAX] range
+ *
+ * Example Usage:
+ *   sct[x][y].i_people = safe_long_to_short(sct[x][y].people/256);
+ *   MERCATT = safe_long_to_short((MERCMEN*MERCATT+armynum*x)/(MERCMEN+armynum));
+ */
+static inline short safe_long_to_short(long value) {
+    if (value > SHRT_MAX) return SHRT_MAX;
+    if (value < SHRT_MIN) return SHRT_MIN;
+    return (short)value;
+}
+
+/*
  * Conversion Utility Usage Guidelines
  *
  * 1. ARCHITECTURAL FIRST: Always prefer changing variable types over conversions

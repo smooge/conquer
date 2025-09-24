@@ -1,0 +1,2860 @@
+=== COMPREHENSIVE COMPILATION TEST ===
+Warning Level: 8 (-Wall -Wextra -Wpedantic -Wformat=2 -Wconversion -Wsign-conversion -Wimplicit-fallthrough -Wstrict-prototypes)
+C Standard: c2x
+Date: Wed 24 Sep 12:12:53 EDT 2025
+
+=== ADMIN-ONLY FILES (8 files) ===
+--- Testing admin.c (Admin mode) ---
+admin.c: In function ‘main’:
+admin.c:346:18: warning: conversion to ‘size_t’ {aka ‘long unsigned int’} from ‘int’ may change the sign of the result [-Wsign-conversion]
+  346 |         while((i=getopt(argc,argv,"maxr:d:"))!=EOF) switch(i){
+      |                  ^~~~~~
+admin.c:346:46: warning: comparison of integer expressions of different signedness: ‘size_t’ {aka ‘long unsigned int’} and ‘int’ [-Wsign-compare]
+  346 |         while((i=getopt(argc,argv,"maxr:d:"))!=EOF) switch(i){
+      |                                              ^~
+admin.c: In function ‘att_base’:
+admin.c:854:37: warning: conversion from ‘long int’ to ‘double’ may change value [-Wconversion]
+  854 |                 temp = (long)(1000.0*temp/WORLDGOLD + 1000.0*curntn->jewels/WORLDJEWELS + 1000.0*curntn->metals/WORLDMETAL) + cityfolk*5/3 + townfolk*5/6;
+      |                                     ^
+admin.c:854:42: warning: conversion from ‘long int’ to ‘double’ may change value [-Wconversion]
+  854 |                 temp = (long)(1000.0*temp/WORLDGOLD + 1000.0*curntn->jewels/WORLDJEWELS + 1000.0*curntn->metals/WORLDMETAL) + cityfolk*5/3 + townfolk*5/6;
+      |                                          ^
+admin.c:854:61: warning: conversion from ‘long int’ to ‘double’ may change value [-Wconversion]
+  854 |                 temp = (long)(1000.0*temp/WORLDGOLD + 1000.0*curntn->jewels/WORLDJEWELS + 1000.0*curntn->metals/WORLDMETAL) + cityfolk*5/3 + townfolk*5/6;
+      |                                                             ^
+admin.c:854:76: warning: conversion from ‘long int’ to ‘double’ may change value [-Wconversion]
+  854 |                 temp = (long)(1000.0*temp/WORLDGOLD + 1000.0*curntn->jewels/WORLDJEWELS + 1000.0*curntn->metals/WORLDMETAL) + cityfolk*5/3 + townfolk*5/6;
+      |                                                                            ^
+admin.c:854:97: warning: conversion from ‘long int’ to ‘double’ may change value [-Wconversion]
+  854 |                 temp = (long)(1000.0*temp/WORLDGOLD + 1000.0*curntn->jewels/WORLDJEWELS + 1000.0*curntn->metals/WORLDMETAL) + cityfolk*5/3 + townfolk*5/6;
+      |                                                                                                 ^
+admin.c:854:112: warning: conversion from ‘long int’ to ‘double’ may change value [-Wconversion]
+  854 |                 temp = (long)(1000.0*temp/WORLDGOLD + 1000.0*curntn->jewels/WORLDJEWELS + 1000.0*curntn->metals/WORLDMETAL) + cityfolk*5/3 + townfolk*5/6;
+      |                                                                                                                ^
+admin.c:890:55: warning: conversion from ‘long int’ to ‘double’ may change value [-Wconversion]
+  890 |                 temp = (curntn->wealth + 10*P_EATRATE + clerics + curntn->popularity)/2;
+      |                                                       ^
+admin.c:890:24: warning: conversion from ‘double’ to ‘long int’ may change value [-Wfloat-conversion]
+  890 |                 temp = (curntn->wealth + 10*P_EATRATE + clerics + curntn->popularity)/2;
+      |                        ^
+
+--- Testing combat.c (Admin mode) ---
+combat.c: In function ‘navalcbt’:
+combat.c:1348:75: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1348 |                         SHIPS(ntn[country].nvy[unit[j]].warships,N_MEDIUM)+
+combat.c:1351:75: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1351 |                         SHIPS(ntn[country].nvy[unit[j]].merchant,N_MEDIUM)+
+combat.c:1354:74: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1354 |                         SHIPS(ntn[country].nvy[unit[j]].galleys,N_MEDIUM)+
+In file included from combat.c:27:
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+combat.c:1465:25: note: in expansion of macro ‘rand’
+ 1465 |                 roll += rand()%21+1;
+      |                         ^~~~
+combat.c: In function ‘capture’:
+data.h:684:35: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  684 | #define NADD_WAR(x)     addwships(nvynum,shipsize,(x));
+      |                                   ^~~~~~
+combat.c:1867:24: note: in expansion of macro ‘NADD_WAR’
+ 1867 |                 (void) NADD_WAR(1);
+      |                        ^~~~~~~~
+data.h:684:42: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  684 | #define NADD_WAR(x)     addwships(nvynum,shipsize,(x));
+      |                                          ^~~~~~~~
+combat.c:1867:24: note: in expansion of macro ‘NADD_WAR’
+ 1867 |                 (void) NADD_WAR(1);
+      |                        ^~~~~~~~
+
+--- Testing spew.c (Admin mode) ---
+
+--- Testing newlogin.c (Admin mode) ---
+newlogin.c: In function ‘in_str’:
+newlogin.c:654:17: warning: conversion from ‘size_t’ {aka ‘long unsigned int’} to ‘int’ may change value [-Wconversion]
+  654 |         int i,l=strlen(str);
+      |                 ^~~~~~
+In file included from newlogin.c:128:
+newlogin.c: In function ‘errorbar’:
+newlogin.c:708:30: warning: conversion to ‘size_t’ {aka ‘long unsigned int’} from ‘int’ may change the sign of the result [-Wsign-conversion]
+  708 |         mvaddstr(LINES-3,COLS-strlen(str2)-2,str2);
+      |                              ^
+newlogin.c:708:43: warning: conversion from ‘size_t’ {aka ‘long unsigned int’} to ‘int’ may change value [-Wconversion]
+  708 |         mvaddstr(LINES-3,COLS-strlen(str2)-2,str2);
+      |                                           ^
+newlogin.c: In function ‘dispitem’:
+newlogin.c:768:33: warning: conversion from ‘long int’ to ‘float’ may change value [-Wconversion]
+  768 |                 ((float)NLJEWELS/Mvalues[CH_RAWGOODS])));
+      |                                 ^
+newlogin.c:767:47: warning: conversion from ‘long int’ to ‘float’ may change value [-Wconversion]
+  767 |         printw(", %ld jewels", (long) (amount *
+      |                                               ^
+newlogin.c:770:32: warning: conversion from ‘long int’ to ‘float’ may change value [-Wconversion]
+  770 |                 ((float)NLMETAL/Mvalues[CH_RAWGOODS])));
+      |                                ^
+newlogin.c:769:51: warning: conversion from ‘long int’ to ‘float’ may change value [-Wconversion]
+  769 |         printw(", and %ld metal.", (long) (amount *
+      |                                                   ^
+newlogin.c: In function ‘convert’:
+newlogin.c:913:25: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  913 |         curntn->aplus = (short) Mvalues[CH_ATTACK] * spent[CH_ATTACK];
+      |                         ^
+newlogin.c:914:25: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  914 |         curntn->dplus = (short) Mvalues[CH_DEFEND] * spent[CH_DEFEND];
+      |                         ^
+newlogin.c:915:25: warning: conversion from ‘int’ to ‘char’ may change value [-Wconversion]
+  915 |         curntn->repro = (char) Mvalues[CH_REPRO] * spent[CH_REPRO];
+      |                         ^
+newlogin.c:916:27: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  916 |         curntn->maxmove = (unsigned char) Mvalues[CH_MOVEMENT]
+      |                           ^
+newlogin.c:922:53: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  922 |                         if((x=getmagic((rand()%M_MGK+M_MIL)))!=0L){
+      |                                        ~~~~~~~~~~~~~^~~~~~~
+newlogin.c: In function ‘newlogin’:
+newlogin.c:1094:33: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1094 |                         country=i;
+      |                                 ^
+newlogin.c:1176:37: warning: conversion to ‘size_t’ {aka ‘long unsigned int’} from ‘int’ may change the sign of the result [-Wsign-conversion]
+ 1176 |                 mvprintw(0,COLS/2-15-strlen(curntn->name)/2,
+      |                                     ^
+newlogin.c:1176:37: warning: conversion from ‘size_t’ {aka ‘long unsigned int’} to ‘int’ may change value [-Wconversion]
+ 1176 |                 mvprintw(0,COLS/2-15-strlen(curntn->name)/2,
+      |                            ~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~
+newlogin.c:1373:36: warning: conversion from ‘int’ to ‘char’ may change value [-Wconversion]
+ 1373 |                         tempc[0] = getch();
+      |                                    ^~~~~
+newlogin.c:1613:39: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1613 |                         curntn->uid = realuser;
+      |                                       ^~~~~~~~
+newlogin.c: In function ‘place’:
+newlogin.c:1781:37: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1781 |                                 x = (rand()%(MAPX-8))+4;
+      |                                     ^
+newlogin.c:1782:37: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1782 |                                 y = (rand()%(MAPY-8))+4;
+      |                                     ^
+newlogin.c:1784:37: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1784 |                                 x = (rand()%(MAPX-2))+1;
+      |                                     ^
+newlogin.c:1785:37: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1785 |                                 y = (rand()%(MAPY-2))+1;
+      |                                     ^
+In file included from newlogin.c:133:
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+newlogin.c:1802:45: note: in expansion of macro ‘rand’
+ 1802 |                                         x = rand()%(MAPX-12)+6;
+      |                                             ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+newlogin.c:1803:45: note: in expansion of macro ‘rand’
+ 1803 |                                         y = rand()%(MAPY-12)+6;
+      |                                             ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+newlogin.c:1805:45: note: in expansion of macro ‘rand’
+ 1805 |                                         x = rand()%(MAPX-8)+4;
+      |                                             ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+newlogin.c:1806:45: note: in expansion of macro ‘rand’
+ 1806 |                                         y = rand()%(MAPY-8)+4;
+      |                                             ^~~~
+newlogin.c:1814:37: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1814 |                                 x = (rand()%(MAPX-6))+3;
+      |                                     ^
+newlogin.c:1815:37: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1815 |                                 y = (rand()%(MAPY-6))+3;
+      |                                     ^
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+newlogin.c:1835:45: note: in expansion of macro ‘rand’
+ 1835 |                                         x = rand()%(MAPX-24)+12;
+      |                                             ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+newlogin.c:1837:45: note: in expansion of macro ‘rand’
+ 1837 |                                         x = rand()%(MAPX-14)+7;
+      |                                             ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+newlogin.c:1840:45: note: in expansion of macro ‘rand’
+ 1840 |                                         y = rand()%(MAPY-24)+12;
+      |                                             ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+newlogin.c:1842:45: note: in expansion of macro ‘rand’
+ 1842 |                                         y = rand()%(MAPY-14)+7;
+      |                                             ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+newlogin.c:1845:37: note: in expansion of macro ‘rand’
+ 1845 |                                 x = rand()%(MAPX-10)+5;
+      |                                     ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+newlogin.c:1846:37: note: in expansion of macro ‘rand’
+ 1846 |                                 y = rand()%(MAPY-10)+5;
+      |                                     ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+newlogin.c:1888:45: note: in expansion of macro ‘rand’
+ 1888 |                                         x = rand()%(MAPX-40)+20;
+      |                                             ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+newlogin.c:1890:45: note: in expansion of macro ‘rand’
+ 1890 |                                         x = rand()%(MAPX-18)+9;
+      |                                             ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+newlogin.c:1893:45: note: in expansion of macro ‘rand’
+ 1893 |                                         y = rand()%(MAPY-40)+20;
+      |                                             ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+newlogin.c:1895:45: note: in expansion of macro ‘rand’
+ 1895 |                                         y = rand()%(MAPY-18)+9;
+      |                                             ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+newlogin.c:1906:45: note: in expansion of macro ‘rand’
+ 1906 |                                         x = rand()%(MAPX-24)+12;
+      |                                             ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+newlogin.c:1908:45: note: in expansion of macro ‘rand’
+ 1908 |                                         x = rand()%(MAPX-12)+6;
+      |                                             ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+newlogin.c:1911:45: note: in expansion of macro ‘rand’
+ 1911 |                                         y = rand()%(MAPY-24)+12;
+      |                                             ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+newlogin.c:1913:45: note: in expansion of macro ‘rand’
+ 1913 |                                         y = rand()%(MAPY-12)+6;
+      |                                             ^~~~
+newlogin.c:1943:32: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1943 |                 curntn->capx = x;
+      |                                ^
+newlogin.c:1944:32: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1944 |                 curntn->capy = y;
+      |                                ^
+data.h:845:25: warning: conversion from ‘long int’ to ‘unsigned char’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+newlogin.c:1946:37: note: in expansion of macro ‘rand’
+ 1946 |                 sct[x][y].tradegood=rand()%(END_KNOWLEDGE-END_SPOILRATE)+END_SPOILRATE+1;
+      |                                     ^~~~
+newlogin.c:1949:33: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1949 |                 sct[x][y].owner=country;
+      |                                 ^~~~~~~
+newlogin.c:1954:28: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1954 |                 armysize = (TAKESECTOR*12)/10;
+      |                            ^
+newlogin.c:1962:25: warning: conversion from ‘long int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1962 |                 P_ATYPE=defaultunit(country);
+      |                         ^~~~~~~~~~~
+data.h:1176:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1176 | #define max(x,y)        ((x)>(y) ? (x) : (y))
+      |                         ^
+newlogin.c:1969:28: note: in expansion of macro ‘max’
+ 1969 |                 armysize = max( armysize, soldsleft  / (MAXARM-numleaders-1));
+      |                            ^~~
+newlogin.c:1973:27: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1973 |                 P_ATYPE = leadtype-1;   /* This is the national leader */
+      |                           ^~~~~~~~
+newlogin.c:1982:33: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1982 |                         P_ATYPE=leadtype;
+      |                                 ^~~~~~~~
+newlogin.c:1994:33: warning: conversion from ‘long int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1994 |                         P_ATYPE=defaultunit(country);
+      |                                 ^~~~~~~~~~~
+newlogin.c:2037:49: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+ 2037 |                                 sct[i][j].owner=country;
+      |                                                 ^~~~~~~
+newlogin.c: In function ‘getclass’:
+newlogin.c:2171:31: warning: conversion from ‘size_t’ {aka ‘long unsigned int’} to ‘short int’ may change value [-Wconversion]
+ 2171 |                         tmp = strlen(CPowlist[i]);
+      |                               ^~~~~~
+newlogin.c:2186:23: warning: conversion from ‘long int’ to ‘short int’ may change value [-Wconversion]
+ 2186 |                 tmp = get_number();
+      |                       ^~~~~~~~~~
+newlogin.c: In function ‘nstartcst’:
+newlogin.c:2387:36: warning: conversion from ‘int’ to ‘float’ may change value [-Wconversion]
+ 2387 |                 points += Mcost[i] * (float) spent[i] / Munits[i];
+      |                                    ^
+newlogin.c:2387:55: warning: conversion from ‘int’ to ‘float’ may change value [-Wconversion]
+ 2387 |                 points += Mcost[i] * (float) spent[i] / Munits[i];
+      |                                                       ^
+newlogin.c:2397:19: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+ 2397 |         points += 1.0;  /* round up */
+      |                   ^~~
+newlogin.c: In function ‘startcost’:
+newlogin.c:2514:16: warning: conversion from ‘int’ to ‘float’ may change value [-Wconversion]
+ 2514 |         points -= (TURN-1) / LATESTART; /* extra points if you start late */
+      |                ^~
+newlogin.c:2518:19: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+ 2518 |         points += 1.0;  /* round up */
+      |                   ^~~
+
+--- Testing update.c (Admin mode) ---
+update.c: In function ‘armymove’:
+update.c:505:23: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  505 |                 for(x=(int)P_AXLOC-4+menok*2;x<=(int)P_AXLOC+4-menok*2;x++)
+      |                       ^
+update.c:506:23: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  506 |                 for(y=(int)P_AYLOC-4+menok*2;y<=(int)P_AYLOC+4-menok*2;y++) {
+      |                       ^
+In file included from update.c:33:
+data.h:250:25: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  250 | #define NUMSTATUS       17      /* number of possible stats */
+      |                         ^~
+update.c:546:53: note: in expansion of macro ‘NUMSTATUS’
+  546 |                                 curntn->arm[x].stat=NUMSTATUS+armynum;
+      |                                                     ^~~~~~~~~
+update.c:554:23: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  554 |                 for(x=(int)P_AXLOC-4+menok*2;x<=(int)P_AXLOC+4-menok*2;x++)
+      |                       ^
+update.c:555:23: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  555 |                 for(y=(int)P_AYLOC-4+menok*2;y<=(int)P_AYLOC+4-menok*2;y++)
+      |                       ^
+update.c:563:41: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  563 |                                 P_AXLOC=x;
+      |                                         ^
+update.c:564:41: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  564 |                                 P_AYLOC=y;
+      |                                         ^
+update.c:584:57: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+  584 |                                         sct[x][y].owner=country;
+      |                                                         ^~~~~~~
+update.c:620:41: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  620 |                                 P_AXLOC=x;
+      |                                         ^
+update.c:621:41: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  621 |                                 P_AYLOC=y;
+      |                                         ^
+update.c:624:57: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+  624 |                                         sct[x][y].owner=country;
+      |                                                         ^~~~~~~
+update.c: In function ‘cheat’:
+update.c:777:35: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  777 |                         avgscore+=ntn[x].score;
+      |                                   ^~~
+update.c: In function ‘updexecs’:
+update.c:918:24: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  918 |                 number=(rand()%(NTOTAL-loop))+1; /*get random active nation*/
+      |                        ^
+update.c:998:49: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  998 |                                         P_ATYPE=x-1;
+      |                                                 ^
+update.c: In function ‘do_lizard’:
+update.c:1189:59: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1189 |                                                 P_AXLOC = i;
+      |                                                           ^
+update.c:1190:59: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1190 |                                                 P_AYLOC = j;
+      |                                                           ^
+update.c: In function ‘updcapture’:
+update.c:1325:53: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1325 |                                         sptr->owner=country;
+      |                                                     ^~~~~~~
+update.c:1345:53: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1345 |                                         sptr->owner=country;
+      |                                                     ^~~~~~~
+update.c: In function ‘updsectors’:
+data.h:1176:25: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1176 | #define max(x,y)        ((x)>(y) ? (x) : (y))
+      |                         ^
+update.c:1607:54: note: in expansion of macro ‘max’
+ 1607 |                                 curntn->popularity = max(0,(int)(curntn->popularity-2*curntn->inflation));
+      |                                                      ^~~
+update.c:1609:42: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1609 |                         curntn->tsctrs = spread.sectors;
+      |                                          ^~~~~~
+data.h:1177:25: warning: conversion from ‘long int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1177 | #define min(x,y)        ((x)<(y) ? (x) : (y))
+      |                         ^
+update.c:1641:46: note: in expansion of macro ‘min’
+ 1641 |                         curntn->popularity = min(curntn->popularity+5*charity,MAXTGVAL);
+      |                                              ^~~
+update.c:1646:52: warning: conversion from ‘long int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1646 |                         else    curntn->poverty -= (charity+1)/2;
+      |                                                    ^
+data.h:845:25: warning: conversion from ‘long int’ to ‘short int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+update.c:1650:53: note: in expansion of macro ‘rand’
+ 1650 |                                 curntn->inflation = rand()%(curntn->inflation/2+1);
+      |                                                     ^~~~
+update.c:1652:46: warning: conversion from ‘long int’ to ‘short int’ may change value [-Wconversion]
+ 1652 |                         curntn->inflation += (curntn->tax_rate/4 + (rand()%(curntn->tax_rate*3/4+1)));
+      |                                              ^
+update.c:1656:54: warning: conversion from ‘long int’ to ‘short int’ may change value [-Wconversion]
+ 1656 |                                 curntn->inflation += ((curntn->tmil*100/spread.civilians - 15)/5);
+      |                                                      ^
+update.c:1658:46: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1658 |                         curntn->inflation += (curntn->poverty-50)/2;
+      |                                              ^
+update.c: In function ‘updmil’:
+update.c:1820:28: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1820 |                 dfltunit = defaultunit(country);
+      |                            ^~~~~~~~~~~
+update.c:1829:46: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1829 |                                 A->unittyp = dfltunit;
+      |                                              ^~~~~~~~
+update.c:1850:42: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1850 |                                 A->smove=(curntn->maxmove * *(unitmove+(AT%UTYPE)))/5;
+      |                                          ^
+update.c:1866:64: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1866 |                                                 siegex[sieges]=AX;
+      |                                                                ^~
+update.c:1867:64: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1867 |                                                 siegey[sieges]=AY;
+      |                                                                ^~
+update.c:1877:72: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1877 |                                                                 asmen+=3*ntn[nation].arm[army2].sold;
+      |                                                                        ^
+update.c:1878:77: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1878 |                                                                 else asmen+=ntn[nation].arm[army2].sold;
+      |                                                                             ^~~
+update.c:1886:64: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1886 |                                                         dsmen+=ntn[nation].arm[army2].sold/2;
+      |                                                                ^~~
+update.c:1887:69: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1887 |                                                         else dsmen+=ntn[nation].arm[army2].sold;
+      |                                                                     ^~~
+update.c:1934:42: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1934 |                                 A->smove=(curntn->maxmove * *(unitmove+(AT%UTYPE)))/10;
+      |                                          ^
+update.c:2035:48: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 2035 |                                 else P_NMOVE = (fltspeed(nvynum)*P_NCREW)/SHIPCREW;
+      |                                                ^
+update.c:2038:51: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 2038 |                                 curntn->tships += fltships(country,nvynum);
+      |                                                   ^~~~~~~~
+update.c: In function ‘updcomodities’:
+update.c:2201:44: warning: conversion from ‘long int’ to ‘double’ may change value [-Wconversion]
+ 2201 |                 curntn->tfood-=curntn->tmil*P_EATRATE*2;
+      |                                            ^
+update.c:2201:30: warning: conversion from ‘long int’ to ‘double’ may change value [-Wconversion]
+ 2201 |                 curntn->tfood-=curntn->tmil*P_EATRATE*2;
+      |                              ^~
+update.c:2201:32: warning: conversion from ‘double’ to ‘long int’ may change value [-Wfloat-conversion]
+ 2201 |                 curntn->tfood-=curntn->tmil*P_EATRATE*2;
+      |                                ^~~~~~
+update.c:2202:44: warning: conversion from ‘long int’ to ‘double’ may change value [-Wconversion]
+ 2202 |                 curntn->tfood-=curntn->tciv*P_EATRATE;
+      |                                            ^
+update.c:2202:30: warning: conversion from ‘long int’ to ‘double’ may change value [-Wconversion]
+ 2202 |                 curntn->tfood-=curntn->tciv*P_EATRATE;
+      |                              ^~
+update.c:2202:32: warning: conversion from ‘double’ to ‘long int’ may change value [-Wfloat-conversion]
+ 2202 |                 curntn->tfood-=curntn->tciv*P_EATRATE;
+      |                                ^~~~~~
+update.c:2244:24: warning: conversion from ‘long int’ to ‘double’ may change value [-Wconversion]
+ 2244 |                 if((0.0+curntn->tgold) - GOLDTHRESH*(0.0+curntn->jewels) > 0.0){
+      |                        ^
+update.c:2244:57: warning: conversion from ‘long int’ to ‘double’ may change value [-Wconversion]
+ 2244 |                 if((0.0+curntn->tgold) - GOLDTHRESH*(0.0+curntn->jewels) > 0.0){
+      |                                                         ^
+update.c: In function ‘updleader’:
+data.h:547:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  547 | #define MINMONSTER      (45+TWOUTYPE)   /* min value of a monster       */
+      |                         ^
+update.c:2399:35: note: in expansion of macro ‘MINMONSTER’
+ 2399 |                         do type = MINMONSTER + rand()%(MAXMONSTER-MINMONSTER+1);
+      |                                   ^~~~~~~~~~
+update.c:2404:43: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 2404 |                                 P_ATYPE = type;
+      |                                           ^~~~
+update.c:2443:35: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 2443 |                         P_ATYPE = getleader(curntn->class);
+      |                                   ^~~~~~~~~
+
+--- Testing npc.c (Admin mode) ---
+npc.c: In function ‘monster’:
+npc.c:310:23: warning: conversion from ‘double’ to ‘int’ may change value [-Wfloat-conversion]
+  310 |         neededtroops= ((NUMSECTS)/MONSTER)*( /* number of armies */
+      |                       ^
+npc.c:319:33: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  319 |                 actualtroops += ntn[nomads].arm[i].sold;
+      |                                 ^~~
+npc.c:321:33: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  321 |                 actualtroops += ntn[savages].arm[i].sold;
+      |                                 ^~~
+npc.c:337:40: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  337 |                 while(!is_habitable((x=(rand()%(MAPX-8))+4),
+      |                                        ^
+npc.c:338:40: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  338 |                                     (y=(rand()%(MAPY-8))+4)))
+      |                                        ^
+npc.c:352:41: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  352 |                 ntn[nomads].arm[i].xloc=x;
+      |                                         ^
+npc.c:353:41: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  353 |                 ntn[nomads].arm[i].yloc=y;
+      |                                         ^
+npc.c:357:33: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  357 |                 neededtroops -= ntn[nomads].arm[i].sold;
+      |                                 ^~~
+npc.c:366:19: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  366 |                 x=(rand()%(MAPX-8))+4;
+      |                   ^
+npc.c:367:19: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  367 |                 y=(rand()%(MAPY-8))+4;
+      |                   ^
+npc.c:386:42: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  386 |                 ntn[savages].arm[i].xloc=x;
+      |                                          ^
+npc.c:387:42: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  387 |                 ntn[savages].arm[i].yloc=y;
+      |                                          ^
+npc.c:389:45: warning: conversion from ‘long int’ to ‘unsigned char’ may change value [-Wconversion]
+  389 |                 ntn[savages].arm[i].unittyp=defaultunit(savages);
+      |                                             ^~~~~~~~~~~
+npc.c:391:33: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  391 |                 neededtroops -= ntn[savages].arm[i].sold;
+      |                                 ^~~
+npc.c: In function ‘do_nomad’:
+npc.c:475:25: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  475 |                 P_AMOVE=(curntn->maxmove * *(unitmove+P_ATYPE%UTYPE))/10;
+      |                         ^
+npc.c:482:27: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  482 |                         x=(int)P_AXLOC+rand()%3-1;
+      |                           ^
+npc.c:483:27: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  483 |                         y=(int)P_AYLOC+rand()%3-1;
+      |                           ^
+npc.c:496:33: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  496 |                         P_AXLOC=x;
+      |                                 ^
+npc.c:497:33: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  497 |                         P_AYLOC=y;
+      |                                 ^
+npc.c:504:49: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+  504 |                                 sct[x][y].owner=country;
+      |                                                 ^~~~~~~
+npc.c: In function ‘do_savage’:
+npc.c:586:25: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  586 |                 P_AMOVE=(curntn->maxmove * *(unitmove+P_ATYPE%UTYPE))/10;
+      |                         ^
+npc.c:587:19: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  587 |                 x=(int)P_AXLOC+rand()%3-1;
+      |                   ^
+npc.c:588:19: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  588 |                 y=(int)P_AYLOC+rand()%3-1;
+      |                   ^
+npc.c:591:33: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  591 |                         P_AXLOC=x;
+      |                                 ^
+npc.c:592:33: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  592 |                         P_AYLOC=y;
+      |                                 ^
+npc.c:600:57: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+  600 |                                         sct[x][y].owner=country;
+      |                                                         ^~~~~~~
+npc.c: In function ‘do_pirate’:
+npc.c:700:41: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  700 |                                 P_NXLOC=campx;
+      |                                         ^~~~~
+npc.c:701:41: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  701 |                                 P_NYLOC=campy;
+      |                                         ^~~~~
+In file included from npc.c:54:
+data.h:845:25: warning: conversion from ‘long int’ to ‘short int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+npc.c:720:36: note: in expansion of macro ‘rand’
+  720 |                         shipsize = rand()%(N_HEAVY-N_LIGHT+1);
+      |                                    ^~~~
+npc.c: In function ‘redomil’:
+npc.c:940:17: warning: conversion from ‘long int’ to ‘unsigned char’ may change value [-Wconversion]
+  940 |         P_ATYPE=defaultunit(country);
+      |                 ^~~~~~~~~~~
+npc.c:1060:35: warning: conversion from ‘long int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1060 |                         P_ATYPE = defaultunit(country);
+      |                                   ^~~~~~~~~~~
+npc.c:1171:15: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1171 |         for(x=stx;x<endx;x++) for(y=sty;y<endy;y++)
+      |               ^~~
+npc.c:1171:37: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1171 |         for(x=stx;x<endx;x++) for(y=sty;y<endy;y++)
+      |                                     ^~~
+npc.c:1185:41: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1185 |                                 P_AXLOC=x;
+      |                                         ^
+npc.c:1186:41: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1186 |                                 P_AYLOC=y;
+      |                                         ^
+npc.c:1224:25: warning: conversion from ‘long int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1224 |                 P_ATYPE=defaultunit(country);
+      |                         ^~~~~~~~~~~
+npc.c: In function ‘find_avg_sector’:
+npc.c:1512:28: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1512 |                 Avg_food = total_food / useable_land;
+      |                            ^~~~~~~~~~
+npc.c:1513:33: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1513 |                 Avg_tradegood = total_tg / useable_land;
+      |                                 ^~~~~~~~
+npc.c:1540:56: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1540 |                                 Avg_soldiers[nation] = ntn[nation].tmil / total_sectors;
+      |                                                        ^~~
+npc.c: In function ‘nationrun’:
+npc.c:1707:51: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1707 |                                 makemess(rand()%5 +1,fm);
+npc.c:1794:36: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1794 |                 curntn->tax_rate = (int)min((int)(curntn->prestige/5),(int)((curntn->popularity+curntn->terror+3*curntn->charity)/10));
+      |                                    ^
+npc.c:1825:45: warning: conversion from ‘long int’ to ‘float’ may change value [-Wconversion]
+ 1825 |                         hunger = spread.food/((float)(spread.civilians+2*curntn->tmil));
+      |                                             ^
+npc.c: In function ‘n_defend’:
+npc.c:2301:41: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 2301 |                                         ntn[natn].arm[x].sold/10;
+      |                                         ^~~
+npc.c:2343:37: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 2343 |                         attr[x][y]+=3000*sct[x][y].people/ntn[country].tciv;
+      |                                     ^~~~
+npc.c: In function ‘n_people’:
+npc.c:2698:47: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 2698 |                                 attr[x][y] += sct[x][y].people/4;
+      |                                               ^~~
+npc.c:2699:47: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 2699 |                         } else  attr[x][y] -= sct[x][y].people/4;
+      |                                               ^~~
+npc.c: In function ‘n_survive’:
+npc.c:2865:59: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 2865 |                                         attr[capx][capy]+=2*ntn[nation].arm[armynum].sold;
+      |                                                           ^
+npc.c:2868:109: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 2868 |                                         attr[ntn[nation].arm[armynum].xloc][ntn[nation].arm[armynum].yloc]+=ntn[nation].arm[armynum].sold;
+      |                                                                                                             ^~~
+
+--- Testing randeven.c (Admin mode) ---
+randeven.c: In function ‘disolve’:
+randeven.c:405:25: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  405 |                 country=target;
+      |                         ^~~~~~
+randeven.c:416:27: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  416 |                 country = new;
+      |                           ^~~
+randeven.c:457:33: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  457 |         sct[realx][realy].owner=new;
+      |                                 ^~~
+randeven.c:459:24: warning: conversion from ‘__uid_t’ {aka ‘unsigned int’} to ‘short int’ may change value [-Wconversion]
+  459 |         ntn[new].uid = getpwnam(LOGIN)->pw_uid;
+      |                        ^~~~~~~~
+randeven.c:461:23: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  461 |         ntn[new].capx=realx;
+      |                       ^~~~~
+randeven.c:462:23: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  462 |         ntn[new].capy=realy;
+      |                       ^~~~~
+randeven.c:491:27: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  491 |         ntn[new].tsctrs = split;
+      |                           ^~~~~
+randeven.c:496:33: warning: conversion from ‘int’ to ‘char’ may change value [-Wconversion]
+  496 |                 ntn[new].mark = toupper(ntn[new].name[0]);
+      |                                 ^~~~~~~
+randeven.c:509:57: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  509 |                                         sct[i][j].owner=new;
+      |                                                         ^~~
+randeven.c:542:40: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  542 |                 ntn[new].arm[0].xloc = realx;
+      |                                        ^~~~~
+randeven.c:543:40: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  543 |                 ntn[new].arm[0].yloc = realy;
+      |                                        ^~~~~
+In file included from randeven.c:141:
+randeven.c: In function ‘randomevent’:
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+randeven.c:769:25: note: in expansion of macro ‘rand’
+  769 |                 event = rand()%(MAXRANEVENT-9) + 9;
+      |                         ^~~~
+randeven.c:788:35: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  788 |                         percent = 10 + rand()%20;
+      |                                   ^~
+randeven.c:810:35: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  810 |                         percent = 10 + rand()%25;
+      |                                   ^~
+randeven.c:820:50: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  820 |                         if (holdval > 0) count = (rand()%holdval) + 1;
+      |                                                  ^
+randeven.c:882:50: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  882 |                         if (holdval > 0) count = (rand()%holdval) + 1;
+      |                                                  ^
+randeven.c:910:50: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  910 |                         if (holdval > 0) count = (rand()%holdval) + 1;
+      |                                                  ^
+randeven.c:937:35: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  937 |                         percent = 30+rand()%40;
+      |                                   ^~
+randeven.c:975:30: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  975 |                         xpos=(rand()%(MAPX-8))+4;
+      |                              ^
+randeven.c:976:30: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  976 |                         ypos=(rand()%(MAPY-8))+4;
+      |                              ^
+randeven.c:981:49: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  981 |                                         armynum=newpower;
+      |                                                 ^~~~~~~~
+randeven.c:985:65: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  985 |                                 ntn[holdval].arm[armynum].xloc =xpos;
+      |                                                                 ^~~~
+randeven.c:986:65: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  986 |                                 ntn[holdval].arm[armynum].yloc =ypos;
+      |                                                                 ^~~~
+randeven.c:1013:50: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1013 |                         if (holdval > 0) count = (rand()%holdval) + 1;
+      |                                                  ^
+randeven.c:1016:35: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1016 |                         percent = 25 + rand()%50;
+      |                                   ^~
+randeven.c:1092:50: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1092 |                         if (holdval > 0) count = (rand()%holdval) + 1;
+      |                                                  ^
+randeven.c:1129:50: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1129 |                         if (holdval > 0) count = (rand()%holdval)+1;
+      |                                                  ^
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+randeven.c:1166:51: note: in expansion of macro ‘rand’
+ 1166 |                         if (holdval!=0) holdval = rand()%holdval+1;
+      |                                                   ^~~~
+randeven.c: In function ‘peasant_revolt’:
+randeven.c:1515:43: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1515 |                         sct[i][j].owner = *newnation;
+      |                                           ^
+randeven.c:1521:43: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1521 |                                 P_AXLOC = i;
+      |                                           ^
+randeven.c:1522:43: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1522 |                                 P_AYLOC = j;
+      |                                           ^
+randeven.c: In function ‘other_revolt’:
+data.h:845:25: warning: conversion from ‘long int’ to ‘short int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+randeven.c:1609:26: note: in expansion of macro ‘rand’
+ 1609 |         short   reason = rand()%8;
+      |                          ^~~~
+randeven.c: In function ‘erupt’:
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+randeven.c:1725:19: note: in expansion of macro ‘rand’
+ 1725 |         volhold = rand()%nvolcanos;
+      |                   ^~~~
+randeven.c: In function ‘rand_sector’:
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+randeven.c:1869:17: note: in expansion of macro ‘rand’
+ 1869 |         count = rand()%count;
+      |                 ^~~~
+
+--- Testing makeworl.c (Admin mode) ---
+makeworl.c: In function ‘makeworld’:
+makeworl.c:281:22: warning: conversion from ‘__uid_t’ {aka ‘unsigned int’} to ‘short int’ may change value [-Wconversion]
+  281 |         ntn[0].uid = getuid();
+      |                      ^~~~~~
+makeworl.c:289:30: warning: conversion from ‘long int’ to ‘short int’ may change value [-Wconversion]
+  289 |                 world.mapx = get_number();
+      |                              ^~~~~~~~~~
+makeworl.c:300:30: warning: conversion from ‘long int’ to ‘short int’ may change value [-Wconversion]
+  300 |                 world.mapy = get_number();
+      |                              ^~~~~~~~~~
+makeworl.c:319:26: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  319 |                 pwater = get_number();
+      |                          ^~~~~~~~~~
+makeworl.c: In function ‘createworld’:
+makeworl.c:430:19: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  430 |         avvalue = (((float) (100-pwater)/25.0)); /*Average water tvalue of sectors*/
+      |                   ^
+In file included from makeworl.c:30:
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+makeworl.c:443:29: note: in expansion of macro ‘rand’
+  443 |                         x = rand()%4;   /*0 to 3*/
+      |                             ^~~~
+makeworl.c:452:29: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  452 |                         x = (rand()%4) +1; /*1 to 4*/
+      |                             ^
+makeworl.c:465:21: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  465 |                 X = ((rand()%(MAXX-2))+1); /*1 to MAXX-2)*/
+      |                     ^
+makeworl.c:466:21: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  466 |                 Y = ((rand()%(MAXY-2))+1); /*1 to MAXY-2)*/
+      |                     ^
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+makeworl.c:473:39: note: in expansion of macro ‘rand’
+  473 |                                 rnd = rand()%100 + 1; /*1 to 100*/
+      |                                       ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+makeworl.c:486:39: note: in expansion of macro ‘rand’
+  486 |                                 rnd = rand()%100 + 1 ; /*(1 to 100)*/
+      |                                       ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+makeworl.c:499:39: note: in expansion of macro ‘rand’
+  499 |                                 rnd = rand()%100 + 1 ; /*(1 to 100)*/
+      |                                       ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+makeworl.c:512:39: note: in expansion of macro ‘rand’
+  512 |                                 rnd = rand()%100 + 1 ; /*(1 to 100)*/
+      |                                       ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+makeworl.c:530:31: note: in expansion of macro ‘rand’
+  530 |                         rnd = rand()%5; /*(0 to 4)*/
+      |                               ^~~~
+makeworl.c:532:48: warning: conversion from ‘int’ to ‘char’ may change value [-Wconversion]
+  532 |                                 area_map[X][Y]=rnd;
+      |                                                ^~~
+In file included from makeworl.c:29:
+header.h:337:16: warning: conversion from ‘int’ to ‘float’ may change value [-Wconversion]
+  337 | #define PMOUNT 40       /* % of land that is mountains */
+      |                ^~
+makeworl.c:628:19: note: in expansion of macro ‘PMOUNT’
+  628 |         avvalue = PMOUNT * (100-pwater);
+      |                   ^~~~~~
+data.h:1415:25: warning: conversion from ‘float’ to ‘long int’ may change value [-Wfloat-conversion]
+ 1415 | #define NUMSECTS        (MAPX * MAPY)   /* total # areas, MAXX*MAXY */
+      |                         ^
+makeworl.c:630:27: note: in expansion of macro ‘NUMSECTS’
+  630 |         nmountains      = NUMSECTS * avvalue;
+      |                           ^~~~~~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+makeworl.c:639:22: note: in expansion of macro ‘rand’
+  639 |                 X1 = rand()%(MAPX-8);   /* Place one endpoint of range */
+      |                      ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+makeworl.c:640:22: note: in expansion of macro ‘rand’
+  640 |                 Y1 = rand()%(MAPY-8);
+      |                      ^~~~
+makeworl.c:641:22: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  641 |                 X2 = (rand()%8) + X1;   /* Place second endpoint */
+      |                      ^
+makeworl.c:642:22: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  642 |                 Y2 = (rand()%8) + Y1;
+      |                      ^
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+makeworl.c:673:37: note: in expansion of macro ‘rand’
+  673 |                                 rnd=rand()%100+1;
+      |                                     ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+makeworl.c:680:37: note: in expansion of macro ‘rand’
+  680 |                                 rnd=rand()%100+1;
+      |                                     ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+makeworl.c:688:37: note: in expansion of macro ‘rand’
+  688 |                                 rnd=rand()%100+1;
+      |                                     ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+makeworl.c:695:37: note: in expansion of macro ‘rand’
+  695 |                                 rnd=rand()%100+1;
+      |                                     ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+makeworl.c:705:21: note: in expansion of macro ‘rand’
+  705 |                 x = rand()%(MAPX-1);
+      |                     ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+makeworl.c:706:21: note: in expansion of macro ‘rand’
+  706 |                 y = rand()%(MAPY-1);
+      |                     ^~~~
+makeworl.c: In function ‘rawmaterials’:
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+makeworl.c:913:35: note: in expansion of macro ‘rand’
+  913 |                                 j=rand()%nmountains;
+      |                                   ^~~~
+makeworl.c:941:51: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  941 |                                 sptr->tradegood = i;
+      |                                                   ^
+makeworl.c: In function ‘populate’:
+makeworl.c:1267:35: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1267 |                                 x=(rand()%20);
+      |                                   ^
+makeworl.c:1268:35: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1268 |                                 y=(rand()%20);
+      |                                   ^
+makeworl.c:1270:35: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1270 |                                 x=(MAPX-(rand()%20)-1);
+      |                                   ^
+makeworl.c:1271:35: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1271 |                                 y=(MAPY-(rand()%20)-1);
+      |                                   ^
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+makeworl.c:1273:45: note: in expansion of macro ‘rand’
+ 1273 |                         if(rand()%2==0) x = rand()%MAPX;
+      |                                             ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+makeworl.c:1274:34: note: in expansion of macro ‘rand’
+ 1274 |                         else y = rand()%MAPY;
+      |                                  ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+makeworl.c:1276:29: note: in expansion of macro ‘rand’
+ 1276 |                         x = rand()%MAPX;
+      |                             ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+makeworl.c:1277:29: note: in expansion of macro ‘rand’
+ 1277 |                         y = rand()%MAPY;
+      |                             ^~~~
+makeworl.c:1283:35: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1283 |                 sct[x][y].owner = country;
+      |                                   ^~~~~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+makeworl.c:1291:51: note: in expansion of macro ‘rand’
+ 1291 |                         sct[x][y].jewels = 8 + (i=rand()%30);
+      |                                                   ^~~~
+makeworl.c:1291:44: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1291 |                         sct[x][y].jewels = 8 + (i=rand()%30);
+      |                                            ^
+makeworl.c:1294:46: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1294 |                         sct[x][y].fortress = 6+i/5;
+      |                                              ^
+makeworl.c:1297:59: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1297 |                                         sct[i][j].owner = country;
+      |                                                           ^~~~~~~
+makeworl.c:1299:33: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1299 |                         P_AXLOC=x;
+      |                                 ^
+makeworl.c:1300:33: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1300 |                         P_AYLOC=y;
+      |                                 ^
+makeworl.c:1303:33: warning: conversion from ‘long int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1303 |                         P_ATYPE=defaultunit(country);
+      |                                 ^~~~~~~~~~~
+makeworl.c:1307:33: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1307 |                         P_AXLOC=x;
+      |                                 ^
+makeworl.c:1308:33: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1308 |                         P_AYLOC=y;
+      |                                 ^
+makeworl.c:1311:33: warning: conversion from ‘long int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1311 |                         P_ATYPE=defaultunit(country);
+      |                                 ^~~~~~~~~~~
+makeworl.c:1345:33: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1345 |                         P_AXLOC=x;
+      |                                 ^
+makeworl.c:1346:33: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1346 |                         P_AYLOC=y;
+      |                                 ^
+makeworl.c:1349:33: warning: conversion from ‘long int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1349 |                         P_ATYPE=defaultunit(country);
+      |                                 ^~~~~~~~~~~
+makeworl.c:1351:33: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1351 |                         P_NXLOC=x;
+      |                                 ^
+makeworl.c:1352:33: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1352 |                         P_NYLOC=y;
+      |                                 ^
+data.h:684:35: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  684 | #define NADD_WAR(x)     addwships(nvynum,shipsize,(x));
+      |                                   ^~~~~~
+makeworl.c:1356:32: note: in expansion of macro ‘NADD_WAR’
+ 1356 |                         (void) NADD_WAR( rand()%5+2 );
+      |                                ^~~~~~~~
+data.h:684:42: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  684 | #define NADD_WAR(x)     addwships(nvynum,shipsize,(x));
+      |                                          ^~~~~~~~
+makeworl.c:1356:32: note: in expansion of macro ‘NADD_WAR’
+ 1356 |                         (void) NADD_WAR( rand()%5+2 );
+      |                                ^~~~~~~~
+makeworl.c:1356:50: warning: conversion from ‘long int’ to ‘short int’ may change value [-Wconversion]
+ 1356 |                         (void) NADD_WAR( rand()%5+2 );
+data.h:684:52: note: in definition of macro ‘NADD_WAR’
+  684 | #define NADD_WAR(x)     addwships(nvynum,shipsize,(x));
+      |                                                    ^
+data.h:684:35: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  684 | #define NADD_WAR(x)     addwships(nvynum,shipsize,(x));
+      |                                   ^~~~~~
+makeworl.c:1358:32: note: in expansion of macro ‘NADD_WAR’
+ 1358 |                         (void) NADD_WAR( rand()%3+1 );
+      |                                ^~~~~~~~
+data.h:684:42: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  684 | #define NADD_WAR(x)     addwships(nvynum,shipsize,(x));
+      |                                          ^~~~~~~~
+makeworl.c:1358:32: note: in expansion of macro ‘NADD_WAR’
+ 1358 |                         (void) NADD_WAR( rand()%3+1 );
+      |                                ^~~~~~~~
+makeworl.c:1358:50: warning: conversion from ‘long int’ to ‘short int’ may change value [-Wconversion]
+ 1358 |                         (void) NADD_WAR( rand()%3+1 );
+data.h:684:52: note: in definition of macro ‘NADD_WAR’
+  684 | #define NADD_WAR(x)     addwships(nvynum,shipsize,(x));
+      |                                                    ^
+data.h:684:35: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  684 | #define NADD_WAR(x)     addwships(nvynum,shipsize,(x));
+      |                                   ^~~~~~
+makeworl.c:1360:32: note: in expansion of macro ‘NADD_WAR’
+ 1360 |                         (void) NADD_WAR( rand()%2 );
+      |                                ^~~~~~~~
+data.h:684:42: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  684 | #define NADD_WAR(x)     addwships(nvynum,shipsize,(x));
+      |                                          ^~~~~~~~
+makeworl.c:1360:32: note: in expansion of macro ‘NADD_WAR’
+ 1360 |                         (void) NADD_WAR( rand()%2 );
+      |                                ^~~~~~~~
+makeworl.c:1360:48: warning: conversion from ‘long int’ to ‘short int’ may change value [-Wconversion]
+ 1360 |                         (void) NADD_WAR( rand()%2 );
+data.h:684:52: note: in definition of macro ‘NADD_WAR’
+  684 | #define NADD_WAR(x)     addwships(nvynum,shipsize,(x));
+      |                                                    ^
+makeworl.c:1366:33: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1366 |                         P_AXLOC=x;
+      |                                 ^
+makeworl.c:1367:33: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1367 |                         P_AYLOC=y;
+      |                                 ^
+makeworl.c:1370:33: warning: conversion from ‘long int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1370 |                         P_ATYPE=defaultunit(country);
+      |                                 ^~~~~~~~~~~
+makeworl.c:1375:33: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1375 |                         P_AXLOC=x;
+      |                                 ^
+makeworl.c:1376:33: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1376 |                         P_AYLOC=y;
+      |                                 ^
+makeworl.c:1379:33: warning: conversion from ‘long int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1379 |                         P_ATYPE=defaultunit(country);
+      |                                 ^~~~~~~~~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+makeworl.c:1391:29: note: in expansion of macro ‘rand’
+ 1391 |                         x = rand()%MAPX;
+      |                             ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+makeworl.c:1392:29: note: in expansion of macro ‘rand’
+ 1392 |                         y = rand()%MAPY;
+      |                             ^~~~
+makeworl.c:1394:51: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1394 |                                 sct[x][y].owner = country;
+      |                                                   ^~~~~~~
+makeworl.c:1397:42: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1397 |                                 P_AXLOC= x;
+      |                                          ^
+makeworl.c:1398:42: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1398 |                                 P_AYLOC= y;
+      |                                          ^
+data.h:547:25: warning: conversion from ‘long int’ to ‘unsigned char’ may change value [-Wconversion]
+  547 | #define MINMONSTER      (45+TWOUTYPE)   /* min value of a monster       */
+      |                         ^
+makeworl.c:1400:42: note: in expansion of macro ‘MINMONSTER’
+ 1400 |                                 P_ATYPE= MINMONSTER + rand()%(MAXMONSTER-MINMONSTER+1);
+      |                                          ^~~~~~~~~~
+makeworl.c:1466:33: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1466 |                         country=cnum;
+      |                                 ^~~~
+makeworl.c:1471:30: warning: conversion to ‘size_t’ {aka ‘long unsigned int’} from ‘int’ may change the sign of the result [-Wsign-conversion]
+ 1471 |                         xpos += strlen(line);
+      |                              ^~
+makeworl.c:1471:33: warning: conversion from ‘size_t’ {aka ‘long unsigned int’} to ‘int’ may change value [-Wconversion]
+ 1471 |                         xpos += strlen(line);
+      |                                 ^~~~~~
+makeworl.c:1487:43: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1487 |                         curntn->maxmove = short1;
+      |                                           ^~~~~~
+makeworl.c:1488:41: warning: conversion from ‘short int’ to ‘char’ may change value [-Wconversion]
+ 1488 |                         curntn->repro = short2;
+      |                                         ^~~~~~
+
+=== SHARED FILES (1 file) ===
+--- Testing check.c (Admin mode) ---
+
+=== GAME-ONLY FILES (7 files) ===
+--- Testing commands.c (Game mode) ---
+commands.c: In function ‘redesignate’:
+commands.c:317:32: warning: conversion from ‘int’ to ‘char’ may change value [-Wconversion]
+  317 |                         newdes=getch();
+      |                                ^~~~~
+commands.c:337:32: warning: conversion from ‘int’ to ‘char’ may change value [-Wconversion]
+  337 |                         newdes=getch();
+      |                                ^~~~~
+commands.c:356:29: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  356 |                         x = get_country();
+      |                             ^~~~~~~~~~~
+commands.c:357:58: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+  357 |                         if (x>0 && x<NTOTAL) sptr->owner=x;
+      |                                                          ^
+commands.c:391:37: warning: conversion from ‘long int’ to ‘short int’ may change value [-Wconversion]
+  391 |                                 x = get_number();
+      |                                     ^~~~~~~~~~
+commands.c:425:13: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  425 |         y = LINES-4;
+      |             ^~~~~
+commands.c:446:20: warning: conversion from ‘int’ to ‘char’ may change value [-Wconversion]
+  446 |         if((newdes=getch())==DSPECIAL) {
+      |                    ^~~~~
+In file included from commands.c:34:
+data.h:388:17: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  388 | #define XREAL   (xcurs+xoffset)         /* Real X coordinate on map */
+      |                 ^
+commands.c:527:38: note: in expansion of macro ‘XREAL’
+  527 |                         curntn->capx=XREAL;
+      |                                      ^~~~~
+data.h:389:17: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  389 | #define YREAL   (ycurs+yoffset)         /* Real Y coordinate on map */
+      |                 ^
+commands.c:528:38: note: in expansion of macro ‘YREAL’
+  528 |                         curntn->capy=YREAL;
+      |                                      ^~~~~
+commands.c: In function ‘construct’:
+commands.c:703:22: warning: conversion from ‘int’ to ‘char’ may change value [-Wconversion]
+  703 |                 type=getch();
+      |                      ^~~~~
+commands.c:719:24: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  719 |                 nvynum=getselunit()-MAXARM;
+      |                        ^~~~~~~~~~
+commands.c:732:36: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  732 |                         shipsize = flthold(nvynum);
+      |                                    ^~~~~~~
+commands.c:811:32: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  811 |                         nvynum=x;
+      |                                ^
+data.h:388:17: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  388 | #define XREAL   (xcurs+xoffset)         /* Real X coordinate on map */
+      |                 ^
+commands.c:948:34: note: in expansion of macro ‘XREAL’
+  948 |                         P_NXLOC =XREAL;
+      |                                  ^~~~~
+data.h:389:17: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  389 | #define YREAL   (ycurs+yoffset)         /* Real Y coordinate on map */
+      |                 ^
+commands.c:949:34: note: in expansion of macro ‘YREAL’
+  949 |                         P_NYLOC =YREAL;
+      |                                  ^~~~~
+commands.c: In function ‘draft’:
+commands.c:1150:11: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1150 |         y=LINES-2;
+      |           ^~~~~
+commands.c:1158:26: warning: conversion to ‘size_t’ {aka ‘long unsigned int’} from ‘int’ may change the sign of the result [-Wsign-conversion]
+ 1158 |                         x+= strlen( *(shunittype+i) ) +3;
+      |                          ^~
+commands.c:1158:29: warning: conversion from ‘size_t’ {aka ‘long unsigned int’} to ‘short int’ may change value [-Wconversion]
+ 1158 |                         x+= strlen( *(shunittype+i) ) +3;
+      |                             ^~~~~~
+commands.c:1176:14: warning: conversion from ‘int’ to ‘char’ may change value [-Wconversion]
+ 1176 |         ch = getch();
+      |              ^~~~~
+data.h:388:17: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  388 | #define XREAL   (xcurs+xoffset)         /* Real X coordinate on map */
+      |                 ^
+commands.c:1194:24: note: in expansion of macro ‘XREAL’
+ 1194 |                 for (x=XREAL-1;x<=XREAL+1;x++)
+      |                        ^~~~~
+data.h:389:17: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  389 | #define YREAL   (ycurs+yoffset)         /* Real Y coordinate on map */
+      |                 ^
+commands.c:1195:24: note: in expansion of macro ‘YREAL’
+ 1195 |                 for (y=YREAL-1;y<=YREAL+1;y++)
+      |                        ^~~~~
+data.h:667:17: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  667 | #define P_ASOLD curntn->arm[armynum].sold
+      |                 ^~~~~~
+commands.c:1244:45: note: in expansion of macro ‘P_ASOLD’
+ 1244 |                                 totalsolds+=P_ASOLD;
+      |                                             ^~~~~~~
+commands.c:1294:21: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1294 |         if((armynum=getselunit())>=0){
+      |                     ^~~~~~~~~~
+commands.c:1347:33: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1347 |                         if((i = get_country())==(-1)) {
+      |                                 ^~~~~~~~~~~
+data.h:389:17: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  389 | #define YREAL   (ycurs+yoffset)         /* Real Y coordinate on map */
+      |                 ^
+commands.c:1376:35: note: in expansion of macro ‘YREAL’
+ 1376 |                         P_AYLOC = YREAL;
+      |                                   ^~~~~
+data.h:388:17: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  388 | #define XREAL   (xcurs+xoffset)         /* Real X coordinate on map */
+      |                 ^
+commands.c:1377:35: note: in expansion of macro ‘XREAL’
+ 1377 |                         P_AXLOC = XREAL;
+      |                                   ^~~~~
+data.h:389:17: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  389 | #define YREAL   (ycurs+yoffset)         /* Real Y coordinate on map */
+      |                 ^
+commands.c:1386:25: note: in expansion of macro ‘YREAL’
+ 1386 |                 P_AYLOC=YREAL;
+      |                         ^~~~~
+data.h:388:17: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  388 | #define XREAL   (xcurs+xoffset)         /* Real X coordinate on map */
+      |                 ^
+commands.c:1387:25: note: in expansion of macro ‘XREAL’
+ 1387 |                 P_AXLOC=XREAL;
+      |                         ^~~~~
+commands.c:1393:17: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1393 |         P_ATYPE=newtype;
+      |                 ^~~~~~~
+commands.c: In function ‘rmessage’:
+commands.c:1611:23: warning: conversion from ‘int’ to ‘char’ may change value [-Wconversion]
+ 1611 |                 inpch=getch();
+      |                       ^~~~~
+commands.c: In function ‘wmessage’:
+commands.c:1823:36: warning: conversion from ‘int’ to ‘char’ may change value [-Wconversion]
+ 1823 |                                 ch=getch();
+      |                                    ^~~~~
+commands.c:1841:46: warning: conversion from ‘int’ to ‘char’ may change value [-Wconversion]
+ 1841 |                                         ch = getch();
+      |                                              ^~~~~
+commands.c:1860:46: warning: conversion from ‘int’ to ‘char’ may change value [-Wconversion]
+ 1860 |                                         ch = getch();
+      |                                              ^~~~~
+commands.c:1866:36: warning: conversion from ‘int’ to ‘char’ may change value [-Wconversion]
+ 1866 |                                 ch=getch();
+      |                                    ^~~~~
+commands.c:1877:36: warning: conversion from ‘int’ to ‘char’ may change value [-Wconversion]
+ 1877 |                                 ch=getch();
+      |                                    ^~~~~
+commands.c: In function ‘moveciv’:
+commands.c:2058:13: warning: conversion from ‘long int’ to ‘short int’ may change value [-Wconversion]
+ 2058 |         i = get_number();
+      |             ^~~~~~~~~~
+commands.c:2071:13: warning: conversion from ‘long int’ to ‘short int’ may change value [-Wconversion]
+ 2071 |         j = get_number();
+      |             ^~~~~~~~~~
+commands.c: In function ‘armygoto’:
+commands.c:2190:17: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 2190 |         armynum=getselunit();
+      |                 ^~~~~~~~~~
+commands.c: In function ‘navygoto’:
+commands.c:2330:16: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 2330 |         nvynum=getselunit()-MAXARM;
+      |                ^~~~~~~~~~
+
+--- Testing main.c (Game mode) ---
+main.c: In function ‘main’:
+main.c:150:21: warning: conversion from ‘size_t’ {aka ‘long unsigned int’} to ‘int’ may change value [-Wconversion]
+  150 |                 l = strlen(cq_opts);
+      |                     ^~~~~~
+main.c:274:33: warning: conversion to ‘int’ from ‘uid_t’ {aka ‘unsigned int’} may change the sign of the result [-Wsign-conversion]
+  274 |                 checkuser_uid = owneruid;
+      |                                 ^~~~~~~~
+main.c:277:39: warning: conversion to ‘int’ from ‘__uid_t’ {aka ‘unsigned int’} may change the sign of the result [-Wsign-conversion]
+  277 |                       checkuser_uid = getpwnam(optarg)->pw_uid;
+      |                                       ^~~~~~~~
+main.c:387:25: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  387 |                 country=i;
+      |                         ^
+main.c:479:40: warning: conversion to ‘__uid_t’ {aka ‘unsigned int’} from ‘short int’ may change the sign of the result [-Wsign-conversion]
+  479 |                         getpwuid(curntn->uid)->pw_name);;
+      |                                  ~~~~~~^~~~~
+main.c:480:31: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  480 |                 curntn->uid = checkuser_uid;
+      |                               ^~~~~~~~~~~~~
+main.c:482:40: warning: conversion to ‘__uid_t’ {aka ‘unsigned int’} from ‘short int’ may change the sign of the result [-Wsign-conversion]
+  482 |                         getpwuid(curntn->uid)->pw_name);
+      |                                  ~~~~~~^~~~~
+main.c:493:56: warning: conversion to ‘__uid_t’ {aka ‘unsigned int’} from ‘short int’ may change the sign of the result [-Wsign-conversion]
+  493 |                                         getpwuid(ntn[i].uid)->pw_name);
+      |                                                  ~~~~~~^~~~
+main.c: In function ‘parse’:
+main.c:838:49: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  838 |                 if (XREAL > (COLS-22)/4) xcurs-=((COLS-22)/4);
+      |                                                 ^
+main.c:855:32: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  855 |                         ycurs+=((SCREEN_Y_SIZE)/2);
+      |                                ^
+In file included from main.c:35:
+data.h:335:25: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  335 | #define MAPY            world.mapy      /* World map height */
+      |                         ^~~~~
+main.c:856:30: note: in expansion of macro ‘MAPY’
+  856 |                 else ycurs = MAPY - yoffset - 1;
+      |                              ^~~~
+main.c:873:55: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  873 |                 if (YREAL > (SCREEN_Y_SIZE)/2) ycurs-=((SCREEN_Y_SIZE)/2);
+      |                                                       ^
+main.c:885:56: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  885 |                 if (XREAL + (COLS-22)/4 < MAPX) xcurs+=((COLS-22)/4);
+      |                                                        ^
+data.h:334:25: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  334 | #define MAPX            world.mapx      /* World map width */
+      |                         ^~~~~
+main.c:886:30: note: in expansion of macro ‘MAPX’
+  886 |                 else xcurs = MAPX - xoffset - 1;
+      |                              ^~~~
+data.h:70:17: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+   70 | #define SCRARM  ((LINES-14)/2)  /* number of armies to fit on screen    */
+      |                 ^
+main.c:914:34: note: in expansion of macro ‘SCRARM’
+  914 |                         selector=SCRARM*2-2;
+      |                                  ^~~~~~
+main.c:919:31: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  919 |                         pager=(units_in_sector(XREAL,YREAL,country)-1)/SCRARM;
+      |                               ^
+main.c:920:34: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  920 |                         selector=((units_in_sector(XREAL,YREAL,country)-1)%SCRARM)*2;
+      |                                  ^
+main.c:991:56: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  991 |                 if (XREAL + (COLS-22)/4 < MAPX) xcurs+=((COLS-22)/4);
+      |                                                        ^
+data.h:334:25: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  334 | #define MAPX            world.mapx      /* World map width */
+      |                         ^~~~~
+main.c:992:30: note: in expansion of macro ‘MAPX’
+  992 |                 else xcurs = MAPX - xoffset - 1;
+      |                              ^~~~
+main.c:993:55: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  993 |                 if (YREAL > (SCREEN_Y_SIZE)/2) ycurs-=((SCREEN_Y_SIZE)/2);
+      |                                                       ^
+main.c:1033:29: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1033 |                 else xcurs-=((COLS-22)/4);
+      |                             ^
+main.c:1035:29: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1035 |                 else ycurs-=((SCREEN_Y_SIZE)/2);
+      |                             ^
+main.c:1064:25: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1064 |                 country=get_country();
+      |                         ^~~~~~~~~~~
+main.c:1069:33: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1069 |                         country=ocountry;
+      |                                 ^~~~~~~~
+main.c:1089:33: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1089 |                         country=ocountry;
+      |                                 ^~~~~~~~
+main.c:1095:33: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1095 |                         country=ocountry;
+      |                                 ^~~~~~~~
+main.c: In function ‘makeside’:
+main.c:1409:57: warning: conversion from ‘long int’ to ‘unsigned int’ may change value [-Wconversion]
+ 1409 |                                         srand(i*17+enemy+TURN*3);
+      |                                               ~~~~~~~~~~^~~~~~~
+data.h:846:33: note: in definition of macro ‘srand’
+  846 | #define srand(x)        srandom(x)
+      |                                 ^
+main.c:1431:57: warning: conversion from ‘long int’ to ‘unsigned int’ may change value [-Wconversion]
+ 1431 |                                         srand(i*17+enemy+TURN*3);
+      |                                               ~~~~~~~~~~^~~~~~~
+data.h:846:33: note: in definition of macro ‘srand’
+  846 | #define srand(x)        srandom(x)
+      |                                 ^
+main.c:1475:48: warning: conversion from ‘long int’ to ‘unsigned int’ may change value [-Wconversion]
+ 1475 |                         srand(country*17+TURN*3+sptr->people);
+      |                               ~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~
+data.h:846:33: note: in definition of macro ‘srand’
+  846 | #define srand(x)        srandom(x)
+      |                                 ^
+main.c: In function ‘camp_info’:
+data.h:667:17: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  667 | #define P_ASOLD curntn->arm[armynum].sold
+      |                 ^~~~~~
+main.c:1860:40: note: in expansion of macro ‘P_ASOLD’
+ 1860 |                                 solds+=P_ASOLD;
+      |                                        ^~~~~~~
+data.h:667:17: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  667 | #define P_ASOLD curntn->arm[armynum].sold
+      |                 ^~~~~~
+main.c:1861:66: note: in expansion of macro ‘P_ASOLD’
+ 1861 |                                 if (P_ATYPE==A_MERCENARY) mercs+=P_ASOLD;
+      |                                                                  ^~~~~~~
+
+--- Testing forms.c (Game mode) ---
+forms.c: In function ‘diploscrn’:
+forms.c:456:19: warning: conversion from ‘int’ to ‘char’ may change value [-Wconversion]
+  456 |                 k=getch();
+      |                   ^~~~~
+forms.c:465:37: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  465 |                         else count2=i;
+      |                                     ^
+forms.c:479:34: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  479 |                         nation = get_country();
+      |                                  ^~~~~~~~~~~
+forms.c:533:26: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  533 |                 nation = get_country();
+      |                          ^~~~~~~~~~~
+forms.c:576:32: warning: conversion from ‘long int’ to ‘short int’ may change value [-Wconversion]
+  576 |                         temp = get_number();
+      |                                ^~~~~~~~~~
+forms.c:598:49: warning: conversion from ‘short int’ to ‘char’ may change value [-Wconversion]
+  598 |                         curntn->dstatus[nation]=temp;
+      |                                                 ^~~~
+In file included from forms.c:96:
+forms.c: In function ‘change’:
+data.h:660:25: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  660 | #define P_EATRATE       ((((float) curntn->eatrate) / 25.0 ))
+      |                         ^
+forms.c:705:16: note: in expansion of macro ‘P_EATRATE’
+  705 |         temp = P_EATRATE;
+      |                ^~~~~~~~~
+forms.c:828:26: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  828 |                 intval = get_number();
+      |                          ^~~~~~~~~~
+forms.c:845:26: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 |                 intval = get_number();
+      |                          ^~~~~~~~~~
+forms.c:857:55: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  857 |                                 curntn->popularity += (unsigned char) 2*(intval - (int) curntn->charity);
+      |                                                       ^
+forms.c:858:51: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  858 |                                 curntn->charity = intval;
+      |                                                   ^~~~~~
+forms.c:866:55: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  866 |                                 curntn->popularity += (unsigned char) 2*(intval - (int) curntn->charity);
+      |                                                       ^
+forms.c:867:51: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  867 |                                 curntn->charity = intval;
+      |                                                   ^~~~~~
+forms.c:879:26: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  879 |                 intval = get_number();
+      |                          ^~~~~~~~~~
+forms.c:907:49: warning: conversion from ‘long int’ to ‘short int’ may change value [-Wconversion]
+  907 |                                 curntn->aplus = get_number();
+      |                                                 ^~~~~~~~~~
+forms.c:912:49: warning: conversion from ‘long int’ to ‘short int’ may change value [-Wconversion]
+  912 |                                 curntn->dplus = get_number();
+      |                                                 ^~~~~~~~~~
+data.h:1176:25: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1176 | #define max(x,y)        ((x)>(y) ? (x) : (y))
+      |                         ^
+forms.c:930:27: note: in expansion of macro ‘max’
+  930 |                 armynum = max( curntn->aplus-intval, 10 ) / 10;
+      |                           ^~~
+data.h:1176:25: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1176 | #define max(x,y)        ((x)>(y) ? (x) : (y))
+      |                         ^
+forms.c:944:27: note: in expansion of macro ‘max’
+  944 |                 armynum = max( curntn->dplus-intval, 10 ) / 10;
+      |                           ^~~
+In file included from forms.c:92:
+forms.c: In function ‘help’:
+forms.c:1127:68: warning: conversion from ‘size_t’ {aka ‘long unsigned int’} to ‘int’ may change value [-Wconversion]
+ 1127 |                                         mvaddch(lineno,strlen(line)-1,' ');
+      |                                                                    ^
+forms.c: In function ‘newspaper’:
+forms.c:1339:23: warning: conversion to ‘size_t’ {aka ‘long unsigned int’} from ‘int’ may change the sign of the result [-Wsign-conversion]
+ 1339 |                 xdist += strlen(line);
+      |                       ^~
+forms.c:1339:26: warning: conversion from ‘size_t’ {aka ‘long unsigned int’} to ‘int’ may change value [-Wconversion]
+ 1339 |                 xdist += strlen(line);
+      |                          ^~~~~~
+forms.c:1392:25: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1392 |                 pagenum=i;
+      |                         ^
+forms.c:1403:38: warning: conversion from ‘size_t’ {aka ‘long unsigned int’} to ‘int’ may change value [-Wconversion]
+ 1403 |                         mvprintw(3,37-strlen(name)/2,"%s",name+2);
+      |                                    ~~^~~~~~~~~~~~~~~
+forms.c:1415:41: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1415 |                                 pagenum=todigit(line[0]);
+      |                                         ^~~~~~~
+forms.c:1420:49: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1420 |                                         pagenum=todigit(line[0]);
+      |                                                 ^~~~~~~
+forms.c:1468:49: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1468 |                                         pagenum=i;
+      |                                                 ^
+forms.c:1472:49: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1472 |                                         pagenum=i;
+      |                                                 ^
+
+--- Testing move.c (Game mode) ---
+move.c: In function ‘mymove’:
+move.c:143:21: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  143 |         if((armynum=getselunit())<0) {          /*get selected army or navy*/
+      |                     ^~~~~~~~~~
+move.c:201:33: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  201 |                         armynum=x;
+      |                                 ^
+move.c:306:31: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  306 |                         xcurs=oldxcurs;
+      |                               ^~~~~~~~
+move.c:307:31: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  307 |                         ycurs=oldycurs;
+      |                               ^~~~~~~~
+move.c:319:47: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  319 |                                         xcurs=oldxcurs;
+      |                                               ^~~~~~~~
+move.c:320:47: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  320 |                                         ycurs=oldycurs;
+      |                                               ^~~~~~~~
+move.c:322:50: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  322 |                                         P_AMOVE-=fmove;
+      |                                                  ^~~~~
+move.c:332:39: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  332 |                                 xcurs=oldxcurs;
+      |                                       ^~~~~~~~
+move.c:333:39: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  333 |                                 ycurs=oldycurs;
+      |                                       ^~~~~~~~
+move.c:347:47: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  347 |                                         xcurs=oldxcurs;
+      |                                               ^~~~~~~~
+move.c:348:47: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  348 |                                         ycurs=oldycurs;
+      |                                               ^~~~~~~~
+move.c:356:47: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  356 |                                         xcurs=oldxcurs;
+      |                                               ^~~~~~~~
+move.c:357:47: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  357 |                                         ycurs=oldycurs;
+      |                                               ^~~~~~~~
+move.c:359:50: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  359 |                                         P_AMOVE-=movecost[XREAL][YREAL];
+      |                                                  ^~~~~~~~
+move.c:368:39: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  368 |                                 xcurs=oldxcurs;
+      |                                       ^~~~~~~~
+move.c:369:39: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  369 |                                 ycurs=oldycurs;
+      |                                       ^~~~~~~~
+move.c:381:47: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  381 |                                         xcurs=oldxcurs;
+      |                                               ^~~~~~~~
+move.c:382:47: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  382 |                                         ycurs=oldycurs;
+      |                                               ^~~~~~~~
+move.c:395:55: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  395 |                                                 xcurs=oldxcurs;
+      |                                                       ^~~~~~~~
+move.c:396:55: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  396 |                                                 ycurs=oldycurs;
+      |                                                       ^~~~~~~~
+move.c:412:55: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  412 |                                                 xcurs=oldxcurs;
+      |                                                       ^~~~~~~~
+move.c:413:55: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  413 |                                                 ycurs=oldycurs;
+      |                                                       ^~~~~~~~
+move.c:422:47: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  422 |                                         xcurs=oldxcurs;
+      |                                               ^~~~~~~~
+move.c:423:47: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  423 |                                         ycurs=oldycurs;
+      |                                               ^~~~~~~~
+move.c:433:39: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  433 |                                 xcurs=oldxcurs;
+      |                                       ^~~~~~~~
+move.c:434:39: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  434 |                                 ycurs=oldycurs;
+      |                                       ^~~~~~~~
+move.c:436:44: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  436 |                                 P_NMOVE -= abs( movecost[XREAL][YREAL] );
+      |                                            ^~~
+move.c:465:48: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  465 |                                         total+=ntn[Tnation].arm[Tarmynum].sold;
+      |                                                ^~~
+move.c:499:51: warning: conversion from ‘long int’ to ‘unsigned char’ may change value [-Wconversion]
+  499 |                                         P_AMOVE-= total * curntn->maxmove * *(unitmove+(P_ATYPE%UTYPE))/(10*(groupmen+othermen));
+      |                                                   ^~~~~
+In file included from move.c:29:
+data.h:388:17: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  388 | #define XREAL   (xcurs+xoffset)         /* Real X coordinate on map */
+      |                 ^
+move.c:559:25: note: in expansion of macro ‘XREAL’
+  559 |                 P_AXLOC=XREAL;
+      |                         ^~~~~
+data.h:389:17: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  389 | #define YREAL   (ycurs+yoffset)         /* Real Y coordinate on map */
+      |                 ^
+move.c:560:25: note: in expansion of macro ‘YREAL’
+  560 |                 P_AYLOC=YREAL;
+      |                         ^~~~~
+move.c:599:40: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  599 |                                 total+=ntn[Tnation].arm[Tarmynum].sold;
+      |                                        ^~~
+move.c:605:38: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+  605 |                                 SOWN=country;
+      |                                      ^~~~~~~
+move.c:638:38: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+  638 |                                 SOWN=country;
+      |                                      ^~~~~~~
+data.h:388:17: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  388 | #define XREAL   (xcurs+xoffset)         /* Real X coordinate on map */
+      |                 ^
+move.c:661:41: note: in expansion of macro ‘XREAL’
+  661 |                                 P_AXLOC=XREAL;
+      |                                         ^~~~~
+data.h:389:17: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  389 | #define YREAL   (ycurs+yoffset)         /* Real Y coordinate on map */
+      |                 ^
+move.c:662:41: note: in expansion of macro ‘YREAL’
+  662 |                                 P_AYLOC=YREAL;
+      |                                         ^~~~~
+move.c:667:33: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  667 |                         armynum=x;
+      |                                 ^
+data.h:388:17: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  388 | #define XREAL   (xcurs+xoffset)         /* Real X coordinate on map */
+      |                 ^
+move.c:676:25: note: in expansion of macro ‘XREAL’
+  676 |                 P_NXLOC=XREAL;
+      |                         ^~~~~
+data.h:389:17: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  389 | #define YREAL   (ycurs+yoffset)         /* Real Y coordinate on map */
+      |                 ^
+move.c:677:25: note: in expansion of macro ‘YREAL’
+  677 |                 P_NYLOC=YREAL;
+      |                         ^~~~~
+data.h:388:17: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  388 | #define XREAL   (xcurs+xoffset)         /* Real X coordinate on map */
+      |                 ^
+move.c:683:33: note: in expansion of macro ‘XREAL’
+  683 |                         P_AXLOC=XREAL;
+      |                                 ^~~~~
+data.h:389:17: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  389 | #define YREAL   (ycurs+yoffset)         /* Real Y coordinate on map */
+      |                 ^
+move.c:684:33: note: in expansion of macro ‘YREAL’
+  684 |                         P_AYLOC=YREAL;
+      |                                 ^~~~~
+move.c:694:40: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  694 |                 if (mvused!=0) mvused= (rand()%mvused);
+      |                                        ^
+
+--- Testing reports.c (Game mode) ---
+reports.c: In function ‘armyrpt’:
+reports.c:247:25: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  247 |                 armynum=count2;
+      |                         ^~~~~~
+reports.c:297:39: warning: conversion to ‘size_t’ {aka ‘long unsigned int’} from ‘int’ may change the sign of the result [-Wsign-conversion]
+  297 |                 mvprintw(0,(COLS/2)-15-strlen(curntn->name)/2,"ARMY STATS SUMMARY FOR %s",curntn->name);
+      |                                       ^
+reports.c:297:39: warning: conversion from ‘size_t’ {aka ‘long unsigned int’} to ‘int’ may change value [-Wconversion]
+  297 |                 mvprintw(0,(COLS/2)-15-strlen(curntn->name)/2,"ARMY STATS SUMMARY FOR %s",curntn->name);
+      |                            ~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~
+reports.c:307:31: warning: conversion from ‘int’ to ‘char’ may change value [-Wconversion]
+  307 |                 if ((inpkey = getch())==' ') done=TRUE;
+      |                               ^~~~~
+reports.c:314:35: warning: conversion from ‘long int’ to ‘short int’ may change value [-Wconversion]
+  314 |                         armynum = get_number();
+      |                                   ^~~~~~~~~~
+reports.c:348:43: warning: conversion from ‘long int’ to ‘short int’ may change value [-Wconversion]
+  348 |                                 armynum = get_number();
+      |                                           ^~~~~~~~~~
+In file included from reports.c:113:
+data.h:667:17: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  667 | #define P_ASOLD curntn->arm[armynum].sold
+      |                 ^~~~~~
+reports.c:394:50: note: in expansion of macro ‘P_ASOLD’
+  394 |                                         bemerc = P_ASOLD;
+      |                                                  ^~~~~~~
+reports.c:404:50: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  404 |                                         bemerc = (P_ASOLD*15)/100;
+      |                                                  ^
+reports.c:430:47: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  430 |                                         men = get_number();
+      |                                               ^~~~~~~~~~
+reports.c:432:49: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  432 |                                         P_AXLOC=men;
+      |                                                 ^~~
+reports.c:436:47: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  436 |                                         men = get_number();
+      |                                               ^~~~~~~~~~
+reports.c:438:49: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  438 |                                         P_AYLOC=men;
+      |                                                 ^~~
+reports.c:447:47: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  447 |                                         men = get_number();
+      |                                               ^~~~~~~~~~
+reports.c:458:47: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  458 |                                         men = get_number();
+      |                                               ^~~~~~~~~~
+reports.c:461:59: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  461 |                                                 P_AMOVE = men;
+      |                                                           ^~~
+reports.c:470:47: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  470 |                                         men = get_number();
+      |                                               ^~~~~~~~~~
+reports.c:476:51: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  476 |                                         P_ATYPE = men;
+      |                                                   ^~~
+reports.c:485:47: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  485 |                                         men = get_number();
+      |                                               ^~~~~~~~~~
+reports.c:496:51: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  496 |                                         P_ASTAT = men;
+      |                                                   ^~~
+reports.c: In function ‘produce’:
+reports.c:832:86: warning: conversion from ‘long int’ to ‘double’ may change value [-Wconversion]
+  832 |         mvprintw(13,0, "%8ld soldiers eat.....%8.0ld tons",military,(long)(military*2*P_EATRATE));
+      |                                                                                      ^
+reports.c:836:98: warning: conversion from ‘long int’ to ‘double’ may change value [-Wconversion]
+  836 |         mvprintw(15,0, "ESTIMATE NET FOOD.........%8.0f tons",spread.food-curntn->tfood-P_EATRATE*military);
+      |                                                                                                  ^
+reports.c:836:88: warning: conversion from ‘long int’ to ‘double’ may change value [-Wconversion]
+  836 |         mvprintw(15,0, "ESTIMATE NET FOOD.........%8.0f tons",spread.food-curntn->tfood-P_EATRATE*military);
+      |                                                                                        ^
+reports.c:837:84: warning: conversion from ‘long int’ to ‘double’ may change value [-Wconversion]
+  837 |         mvprintw(16,0, "ESTIMATE FOOD SUPPLY......%8.0f tons",spread.food-P_EATRATE*military);
+      |                                                                                    ^
+reports.c:837:74: warning: conversion from ‘long int’ to ‘double’ may change value [-Wconversion]
+  837 |         mvprintw(16,0, "ESTIMATE FOOD SUPPLY......%8.0f tons",spread.food-P_EATRATE*military);
+      |                                                                          ^
+reports.c: In function ‘fleetrpt’:
+reports.c:1038:24: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1038 |                 nvynum=count2;
+      |                        ^~~~~~
+reports.c:1091:39: warning: conversion to ‘size_t’ {aka ‘long unsigned int’} from ‘int’ may change the sign of the result [-Wsign-conversion]
+ 1091 |                 mvprintw(0,(COLS/2)-15-strlen(curntn->name)/2,"NAVY STATS SUMMARY FOR %s",curntn->name);
+      |                                       ^
+reports.c:1091:39: warning: conversion from ‘size_t’ {aka ‘long unsigned int’} to ‘int’ may change value [-Wconversion]
+ 1091 |                 mvprintw(0,(COLS/2)-15-strlen(curntn->name)/2,"NAVY STATS SUMMARY FOR %s",curntn->name);
+      |                            ~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~
+reports.c:1101:27: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1101 |                 if ((navy=getch())==' ') done=TRUE;
+      |                           ^~~~~
+reports.c:1106:34: warning: conversion from ‘long int’ to ‘short int’ may change value [-Wconversion]
+ 1106 |                         nvynum = get_number();
+      |                                  ^~~~~~~~~~
+reports.c:1131:43: warning: conversion from ‘long int’ to ‘short int’ may change value [-Wconversion]
+ 1131 |                                 newnavy = get_number();
+      |                                           ^~~~~~~~~~
+reports.c:1176:74: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1176 |                                                 (void) addwships(newnavy,i,P_NWAR(i));
+      |                                                                          ^
+reports.c:1261:51: warning: conversion from ‘long int’ to ‘short int’ may change value [-Wconversion]
+ 1261 |                                         newnavy = get_number();
+      |                                                   ^~~~~~~~~~
+reports.c:1271:51: warning: conversion from ‘long int’ to ‘short int’ may change value [-Wconversion]
+ 1271 |                                         newnavy = get_number();
+      |                                                   ^~~~~~~~~~
+reports.c:1281:51: warning: conversion from ‘long int’ to ‘short int’ may change value [-Wconversion]
+ 1281 |                                         newnavy = get_number();
+      |                                                   ^~~~~~~~~~
+reports.c:1341:59: warning: conversion from ‘long int’ to ‘short int’ may change value [-Wconversion]
+ 1341 |                                                 newnavy = get_number();
+      |                                                           ^~~~~~~~~~
+reports.c:1356:59: warning: conversion from ‘long int’ to ‘short int’ may change value [-Wconversion]
+ 1356 |                                                 newnavy = get_number();
+      |                                                           ^~~~~~~~~~
+reports.c:1371:59: warning: conversion from ‘long int’ to ‘short int’ may change value [-Wconversion]
+ 1371 |                                                 newnavy = get_number();
+      |                                                           ^~~~~~~~~~
+reports.c:1391:48: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1391 |                                         crew = get_number();
+      |                                                ^~~~~~~~~~
+reports.c:1393:57: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1393 |                                                 P_NXLOC=crew;
+      |                                                         ^~~~
+reports.c:1398:48: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1398 |                                         crew = get_number();
+      |                                                ^~~~~~~~~~
+reports.c:1400:57: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1400 |                                                 P_NYLOC=crew;
+      |                                                         ^~~~
+reports.c:1409:48: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1409 |                                         crew = get_number();
+      |                                                ^~~~~~~~~~
+reports.c:1411:59: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1411 |                                                 P_NCREW = crew;
+      |                                                           ^~~~
+reports.c:1420:51: warning: conversion from ‘long int’ to ‘short int’ may change value [-Wconversion]
+ 1420 |                                         newnavy = get_number();
+      |                                                   ^~~~~~~~~~
+reports.c:1422:59: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1422 |                                                 P_NMOVE = newnavy;
+      |                                                           ^~~~~~~
+
+--- Testing display.c (Game mode) ---
+display.c: In function ‘init_hasseen’:
+display.c:237:48: warning: conversion to ‘size_t’ {aka ‘long unsigned int’} from ‘int’ may change the sign of the result [-Wsign-conversion]
+  237 |         hasseen = (char *)malloc(((COLS-10)/2) * (LINES-5));
+      |                                  ~~~~~~~~~~~~~~^~~~~~~~~~~
+display.c:239:37: warning: conversion to ‘size_t’ {aka ‘long unsigned int’} from ‘int’ may change the sign of the result [-Wsign-conversion]
+  239 |         bzero(hasseen,((COLS-10)/2) * (LINES-5));
+      |                       ~~~~~~~~~~~~~~^~~~~~~~~~~
+display.c: In function ‘get_display_for’:
+display.c:574:36: warning: conversion from ‘int’ to ‘char’ may change value [-Wconversion]
+  574 |                                 ch=tofood( &sct[x+xoffset][y+yoffset],country)+'0';
+      |                                    ^~~~~~
+display.c:608:41: warning: conversion from ‘int’ to ‘char’ may change value [-Wconversion]
+  608 |                                 else ch=movecost[x+xoffset][y+yoffset]+'0';
+      |                                         ^~~~~~~~
+display.c:638:53: warning: conversion from ‘int’ to ‘char’ may change value [-Wconversion]
+  638 |                                 if(armbonus<200) ch=armbonus/20+'0';
+      |                                                     ^~~~~~~~
+display.c:652:36: warning: conversion from ‘long int’ to ‘char’ may change value [-Wconversion]
+  652 |                                 ch=(50+sct[x+xoffset][y+yoffset].people)/100+'0';
+      |                                    ^
+
+--- Testing extcmds.c (Game mode) ---
+In file included from extcmds.c:69:
+extcmds.c: In function ‘ext_cmd’:
+data.h:667:17: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  667 | #define P_ASOLD curntn->arm[armynum].sold
+      |                 ^~~~~~
+extcmds.c:138:23: note: in expansion of macro ‘P_ASOLD’
+  138 |                 men = P_ASOLD/2;
+      |                       ^~~~~~~
+extcmds.c: In function ‘change_status’:
+extcmds.c:421:26: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  421 |                 P_AMOVE-=(curntn->maxmove * *(unitmove+(P_ATYPE%UTYPE)))/50;
+      |                          ^
+extcmds.c:431:19: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  431 |         P_ASTAT = new_stat;
+      |                   ^~~~~~~~
+extcmds.c: In function ‘reducearmy’:
+extcmds.c:517:25: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  517 |                 P_AXLOC=oldx;
+      |                         ^~~~
+extcmds.c:518:25: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  518 |                 P_AYLOC=oldy;
+      |                         ^~~~
+extcmds.c: In function ‘splitarmy’:
+extcmds.c:569:15: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  569 |         men = get_number();
+      |               ^~~~~~~~~~
+extcmds.c: In function ‘addgroup’:
+extcmds.c:720:17: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  720 |         group = get_number();
+      |                 ^~~~~~~~~~
+extcmds.c:742:17: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  742 |         P_ASTAT=group+NUMSTATUS;
+      |                 ^~~~~
+extcmds.c:749:27: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  749 |                 P_AMOVE = moverate;
+      |                           ^~~~~~~~
+
+=== DUAL-COMPILED FILES (7 files) ===
+--- Testing cexecute.c (Admin mode) ---
+cexecute.c: In function ‘execute’:
+cexecute.c:141:54: warning: conversion from ‘long int’ to ‘short int’ may change value [-Wconversion]
+  141 |                                 sct[x][y].i_people = sct[x][y].people/256;
+      |                                                      ^~~
+cexecute.c:170:42: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+  170 |                         if(x>0)  P_ASTAT=x;
+      |                                          ^
+cexecute.c:175:34: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+  175 |                         P_ATYPE= y;
+      |                                  ^
+cexecute.c:198:33: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+  198 |                         P_AXLOC=x;
+      |                                 ^
+cexecute.c:199:33: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+  199 |                         P_AYLOC=y;
+      |                                 ^
+cexecute.c:212:33: warning: conversion from ‘long int’ to ‘short int’ may change value [-Wconversion]
+  212 |                         MERCATT=(MERCMEN*MERCATT+armynum*x)/(MERCMEN+armynum);
+      |                                 ^
+cexecute.c:214:33: warning: conversion from ‘long int’ to ‘short int’ may change value [-Wconversion]
+  214 |                         MERCDEF=(MERCMEN*MERCDEF+armynum*y)/(MERCMEN+armynum);
+      |                                 ^
+cexecute.c:218:51: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+  218 |                         curntn->nvy[armynum].xloc=x;
+      |                                                   ^
+cexecute.c:219:51: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+  219 |                         curntn->nvy[armynum].yloc=y;
+      |                                                   ^
+cexecute.c:222:51: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+  222 |                         curntn->nvy[armynum].crew=x;
+      |                                                   ^
+cexecute.c:223:54: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+  223 |                         curntn->nvy[armynum].armynum=y;
+      |                                                      ^
+cexecute.c:226:55: warning: conversion to ‘short unsigned int’ from ‘short int’ may change the sign of the result [-Wsign-conversion]
+  226 |                         curntn->nvy[armynum].merchant=x;
+      |                                                       ^
+cexecute.c:229:55: warning: conversion to ‘short unsigned int’ from ‘short int’ may change the sign of the result [-Wsign-conversion]
+  229 |                         curntn->nvy[armynum].warships=x;
+      |                                                       ^
+cexecute.c:232:54: warning: conversion to ‘short unsigned int’ from ‘short int’ may change the sign of the result [-Wsign-conversion]
+  232 |                         curntn->nvy[armynum].galleys=x;
+      |                                                      ^
+cexecute.c:248:46: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  248 |                         curntn->popularity = armynum;
+      |                                              ^~~~~~~
+cexecute.c:249:42: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+  249 |                         curntn->terror = x;
+      |                                          ^
+cexecute.c:250:46: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+  250 |                         curntn->reputation = y;
+      |                                              ^
+cexecute.c:261:44: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  261 |                         curntn->tax_rate = armynum;
+      |                                            ^~~~~~~
+cexecute.c:262:42: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+  262 |                         curntn->active = x;
+      |                                          ^
+cexecute.c:263:43: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+  263 |                         curntn->charity = y;
+      |                                           ^
+cexecute.c:266:43: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  266 |                         curntn->spellpts-=armynum;
+      |                                           ^~~~~~~
+cexecute.c:276:46: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+  276 |                                 curntn->capx=x;
+      |                                              ^
+cexecute.c:277:46: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+  277 |                                 curntn->capy=y;
+      |                                              ^
+cexecute.c:310:33: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+  310 |                         P_AMOVE=x;
+      |                                 ^
+cexecute.c:313:52: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+  313 |                         curntn->nvy[armynum].smove=x;
+      |                                                    ^
+cexecute.c:328:41: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+  328 |                         sct[x][y].owner=country;
+      |                                         ^~~~~~~
+cexecute.c:331:50: warning: conversion from ‘short int’ to ‘char’ may change value [-Wconversion]
+  331 |                         curntn->dstatus[armynum]=x;
+      |                                                  ^
+cexecute.c:346:73: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  346 |                         sct[ntn[armynum].capx][ntn[armynum].capy].owner=savectry;
+      |                                                                         ^~~~~~~~
+cexecute.c:347:33: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  347 |                         country=armynum;
+      |                                 ^~~~~~~
+cexecute.c:349:33: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  349 |                         country=savectry;
+      |                                 ^~~~~~~~
+cexecute.c:369:17: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  369 |         country=savectry;
+      |                 ^~~~~~~~
+
+--- Testing cexecute.c (Game mode) ---
+cexecute.c: In function ‘execute’:
+cexecute.c:141:54: warning: conversion from ‘long int’ to ‘short int’ may change value [-Wconversion]
+  141 |                                 sct[x][y].i_people = sct[x][y].people/256;
+      |                                                      ^~~
+cexecute.c:170:42: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+  170 |                         if(x>0)  P_ASTAT=x;
+      |                                          ^
+cexecute.c:175:34: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+  175 |                         P_ATYPE= y;
+      |                                  ^
+cexecute.c:198:33: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+  198 |                         P_AXLOC=x;
+      |                                 ^
+cexecute.c:199:33: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+  199 |                         P_AYLOC=y;
+      |                                 ^
+cexecute.c:212:33: warning: conversion from ‘long int’ to ‘short int’ may change value [-Wconversion]
+  212 |                         MERCATT=(MERCMEN*MERCATT+armynum*x)/(MERCMEN+armynum);
+      |                                 ^
+cexecute.c:214:33: warning: conversion from ‘long int’ to ‘short int’ may change value [-Wconversion]
+  214 |                         MERCDEF=(MERCMEN*MERCDEF+armynum*y)/(MERCMEN+armynum);
+      |                                 ^
+cexecute.c:218:51: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+  218 |                         curntn->nvy[armynum].xloc=x;
+      |                                                   ^
+cexecute.c:219:51: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+  219 |                         curntn->nvy[armynum].yloc=y;
+      |                                                   ^
+cexecute.c:222:51: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+  222 |                         curntn->nvy[armynum].crew=x;
+      |                                                   ^
+cexecute.c:223:54: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+  223 |                         curntn->nvy[armynum].armynum=y;
+      |                                                      ^
+cexecute.c:226:55: warning: conversion to ‘short unsigned int’ from ‘short int’ may change the sign of the result [-Wsign-conversion]
+  226 |                         curntn->nvy[armynum].merchant=x;
+      |                                                       ^
+cexecute.c:229:55: warning: conversion to ‘short unsigned int’ from ‘short int’ may change the sign of the result [-Wsign-conversion]
+  229 |                         curntn->nvy[armynum].warships=x;
+      |                                                       ^
+cexecute.c:232:54: warning: conversion to ‘short unsigned int’ from ‘short int’ may change the sign of the result [-Wsign-conversion]
+  232 |                         curntn->nvy[armynum].galleys=x;
+      |                                                      ^
+cexecute.c:248:46: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  248 |                         curntn->popularity = armynum;
+      |                                              ^~~~~~~
+cexecute.c:249:42: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+  249 |                         curntn->terror = x;
+      |                                          ^
+cexecute.c:250:46: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+  250 |                         curntn->reputation = y;
+      |                                              ^
+cexecute.c:261:44: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  261 |                         curntn->tax_rate = armynum;
+      |                                            ^~~~~~~
+cexecute.c:262:42: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+  262 |                         curntn->active = x;
+      |                                          ^
+cexecute.c:263:43: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+  263 |                         curntn->charity = y;
+      |                                           ^
+cexecute.c:266:43: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  266 |                         curntn->spellpts-=armynum;
+      |                                           ^~~~~~~
+cexecute.c:276:46: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+  276 |                                 curntn->capx=x;
+      |                                              ^
+cexecute.c:277:46: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+  277 |                                 curntn->capy=y;
+      |                                              ^
+cexecute.c:310:33: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+  310 |                         P_AMOVE=x;
+      |                                 ^
+cexecute.c:313:52: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+  313 |                         curntn->nvy[armynum].smove=x;
+      |                                                    ^
+cexecute.c:328:41: warning: conversion from ‘short int’ to ‘unsigned char’ may change value [-Wconversion]
+  328 |                         sct[x][y].owner=country;
+      |                                         ^~~~~~~
+cexecute.c:331:50: warning: conversion from ‘short int’ to ‘char’ may change value [-Wconversion]
+  331 |                         curntn->dstatus[armynum]=x;
+      |                                                  ^
+cexecute.c:346:73: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  346 |                         sct[ntn[armynum].capx][ntn[armynum].capy].owner=savectry;
+      |                                                                         ^~~~~~~~
+cexecute.c:347:33: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  347 |                         country=armynum;
+      |                                 ^~~~~~~
+cexecute.c:349:33: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  349 |                         country=savectry;
+      |                                 ^~~~~~~~
+cexecute.c:369:17: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  369 |         country=savectry;
+      |                 ^~~~~~~~
+
+--- Testing io.c (Admin mode) ---
+io.c: In function ‘mapprep’:
+io.c:247:33: warning: conversion from ‘int’ to ‘char’ may change value [-Wconversion]
+  247 |                 mapseen[x][y] = armynum;
+      |                                 ^~~~~~~
+io.c: In function ‘writedata’:
+io.c:631:42: warning: conversion to ‘long unsigned int’ from ‘int’ may change the sign of the result [-Wsign-conversion]
+  631 |         if((bytes=write(fd,*sct,MAPX*MAPY*sizeof(struct s_sector))) == -1)
+      |                                          ^
+io.c:633:103: warning: conversion to ‘long unsigned int’ from ‘int’ may change the sign of the result [-Wsign-conversion]
+  633 |                 printf("Wrong number of bytes (%ld) written for sct (should be %zu)\n",bytes,MAPX*MAPY*sizeof(struct s_sector));
+      |                                                                                                       ^
+io.c: In function ‘readdata’:
+io.c:725:42: warning: conversion to ‘long unsigned int’ from ‘int’ may change the sign of the result [-Wsign-conversion]
+  725 |         if((n_read=read(fd,*sct,MAPX*MAPY*sizeof(struct s_sector)))==0)
+      |                                          ^
+io.c:728:41: warning: conversion to ‘long unsigned int’ from ‘int’ may change the sign of the result [-Wsign-conversion]
+  728 |         if(n_read != (ssize_t)(MAPX*MAPY*sizeof(struct s_sector))) {
+      |                                         ^
+io.c:730:79: warning: conversion to ‘long unsigned int’ from ‘int’ may change the sign of the result [-Wsign-conversion]
+  730 |                 printf( "wrong data format (%zd vs. %zu)\n",n_read,  MAPX*MAPY*sizeof(struct s_sector) );
+      |                                                                               ^
+io.c: In function ‘centermap’:
+io.c:934:19: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  934 |         xoffset = xx - (SCREEN_X_SIZE/2);
+      |                   ^~
+io.c:935:19: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  935 |         yoffset = yy - (SCREEN_Y_SIZE/2);
+      |                   ^~
+io.c:940:16: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  940 |         xcurs= xx-xoffset;
+      |                ^~
+io.c:941:16: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  941 |         ycurs= yy-yoffset;
+      |                ^~
+io.c: In function ‘jump_to’:
+io.c:1053:21: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1053 |                 i = get_number();
+      |                     ^~~~~~~~~~
+io.c:1061:21: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1061 |                 j = get_number();
+      |                     ^~~~~~~~~~
+io.c:1069:17: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1069 |         xcurs = i;
+      |                 ^
+io.c:1070:17: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1070 |         ycurs = j;
+      |                 ^
+io.c: In function ‘flee’:
+io.c:1261:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1261 |                 slaves= sct[x][y].people/4;
+      |                         ^~~
+io.c:1287:41: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1287 |                         people_to_add = sct[x][y].people / count;
+      |                                         ^~~
+io.c:1322:17: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1322 |         country=svcountry;
+      |                 ^~~~~~~~~
+io.c: In function ‘m2alloc’:
+io.c:1498:58: warning: conversion to ‘long unsigned int’ from ‘int’ may change the sign of the result [-Wsign-conversion]
+ 1498 |                 malloc( (unsigned) (nrows*(sizeof(char *)+entrysize)));
+      |                                                          ^
+io.c:1498:42: warning: conversion to ‘long unsigned int’ from ‘int’ may change the sign of the result [-Wsign-conversion]
+ 1498 |                 malloc( (unsigned) (nrows*(sizeof(char *)+entrysize)));
+      |                                          ^
+io.c: In function ‘get_pass’:
+io.c:1578:22: warning: conversion from ‘int’ to ‘char’ may change value [-Wconversion]
+ 1578 |                 ch = getch();
+      |                      ^~~~~
+
+--- Testing io.c (Game mode) ---
+io.c: In function ‘mapprep’:
+io.c:247:33: warning: conversion from ‘int’ to ‘char’ may change value [-Wconversion]
+  247 |                 mapseen[x][y] = armynum;
+      |                                 ^~~~~~~
+io.c: In function ‘writedata’:
+io.c:631:42: warning: conversion to ‘long unsigned int’ from ‘int’ may change the sign of the result [-Wsign-conversion]
+  631 |         if((bytes=write(fd,*sct,MAPX*MAPY*sizeof(struct s_sector))) == -1)
+      |                                          ^
+io.c:633:103: warning: conversion to ‘long unsigned int’ from ‘int’ may change the sign of the result [-Wsign-conversion]
+  633 |                 printf("Wrong number of bytes (%ld) written for sct (should be %zu)\n",bytes,MAPX*MAPY*sizeof(struct s_sector));
+      |                                                                                                       ^
+io.c: In function ‘readdata’:
+io.c:725:42: warning: conversion to ‘long unsigned int’ from ‘int’ may change the sign of the result [-Wsign-conversion]
+  725 |         if((n_read=read(fd,*sct,MAPX*MAPY*sizeof(struct s_sector)))==0)
+      |                                          ^
+io.c:728:41: warning: conversion to ‘long unsigned int’ from ‘int’ may change the sign of the result [-Wsign-conversion]
+  728 |         if(n_read != (ssize_t)(MAPX*MAPY*sizeof(struct s_sector))) {
+      |                                         ^
+io.c:730:79: warning: conversion to ‘long unsigned int’ from ‘int’ may change the sign of the result [-Wsign-conversion]
+  730 |                 printf( "wrong data format (%zd vs. %zu)\n",n_read,  MAPX*MAPY*sizeof(struct s_sector) );
+      |                                                                               ^
+io.c: In function ‘centermap’:
+io.c:934:19: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  934 |         xoffset = xx - (SCREEN_X_SIZE/2);
+      |                   ^~
+io.c:935:19: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  935 |         yoffset = yy - (SCREEN_Y_SIZE/2);
+      |                   ^~
+io.c:940:16: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  940 |         xcurs= xx-xoffset;
+      |                ^~
+io.c:941:16: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  941 |         ycurs= yy-yoffset;
+      |                ^~
+io.c: In function ‘jump_to’:
+io.c:1053:21: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1053 |                 i = get_number();
+      |                     ^~~~~~~~~~
+io.c:1061:21: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1061 |                 j = get_number();
+      |                     ^~~~~~~~~~
+io.c:1069:17: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1069 |         xcurs = i;
+      |                 ^
+io.c:1070:17: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1070 |         ycurs = j;
+      |                 ^
+io.c: In function ‘flee’:
+io.c:1261:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1261 |                 slaves= sct[x][y].people/4;
+      |                         ^~~
+io.c:1287:41: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1287 |                         people_to_add = sct[x][y].people / count;
+      |                                         ^~~
+io.c:1322:17: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1322 |         country=svcountry;
+      |                 ^~~~~~~~~
+io.c: In function ‘m2alloc’:
+io.c:1498:58: warning: conversion to ‘long unsigned int’ from ‘int’ may change the sign of the result [-Wsign-conversion]
+ 1498 |                 malloc( (unsigned) (nrows*(sizeof(char *)+entrysize)));
+      |                                                          ^
+io.c:1498:42: warning: conversion to ‘long unsigned int’ from ‘int’ may change the sign of the result [-Wsign-conversion]
+ 1498 |                 malloc( (unsigned) (nrows*(sizeof(char *)+entrysize)));
+      |                                          ^
+io.c: In function ‘get_pass’:
+io.c:1578:22: warning: conversion from ‘int’ to ‘char’ may change value [-Wconversion]
+ 1578 |                 ch = getch();
+      |                      ^~~~~
+
+--- Testing misc.c (Admin mode) ---
+misc.c: In function ‘get_number’:
+misc.c:163:20: warning: conversion from ‘int’ to ‘char’ may change value [-Wconversion]
+  163 |                 ch=getch();
+      |                    ^~~~~
+misc.c: In function ‘land_2reachp’:
+misc.c:381:48: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  381 |                         history_reachp[x][y] = new_mp;
+      |                                                ^~~~~~
+misc.c: In function ‘land_reachp’:
+misc.c:511:49: warning: conversion to ‘size_t’ {aka ‘long unsigned int’} from ‘int’ may change the sign of the result [-Wsign-conversion]
+  511 |         memset((char *) *history_reachp, 0, MAPX*MAPY );
+misc.c:513:34: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  513 |         history_reachp[ax][ay] = move_points;
+      |                                  ^~~~~~~~~~~
+misc.c: In function ‘water_2reachp’:
+misc.c:634:38: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  634 |         history_reachp[ ax ][ ay ] = move_points;
+      |                                      ^~~~~~~~~~~
+misc.c: In function ‘num_powers’:
+misc.c:1088:20: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1088 |         for( try = start; try < start+end; try++ )
+      |                    ^~~~~
+In file included from misc.c:35:
+misc.c: In function ‘prep’:
+data.h:659:25: warning: conversion from ‘double’ to ‘int’ may change value [-Wfloat-conversion]
+  659 | #define P_NTNCOM        ((((float) curntn->communications)/ 50.0 ))
+      |                         ^
+misc.c:1327:39: note: in expansion of macro ‘P_NTNCOM’
+ 1327 |                                 com = P_NTNCOM; /* do communications radius */
+      |                                       ^~~~~~~~
+misc.c:1330:66: warning: conversion from ‘int’ to ‘char’ may change value [-Wconversion]
+ 1330 |                                         if(ONMAP(x,y)) occ[x][y]=nation;
+      |                                                                  ^~~~~~
+misc.c:1335:52: warning: conversion from ‘int’ to ‘char’ may change value [-Wconversion]
+ 1335 |                                         occ[i][j]= nation;
+      |                                                    ^~~~~~
+misc.c:1344:52: warning: conversion from ‘int’ to ‘char’ may change value [-Wconversion]
+ 1344 |                                         occ[i][j]= nation;
+      |                                                    ^~~~~~
+misc.c: In function ‘sackem’:
+misc.c:1546:41: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1546 |                         sct[x][y].owner=cntry;
+      |                                         ^~~~~
+misc.c:1579:30: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1579 |                 curntn->capx=x;
+      |                              ^
+misc.c:1580:30: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1580 |                 curntn->capy=y;
+      |                              ^
+misc.c: In function ‘updmove’:
+misc.c:1864:42: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1864 |                         movecost[x][y] = (movecost[x][y] + 1) / 2;
+      |                                          ^
+misc.c: In function ‘get_nname’:
+misc.c:2259:20: warning: conversion from ‘int’ to ‘char’ may change value [-Wconversion]
+ 2259 |                 ch=getch();
+      |                    ^~~~~
+misc.c: In function ‘get_country’:
+misc.c:2373:16: warning: conversion from ‘size_t’ {aka ‘long unsigned int’} to ‘int’ may change value [-Wconversion]
+ 2373 |         if ((l=strlen(name))==0) {
+      |                ^~~~~~
+misc.c: In function ‘get_god’:
+misc.c:2493:22: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 2493 |         if ((country=get_country())==(-1) || country==NTOTAL) {
+      |                      ^~~~~~~~~~~
+misc.c: In function ‘getmetal’:
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+misc.c:3068:19: note: in expansion of macro ‘rand’
+ 3068 |         randval = rand()%100;
+      |                   ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘unsigned char’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+misc.c:3072:31: note: in expansion of macro ‘rand’
+ 3072 |                 sptr->metal = rand()%2 + 1;
+      |                               ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘unsigned char’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+misc.c:3075:31: note: in expansion of macro ‘rand’
+ 3075 |                 sptr->metal = rand()%4 + 1;
+      |                               ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘unsigned char’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+misc.c:3078:31: note: in expansion of macro ‘rand’
+ 3078 |                 sptr->metal = rand()%4 + 2;
+      |                               ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘unsigned char’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+misc.c:3081:31: note: in expansion of macro ‘rand’
+ 3081 |                 sptr->metal = rand()%4 + 2;
+      |                               ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘unsigned char’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+misc.c:3084:31: note: in expansion of macro ‘rand’
+ 3084 |                 sptr->metal = rand()%7 + 2;
+      |                               ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘unsigned char’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+misc.c:3087:31: note: in expansion of macro ‘rand’
+ 3087 |                 sptr->metal = rand()%8 + 3;
+      |                               ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘unsigned char’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+misc.c:3090:31: note: in expansion of macro ‘rand’
+ 3090 |                 sptr->metal = rand()%11 + 5;
+      |                               ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘unsigned char’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+misc.c:3093:31: note: in expansion of macro ‘rand’
+ 3093 |                 sptr->metal = rand()%13 + 8;
+      |                               ^~~~
+misc.c: In function ‘getjewel’:
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+misc.c:3102:19: note: in expansion of macro ‘rand’
+ 3102 |         randval = rand()%100;
+      |                   ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘unsigned char’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+misc.c:3105:32: note: in expansion of macro ‘rand’
+ 3105 |                 sptr->jewels = rand()%2 + 1;
+      |                                ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘unsigned char’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+misc.c:3108:32: note: in expansion of macro ‘rand’
+ 3108 |                 sptr->jewels = rand()%3 + 1;
+      |                                ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘unsigned char’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+misc.c:3111:32: note: in expansion of macro ‘rand’
+ 3111 |                 sptr->jewels = rand()%3 + 1;
+      |                                ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘unsigned char’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+misc.c:3114:32: note: in expansion of macro ‘rand’
+ 3114 |                 sptr->jewels = rand()%5 + 1;
+      |                                ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘unsigned char’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+misc.c:3117:32: note: in expansion of macro ‘rand’
+ 3117 |                 sptr->jewels = rand()%5 + 1;
+      |                                ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘unsigned char’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+misc.c:3120:32: note: in expansion of macro ‘rand’
+ 3120 |                 sptr->jewels = rand()%6 + 1;
+      |                                ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘unsigned char’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+misc.c:3123:32: note: in expansion of macro ‘rand’
+ 3123 |                 sptr->jewels = rand()%6 + 1;
+      |                                ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘unsigned char’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+misc.c:3126:32: note: in expansion of macro ‘rand’
+ 3126 |                 sptr->jewels = rand()%7 + 2;
+      |                                ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘unsigned char’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+misc.c:3129:32: note: in expansion of macro ‘rand’
+ 3129 |                 sptr->jewels = rand()%11 + 2;
+      |                                ^~~~
+data.h:845:25: warning: conversion from ‘long int’ to ‘unsigned char’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+misc.c:3132:32: note: in expansion of macro ‘rand’
+ 3132 |                 sptr->jewels = rand()%17 + 4;
+      |                                ^~~~
+
+--- Testing misc.c (Game mode) ---
+misc.c: In function ‘get_number’:
+misc.c:163:20: warning: conversion from ‘int’ to ‘char’ may change value [-Wconversion]
+  163 |                 ch=getch();
+      |                    ^~~~~
+misc.c: In function ‘land_2reachp’:
+misc.c:381:48: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  381 |                         history_reachp[x][y] = new_mp;
+      |                                                ^~~~~~
+misc.c: In function ‘num_powers’:
+misc.c:1088:20: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1088 |         for( try = start; try < start+end; try++ )
+      |                    ^~~~~
+In file included from misc.c:35:
+misc.c: In function ‘prep’:
+data.h:659:25: warning: conversion from ‘double’ to ‘int’ may change value [-Wfloat-conversion]
+  659 | #define P_NTNCOM        ((((float) curntn->communications)/ 50.0 ))
+      |                         ^
+misc.c:1327:39: note: in expansion of macro ‘P_NTNCOM’
+ 1327 |                                 com = P_NTNCOM; /* do communications radius */
+      |                                       ^~~~~~~~
+misc.c:1330:66: warning: conversion from ‘int’ to ‘char’ may change value [-Wconversion]
+ 1330 |                                         if(ONMAP(x,y)) occ[x][y]=nation;
+      |                                                                  ^~~~~~
+misc.c:1335:52: warning: conversion from ‘int’ to ‘char’ may change value [-Wconversion]
+ 1335 |                                         occ[i][j]= nation;
+      |                                                    ^~~~~~
+misc.c:1344:52: warning: conversion from ‘int’ to ‘char’ may change value [-Wconversion]
+ 1344 |                                         occ[i][j]= nation;
+      |                                                    ^~~~~~
+misc.c: In function ‘updmove’:
+misc.c:1864:42: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1864 |                         movecost[x][y] = (movecost[x][y] + 1) / 2;
+      |                                          ^
+misc.c: In function ‘get_nname’:
+misc.c:2259:20: warning: conversion from ‘int’ to ‘char’ may change value [-Wconversion]
+ 2259 |                 ch=getch();
+      |                    ^~~~~
+misc.c: In function ‘get_country’:
+misc.c:2373:16: warning: conversion from ‘size_t’ {aka ‘long unsigned int’} to ‘int’ may change value [-Wconversion]
+ 2373 |         if ((l=strlen(name))==0) {
+      |                ^~~~~~
+misc.c: In function ‘get_god’:
+misc.c:2493:22: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 2493 |         if ((country=get_country())==(-1) || country==NTOTAL) {
+      |                      ^~~~~~~~~~~
+
+--- Testing navy.c (Admin mode) ---
+navy.c: In function ‘addwships’:
+navy.c:92:20: warning: conversion to ‘short unsigned int’ from ‘int’ may change the sign of the result [-Wsign-conversion]
+   92 |         P_NWSHP |= hold;
+      |                    ^~~~
+navy.c:95:17: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+   95 |         hold |= ~(N_MASK<<(N_BITSIZE*shipsize));
+      |                 ^
+navy.c:98:20: warning: conversion to ‘short unsigned int’ from ‘int’ may change the sign of the result [-Wsign-conversion]
+   98 |         P_NWSHP &= hold;
+      |                    ^~~~
+navy.c: In function ‘addmships’:
+navy.c:146:20: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  146 |         short hold=nships;
+      |                    ^~~~~~
+navy.c:164:20: warning: conversion to ‘short unsigned int’ from ‘int’ may change the sign of the result [-Wsign-conversion]
+  164 |         P_NMSHP |= hold;
+      |                    ^~~~
+navy.c:167:17: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  167 |         hold |= ~(N_MASK<<(N_BITSIZE*shipsize));
+      |                 ^
+navy.c:170:20: warning: conversion to ‘short unsigned int’ from ‘int’ may change the sign of the result [-Wsign-conversion]
+  170 |         P_NMSHP &= hold;
+      |                    ^~~~
+navy.c: In function ‘addgships’:
+navy.c:219:20: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  219 |         short hold=nships;
+      |                    ^~~~~~
+navy.c:237:20: warning: conversion to ‘short unsigned int’ from ‘int’ may change the sign of the result [-Wsign-conversion]
+  237 |         P_NGSHP |= hold;
+      |                    ^~~~
+navy.c:240:17: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  240 |         hold |= ~(N_MASK<<(N_BITSIZE*shipsize));
+      |                 ^
+navy.c:243:20: warning: conversion to ‘short unsigned int’ from ‘int’ may change the sign of the result [-Wsign-conversion]
+  243 |         P_NGSHP &= hold;
+      |                    ^~~~
+In file included from navy.c:27:
+navy.c: In function ‘subwships’:
+data.h:680:25: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  680 | #define SHIPS(x,y)      (short)( ((x)&(N_MASK<<((y)*N_BITSIZE))) >> ((y)*N_BITSIZE) )
+      |                         ^
+data.h:681:25: note: in expansion of macro ‘SHIPS’
+  681 | #define P_NWAR(x)       SHIPS(P_NWSHP,x)
+      |                         ^~~~~
+navy.c:301:16: note: in expansion of macro ‘P_NWAR’
+  301 |         hold = P_NWAR(shipsize) - nships;
+      |                ^~~~~~
+navy.c:310:20: warning: conversion to ‘short unsigned int’ from ‘int’ may change the sign of the result [-Wsign-conversion]
+  310 |         P_NWSHP |= hold;
+      |                    ^~~~
+navy.c:313:17: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  313 |         hold |= ~(N_MASK<<(N_BITSIZE*shipsize));
+      |                 ^
+navy.c:316:20: warning: conversion to ‘short unsigned int’ from ‘int’ may change the sign of the result [-Wsign-conversion]
+  316 |         P_NWSHP &= hold;
+      |                    ^~~~
+navy.c: In function ‘submships’:
+data.h:680:25: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  680 | #define SHIPS(x,y)      (short)( ((x)&(N_MASK<<((y)*N_BITSIZE))) >> ((y)*N_BITSIZE) )
+      |                         ^
+data.h:682:25: note: in expansion of macro ‘SHIPS’
+  682 | #define P_NMER(x)       SHIPS(P_NMSHP,x)
+      |                         ^~~~~
+navy.c:374:16: note: in expansion of macro ‘P_NMER’
+  374 |         hold = P_NMER(shipsize) - nships;
+      |                ^~~~~~
+navy.c:382:20: warning: conversion to ‘short unsigned int’ from ‘int’ may change the sign of the result [-Wsign-conversion]
+  382 |         P_NMSHP |= hold;
+      |                    ^~~~
+navy.c:385:17: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  385 |         hold |= ~(N_MASK<<(N_BITSIZE*shipsize));
+      |                 ^
+navy.c:388:20: warning: conversion to ‘short unsigned int’ from ‘int’ may change the sign of the result [-Wsign-conversion]
+  388 |         P_NMSHP &= hold;
+      |                    ^~~~
+navy.c: In function ‘subgships’:
+data.h:680:25: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  680 | #define SHIPS(x,y)      (short)( ((x)&(N_MASK<<((y)*N_BITSIZE))) >> ((y)*N_BITSIZE) )
+      |                         ^
+data.h:683:25: note: in expansion of macro ‘SHIPS’
+  683 | #define P_NGAL(x)       SHIPS(P_NGSHP,x)
+      |                         ^~~~~
+navy.c:446:16: note: in expansion of macro ‘P_NGAL’
+  446 |         hold = P_NGAL(shipsize) - nships;
+      |                ^~~~~~
+navy.c:454:20: warning: conversion to ‘short unsigned int’ from ‘int’ may change the sign of the result [-Wsign-conversion]
+  454 |         P_NGSHP |= hold;
+      |                    ^~~~
+navy.c:457:17: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  457 |         hold |= ~(N_MASK<<(N_BITSIZE*shipsize));
+      |                 ^
+navy.c:460:20: warning: conversion to ‘short unsigned int’ from ‘int’ may change the sign of the result [-Wsign-conversion]
+  460 |         P_NGSHP &= hold;
+      |                    ^~~~
+navy.c: In function ‘fltspeed’:
+navy.c:586:15: warning: conversion from ‘int’ to ‘short unsigned int’ may change value [-Wconversion]
+  586 |         return(hold);
+      |               ^
+navy.c: In function ‘loadfleet’:
+navy.c:1064:20: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1064 |         if((nvynum=getselunit()-MAXARM)>=0){
+      |                    ^~~~~~~~~~
+navy.c:1152:32: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1152 |                         amount=get_number();
+      |                                ^~~~~~~~~~
+navy.c:1172:26: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1172 |                 mcargo = mhold*(SHIPHOLD-P_NPEOP);
+      |                          ^~~~~
+navy.c:1188:35: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1188 |                         armynum = get_number();
+      |                                   ^~~~~~~~~~
+navy.c:1202:41: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1202 |                                 P_NARMY=armynum;
+      |                                         ^~~~~~~
+navy.c:1221:32: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1221 |                         amount=get_number();
+      |                                ^~~~~~~~~~
+
+--- Testing navy.c (Game mode) ---
+navy.c: In function ‘addwships’:
+navy.c:92:20: warning: conversion to ‘short unsigned int’ from ‘int’ may change the sign of the result [-Wsign-conversion]
+   92 |         P_NWSHP |= hold;
+      |                    ^~~~
+navy.c:95:17: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+   95 |         hold |= ~(N_MASK<<(N_BITSIZE*shipsize));
+      |                 ^
+navy.c:98:20: warning: conversion to ‘short unsigned int’ from ‘int’ may change the sign of the result [-Wsign-conversion]
+   98 |         P_NWSHP &= hold;
+      |                    ^~~~
+navy.c: In function ‘addmships’:
+navy.c:146:20: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  146 |         short hold=nships;
+      |                    ^~~~~~
+navy.c:164:20: warning: conversion to ‘short unsigned int’ from ‘int’ may change the sign of the result [-Wsign-conversion]
+  164 |         P_NMSHP |= hold;
+      |                    ^~~~
+navy.c:167:17: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  167 |         hold |= ~(N_MASK<<(N_BITSIZE*shipsize));
+      |                 ^
+navy.c:170:20: warning: conversion to ‘short unsigned int’ from ‘int’ may change the sign of the result [-Wsign-conversion]
+  170 |         P_NMSHP &= hold;
+      |                    ^~~~
+navy.c: In function ‘addgships’:
+navy.c:219:20: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  219 |         short hold=nships;
+      |                    ^~~~~~
+navy.c:237:20: warning: conversion to ‘short unsigned int’ from ‘int’ may change the sign of the result [-Wsign-conversion]
+  237 |         P_NGSHP |= hold;
+      |                    ^~~~
+navy.c:240:17: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  240 |         hold |= ~(N_MASK<<(N_BITSIZE*shipsize));
+      |                 ^
+navy.c:243:20: warning: conversion to ‘short unsigned int’ from ‘int’ may change the sign of the result [-Wsign-conversion]
+  243 |         P_NGSHP &= hold;
+      |                    ^~~~
+In file included from navy.c:27:
+navy.c: In function ‘subwships’:
+data.h:680:25: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  680 | #define SHIPS(x,y)      (short)( ((x)&(N_MASK<<((y)*N_BITSIZE))) >> ((y)*N_BITSIZE) )
+      |                         ^
+data.h:681:25: note: in expansion of macro ‘SHIPS’
+  681 | #define P_NWAR(x)       SHIPS(P_NWSHP,x)
+      |                         ^~~~~
+navy.c:301:16: note: in expansion of macro ‘P_NWAR’
+  301 |         hold = P_NWAR(shipsize) - nships;
+      |                ^~~~~~
+navy.c:310:20: warning: conversion to ‘short unsigned int’ from ‘int’ may change the sign of the result [-Wsign-conversion]
+  310 |         P_NWSHP |= hold;
+      |                    ^~~~
+navy.c:313:17: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  313 |         hold |= ~(N_MASK<<(N_BITSIZE*shipsize));
+      |                 ^
+navy.c:316:20: warning: conversion to ‘short unsigned int’ from ‘int’ may change the sign of the result [-Wsign-conversion]
+  316 |         P_NWSHP &= hold;
+      |                    ^~~~
+navy.c: In function ‘submships’:
+data.h:680:25: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  680 | #define SHIPS(x,y)      (short)( ((x)&(N_MASK<<((y)*N_BITSIZE))) >> ((y)*N_BITSIZE) )
+      |                         ^
+data.h:682:25: note: in expansion of macro ‘SHIPS’
+  682 | #define P_NMER(x)       SHIPS(P_NMSHP,x)
+      |                         ^~~~~
+navy.c:374:16: note: in expansion of macro ‘P_NMER’
+  374 |         hold = P_NMER(shipsize) - nships;
+      |                ^~~~~~
+navy.c:382:20: warning: conversion to ‘short unsigned int’ from ‘int’ may change the sign of the result [-Wsign-conversion]
+  382 |         P_NMSHP |= hold;
+      |                    ^~~~
+navy.c:385:17: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  385 |         hold |= ~(N_MASK<<(N_BITSIZE*shipsize));
+      |                 ^
+navy.c:388:20: warning: conversion to ‘short unsigned int’ from ‘int’ may change the sign of the result [-Wsign-conversion]
+  388 |         P_NMSHP &= hold;
+      |                    ^~~~
+navy.c: In function ‘subgships’:
+data.h:680:25: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  680 | #define SHIPS(x,y)      (short)( ((x)&(N_MASK<<((y)*N_BITSIZE))) >> ((y)*N_BITSIZE) )
+      |                         ^
+data.h:683:25: note: in expansion of macro ‘SHIPS’
+  683 | #define P_NGAL(x)       SHIPS(P_NGSHP,x)
+      |                         ^~~~~
+navy.c:446:16: note: in expansion of macro ‘P_NGAL’
+  446 |         hold = P_NGAL(shipsize) - nships;
+      |                ^~~~~~
+navy.c:454:20: warning: conversion to ‘short unsigned int’ from ‘int’ may change the sign of the result [-Wsign-conversion]
+  454 |         P_NGSHP |= hold;
+      |                    ^~~~
+navy.c:457:17: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  457 |         hold |= ~(N_MASK<<(N_BITSIZE*shipsize));
+      |                 ^
+navy.c:460:20: warning: conversion to ‘short unsigned int’ from ‘int’ may change the sign of the result [-Wsign-conversion]
+  460 |         P_NGSHP &= hold;
+      |                    ^~~~
+navy.c: In function ‘loadfleet’:
+navy.c:1064:20: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1064 |         if((nvynum=getselunit()-MAXARM)>=0){
+      |                    ^~~~~~~~~~
+navy.c:1152:32: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1152 |                         amount=get_number();
+      |                                ^~~~~~~~~~
+navy.c:1172:26: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1172 |                 mcargo = mhold*(SHIPHOLD-P_NPEOP);
+      |                          ^~~~~
+navy.c:1188:35: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1188 |                         armynum = get_number();
+      |                                   ^~~~~~~~~~
+navy.c:1202:41: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1202 |                                 P_NARMY=armynum;
+      |                                         ^~~~~~~
+navy.c:1221:32: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1221 |                         amount=get_number();
+      |                                ^~~~~~~~~~
+
+--- Testing magic.c (Admin mode) ---
+magic.c: In function ‘takeover’:
+magic.c:550:17: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  550 |         country=target;
+      |                 ^~~~~~
+In file included from magic.c:133:
+data.h:845:25: warning: conversion from ‘long int’ to ‘short int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+magic.c:556:33: note: in expansion of macro ‘rand’
+  556 |                         country=rand()%NTOTAL;
+      |                                 ^~~~
+magic.c:564:41: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  564 |                                 country=save;
+      |                                         ^~~~
+magic.c:568:65: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  568 |                 sct[ntn[country].capx][ntn[country].capy].owner=save;
+      |                                                                 ^~~~
+magic.c:584:25: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  584 |                 country=save;
+      |                         ^~~~
+magic.c:587:17: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  587 |         country=save;
+      |                 ^~~~
+magic.c: In function ‘exenewmgk’:
+magic.c:736:51: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  736 |                                 curntn->maxmove+= x-11;
+      |                                                   ^
+magic.c:745:42: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  745 |                         curntn->maxmove+=2*(curntn->repro-9);
+      |                                          ^
+magic.c:756:43: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  756 |                         curntn->maxmove+= x-11;
+      |                                           ^
+magic.c: In function ‘dosummon’:
+magic.c:873:12: warning: conversion from ‘int’ to ‘char’ may change value [-Wconversion]
+  873 |         ch=getch();
+      |            ^~~~~
+magic.c:909:33: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  909 |                         P_ATYPE=newtype;
+      |                                 ^~~~~~~
+magic.c:926:29: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  926 |         curntn->spellpts -= s_cost;
+      |                             ^~~~~~
+magic.c: In function ‘orctake’:
+magic.c:1018:43: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1018 |                         curntn->spellpts-=s_cost;
+      |                                           ^~~~~~
+magic.c: In function ‘removemgk’:
+magic.c:1278:57: warning: conversion from ‘long int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1278 |                         if(P_ATYPE == A_ZOMBIE) P_ATYPE=defaultunit(country);
+      |                                                         ^~~~~~~~~~~
+magic.c:1313:54: warning: conversion from ‘long int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1313 |                         if(P_ATYPE == A_ORC) P_ATYPE=defaultunit(country);
+      |                                                      ^~~~~~~~~~~
+magic.c:1320:41: warning: conversion from ‘long int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1320 |                                 P_ATYPE=defaultunit(country);
+      |                                         ^~~~~~~~~~~
+magic.c:1326:57: warning: conversion from ‘long int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1326 |                         if(P_ATYPE == A_ARCHER) P_ATYPE=defaultunit(country);
+      |                                                         ^~~~~~~~~~~
+magic.c: In function ‘god_magk’:
+magic.c:1461:24: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1461 |                 choice=get_number();
+      |                        ^~~~~~~~~~
+magic.c: In function ‘wizardry’:
+magic.c:1577:30: warning: conversion to ‘size_t’ {aka ‘long unsigned int’} from ‘int’ may change the sign of the result [-Wsign-conversion]
+ 1577 |                         xspt += strlen(line);
+      |                              ^~
+magic.c:1577:33: warning: conversion from ‘size_t’ {aka ‘long unsigned int’} to ‘int’ may change value [-Wconversion]
+ 1577 |                         xspt += strlen(line);
+      |                                 ^~~~~~
+magic.c:1622:42: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1622 |                                 s_cost = (P_ASOLD-1) / magiccost[choice] + 1;
+      |                                          ^
+magic.c:1628:61: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1628 |                                         curntn->spellpts -= s_cost;
+      |                                                             ^~~~~~
+
+--- Testing magic.c (Game mode) ---
+magic.c: In function ‘takeover’:
+magic.c:550:17: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  550 |         country=target;
+      |                 ^~~~~~
+In file included from magic.c:133:
+data.h:845:25: warning: conversion from ‘long int’ to ‘short int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+magic.c:556:33: note: in expansion of macro ‘rand’
+  556 |                         country=rand()%NTOTAL;
+      |                                 ^~~~
+magic.c:564:41: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  564 |                                 country=save;
+      |                                         ^~~~
+magic.c:568:65: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  568 |                 sct[ntn[country].capx][ntn[country].capy].owner=save;
+      |                                                                 ^~~~
+magic.c:584:25: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  584 |                 country=save;
+      |                         ^~~~
+magic.c:587:17: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  587 |         country=save;
+      |                 ^~~~
+magic.c: In function ‘exenewmgk’:
+magic.c:736:51: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  736 |                                 curntn->maxmove+= x-11;
+      |                                                   ^
+magic.c:745:42: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  745 |                         curntn->maxmove+=2*(curntn->repro-9);
+      |                                          ^
+magic.c:756:43: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  756 |                         curntn->maxmove+= x-11;
+      |                                           ^
+magic.c: In function ‘dosummon’:
+magic.c:873:12: warning: conversion from ‘int’ to ‘char’ may change value [-Wconversion]
+  873 |         ch=getch();
+      |            ^~~~~
+magic.c:909:33: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+  909 |                         P_ATYPE=newtype;
+      |                                 ^~~~~~~
+magic.c:926:29: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  926 |         curntn->spellpts -= s_cost;
+      |                             ^~~~~~
+magic.c: In function ‘orctake’:
+magic.c:1018:43: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1018 |                         curntn->spellpts-=s_cost;
+      |                                           ^~~~~~
+magic.c: In function ‘removemgk’:
+magic.c:1278:57: warning: conversion from ‘long int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1278 |                         if(P_ATYPE == A_ZOMBIE) P_ATYPE=defaultunit(country);
+      |                                                         ^~~~~~~~~~~
+magic.c:1313:54: warning: conversion from ‘long int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1313 |                         if(P_ATYPE == A_ORC) P_ATYPE=defaultunit(country);
+      |                                                      ^~~~~~~~~~~
+magic.c:1320:41: warning: conversion from ‘long int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1320 |                                 P_ATYPE=defaultunit(country);
+      |                                         ^~~~~~~~~~~
+magic.c:1326:57: warning: conversion from ‘long int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1326 |                         if(P_ATYPE == A_ARCHER) P_ATYPE=defaultunit(country);
+      |                                                         ^~~~~~~~~~~
+magic.c: In function ‘god_magk’:
+magic.c:1461:24: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1461 |                 choice=get_number();
+      |                        ^~~~~~~~~~
+magic.c: In function ‘wizardry’:
+magic.c:1577:30: warning: conversion to ‘size_t’ {aka ‘long unsigned int’} from ‘int’ may change the sign of the result [-Wsign-conversion]
+ 1577 |                         xspt += strlen(line);
+      |                              ^~
+magic.c:1577:33: warning: conversion from ‘size_t’ {aka ‘long unsigned int’} to ‘int’ may change value [-Wconversion]
+ 1577 |                         xspt += strlen(line);
+      |                                 ^~~~~~
+magic.c:1622:42: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1622 |                                 s_cost = (P_ASOLD-1) / magiccost[choice] + 1;
+      |                                          ^
+magic.c:1628:61: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1628 |                                         curntn->spellpts -= s_cost;
+      |                                                             ^~~~~~
+
+--- Testing data.c (Admin mode) ---
+
+--- Testing data.c (Game mode) ---
+
+--- Testing trade.c (Admin mode) ---
+
+--- Testing trade.c (Game mode) ---
+
+=== POSTSCRIPT UTILITY FILES (1 file) ===
+--- Testing psmap.c (PostScript mode) ---
+psmap.c: In function ‘isinstr’:
+psmap.c:372:14: warning: conversion from ‘size_t’ {aka ‘long unsigned int’} to ‘int’ may change value [-Wconversion]
+  372 |     int i,l1=strlen(string),l2=strlen(word);
+      |              ^~~~~~
+psmap.c:372:32: warning: conversion from ‘size_t’ {aka ‘long unsigned int’} to ‘int’ may change value [-Wconversion]
+  372 |     int i,l1=strlen(string),l2=strlen(word);
+      |                                ^~~~~~
+psmap.c:378:47: warning: conversion to ‘size_t’ {aka ‘long unsigned int’} from ‘int’ may change the sign of the result [-Wsign-conversion]
+  378 |                     if (strncmp(string+i,word,l2)==0) return(TRUE);
+      |                                               ^~
+psmap.c: In function ‘main’:
+psmap.c:935:30: warning: conversion to ‘size_t’ {aka ‘long unsigned int’} from ‘int’ may change the sign of the result [-Wsign-conversion]
+  935 |     strncpy(foot, firstline, c);
+      |                              ^
+
+=== COMPREHENSIVE TEST COMPLETE ===
+Check report for warning counts and compilation status.

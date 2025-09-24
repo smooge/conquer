@@ -1,0 +1,169 @@
+=== SINGLE FILE TEST: combat.c ===
+Warning Level: 8 (-Wall -Wextra -Wpedantic -Wformat=2 -Wconversion -Wsign-conversion -Wimplicit-fallthrough -Wstrict-prototypes)
+C Standard: c2x
+Date: Wed 24 Sep 11:29:53 EDT 2025
+
+--- Testing combat.c (Admin mode) ---
+combat.c: In function ‘navalcbt’:
+combat.c:1345:26: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1345 |                 country= owner[j];
+      |                          ^~~~~
+In file included from combat.c:27:
+data.h:680:25: warning: conversion from ‘int’ to ‘char’ may change value [-Wconversion]
+  680 | #define SHIPS(x,y)      (short)( ((x)&(N_MASK<<((y)*N_BITSIZE))) >> ((y)*N_BITSIZE) )
+      |                         ^
+combat.c:1346:25: note: in expansion of macro ‘SHIPS’
+ 1346 |                 wnum[j]=SHIPS(ntn[country].nvy[unit[j]].warships,N_LIGHT)+
+      |                         ^~~~~
+data.h:680:25: warning: conversion from ‘int’ to ‘char’ may change value [-Wconversion]
+  680 | #define SHIPS(x,y)      (short)( ((x)&(N_MASK<<((y)*N_BITSIZE))) >> ((y)*N_BITSIZE) )
+      |                         ^
+combat.c:1349:25: note: in expansion of macro ‘SHIPS’
+ 1349 |                 mnum[j]=SHIPS(ntn[country].nvy[unit[j]].merchant,N_LIGHT)+
+      |                         ^~~~~
+data.h:680:25: warning: conversion from ‘int’ to ‘char’ may change value [-Wconversion]
+  680 | #define SHIPS(x,y)      (short)( ((x)&(N_MASK<<((y)*N_BITSIZE))) >> ((y)*N_BITSIZE) )
+      |                         ^
+combat.c:1352:25: note: in expansion of macro ‘SHIPS’
+ 1352 |                 gnum[j]=SHIPS(ntn[country].nvy[unit[j]].galleys,N_LIGHT)+
+      |                         ^~~~~
+combat.c:1376:58: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1376 |                                                 dcrew += 3*curntn->arm[k].sold/2;
+      |                                                          ^
+combat.c:1379:58: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1379 |                                                 dcrew += 3*curntn->arm[k].sold;
+      |                                                          ^
+combat.c:1382:58: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1382 |                                                 dcrew += 3*curntn->arm[k].sold/4;
+      |                                                          ^
+combat.c:1408:58: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1408 |                                                 acrew += 3*curntn->arm[k].sold/2;
+      |                                                          ^
+combat.c:1411:58: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1411 |                                                 acrew += 3*curntn->arm[k].sold;
+      |                                                          ^
+combat.c:1414:58: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1414 |                                                 acrew += 3*curntn->arm[k].sold/4;
+      |                                                          ^
+combat.c:1448:26: warning: conversion from ‘double’ to ‘int’ may change value [-Wfloat-conversion]
+ 1448 |                 acptpct= (odds-10)/6.9+2;
+      |                          ^
+data.h:845:25: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  845 | #define rand()          random()
+      |                         ^~~~~~
+combat.c:1464:25: note: in expansion of macro ‘rand’
+ 1464 |                 roll += rand()%21+1;
+      |                         ^~~~
+combat.c:1497:26: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1497 |                 country= owner[j];
+      |                          ^~~~~
+combat.c:1526:96: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1526 |                                                         capture(QWAR,DFND,shipsize,rand()%dhold+1);
+combat.c:1533:96: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1533 |                                                         capture(QWAR,ATKR,shipsize,rand()%ahold+1);
+combat.c:1558:52: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1558 |                                         P_NCREW -= k/thold;
+      |                                                    ^
+combat.c:1571:96: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1571 |                                                         capture(QGAL,DFND,shipsize,rand()%dhold+1);
+combat.c:1579:96: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1579 |                                                         capture(QGAL,ATKR,shipsize,rand()%ahold+1);
+data.h:667:17: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  667 | #define P_ASOLD curntn->arm[armynum].sold
+      |                 ^~~~~~
+combat.c:1587:53: note: in expansion of macro ‘P_ASOLD’
+ 1587 |                                                 k = P_ASOLD*(shipsize+1)/(ghold+shipsize+1);
+      |                                                     ^~~~~~~
+data.h:667:17: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  667 | #define P_ASOLD curntn->arm[armynum].sold
+      |                 ^~~~~~
+combat.c:1593:75: note: in expansion of macro ‘P_ASOLD’
+ 1593 |                                                 if(which==ATKR) akcrew += P_ASOLD;
+      |                                                                           ^~~~~~~
+data.h:667:17: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  667 | #define P_ASOLD curntn->arm[armynum].sold
+      |                 ^~~~~~
+combat.c:1594:64: note: in expansion of macro ‘P_ASOLD’
+ 1594 |                                                 else dkcrew += P_ASOLD;
+      |                                                                ^~~~~~~
+data.h:667:17: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  667 | #define P_ASOLD curntn->arm[armynum].sold
+      |                 ^~~~~~
+combat.c:1610:53: note: in expansion of macro ‘P_ASOLD’
+ 1610 |                                                 k = P_ASOLD*(shipsize+1)/(ghold+shipsize+1);
+      |                                                     ^~~~~~~
+data.h:667:17: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  667 | #define P_ASOLD curntn->arm[armynum].sold
+      |                 ^~~~~~
+combat.c:1616:75: note: in expansion of macro ‘P_ASOLD’
+ 1616 |                                                 if(which==ATKR) akcrew += P_ASOLD;
+      |                                                                           ^~~~~~~
+data.h:667:17: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  667 | #define P_ASOLD curntn->arm[armynum].sold
+      |                 ^~~~~~
+combat.c:1617:64: note: in expansion of macro ‘P_ASOLD’
+ 1617 |                                                 else dkcrew += P_ASOLD;
+      |                                                                ^~~~~~~
+combat.c:1629:52: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1629 |                                         P_NCREW -= k/thold;
+      |                                                    ^
+data.h:667:17: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  667 | #define P_ASOLD curntn->arm[armynum].sold
+      |                 ^~~~~~
+combat.c:1633:53: note: in expansion of macro ‘P_ASOLD’
+ 1633 |                                                 k = P_ASOLD*(shipsize+1)*Ploss/(ghold*100);
+      |                                                     ^~~~~~~
+data.h:667:17: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  667 | #define P_ASOLD curntn->arm[armynum].sold
+      |                 ^~~~~~
+combat.c:1639:75: note: in expansion of macro ‘P_ASOLD’
+ 1639 |                                                 if(which==ATKR) akcrew += P_ASOLD;
+      |                                                                           ^~~~~~~
+data.h:667:17: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+  667 | #define P_ASOLD curntn->arm[armynum].sold
+      |                 ^~~~~~
+combat.c:1640:64: note: in expansion of macro ‘P_ASOLD’
+ 1640 |                                                 else dkcrew += P_ASOLD;
+      |                                                                ^~~~~~~
+combat.c:1655:96: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1655 |                                                         capture(QMER,DFND,shipsize,rand()%dhold+1);
+combat.c:1661:96: warning: conversion from ‘long int’ to ‘int’ may change value [-Wconversion]
+ 1661 |                                                         capture(QMER,ATKR,shipsize,rand()%ahold+1);
+combat.c:1672:52: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1672 |                                         P_NCREW -= k/thold;
+      |                                                    ^
+combat.c:1675:80: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1675 |                                         if((thold-=(shipsize+1))!=0) P_NCREW = k / thold;
+      |                                                                                ^
+combat.c:1681:52: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1681 |                                         P_NPEOP -= k/(thold+shipsize+1);
+      |                                                    ^
+combat.c:1683:64: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1683 |                                         if (thold>0) P_NPEOP = k / thold;
+      |                                                                ^
+combat.c:1692:52: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1692 |                                         P_NCREW -= k/thold;
+      |                                                    ^
+combat.c:1697:52: warning: conversion from ‘int’ to ‘unsigned char’ may change value [-Wconversion]
+ 1697 |                                         P_NPEOP -= k/thold;
+      |                                                    ^
+combat.c:1767:18: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+ 1767 |         country= savecntry;
+      |                  ^~~~~~~~~
+combat.c: In function ‘capture’:
+data.h:684:35: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  684 | #define NADD_WAR(x)     addwships(nvynum,shipsize,(x));
+      |                                   ^~~~~~
+combat.c:1866:24: note: in expansion of macro ‘NADD_WAR’
+ 1866 |                 (void) NADD_WAR(1);
+      |                        ^~~~~~~~
+data.h:684:42: warning: conversion from ‘int’ to ‘short int’ may change value [-Wconversion]
+  684 | #define NADD_WAR(x)     addwships(nvynum,shipsize,(x));
+      |                                          ^~~~~~~~
+combat.c:1866:24: note: in expansion of macro ‘NADD_WAR’
+ 1866 |                 (void) NADD_WAR(1);
+      |                        ^~~~~~~~
+
+=== SINGLE FILE TEST COMPLETE ===
+File: combat.c
+Report: _modernization/claude/scratch/PHASE_4.8_combat_W8_c2x_SINGLE.txt

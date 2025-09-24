@@ -123,7 +123,7 @@ char progname[80];
  *   - Returns 0 for any unrecognized input (safe default)
  *   - Used by command-line option processing and environment variable parsing
  */
-int 
+int
 parsepagesize (char *buf)
 {
     if (!strcmp(buf, "A4"))
@@ -178,7 +178,7 @@ parsepagesize (char *buf)
  *   - Default case handles custom/user-defined page sizes
  *   - Values sourced from psmap.h constant definitions
  */
-void 
+void
 setpagesize (int defpag)
 {
     switch (defpag) {
@@ -244,7 +244,7 @@ setpagesize (int defpag)
  *   - Uses parsepagesize() for string-to-code conversion
  *   - Not thread-safe due to global state modifications
  */
-void 
+void
 get_pagesize (void)
 {
     char *buf;
@@ -297,7 +297,7 @@ get_pagesize (void)
  *   - Essential for preventing PostScript syntax errors
  *   - Used for titles, footers, and text labels in map output
  */
-void 
+void
 psstring (FILE *fh, char *str)
 {
     fprintf(fh, "(");
@@ -366,10 +366,10 @@ psstring (FILE *fh, char *str)
  *   - Used by getmaptype() for map format detection
  *   - Efficient for short patterns in header strings
  */
-int 
+int
 isinstr (char *string, char *word)
 {
-    int i,l1=strlen(string),l2=strlen(word);
+    size_t i,l1=strlen(string),l2=strlen(word);
 
     if (l1 < l2) return(FALSE);
     for(i = 0; i < l1; i++ ) {
@@ -429,7 +429,7 @@ isinstr (char *string, char *word)
  *   - Used during map file parsing to configure rendering pipeline
  *   - Falls back to SIMPLE type for unknown formats
  */
-int 
+int
 getmaptype (char *string)
 {
     if (isinstr(string, "Altitude"))
@@ -499,7 +499,7 @@ getmaptype (char *string)
  *   - Critical function in the map processing pipeline
  *   - Handles variable-sized maps with automatic dimension detection
  */
-void 
+void
 readmap (void)
 {
     int x, none;
@@ -627,7 +627,7 @@ readmap (void)
  *   - Handles both single-page and multi-page output modes
  *   - PostScript variables enable template customization
  */
-void 
+void
 buildps (void)
 {
     int xbeg, ybeg, xnumb, ynumb, x, y, xpages, ypages, xcorr, ycorr;
@@ -992,4 +992,3 @@ main(int argc, char *argv[])
 
     return (0);
 }
-

@@ -77,6 +77,7 @@
 #include <termios.h>
 #include "header.h"
 #include "data.h"
+#include "safe_convert.h"
 
 /*Declarations*/
 struct	s_sector **sct;
@@ -112,7 +113,7 @@ static char *get_password(const char *prompt) {
 
     /* Disable echo */
     new_termios = old_termios;
-    new_termios.c_lflag &= ~ECHO;
+    new_termios.c_lflag &= ~(tcflag_t)ECHO;
 
     if (tcsetattr(STDIN_FILENO, TCSANOW, &new_termios) != 0) {
         return NULL;
@@ -261,8 +262,9 @@ FILE *fexe;
  */
 int main (int argc, char **argv) {
 	uid_t realuser;
-	int l;
-	register int i,j;
+	size_t l;
+	register size_t i;
+	register size_t j;
 	char *name;
 #ifndef __STDC__
 	void srand();
@@ -500,7 +502,7 @@ int main (int argc, char **argv) {
 		/* disable interrupts */
 		signal(SIGINT,SIG_IGN);
 		signal(SIGQUIT,SIG_IGN);
-		newlogin(realuser);
+		newlogin(safe_uid_to_int(realuser));
 		unlink(string);
 		exit(SUCCESS);
 	}
@@ -536,9 +538,9 @@ int main (int argc, char **argv) {
 #ifdef RUNSTOP
 		/* check if any players are on */
 		for (i=0;i<NTOTAL;i++) {
-			sprintf(string,"%s%d",isonfile,i);
+			sprintf(string,"%s%zu",isonfile,i);
 			if(check_lock(string,FALSE)==TRUE) {
-				printf("Nation %d is still in the game.\n",i);
+				printf("Nation %zu is still in the game.\n",i);
 				printf("Update aborted.\n");
 				exit(FAIL);
 			}
@@ -817,7 +819,7 @@ void att_base (void) {
 				temp = 312L * curntn->tfood/(curntn->eatrate+25L);
 				break;
 			}
-			if(curntn->tciv>0) x = curntn->eatrate/2 + temp/curntn->tciv;
+			if(curntn->tciv>0) x = safe_long_to_int(curntn->eatrate/2 + temp/curntn->tciv);
 			else x = 25;
 			if( x < MAXTGVAL ) curntn->eatrate = (char)x;
 			else curntn->eatrate=MAXTGVAL;
@@ -828,7 +830,7 @@ void att_base (void) {
 		}
 
 		if( 30 <= 1+ngrain+ncities ) curntn->spoilrate=1;
-		else curntn->spoilrate = 30-ngrain-ncities;
+		else curntn->spoilrate = safe_clamp_uchar(30-ngrain-ncities);
 		if( curntn->tfood > curntn->tciv * 10 )
 			curntn->spoilrate = 30;
 
@@ -838,34 +840,34 @@ void att_base (void) {
 			if(P_ATYPE==A_MERCENARY) mercs+=P_ASOLD;
 		if(curntn->tmil>0 && curntn->tciv>0) temp=(1000*curntn->tmil)/curntn->tciv+(1000*mercs)/curntn->tmil;
 		else temp=0;
-		curntn->terror = min( temp/5, MAXTGVAL );
+		curntn->terror = safe_clamp_uchar(temp/5);
 
 		temp = (5*townfolk/2+5*cityfolk) + roads*5;
-		curntn->communications = min( temp,2*MAXTGVAL );
+		curntn->communications = safe_clamp_uchar(temp);
 
 		temp=1000*curntn->score/WORLDSCORE + 1000*curntn->tmil/WORLDMIL;
-		curntn->power = min(temp/5,MAXTGVAL);
+		curntn->power = safe_clamp_uchar(temp/5);
 
 		/* calculate national wealth */
 		temp = curntn->tgold;
 		if(temp<0) temp=0;
 		temp = (long)(1000.0*temp/WORLDGOLD + 1000.0*curntn->jewels/WORLDJEWELS + 1000.0*curntn->metals/WORLDMETAL) + cityfolk*5/3 + townfolk*5/6;
 		if (temp >= curntn->wealth) {
-			curntn->wealth = min( temp/10,MAXTGVAL );
+			curntn->wealth = safe_clamp_uchar(temp/10);
 		} else {
-			curntn->wealth -= (curntn->wealth - temp)/4;
+			curntn->wealth -= safe_clamp_uchar((curntn->wealth - temp)/4);
 		}
 
 		if( TURN!= 1) {
-		curntn->reputation += rand()%8-3;
-		curntn->reputation = min( curntn->reputation,MAXTGVAL );
+		curntn->reputation += safe_clamp_uchar(rand()%8-3);
+		curntn->reputation = safe_clamp_uchar(curntn->reputation);
 
 		temp = (curntn->prestige + curntn->power + curntn->wealth) / 3;
-		curntn->prestige = min( temp,MAXTGVAL );
+		curntn->prestige = safe_clamp_uchar(temp);
 
 		if(curntn->tciv>0) temp = foodpts*10 / curntn->tciv;
 		else temp = 0;
-		curntn->farm_ability = min( temp,MAXTGVAL );
+		curntn->farm_ability = safe_clamp_uchar(temp);
 		}
 
 		/* calcualte mining ability */
@@ -875,18 +877,18 @@ void att_base (void) {
 		if( magic(country,STEEL) )
 			temp += 15;
 		if (temp >= curntn->mine_ability) {
-			curntn->mine_ability = min( temp,MAXTGVAL );
+			curntn->mine_ability = safe_clamp_uchar(temp);
 		} else {
-			curntn->mine_ability -= (curntn->mine_ability - temp)/4;
+			curntn->mine_ability -= safe_clamp_uchar((curntn->mine_ability - temp)/4);
 		}
 
 		/* calculate knowledge */
 		temp = cityfolk/2 + townfolk/6 + scholars/2;
-		curntn->knowledge = min( temp,MAXTGVAL );
+		curntn->knowledge = safe_clamp_uchar(temp);
 
 		/* find national popularity */
 		temp = (curntn->wealth + 10*P_EATRATE + clerics + curntn->popularity)/2;
-		curntn->popularity = min( temp,MAXTGVAL );
+		curntn->popularity = safe_clamp_uchar(temp);
 
 		if(magic(country,SLAVER))	curntn->terror+=PWR_NA;
 		if(magic(country,RELIGION))	curntn->popularity+=PWR_NA;
@@ -1073,32 +1075,32 @@ void att_bonus (void) {
 		||(( *(tg_stype+good)== DUNIVERSITY )&&(sptr->designation==DCAPITOL))
 		||( *(tg_stype+good)== 'x' )) {
 		if( good <= END_POPULARITY ) {
-			curntn->popularity += ( *(tg_value+good) - '0');
-			curntn->popularity = min( MAXTGVAL, curntn->popularity );
+			curntn->popularity += safe_clamp_uchar(*(tg_value+good) - '0');
+			curntn->popularity = safe_clamp_uchar(curntn->popularity);
 		} else if( good <= END_COMMUNICATION ) {
 			if(curntn->communications + (*(tg_value+good) - '0')<2*MAXTGVAL)
-				curntn->communications += (*(tg_value+good) - '0');
+				curntn->communications += safe_clamp_uchar(*(tg_value+good) - '0');
 			else curntn->communications = 2*MAXTGVAL;
 		} else if( good <= END_EATRATE ) { /* eatrate scaled already */
 			/* no tradegoods for eatrate */
 			curntn->eatrate = min( MAXTGVAL, curntn->eatrate );
 		} else if( good <= END_SPOILRATE ) {
 			if(curntn->spoilrate > (*(tg_value+good) - '0'))
-				curntn->spoilrate -= (*(tg_value+good)-'0');
+				curntn->spoilrate -= safe_clamp_uchar(*(tg_value+good)-'0');
 			else curntn->spoilrate = 1;
 		} else if( good <= END_KNOWLEDGE ) {
 			if(curntn->knowledge + (*(tg_value+good)-'0') < MAXTGVAL)
-				curntn->knowledge += (*(tg_value+good) - '0');
+				curntn->knowledge += safe_clamp_uchar(*(tg_value+good) - '0');
 			else curntn->knowledge = MAXTGVAL;
 		} else if( good <= END_FARM ) {
 			if(curntn->farm_ability + (*(tg_value+good) - '0') < MAXTGVAL)
-				curntn->farm_ability += (*(tg_value+good)-'0');
+				curntn->farm_ability += safe_clamp_uchar(*(tg_value+good)-'0');
 			else curntn->farm_ability = MAXTGVAL;
 		} else if( good <= END_SPELL ) {
-			curntn->spellpts += sptr->people/1000 +1;
+			curntn->spellpts += (short)(sptr->people/1000 +1);
 		} else if( good <= END_TERROR ) {
 			if(curntn->terror + (*(tg_value+good)-'0')< MAXTGVAL)
-				curntn->terror += (*(tg_value+good)-'0');
+				curntn->terror += safe_clamp_uchar(*(tg_value+good)-'0');
 			else curntn->terror = MAXTGVAL;
 		}
 		}

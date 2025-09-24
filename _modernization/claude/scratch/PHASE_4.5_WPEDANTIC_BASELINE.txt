@@ -1,0 +1,114 @@
+=== COMPREHENSIVE COMPILATION TEST ===
+Warning Level: 3 (-Wall -Wextra -Wpedantic)
+C Standard: c99
+Date: Tue 23 Sep 14:59:58 EDT 2025
+
+=== ADMIN-ONLY FILES (8 files) ===
+--- Testing admin.c (Admin mode) ---
+
+--- Testing combat.c (Admin mode) ---
+
+--- Testing spew.c (Admin mode) ---
+
+--- Testing newlogin.c (Admin mode) ---
+
+--- Testing update.c (Admin mode) ---
+
+--- Testing npc.c (Admin mode) ---
+
+--- Testing randeven.c (Admin mode) ---
+
+--- Testing makeworl.c (Admin mode) ---
+
+=== SHARED FILES (1 file) ===
+--- Testing check.c (Admin mode) ---
+
+=== GAME-ONLY FILES (7 files) ===
+--- Testing commands.c (Game mode) ---
+
+--- Testing main.c (Game mode) ---
+
+--- Testing forms.c (Game mode) ---
+
+--- Testing move.c (Game mode) ---
+
+--- Testing reports.c (Game mode) ---
+
+--- Testing display.c (Game mode) ---
+
+--- Testing extcmds.c (Game mode) ---
+
+=== DUAL-COMPILED FILES (7 files) ===
+--- Testing cexecute.c (Admin mode) ---
+
+--- Testing cexecute.c (Game mode) ---
+
+--- Testing io.c (Admin mode) ---
+
+--- Testing io.c (Game mode) ---
+
+--- Testing misc.c (Admin mode) ---
+
+--- Testing misc.c (Game mode) ---
+
+--- Testing navy.c (Admin mode) ---
+navy.c: In function ‘addwships’:
+navy.c:73:15: warning: promoted argument ‘nvynum’ doesn’t match prototype [-Wpedantic]
+   73 |         short nvynum, shipsize, nships;
+      |               ^~~~~~
+In file included from navy.c:27:
+data.h:1035:12: warning: prototype declaration [-Wpedantic]
+ 1035 | extern int addwships(short nvynum, short shipsize, short nships);
+      |            ^~~~~~~~~
+navy.c:73:23: warning: promoted argument ‘shipsize’ doesn’t match prototype [-Wpedantic]
+   73 |         short nvynum, shipsize, nships;
+      |                       ^~~~~~~~
+data.h:1035:12: warning: prototype declaration [-Wpedantic]
+ 1035 | extern int addwships(short nvynum, short shipsize, short nships);
+      |            ^~~~~~~~~
+navy.c:73:33: warning: promoted argument ‘nships’ doesn’t match prototype [-Wpedantic]
+   73 |         short nvynum, shipsize, nships;
+      |                                 ^~~~~~
+data.h:1035:12: warning: prototype declaration [-Wpedantic]
+ 1035 | extern int addwships(short nvynum, short shipsize, short nships);
+      |            ^~~~~~~~~
+
+--- Testing navy.c (Game mode) ---
+navy.c: In function ‘addwships’:
+navy.c:73:15: warning: promoted argument ‘nvynum’ doesn’t match prototype [-Wpedantic]
+   73 |         short nvynum, shipsize, nships;
+      |               ^~~~~~
+In file included from navy.c:27:
+data.h:1035:12: warning: prototype declaration [-Wpedantic]
+ 1035 | extern int addwships(short nvynum, short shipsize, short nships);
+      |            ^~~~~~~~~
+navy.c:73:23: warning: promoted argument ‘shipsize’ doesn’t match prototype [-Wpedantic]
+   73 |         short nvynum, shipsize, nships;
+      |                       ^~~~~~~~
+data.h:1035:12: warning: prototype declaration [-Wpedantic]
+ 1035 | extern int addwships(short nvynum, short shipsize, short nships);
+      |            ^~~~~~~~~
+navy.c:73:33: warning: promoted argument ‘nships’ doesn’t match prototype [-Wpedantic]
+   73 |         short nvynum, shipsize, nships;
+      |                                 ^~~~~~
+data.h:1035:12: warning: prototype declaration [-Wpedantic]
+ 1035 | extern int addwships(short nvynum, short shipsize, short nships);
+      |            ^~~~~~~~~
+
+--- Testing magic.c (Admin mode) ---
+
+--- Testing magic.c (Game mode) ---
+
+--- Testing data.c (Admin mode) ---
+
+--- Testing data.c (Game mode) ---
+
+--- Testing trade.c (Admin mode) ---
+
+--- Testing trade.c (Game mode) ---
+
+=== POSTSCRIPT UTILITY FILES (1 file) ===
+--- Testing psmap.c (PostScript mode) ---
+
+=== COMPREHENSIVE TEST COMPLETE ===
+Check report for warning counts and compilation status.

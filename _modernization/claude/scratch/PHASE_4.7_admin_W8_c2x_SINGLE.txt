@@ -1,0 +1,42 @@
+=== SINGLE FILE TEST: admin.c ===
+Warning Level: 8 (-Wall -Wextra -Wpedantic -Wformat=2 -Wconversion -Wsign-conversion -Wimplicit-fallthrough -Wstrict-prototypes)
+C Standard: c2x
+Date: Wed 24 Sep 10:09:48 EDT 2025
+
+--- Testing admin.c (Admin mode) ---
+admin.c: In function ‘main’:
+admin.c:346:18: warning: conversion to ‘size_t’ {aka ‘long unsigned int’} from ‘int’ may change the sign of the result [-Wsign-conversion]
+  346 |         while((i=getopt(argc,argv,"maxr:d:"))!=EOF) switch(i){
+      |                  ^~~~~~
+admin.c:346:46: warning: comparison of integer expressions of different signedness: ‘size_t’ {aka ‘long unsigned int’} and ‘int’ [-Wsign-compare]
+  346 |         while((i=getopt(argc,argv,"maxr:d:"))!=EOF) switch(i){
+      |                                              ^~
+admin.c: In function ‘att_base’:
+admin.c:854:37: warning: conversion from ‘long int’ to ‘double’ may change value [-Wconversion]
+  854 |                 temp = (long)(1000.0*temp/WORLDGOLD + 1000.0*curntn->jewels/WORLDJEWELS + 1000.0*curntn->metals/WORLDMETAL) + cityfolk*5/3 + townfolk*5/6;
+      |                                     ^
+admin.c:854:42: warning: conversion from ‘long int’ to ‘double’ may change value [-Wconversion]
+  854 |                 temp = (long)(1000.0*temp/WORLDGOLD + 1000.0*curntn->jewels/WORLDJEWELS + 1000.0*curntn->metals/WORLDMETAL) + cityfolk*5/3 + townfolk*5/6;
+      |                                          ^
+admin.c:854:61: warning: conversion from ‘long int’ to ‘double’ may change value [-Wconversion]
+  854 |                 temp = (long)(1000.0*temp/WORLDGOLD + 1000.0*curntn->jewels/WORLDJEWELS + 1000.0*curntn->metals/WORLDMETAL) + cityfolk*5/3 + townfolk*5/6;
+      |                                                             ^
+admin.c:854:76: warning: conversion from ‘long int’ to ‘double’ may change value [-Wconversion]
+  854 |                 temp = (long)(1000.0*temp/WORLDGOLD + 1000.0*curntn->jewels/WORLDJEWELS + 1000.0*curntn->metals/WORLDMETAL) + cityfolk*5/3 + townfolk*5/6;
+      |                                                                            ^
+admin.c:854:97: warning: conversion from ‘long int’ to ‘double’ may change value [-Wconversion]
+  854 |                 temp = (long)(1000.0*temp/WORLDGOLD + 1000.0*curntn->jewels/WORLDJEWELS + 1000.0*curntn->metals/WORLDMETAL) + cityfolk*5/3 + townfolk*5/6;
+      |                                                                                                 ^
+admin.c:854:112: warning: conversion from ‘long int’ to ‘double’ may change value [-Wconversion]
+  854 |                 temp = (long)(1000.0*temp/WORLDGOLD + 1000.0*curntn->jewels/WORLDJEWELS + 1000.0*curntn->metals/WORLDMETAL) + cityfolk*5/3 + townfolk*5/6;
+      |                                                                                                                ^
+admin.c:890:55: warning: conversion from ‘long int’ to ‘double’ may change value [-Wconversion]
+  890 |                 temp = (curntn->wealth + 10*P_EATRATE + clerics + curntn->popularity)/2;
+      |                                                       ^
+admin.c:890:24: warning: conversion from ‘double’ to ‘long int’ may change value [-Wfloat-conversion]
+  890 |                 temp = (curntn->wealth + 10*P_EATRATE + clerics + curntn->popularity)/2;
+      |                        ^
+
+=== SINGLE FILE TEST COMPLETE ===
+File: admin.c
+Report: _modernization/claude/scratch/PHASE_4.7_admin_W8_c2x_SINGLE.txt

@@ -124,7 +124,7 @@ HELPOUT = help
 HELPSCR = sed
 
 # Headers and support files
-HEADERS = header.h data.h newlogin.h patchlevel.h
+HEADERS = header.h data.h newlogin.h patchlevel.h safe_convert.h
 SUPT1 = nations Makefile $(HELP)[0-5] README run man.pag rules
 SUPT2 = execute messages news commerce CONQPS.INFO
 ALLFILS = $(SUPT1) $(HEADERS) $(AFILS) commands.c forms.c main.c move.c \

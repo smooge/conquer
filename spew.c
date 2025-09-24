@@ -120,6 +120,7 @@
 #include <ctype.h>
 #include "header.h"
 #include "data.h"
+#include "safe_convert.h"
 
 #ifdef SPEW
 
@@ -422,7 +423,7 @@ static int load_rules_file(const char *filename)
     fclose(rules_file);
 
     /* Sort classes by name for binary search */
-    qsort(classes, num_classes, sizeof(struct text_class), compare_classes);
+    qsort(classes, safe_int_to_size(num_classes), sizeof(struct text_class), compare_classes);
 
     return 0;
 }
@@ -821,7 +822,7 @@ static struct text_class *find_class(const char *name, int name_len)
 
     while (low <= high) {
         int mid = (low + high) / 2;
-        int cmp = strncmp(name, classes[mid].name, name_len);
+        int cmp = strncmp(name, classes[mid].name, safe_int_to_size(name_len));
 
         if (cmp == 0 && classes[mid].name[name_len] == '\0') {
             return &classes[mid];
@@ -955,7 +956,7 @@ static void generate_text(const char *class_spec, char default_variant, FILE *ou
         return;
     }
 
-    int name_len = slash_pos - class_spec;
+    int name_len = safe_long_to_int(slash_pos - class_spec);
     char variant_tag = slash_pos[1];
     if (variant_tag == '&') {
         variant_tag = default_variant;
@@ -965,7 +966,7 @@ static void generate_text(const char *class_spec, char default_variant, FILE *ou
     struct text_class *cls = find_class(class_spec, name_len);
     if (!cls) {
         fprintf(output, "???");
-        fwrite(class_spec, 1, name_len, output);
+        fwrite(class_spec, 1, safe_int_to_size(name_len), output);
         fprintf(output, "???");
         return;
     }
@@ -975,7 +976,7 @@ static void generate_text(const char *class_spec, char default_variant, FILE *ou
     if (cls->variants) {
         const char *var_pos = strchr(cls->variants, variant_tag);
         if (var_pos) {
-            variant_idx = var_pos - cls->variants;
+            variant_idx = safe_long_to_int(var_pos - cls->variants);
         }
     }
 
@@ -984,7 +985,7 @@ static void generate_text(const char *class_spec, char default_variant, FILE *ou
         return;
     }
 
-    int rand_val = RAND_INT(cls->total_weight);
+    int rand_val = safe_long_to_int(RAND_INT(cls->total_weight));
     struct definition *def = cls->defs;
     while (def && def->weight <= rand_val) {
         def = def->next;
@@ -1016,7 +1017,7 @@ static void generate_text(const char *class_spec, char default_variant, FILE *ou
                     if (*p == DELIMITER_CHAR) {
                         p += 2; /* Skip delimiter and variant tag */
                         char temp_spec[64];
-                        size_t spec_len = (p - start);
+                        size_t spec_len = (size_t)(p - start);
                         if (spec_len < sizeof(temp_spec)) {
                             memcpy(temp_spec, start, spec_len);
                             temp_spec[spec_len] = '\0';
@@ -1197,7 +1198,7 @@ static int read_line(void)
         }
 
         /* Trim trailing whitespace */
-        int len = strlen(input_line);
+        int len = safe_size_to_int(strlen(input_line));
         while (len > 0 && isspace(input_line[len-1])) {
             input_line[--len] = '\0';
         }
@@ -1424,8 +1425,8 @@ static char *duplicate_string(const char *str)
 {
     if (!str) return NULL;
 
-    int len = strlen(str);
-    char *copy = malloc(len + 1);
+    int len = safe_size_to_int(strlen(str));
+    char *copy = malloc(safe_int_to_size(len + 1));
     if (copy) {
         strcpy(copy, str);
     }

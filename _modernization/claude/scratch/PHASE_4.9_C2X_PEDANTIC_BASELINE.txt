@@ -1,0 +1,262 @@
+=== COMPREHENSIVE COMPILATION TEST ===
+Warning Level: 4 (-Wall -Wextra -Wpedantic -Wformat=2)
+C Standard: c2x
+Date: Tue 23 Sep 15:29:52 EDT 2025
+
+=== ADMIN-ONLY FILES (8 files) ===
+--- Testing admin.c (Admin mode) ---
+admin.c:80:10: error: conflicting types for ‘getpass’; have ‘char *(void)’
+   80 | char    *getpass();
+      |          ^~~~~~~
+In file included from admin.c:73:
+/usr/include/unistd.h:981:14: note: previous declaration of ‘getpass’ with type ‘char *(const char *)’
+  981 | extern char *getpass (const char *__prompt) __nonnull ((1));
+      |              ^~~~~~~
+admin.c:110:14: error: conflicting types for ‘fopen’; have ‘FILE *(void)’
+  110 | FILE *fexe, *fopen();
+      |              ^~~~~
+In file included from admin.c:64:
+/usr/include/stdio.h:264:14: note: previous declaration of ‘fopen’ with type ‘FILE *(const char * restrict,  const char * restrict)’
+  264 | extern FILE *fopen (const char *__restrict __filename,
+      |              ^~~~~
+admin.c: In function ‘main’:
+admin.c:215:13: error: conflicting types for ‘getopt’; have ‘int(void)’
+  215 |         int getopt();
+      |             ^~~~~~
+In file included from /usr/include/features.h:524,
+                 from /usr/include/bits/libc-header-start.h:33,
+                 from /usr/include/stdio.h:28:
+/usr/include/bits/getopt_posix.h:38:12: note: previous declaration of ‘getopt’ with type ‘int(int,  char * const*, const char *)’
+   38 | extern int __REDIRECT_NTH (getopt, (int ___argc, char *const *___argv,
+      |            ^~~~~~~~~~~~~~
+admin.c:216:14: error: conflicting types for ‘time’; have ‘long int(void)’
+  216 |         long time();
+      |              ^~~~
+In file included from header.h:64,
+                 from admin.c:76:
+/usr/include/time.h:76:15: note: previous declaration of ‘time’ with type ‘time_t(time_t *)’ {aka ‘long int(long int *)’}
+   76 | extern time_t time (time_t *__timer) __THROW;
+      |               ^~~~
+admin.c:223:24: error: conflicting types for ‘getpwnam’; have ‘struct passwd *(void)’
+  223 |         struct passwd *getpwnam(), *pwent;
+      |                        ^~~~~~~~
+In file included from admin.c:68:
+/usr/include/pwd.h:116:23: note: previous declaration of ‘getpwnam’ with type ‘struct passwd *(const char *)’
+  116 | extern struct passwd *getpwnam (const char *__name) __nonnull ((1));
+      |                       ^~~~~~~~
+In file included from admin.c:77:
+admin.c:227:26: error: too many arguments to function ‘time’; expected 0, have 1
+  227 |         srand((unsigned) time((long *) 0));
+      |                          ^~~~ ~~~~~~~~~~
+data.h:846:33: note: in definition of macro ‘srand’
+  846 | #define srand(x)        srandom(x)
+      |                                 ^
+admin.c:216:14: note: declared here
+  216 |         long time();
+      |              ^~~~
+admin.c:291:18: error: too many arguments to function ‘getopt’; expected 0, have 3
+  291 |         while((i=getopt(argc,argv,"maxr:d:"))!=EOF) switch(i){
+      |                  ^~~~~~ ~~~~
+admin.c:215:13: note: declared here
+  215 |         int getopt();
+      |             ^~~~~~
+admin.c:355:43: error: too many arguments to function ‘getpwnam’; expected 0, have 1
+  355 |                         if ((realuser != (getpwnam(LOGIN))->pw_uid ) &&
+      |                                           ^~~~~~~~
+admin.c:223:24: note: declared here
+  223 |         struct passwd *getpwnam(), *pwent;
+      |                        ^~~~~~~~
+admin.c:356:37: error: too many arguments to function ‘getpwnam’; expected 0, have 1
+  356 |                             ((pwent=getpwnam(ntn[0].leader)) == NULL ||
+      |                                     ^~~~~~~~ ~~~~~~~~~~~~~
+admin.c:223:24: note: declared here
+  223 |         struct passwd *getpwnam(), *pwent;
+      |                        ^~~~~~~~
+admin.c:433:42: error: too many arguments to function ‘getpass’; expected 0, have 1
+  433 |                         if(strncmp(crypt(getpass("\nwhat is conquer super user password:"),SALT),ntn[0].passwd,PASSLTH)!=0)
+      |                                          ^~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+admin.c:80:10: note: declared here
+   80 | char    *getpass();
+      |          ^~~~~~~
+admin.c:456:27: error: too many arguments to function ‘getpwnam’; expected 0, have 1
+  456 |         if ((realuser != (getpwnam(LOGIN)->pw_uid) ) &&
+      |                           ^~~~~~~~
+admin.c:223:24: note: declared here
+  223 |         struct passwd *getpwnam(), *pwent;
+      |                        ^~~~~~~~
+admin.c:457:19: error: too many arguments to function ‘getpwnam’; expected 0, have 1
+  457 |           ((pwent=getpwnam(ntn[0].leader)) == NULL ||
+      |                   ^~~~~~~~ ~~~~~~~~~~~~~
+admin.c:223:24: note: declared here
+  223 |         struct passwd *getpwnam(), *pwent;
+      |                        ^~~~~~~~
+
+--- Testing combat.c (Admin mode) ---
+
+--- Testing spew.c (Admin mode) ---
+
+--- Testing newlogin.c (Admin mode) ---
+
+--- Testing update.c (Admin mode) ---
+
+--- Testing npc.c (Admin mode) ---
+
+--- Testing randeven.c (Admin mode) ---
+
+--- Testing makeworl.c (Admin mode) ---
+
+=== SHARED FILES (1 file) ===
+--- Testing check.c (Admin mode) ---
+
+=== GAME-ONLY FILES (7 files) ===
+--- Testing commands.c (Game mode) ---
+
+--- Testing main.c (Game mode) ---
+
+--- Testing forms.c (Game mode) ---
+
+--- Testing move.c (Game mode) ---
+
+--- Testing reports.c (Game mode) ---
+
+--- Testing display.c (Game mode) ---
+
+--- Testing extcmds.c (Game mode) ---
+extcmds.c: In function ‘ext_cmd’:
+extcmds.c:113:1: warning: old-style function definition [-Wold-style-definition]
+  113 | ext_cmd(armie)
+      | ^~~~~~~
+extcmds.c: In function ‘combinearmies’:
+extcmds.c:272:13: error: conflicting types for ‘nocomb_stat’; have ‘int(void)’
+  272 |         int nocomb_stat();
+      |             ^~~~~~~~~~~
+extcmds.c:209:1: note: previous definition of ‘nocomb_stat’ with type ‘int(int)’
+  209 | nocomb_stat (int astat)
+      | ^~~~~~~~~~~
+extcmds.c:284:16: error: too many arguments to function ‘nocomb_stat’; expected 0, have 1
+  284 |           if ((nocomb_stat(P_ASTAT) == TRUE) ||
+      |                ^~~~~~~~~~~
+extcmds.c:272:13: note: declared here
+  272 |         int nocomb_stat();
+      |             ^~~~~~~~~~~
+extcmds.c:285:18: error: too many arguments to function ‘nocomb_stat’; expected 0, have 1
+  285 |                 (nocomb_stat(curntn->arm[army2].stat) == TRUE) ||
+      |                  ^~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~
+extcmds.c:272:13: note: declared here
+  272 |         int nocomb_stat();
+      |             ^~~~~~~~~~~
+extcmds.c: In function ‘splitarmy’:
+extcmds.c:577:1: warning: old-style function definition [-Wold-style-definition]
+  577 | splitarmy(armynum)
+      | ^~~~~~~~~
+extcmds.c: In function ‘errormsg’:
+extcmds.c:628:1: warning: old-style function definition [-Wold-style-definition]
+  628 | errormsg(str)
+      | ^~~~~~~~
+extcmds.c: In function ‘clear_bottom’:
+extcmds.c:672:1: warning: old-style function definition [-Wold-style-definition]
+  672 | clear_bottom(i)
+      | ^~~~~~~~~~~~
+extcmds.c: In function ‘addgroup’:
+extcmds.c:720:1: warning: old-style function definition [-Wold-style-definition]
+  720 | addgroup(armynum)
+      | ^~~~~~~~
+
+=== DUAL-COMPILED FILES (7 files) ===
+--- Testing cexecute.c (Admin mode) ---
+cexecute.c: In function ‘execute’:
+cexecute.c:119:1: warning: old-style function definition [-Wold-style-definition]
+  119 | execute(isupdate)
+      | ^~~~~~~
+cexecute.c:122:20: error: conflicting types for ‘fopen’; have ‘FILE *(void)’
+  122 |         FILE *fp, *fopen();
+      |                    ^~~~~
+In file included from cexecute.c:59:
+/usr/include/stdio.h:264:14: note: previous declaration of ‘fopen’ with type ‘FILE *(const char * restrict,  const char * restrict)’
+  264 | extern FILE *fopen (const char *__restrict __filename,
+      |              ^~~~~
+cexecute.c:150:17: error: too many arguments to function ‘fopen’; expected 0, have 2
+  150 |         if ((fp=fopen(line,"r"))==NULL) {
+      |                 ^~~~~ ~~~~
+cexecute.c:122:20: note: declared here
+  122 |         FILE *fp, *fopen();
+      |                    ^~~~~
+
+--- Testing cexecute.c (Game mode) ---
+cexecute.c: In function ‘execute’:
+cexecute.c:119:1: warning: old-style function definition [-Wold-style-definition]
+  119 | execute(isupdate)
+      | ^~~~~~~
+cexecute.c:122:20: error: conflicting types for ‘fopen’; have ‘FILE *(void)’
+  122 |         FILE *fp, *fopen();
+      |                    ^~~~~
+In file included from cexecute.c:59:
+/usr/include/stdio.h:264:14: note: previous declaration of ‘fopen’ with type ‘FILE *(const char * restrict,  const char * restrict)’
+  264 | extern FILE *fopen (const char *__restrict __filename,
+      |              ^~~~~
+cexecute.c:150:17: error: too many arguments to function ‘fopen’; expected 0, have 2
+  150 |         if ((fp=fopen(line,"r"))==NULL) {
+      |                 ^~~~~ ~~~~
+cexecute.c:122:20: note: declared here
+  122 |         FILE *fp, *fopen();
+      |                    ^~~~~
+
+--- Testing io.c (Admin mode) ---
+
+--- Testing io.c (Game mode) ---
+
+--- Testing misc.c (Admin mode) ---
+misc.c: In function ‘move_file’:
+misc.c:84:1: warning: old-style function definition [-Wold-style-definition]
+   84 | move_file( from, to )
+      | ^~~~~~~~~
+
+--- Testing misc.c (Game mode) ---
+misc.c: In function ‘move_file’:
+misc.c:84:1: warning: old-style function definition [-Wold-style-definition]
+   84 | move_file( from, to )
+      | ^~~~~~~~~
+
+--- Testing navy.c (Admin mode) ---
+
+--- Testing navy.c (Game mode) ---
+
+--- Testing magic.c (Admin mode) ---
+magic.c: In function ‘getmagic’:
+magic.c:185:1: warning: old-style function definition [-Wold-style-definition]
+  185 | getmagic(type)
+      | ^~~~~~~~
+
+--- Testing magic.c (Game mode) ---
+magic.c: In function ‘getmagic’:
+magic.c:185:1: warning: old-style function definition [-Wold-style-definition]
+  185 | getmagic(type)
+      | ^~~~~~~~
+
+--- Testing data.c (Admin mode) ---
+data.c:694:15: error: conflicting types for ‘fopen’; have ‘FILE *(void)’
+  694 | FILE *fnews, *fopen();           /* News file handle and file operation function */
+      |               ^~~~~
+In file included from data.c:51:
+/usr/include/stdio.h:264:14: note: previous declaration of ‘fopen’ with type ‘FILE *(const char * restrict,  const char * restrict)’
+  264 | extern FILE *fopen (const char *__restrict __filename,
+      |              ^~~~~
+
+--- Testing data.c (Game mode) ---
+data.c:694:15: error: conflicting types for ‘fopen’; have ‘FILE *(void)’
+  694 | FILE *fnews, *fopen();           /* News file handle and file operation function */
+      |               ^~~~~
+In file included from data.c:51:
+/usr/include/stdio.h:264:14: note: previous declaration of ‘fopen’ with type ‘FILE *(const char * restrict,  const char * restrict)’
+  264 | extern FILE *fopen (const char *__restrict __filename,
+      |              ^~~~~
+
+--- Testing trade.c (Admin mode) ---
+
+--- Testing trade.c (Game mode) ---
+
+=== POSTSCRIPT UTILITY FILES (1 file) ===
+--- Testing psmap.c (PostScript mode) ---
+
+=== COMPREHENSIVE TEST COMPLETE ===
+Check report for warning counts and compilation status.

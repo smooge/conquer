@@ -26,6 +26,7 @@
 #include <unistd.h>
 #include "header.h"
 #include "data.h"
+#include "safe_convert.h"
 #include "trade.h"
 
 #ifdef TRADE
@@ -223,7 +224,7 @@ trade()
 			buysell=BUY;
 			mvaddstr(count++,0,"What item number do you want to purchase? ");
 			refresh();
-			holdint = get_number();
+			holdint = safe_long_to_int(get_number());
 			if (holdint<0) break;
 			/* check for minor sales */
 			if (holdint==GETFOOD || holdint==GETMETAL || holdint==GETJEWL) {
@@ -428,7 +429,7 @@ trade()
 			case TDLAND:
 				mvaddstr(count++,0,"What Y position? ");
 				refresh();
-				extint = get_number();
+				extint = safe_long_to_int(get_number());
 				if (extint < 0) {
 					buysell=NODEAL;
 					break;
@@ -511,7 +512,7 @@ trade()
 			if (itemnum==0) break;
 			mvaddstr(count++,0,"What item number to remove? ");
 			refresh();
-			holdint = get_number();
+			holdint = safe_long_to_int(get_number());
 			if (holdint < 0) return;
 			if (holdint==0 || holdint>itemnum) {
 				tradeerr("Invalid Item Number");
@@ -733,7 +734,7 @@ getland (int *count)
 		GOOD,WOOD,FOREST,JUNGLE,SWAMP,ICE,NONE);
 
 	refresh();
-	entered=getch();
+	entered=safe_int_to_uchar(getch());
 	if(entered!=VOLCANO       &&entered!=JUNGLE
 		&&entered!=DESERT &&entered!=TUNDRA
 		&&entered!=BARREN &&entered!=LT_VEG
@@ -1083,7 +1084,7 @@ tradeit (int cntry1, int cntry2, int item, long longval, int extra)
 		break;
 	case TDLAND:
 		if (sct[(int)longval][extra].owner==cntry1) {
-			sct[(int)longval][extra].owner = cntry2;
+			sct[(int)longval][extra].owner = safe_int_to_uchar(cntry2);
 			returnval = longval;
 		}
 		break;
@@ -1198,7 +1199,7 @@ tradeit (int cntry1, int cntry2, int item, long longval, int extra)
 long
 gettval(int cntry1,int cntry2,int type,long longval,int extint)
 {
-	int returnval=(-1);
+	long returnval=(-1);
 
 	switch(type) {
 	case TDGOLD:
@@ -1386,11 +1387,11 @@ int
 tradable (int cntry, int armynum)
 {
 	int oldcntry=country,returnval=FALSE;
-	country=cntry;
+	country=safe_int_to_short(cntry);
 	if ( (ASTAT!=TRADED) && (ASTAT!=ONBOARD) && (ATYPE==A_MERCENARY
 		|| ATYPE==A_SIEGE || ATYPE==A_CATAPULT
 		|| ATYPE==A_ELEPHANT || ATYPE>=MINMONSTER) ) returnval=TRUE;
-	country=oldcntry;
+	country=safe_int_to_short(oldcntry);
 	return(returnval);
 }
 #endif /* CONQUER */

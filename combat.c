@@ -392,7 +392,8 @@ void fight (void) {
 	int	done=0;
 	int	i,j,k;
 	long	asold=0,dsold=0;	/*a's and d's total soldiers*/
-	float astr=0,dstr=0;		/*a's and d's relative strength*/
+	long astr=0, dstr=0;            /* originally a float because it was big. */
+	/* float astr=0,dstr=0; */	/*a's and d's relative strength*/
 	long	Aloss,Dloss;    	/*a's and d's total losses*/
 	int	PAloss,PDloss;		/*percent a and d loss*/
 	long	loss=0;
@@ -597,13 +598,13 @@ void fight (void) {
 	/* high roll favors attacker [ 5 d21 - 5 ] */
 	roll = 0;
 	for(i=0;i<5;i++) {
-		roll += rand()%21+1;
+		roll += safe_long_to_int(rand()%21+1);
 	}
 	roll -= 5;
 
 	/*find relative strength of troops*/
-	astr = safe_long_to_int(asold * (100 + abonus));
-	dstr = safe_long_to_int(dsold * (100 + dbonus));
+	astr = asold * (100 + abonus);
+	dstr = dsold * (100 + dbonus);
 
 	/*Recalculate odds based on quality of troops*/
 	if( astr > dstr*100)		odds=10000;
@@ -1342,16 +1343,16 @@ void navalcbt (void) {
 	 */
 	for(j=0;j<count;j++) if(owner[j]!=(-1)){
 		curntn= &ntn[owner[j]];
-		country= owner[j];
-		wnum[j]=SHIPS(ntn[country].nvy[unit[j]].warships,N_LIGHT)+
+		country= safe_int_to_short(owner[j]);
+		wnum[j]=safe_short_to_char(SHIPS(ntn[country].nvy[unit[j]].warships,N_LIGHT)+
 			SHIPS(ntn[country].nvy[unit[j]].warships,N_MEDIUM)+
-			SHIPS(ntn[country].nvy[unit[j]].warships,N_HEAVY);
-		mnum[j]=SHIPS(ntn[country].nvy[unit[j]].merchant,N_LIGHT)+
+			SHIPS(ntn[country].nvy[unit[j]].warships,N_HEAVY));
+		mnum[j]=safe_short_to_char(SHIPS(ntn[country].nvy[unit[j]].merchant,N_LIGHT)+
 			SHIPS(ntn[country].nvy[unit[j]].merchant,N_MEDIUM)+
-			SHIPS(ntn[country].nvy[unit[j]].merchant,N_HEAVY);
-		gnum[j]=SHIPS(ntn[country].nvy[unit[j]].galleys,N_LIGHT)+
+			SHIPS(ntn[country].nvy[unit[j]].merchant,N_HEAVY));
+		gnum[j]=safe_short_to_char(SHIPS(ntn[country].nvy[unit[j]].galleys,N_LIGHT)+
 			SHIPS(ntn[country].nvy[unit[j]].galleys,N_MEDIUM)+
-			SHIPS(ntn[country].nvy[unit[j]].galleys,N_HEAVY);
+			SHIPS(ntn[country].nvy[unit[j]].galleys,N_HEAVY));
 		if(side[j]==DFND) {
 			if((k=fltwhold(unit[j]))>0) {
 				dhold += k;
@@ -1373,13 +1374,13 @@ void navalcbt (void) {
 					switch (curntn->arm[k].unittyp) {
 					case A_ARCHER:
 					case A_SAILOR:
-						dcrew += 3*curntn->arm[k].sold/2;
+						dcrew += safe_long_to_int(3*curntn->arm[k].sold/2);
 						break;
 					case A_MARINES:
-						dcrew += 3*curntn->arm[k].sold;
+						dcrew += safe_long_to_int(3*curntn->arm[k].sold);
 						break;
 					default:
-						dcrew += 3*curntn->arm[k].sold/4;
+						dcrew += safe_long_to_int(3*curntn->arm[k].sold/4);
 						break;
 					}
 				}
@@ -1405,13 +1406,13 @@ void navalcbt (void) {
 					switch (curntn->arm[k].unittyp) {
 					case A_ARCHER:
 					case A_SAILOR:
-						acrew += 3*curntn->arm[k].sold/2;
+						acrew += safe_long_to_int(3*curntn->arm[k].sold/2);
 						break;
 					case A_MARINES:
-						acrew += 3*curntn->arm[k].sold;
+						acrew += safe_long_to_int(3*curntn->arm[k].sold);
 						break;
 					default:
-						acrew += 3*curntn->arm[k].sold/4;
+						acrew += safe_long_to_int(3*curntn->arm[k].sold/4);
 						break;
 					}
 				}
@@ -1445,7 +1446,7 @@ void navalcbt (void) {
 		acptpct= (odds-100)/20+15;
 	} else if (odds>10) {
 		dcptpct= (100-odds)/2+15;
-		acptpct= (odds-10)/6.9+2;
+		acptpct= (odds-10)/7+2; /* was set to 6.9 for some reason. magic */
 	} else if (odds>6) {
 		dcptpct= (10-odds)*14+60;
 		acptpct= (odds-6)/2;
@@ -1494,7 +1495,7 @@ void navalcbt (void) {
 	/* calculate actual losses */
 	for(j=0;j<count;j++) if(owner[j]!=(-1)){
 		curntn= &ntn[owner[j]];
-		country= owner[j];
+		country= safe_int_to_short(owner[j]);
 
 		/* determine side */
 		which=side[j];
@@ -1523,14 +1524,14 @@ void navalcbt (void) {
 						if (dhold) {
 							awcapt++;
 							ahold-=(shipsize+1);
-							capture(QWAR,DFND,shipsize,rand()%dhold+1);
+							capture(QWAR,DFND,shipsize,safe_long_to_int(rand()%dhold+1));
 							NSUB_WAR(1);
 						}
 					} else {
 						if (ahold) {
 							dwcapt++;
 							dhold-=(shipsize+1);
-							capture(QWAR,ATKR,shipsize,rand()%ahold+1);
+							capture(QWAR,ATKR,shipsize,safe_long_to_int(rand()%ahold+1));
 							NSUB_WAR(1);
 						}
 					}
@@ -1555,7 +1556,7 @@ void navalcbt (void) {
 					k = (shipsize+1)*Ploss*P_NCREW/100;
 					if(which==ATKR) akcrew += k;
 					else dkcrew += k;
-					P_NCREW -= k/thold;
+					P_NCREW -= safe_int_to_uchar(k/thold);
 				}
 			}
 			/* check galleys */
@@ -1568,7 +1569,7 @@ void navalcbt (void) {
 							agcapt++;
 							ghold-=(shipsize+1);
 							thold-=(shipsize+1);
-							capture(QGAL,DFND,shipsize,rand()%dhold+1);
+							capture(QGAL,DFND,shipsize,safe_long_to_int(rand()%dhold+1));
 							NSUB_GAL(1);
 						}
 					} else if(which==DFND) {
@@ -1576,7 +1577,7 @@ void navalcbt (void) {
 							dgcapt++;
 							ghold-=(shipsize+1);
 							thold-=(shipsize+1);
-							capture(QGAL,ATKR,shipsize,rand()%ahold+1);
+							capture(QGAL,ATKR,shipsize,safe_long_to_int(rand()%ahold+1));
 							NSUB_GAL(1);
 						}
 					}
@@ -1584,14 +1585,14 @@ void navalcbt (void) {
 					else dkcrew += P_NCREW;
 					if (P_NARMY!=MAXARM) {
 						armynum = P_NARMY;
-						k = P_ASOLD*(shipsize+1)/(ghold+shipsize+1);
+						k = safe_long_to_int(P_ASOLD*(shipsize+1)/(ghold+shipsize+1));
 						if(P_ATYPE<MINLEADER) {
 						if(which==ATKR) akcrew += k;
 						else dkcrew += k;
 						P_ASOLD -= k;
 						} else if(rand()%100<k*100/P_ASOLD){
-						if(which==ATKR) akcrew += P_ASOLD;
-						else dkcrew += P_ASOLD;
+						if(which==ATKR) akcrew += safe_long_to_int(P_ASOLD);
+						else dkcrew += safe_long_to_int(P_ASOLD);
 						P_ASOLD = 0;
 						P_NARMY = MAXARM;
 						}
@@ -1607,14 +1608,14 @@ void navalcbt (void) {
 					/* kill all soldiers onboard */
 					if (P_NARMY!=MAXARM) {
 						armynum = P_NARMY;
-						k = P_ASOLD*(shipsize+1)/(ghold+shipsize+1);
+						k = safe_long_to_int(P_ASOLD*(shipsize+1)/(ghold+shipsize+1));
 						if(P_ATYPE<MINLEADER) {
 						if(which==ATKR) akcrew += k;
 						else dkcrew += k;
 						P_ASOLD -= k;
 						} else if(rand()%100<k*100/P_ASOLD){
-						if(which==ATKR) akcrew += P_ASOLD;
-						else dkcrew += P_ASOLD;
+						if(which==ATKR) akcrew += safe_long_to_int(P_ASOLD);
+						else dkcrew += safe_long_to_int(P_ASOLD);
 						P_ASOLD = 0;
 						P_NARMY = MAXARM;
 						}
@@ -1626,18 +1627,18 @@ void navalcbt (void) {
 					k = (shipsize+1)*Ploss*P_NCREW/100;
 					if(which==ATKR) akcrew += k;
 					else dkcrew += k;
-					P_NCREW -= k/thold;
+					P_NCREW -= safe_int_to_uchar(k/thold);
 					/* damage any soldiers onboard */
 					if (P_NARMY!=MAXARM) {
 						armynum = P_NARMY;
-						k = P_ASOLD*(shipsize+1)*Ploss/(ghold*100);
+						k = safe_long_to_int(P_ASOLD*(shipsize+1)*Ploss/(ghold*100));
 						if(P_ATYPE<MINLEADER) {
 						P_ASOLD -= k;
 						if(which==ATKR) akcrew += k;
 						else dkcrew += k;
 						} else if(rand()%100<k*100/P_ASOLD){
-						if(which==ATKR) akcrew += P_ASOLD;
-						else dkcrew += P_ASOLD;
+						if(which==ATKR) akcrew += safe_long_to_int(P_ASOLD);
+						else dkcrew += safe_long_to_int(P_ASOLD);
 						P_ASOLD = 0;
 						P_NARMY = MAXARM;
 						}
@@ -1652,13 +1653,13 @@ void navalcbt (void) {
 					if(which==ATKR){
 						if (dhold) {
 							amcapt++;
-							capture(QMER,DFND,shipsize,rand()%dhold+1);
+							capture(QMER,DFND,shipsize,safe_long_to_int(rand()%dhold+1));
 							NSUB_MER(1);
 						}
 					} else if(which==DFND) {
 						if (ahold) {
 							dmcapt++;
-							capture(QMER,ATKR,shipsize,rand()%ahold+1);
+							capture(QMER,ATKR,shipsize,safe_long_to_int(rand()%ahold+1));
 							NSUB_MER(1);
 						}
 					}
@@ -1669,18 +1670,18 @@ void navalcbt (void) {
 					k = (shipsize+1)*P_NCREW;
 					if(which==ATKR) akcrew += k;
 					else dkcrew += k;
-					P_NCREW -= k/thold;
+					P_NCREW -= safe_int_to_uchar(k/thold);
 					k = P_NCREW*thold;
 					NSUB_MER(1);
-					if((thold-=(shipsize+1))!=0) P_NCREW = k / thold;
+					if((thold-=(shipsize+1))!=0) P_NCREW = safe_int_to_uchar(k / thold);
 					else P_NCREW = 0;
 					/* kill all people onboard */
 					k = (shipsize+1)*P_NPEOP;
 					if(which==ATKR) akcrew += k;
 					else dkcrew += k;
-					P_NPEOP -= k/(thold+shipsize+1);
+					P_NPEOP -= safe_int_to_uchar(k/(thold+shipsize+1));
 					k = P_NPEOP*(thold+shipsize+1);
-					if (thold>0) P_NPEOP = k / thold;
+					if (thold>0) P_NPEOP = safe_int_to_uchar(k / thold);
 					else P_NPEOP=0;
 					if(which==ATKR) amsunk++;
 					else dmsunk++;
@@ -1689,12 +1690,12 @@ void navalcbt (void) {
 					k = (shipsize+1)*Ploss*P_NCREW/100;
 					if(which==ATKR) akcrew += k;
 					else dkcrew += k;
-					P_NCREW -= k/thold;
+					P_NCREW -= safe_int_to_uchar(k/thold);
 					/* damage any people onboard */
 					k = (shipsize+1)*Ploss*P_NPEOP/100;
 					if(which==ATKR) akcrew += k;
 					else dkcrew += k;
-					P_NPEOP -= k/thold;
+					P_NPEOP -= safe_int_to_uchar(k/thold);
 				}
 			}
 		}
@@ -1764,7 +1765,7 @@ void navalcbt (void) {
 		}
 	}
 	curntn= saventn;
-	country= savecntry;
+	country= safe_int_to_short(savecntry);
 	printf("Out Naval Combat....\n");
 }
 
