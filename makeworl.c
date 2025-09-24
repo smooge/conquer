@@ -281,7 +281,7 @@ void makeworld ( int rflag ){		/* TRUE if you wish to read in a map from mapfile
 		}
 	}
 #ifdef CHECKUSER
-	ntn[0].uid = safe_int_to_short(safe_uid_to_int(getuid()));
+	ntn[0].uid = safe_uid_to_short(getuid());
 #endif
 	mvaddstr(8,0,"Please Enter the Size of the World.  [Divisible by 8 and > 23]");
 	clrtoeol();
@@ -289,7 +289,7 @@ void makeworld ( int rflag ){		/* TRUE if you wish to read in a map from mapfile
 		mvaddstr(9,0,"Enter number of X sectors: ");
 		clrtoeol();
 		refresh();
-		world.mapx = safe_int_to_short(safe_long_to_int(get_number()));
+		world.mapx = safe_long_to_short(get_number());
 		if(((world.mapx % 8) != 0 ) || (world.mapx<24)){
 			newerror("Invalid X Value Entered");
 			continue;
@@ -300,7 +300,7 @@ void makeworld ( int rflag ){		/* TRUE if you wish to read in a map from mapfile
 		mvaddstr(10,0,"Enter number of Y sectors: ");
 		clrtoeol();
 		refresh();
-		world.mapy = safe_int_to_short(safe_long_to_int(get_number()));
+		world.mapy = safe_long_to_short(get_number());
 		if(((world.mapy % 8) != 0 ) || (world.mapy<24)){
 			newerror("Invalid Y Value Entered");
 			continue;

@@ -377,6 +377,32 @@ static inline short safe_long_to_short(long value) {
 }
 
 /*
+ * safe_uid_to_short - Convert uid_t to short with bounds checking
+ *
+ * Safely converts uid_t to short with range checking. uid_t is typically
+ * unsigned int but may vary by platform (could be uint32_t, unsigned long, etc.).
+ * This function handles the conversion safely across different platforms.
+ *
+ * Used when uid_t values from system calls need to be stored in short variables
+ * for legacy data structures or function parameters that expect short values.
+ * Eliminates the need for nested conversions like safe_int_to_short(safe_uid_to_int()).
+ *
+ * Parameters:
+ *   uid - uid_t value to convert (platform-dependent unsigned type)
+ *
+ * Returns:
+ *   short value clamped to [0, SHRT_MAX] range, or 0 if uid is too large
+ *
+ * Example Usage:
+ *   realuser = safe_uid_to_short(getuid());
+ *   short user_id = safe_uid_to_short(realuser_uid);
+ */
+static inline short safe_uid_to_short(uid_t uid) {
+    if (uid > SHRT_MAX) return SHRT_MAX;
+    return (short)uid;
+}
+
+/*
  * Conversion Utility Usage Guidelines
  *
  * 1. ARCHITECTURAL FIRST: Always prefer changing variable types over conversions
