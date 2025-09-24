@@ -25,6 +25,7 @@
 #include <math.h>
 #include "header.h"
 #include "data.h"
+#include "safe_convert.h"
 
 #define	MGKNUM	32		/* number of units possible in battle */
 #define	ATKR	2
@@ -432,7 +433,7 @@ void fight (void) {
 				mailclose(owner[i]);
 				}
 			}
-			retreatside = side[i];
+			retreatside = safe_int_to_short(side[i]);
 			fdxyretreat();
 			if((retreatx==xspot)&&(retreaty==yspot)){
 				/* move to capitol & kill 30% */
@@ -475,7 +476,7 @@ void fight (void) {
 	}
 	if( asold > dsold*100)		odds=10000;
 	else if( dsold > asold*100 )	odds=1;
-	else	odds = (asold*100)/dsold;
+	else	odds = safe_long_to_int((asold*100)/dsold);
 
 	/* mercenaries/orcs/goblins might run away */
 	for(i=0;i<count;i++) if(owner[i]>(-1)) {
@@ -495,7 +496,7 @@ void fight (void) {
 				mailclose(owner[i]);
 				}
 			}
-			retreatside = side[i];
+			retreatside = safe_int_to_short(side[i]);
 			if( side[i] == ATKR ) asold-= troops[i];
 			if( side[i] == DFND ) dsold-= troops[i];
 			fdxyretreat();
@@ -524,9 +525,9 @@ void fight (void) {
 	dbonus=0;
 	for(i=0;i<count;i++) if(owner[i]>(-1)) {
 		if(side[i]==ATKR)
-			abonus += cbonus(i)*troops[i];
+			abonus += safe_long_to_int(cbonus(i)*troops[i]);
 		else if(side[i]==DFND && ntn[owner[i]].arm[unit[i]].stat!=RULE)
-			dbonus += cbonus(i)*troops[i];
+			dbonus += safe_long_to_int(cbonus(i)*troops[i]);
 	}
 
 	/*archer bonus if not in fort vs knights/cavalry*/
@@ -536,19 +537,19 @@ void fight (void) {
 		if(ISCITY(sct[xspot][yspot].designation)){
 			if((ntn[owner[i]].arm[unit[i]].unittyp == A_CAVALRY)
 			||(ntn[owner[i]].arm[unit[i]].unittyp == A_KNIGHT)) {
-				if(side[i]==ATKR) j+=troops[i];
-				else if(side[i]==DFND) k+=troops[i];
+				if(side[i]==ATKR) j+=safe_long_to_int(troops[i]);
+				else if(side[i]==DFND) k+=safe_long_to_int(troops[i]);
 			}
 		}
 	}
 
 	for(i=0;i<count;i++) if(owner[i]>(-1)) {
-		if(j>0) abonus += (15 * j * troops[i]) / asold;
-		if(k>0 && dsold>0) dbonus += (15 * k * troops[i]) / dsold;
+		if(j>0) abonus += safe_long_to_int((15 * j * troops[i]) / asold);
+		if(k>0 && dsold>0) dbonus += safe_long_to_int((15 * k * troops[i]) / dsold);
 	}
 
-	abonus/=asold;
-	if (dsold>0) dbonus/=dsold;
+	abonus = safe_long_to_int(abonus/asold);
+	if (dsold>0) dbonus = safe_long_to_int(dbonus/dsold);
 
 	/*CALCULATED BONUSES TO WHOLE COMBAT*/
 	for(i=0;i<count;i++) if(owner[i]>(-1)) {
@@ -556,11 +557,11 @@ void fight (void) {
 			/*Catapults add +1%/20 men defending castle (max +10%)*/
 			if((ntn[owner[i]].arm[unit[i]].unittyp == A_CATAPULT)
 			&&(side[i]==DFND))
-				dbonus += max((troops[i]/20),10);
+				dbonus += safe_long_to_int(max((troops[i]/20),10));
 			/*Catapults add +1%/40 men attacking castle (max +10%)*/
 			else if((ntn[owner[i]].arm[unit[i]].unittyp == A_CATAPULT)
 			&&(side[i]==ATKR)) {
-				strength = max((troops[i]/40),10);
+				strength = safe_long_to_int(max((troops[i]/40),10));
 				abonus += strength;
 				/* possible damage 20% chance */
 				if(rand()%100<2*strength) {
@@ -573,7 +574,7 @@ void fight (void) {
 			/*Siege_engines add +1%/20 men when attacking fortress*/
 			else if((ntn[owner[i]].arm[unit[i]].unittyp == A_SIEGE)
 			&&(side[i]==ATKR)) {
-				strength = max((troops[i]/20),30);
+				strength = safe_long_to_int(max((troops[i]/20),30));
 				abonus += strength;
 				/* possible damage 15% chance */
 				if(rand()%100<strength/2) {
@@ -586,7 +587,7 @@ void fight (void) {
 		} else {
 			/*Catapults add +1%/40 men normal combat (max +10%)*/
 			if(ntn[owner[i]].arm[unit[i]].unittyp == A_CATAPULT)
-				abonus+=max((troops[i]/40),10);
+				abonus+=safe_long_to_int(max((troops[i]/40),10));
 		}
 	}
 
@@ -601,13 +602,13 @@ void fight (void) {
 	roll -= 5;
 
 	/*find relative strength of troops*/
-	astr = asold * (100 + abonus);
-	dstr = dsold * (100 + dbonus);
+	astr = safe_long_to_int(asold * (100 + abonus));
+	dstr = safe_long_to_int(dsold * (100 + dbonus));
 
 	/*Recalculate odds based on quality of troops*/
 	if( astr > dstr*100)		odds=10000;
 	else if( dstr > astr*100 )	odds=1;
-	else	odds = (astr*100)/dstr;
+	else	odds = safe_long_to_int((astr*100)/dstr);
 
 	/* calculate loss for an even battle */
 	PDloss = MAXLOSS * roll / 100;
@@ -737,7 +738,7 @@ printf("I AM VERY CONFUSED - PLEASE HELP... combat.c\n");
 #ifdef HIDELOC
 	if( isntn( ntn[sct[xspot][yspot].owner].active )) {
 	fprintf(fnews,"4.\tBattle occurs in %s", ntn[sct[xspot][yspot].owner].name);
-	k = 27+strlen(ntn[sct[xspot][yspot].owner].name);
+	k = 27+safe_size_to_int(strlen(ntn[sct[xspot][yspot].owner].name));
 	} else {
 	fprintf(fnews,"4.\tBattle on unowned land");
 	k = 30;
@@ -757,7 +758,7 @@ printf("I AM VERY CONFUSED - PLEASE HELP... combat.c\n");
 					else loss=side[i];
 				}
 			if(loss!=NTRL) {
-				k += 11 + strlen(ntn[UOWNER(j)].name);
+				k += 11 + safe_size_to_int(strlen(ntn[UOWNER(j)].name));
 				if(loss==WIMP) k++;
 				if(k>79) {
 					k = 30;
@@ -946,8 +947,8 @@ int cbonus(int num) {
 	int	armbonus;
 
 	armbonus=0;
-	armynum=unit[num];
-	country=UOWNER(num);
+	armynum=safe_int_to_short(unit[num]);
+	country=safe_int_to_short(UOWNER(num));
 
 	/*Racial combat bonus due to terrain (the faster you move the better)*/
 	armbonus+=5*(9-movecost[xspot][yspot]);	/* this line always has */
@@ -1098,8 +1099,8 @@ void fdxyretreat (void) {	/* finds retreat location */
 	int	xsctr= xspot;
 	int	ysctr= yspot;
 
-	retreatx=xsctr;
-	retreaty=ysctr;
+	retreatx=safe_int_to_short(xsctr);
+	retreaty=safe_int_to_short(ysctr);
 
 	if((sct[xsctr][ysctr].designation==DTOWN)
 	||(sct[xsctr][ysctr].designation==DCAPITOL)
@@ -1118,8 +1119,8 @@ void fdxyretreat (void) {	/* finds retreat location */
 		if(((sct[x][y].owner == nation)
 		   ||(ntn[sct[x][y].owner].dstatus[nation] < NEUTRAL))
 		||(solds_in_sector( x, y, sct[x][y].owner) == 0)){
-			retreatx=x;
-			retreaty=y;
+			retreatx=safe_int_to_short(x);
+			retreaty=safe_int_to_short(y);
 #ifdef DEBUG
 			printf("armies in %d %d retreat to %d %d\n",xsctr,ysctr,x,y);
 #endif /* DEBUG */
@@ -1198,8 +1199,8 @@ void retreat ( int unitnum ){	/* if -1 then normal, else retreat only unit ismer
 				ntn[owner[cnum]].arm[unit[cnum]].sold *= 85;
 				ntn[owner[cnum]].arm[unit[cnum]].sold /= 100;
 			} else {
-				ntn[owner[cnum]].arm[unit[cnum]].xloc = retreatx;
-				ntn[owner[cnum]].arm[unit[cnum]].yloc = retreaty;
+				ntn[owner[cnum]].arm[unit[cnum]].xloc = safe_clamp_uchar(retreatx);
+				ntn[owner[cnum]].arm[unit[cnum]].yloc = safe_clamp_uchar(retreaty);
 			}
 		}
 		if( unitnum != (-1) ) return;
