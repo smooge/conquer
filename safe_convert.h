@@ -793,4 +793,26 @@ static inline float safe_double_to_float(double value) {
     return (float)value;
 }
 
+/*
+ * safe_short_to_uid - Convert short to uid_t with bounds checking
+ *
+ * Safely converts a short value to uid_t (typically unsigned int).
+ * Used when legacy code stores user IDs as short values but modern
+ * system calls expect uid_t parameters.
+ *
+ * Parameters:
+ *   value - The short value to convert (typically a stored user ID)
+ *
+ * Returns:
+ *   uid_t value, 0 if negative (invalid UID)
+ *
+ * Example Usage:
+ *   getpwuid(safe_short_to_uid(curntn->uid));
+ *   uid_t user = safe_short_to_uid(stored_uid);
+ */
+static inline uid_t safe_short_to_uid(short value) {
+    if (value < 0) return 0;  /* Invalid UID */
+    return (uid_t)value;
+}
+
 #endif /* SAFE_CONVERT_H */

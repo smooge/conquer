@@ -148,7 +148,7 @@ int main(int argc, char **argv) {
 		snprintf(cq_opts, BIGLTH, "%s", getenv(ENVIRON_OPTS));
 	}
 	if (cq_opts[0] != '\0') {
-		l = strlen(cq_opts);
+		l = safe_size_to_int(strlen(cq_opts));
 		for(i=0; i<l; i++) {
 			switch(cq_opts[i]) {
 			case 'G':
@@ -272,10 +272,10 @@ int main(int argc, char **argv) {
 		break;
 	case 'u':
 		checkuser_mod = TRUE;	/* check for god later */
-		checkuser_uid = owneruid;
+		checkuser_uid = safe_uid_to_int(owneruid);
 		if (strlen (optarg) > 0)
 		   if (getpwnam(optarg))
-		      checkuser_uid = getpwnam(optarg)->pw_uid;
+		      checkuser_uid = safe_uid_to_int(getpwnam(optarg)->pw_uid);
 		break;
 #endif
 	case 's': /*print the score*/
@@ -385,7 +385,7 @@ int main(int argc, char **argv) {
        country=(-1);
 	for(i=0;i<NTOTAL;i++)
 	if(strcmp(name,ntn[i].name)==0) {
-		country=i;
+		country=safe_int_to_short(i);
 		break;
 	}
 
@@ -477,10 +477,10 @@ int main(int argc, char **argv) {
 	   {
 		fprintf (stderr, "Nation:  %s\n", curntn->name);
                 fprintf (stderr, "   Current player = %s\n",
-			getpwuid(curntn->uid)->pw_name);;
-		curntn->uid = checkuser_uid;
+			getpwuid(safe_short_to_uid(curntn->uid))->pw_name);;
+		curntn->uid = safe_int_to_short(checkuser_uid);
                 fprintf (stderr, "   New player = %s\n",
-			getpwuid(curntn->uid)->pw_name);
+			getpwuid(safe_short_to_uid(curntn->uid))->pw_name);
 		writedata();
 		exit (SUCCESS);
 	   }
@@ -491,7 +491,7 @@ int main(int argc, char **argv) {
 				fprintf (stderr, "%3d %15s %d %-15s\n",
 					i, ntn[i].name,
 					ntn[i].uid,
-					getpwuid(ntn[i].uid)->pw_name);
+					getpwuid(safe_short_to_uid(ntn[i].uid))->pw_name);
 		exit (SUCCESS);
 	   }
         if (((uid_t)curntn->uid != owneruid) &&
@@ -836,7 +836,7 @@ int parse(int ch) {
 	case 'H':	/*scroll west*/
 		pager=0;
 		selector=0;
-		if (XREAL > (COLS-22)/4) xcurs-=((COLS-22)/4);
+		if (XREAL > (COLS-22)/4) xcurs-=safe_int_to_short((COLS-22)/4);
 		else xcurs = -xoffset;
 		break;
 	case '4':
@@ -853,8 +853,8 @@ int parse(int ch) {
 		pager=0;
 		selector=0;
 		if (YREAL + (SCREEN_Y_SIZE)/2 < MAPY)
-			ycurs+=((SCREEN_Y_SIZE)/2);
-		else ycurs = MAPY - yoffset - 1;
+			ycurs+=safe_int_to_short((SCREEN_Y_SIZE)/2);
+		else ycurs = safe_int_to_short(MAPY - yoffset - 1);
 		break;
 	case '2':
 	case 'j':	/*move down*/
@@ -871,7 +871,7 @@ int parse(int ch) {
 	case 'K':	/*scroll up*/
 		pager=0;
 		selector=0;
-		if (YREAL > (SCREEN_Y_SIZE)/2) ycurs-=((SCREEN_Y_SIZE)/2);
+		if (YREAL > (SCREEN_Y_SIZE)/2) ycurs-=safe_int_to_short((SCREEN_Y_SIZE)/2);
 		else ycurs = -yoffset;
 		break;
 	case '6':
@@ -883,8 +883,8 @@ int parse(int ch) {
 	case 'L':	/*scroll east*/
 		pager=0;
 		selector=0;
-		if (XREAL + (COLS-22)/4 < MAPX) xcurs+=((COLS-22)/4);
-		else xcurs = MAPX - xoffset - 1;
+		if (XREAL + (COLS-22)/4 < MAPX) xcurs+=safe_int_to_short((COLS-22)/4);
+		else xcurs = safe_int_to_short(MAPX - xoffset - 1);
 		break;
 	case 'm':	/*move selected item to new x,y */
 		mymove();
@@ -912,13 +912,13 @@ int parse(int ch) {
 	case 'o':	/*pick (crsr up)*/
 		selector-=2;
 		if(selector<0) {
-			selector=SCRARM*2-2;
+			selector=safe_int_to_short(SCRARM*2-2);
 			pager--;
 		}
 		/*move to last army in current sector*/
 		if (pager<0) {
-			pager=(units_in_sector(XREAL,YREAL,country)-1)/SCRARM;
-			selector=((units_in_sector(XREAL,YREAL,country)-1)%SCRARM)*2;
+			pager=safe_int_to_short((units_in_sector(XREAL,YREAL,country)-1)/SCRARM);
+			selector=safe_int_to_short(((units_in_sector(XREAL,YREAL,country)-1)%SCRARM)*2);
 		}
 		break;
 	case 'p':	/*pick*/
@@ -989,9 +989,9 @@ int parse(int ch) {
     	case 'U':	/* scroll north-east */
 		pager=0;
 		selector=0;
-		if (XREAL + (COLS-22)/4 < MAPX) xcurs+=((COLS-22)/4);
-		else xcurs = MAPX - xoffset - 1;
-		if (YREAL > (SCREEN_Y_SIZE)/2) ycurs-=((SCREEN_Y_SIZE)/2);
+		if (XREAL + (COLS-22)/4 < MAPX) xcurs+=safe_int_to_short((COLS-22)/4);
+		else xcurs = safe_int_to_short(MAPX - xoffset - 1);
+		if (YREAL > (SCREEN_Y_SIZE)/2) ycurs-=safe_int_to_short((SCREEN_Y_SIZE)/2);
 		else ycurs = -yoffset;
 		break;
     	case 'v':	/* version credits */
@@ -1031,9 +1031,9 @@ int parse(int ch) {
 		pager=0;
 		selector=0;
 		if (XREAL < (COLS-22)/4) xcurs = -xoffset;
-		else xcurs-=((COLS-22)/4);
+		else xcurs-=safe_int_to_short((COLS-22)/4);
 		if (YREAL < (SCREEN_Y_SIZE)/2) ycurs = -yoffset;
-		else ycurs-=((SCREEN_Y_SIZE)/2);
+		else ycurs-=safe_int_to_short((SCREEN_Y_SIZE)/2);
 		break;
 	case 'Z':	/*move civilians up to 2 spaces*/
 		moveciv();
@@ -1062,12 +1062,12 @@ int parse(int ch) {
 		refresh();
 
 		ocountry=country;
- 		country=get_country();
+ 		country=safe_int_to_short(get_country());
 
 		/* check validity of country choice */
 		if( country==(-1) || country>=NTOTAL
 		|| ( !isactive(ntn[country].active) && country!=0 )) {
-			country=ocountry;
+			country=safe_int_to_short(ocountry);
 			makebottom();
 			break;
 		}
@@ -1087,13 +1087,13 @@ int parse(int ch) {
 		if((strncmp(name,ntn[country].passwd,PASSLTH)!=0)
 		&&(strncmp(name,ntn[0].passwd,PASSLTH)!=0)){
 			errormsg("Sorry, Password Invalid.");
-			country=ocountry;
+			country=safe_int_to_short(ocountry);
 			makebottom();
 			break;
 		}
 		if(aretheyon()==TRUE) {
 			errormsg("Sorry, that Nation is already logged in.");
-			country=ocountry;
+			country=safe_int_to_short(ocountry);
 			makebottom();
 			break;
 		}
@@ -1858,8 +1858,8 @@ void camp_info(void) {
 		if (P_ASOLD!=0) {
 			numarm++;
 			if (P_ATYPE<MINLEADER) {
-				solds+=P_ASOLD;
-				if (P_ATYPE==A_MERCENARY) mercs+=P_ASOLD;
+				solds+=safe_long_to_int(P_ASOLD);
+				if (P_ATYPE==A_MERCENARY) mercs+=safe_long_to_int(P_ASOLD);
 			} else if (P_ATYPE<MINMONSTER) {
 				numlead++;
 			}
