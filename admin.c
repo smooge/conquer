@@ -265,6 +265,7 @@ int main (int argc, char **argv) {
 	size_t l;
 	register size_t i;
 	register size_t j;
+	int opt;
 	char *name;
 #ifndef __STDC__
 	void srand();
@@ -343,7 +344,7 @@ int main (int argc, char **argv) {
 	}
 
 	/* process the command line arguments */
-	while((i=getopt(argc,argv,"maxr:d:"))!=EOF) switch(i){
+	while((opt=getopt(argc,argv,"maxr:d:"))!=EOF) switch(opt){
 	/* process the command line arguments */
 	case 'm':  /* make a new world*/
 		mflag++;
@@ -851,7 +852,7 @@ void att_base (void) {
 		/* calculate national wealth */
 		temp = curntn->tgold;
 		if(temp<0) temp=0;
-		temp = (long)(1000.0*temp/WORLDGOLD + 1000.0*curntn->jewels/WORLDJEWELS + 1000.0*curntn->metals/WORLDMETAL) + cityfolk*5/3 + townfolk*5/6;
+		temp = safe_double_to_long(1000.0*(safe_long_to_double(temp)/safe_long_to_double(WORLDGOLD)) + 1000.0*(safe_long_to_double(curntn->jewels)/safe_long_to_double(WORLDJEWELS)) + 1000.0*(safe_long_to_double(curntn->metals)/safe_long_to_double(WORLDMETAL)) + safe_long_to_double(cityfolk)*(4.0/3.0) + safe_long_to_double(townfolk)*(5.0/6.0));
 		if (temp >= curntn->wealth) {
 			curntn->wealth = safe_clamp_uchar(temp/10);
 		} else {
@@ -887,7 +888,7 @@ void att_base (void) {
 		curntn->knowledge = safe_clamp_uchar(temp);
 
 		/* find national popularity */
-		temp = (curntn->wealth + 10*P_EATRATE + clerics + curntn->popularity)/2;
+		temp = safe_double_to_long((curntn->wealth + 10*P_EATRATE + safe_long_to_double(clerics) + curntn->popularity)/2);
 		curntn->popularity = safe_clamp_uchar(temp);
 
 		if(magic(country,SLAVER))	curntn->terror+=PWR_NA;

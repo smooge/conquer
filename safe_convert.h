@@ -265,6 +265,27 @@ static inline float safe_long_to_float(long value) {
 }
 
 /*
+ * safe_long_to_double - Safely convert long to double with validation
+ *
+ * Converts long to double for floating-point calculations. Used when
+ * integer values need to be converted to double precision for
+ * mathematical operations like economic calculations.
+ *
+ * Parameters:
+ *   value - Long value to convert to double
+ *
+ * Returns:
+ *   double representation of the long value (no precision loss)
+ *
+ * Examples:
+ *   temp = 1000.0 * safe_long_to_double(curntn->tgold/WORLDGOLD);
+ *   double wealth = safe_long_to_double(nation_gold);
+ */
+static inline double safe_long_to_double(long value) {
+    return (double)value;
+}
+
+/*
  * safe_float_to_int - Safely convert float to int with validation
  *
  * Converts float to int with range checking and rounding. Used when
