@@ -730,9 +730,7 @@ do_pirate (void)
 #endif /* MONSTER */
 
 #ifdef NPC
-void 
-n_redes (int x, int y, int goldthresh, int metalthresh, int citythresh, double hunger)
-{
+void n_redes (int x, int y, int goldthresh, int metalthresh, int citythresh, double hunger) {
 	register struct s_sector	*sptr = &sct[x][y];
 
 	if((sptr->designation == DCAPITOL)
@@ -1826,7 +1824,7 @@ nationrun (void)
 		spreadsheet(country);
 
 		if (spread.civilians+2*curntn->tmil > 0) {
-			hunger = spread.food/((float)(safe_long_to_int(spread.civilians+2*curntn->tmil)));
+			hunger = safe_long_to_float(spread.food)/((safe_long_to_float(spread.civilians+2*curntn->tmil)));
 		} else hunger = 0.0;
 		if(hunger < P_EATRATE ) {
 			goldthresh++;
