@@ -31,8 +31,8 @@ OPTIONS:
                 6: Level 5 + -Wsign-conversion
                 7: Level 6 + -Wimplicit-fallthrough
                 8: Level 7 + -Wstrict-prototypes
-                9: Level 8 + -Wold-style-declaration
-                10: Level 9 + -fanalyzer (intensive analysis)
+                9: Level 8 + -Wold-style-declaration -Wshadow -Wmissing-prototypes -Wcast-qual
+                10: Level 9 + -fanalyzer -fsanitize=address,undefined (intensive analysis)
 
     -x STD    C standard (c89, c99, c11, c17, c2x, default: c99)
 
@@ -113,8 +113,8 @@ case $WARN_LEVEL in
     6) WARN="-Wall -Wextra -Wpedantic -Wformat=2 -Wconversion -Wsign-conversion" ;;
     7) WARN="-Wall -Wextra -Wpedantic -Wformat=2 -Wconversion -Wsign-conversion -Wimplicit-fallthrough" ;;
     8) WARN="-Wall -Wextra -Wpedantic -Wformat=2 -Wconversion -Wsign-conversion -Wimplicit-fallthrough -Wstrict-prototypes" ;;
-    9) WARN="-Wall -Wextra -Wpedantic -Wformat=2 -Wconversion -Wsign-conversion -Wimplicit-fallthrough -Wstrict-prototypes -Wold-style-declaration" ;;
-    10) WARN="-Wall -Wextra -Wpedantic -Wformat=2 -Wconversion -Wsign-conversion -Wimplicit-fallthrough -Wstrict-prototypes -Wold-style-declaration -fanalyzer" ;;
+    9) WARN="-Wall -Wextra -Wpedantic -Wformat=2 -Wconversion -Wsign-conversion -Wimplicit-fallthrough -Wstrict-prototypes -Wold-style-declaration -Wshadow -Wmissing-prototypes -Wcast-qual" ;;
+    10) WARN="-Wall -Wextra -Wpedantic -Wformat=2 -Wconversion -Wsign-conversion -Wimplicit-fallthrough -Wstrict-prototypes -Wold-style-declaration -Wshadow -Wmissing-prototypes -Wcast-qual -fanalyzer -fsanitize=address,undefined" ;;
 esac
 
 # Update output file name components based on settings
@@ -133,7 +133,7 @@ ADMIN_FLAGS="-O2 -g -std=${STD} -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D
 
 GAME_FLAGS="-O2 -g -std=${STD} -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -DDEFAULTDIR=\"/projects/conquer/lib\" -DEXEDIR=\"/projects/conquer/bin\"  -DLOGIN=\"ssmoogen\" -DCONQUER ${WARN}"
 
-PSMAP_FLAGS="-O2 -g -std=${STD} -O2 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -DDEFAULTDIR=\"/projects/conquer/lib\" -DEXEDIR=\"/projects/conquer/bin\" -DLOGIN=\"ssmoogen\" -DPSFILE=\"/projects/conquer/bin/psmap.ps\" -DLETTER ${WARN}"
+PSMAP_FLAGS="-O2 -g -std=${STD} -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -DDEFAULTDIR=\"/projects/conquer/lib\" -DEXEDIR=\"/projects/conquer/bin\" -DLOGIN=\"ssmoogen\" -DPSFILE=\"/projects/conquer/bin/psmap.ps\" -DLETTER ${WARN}"
 
 
 # Verbose output function

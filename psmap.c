@@ -85,6 +85,16 @@ int pagewidth, pageheight, xoffset, yoffset;
 char title[81] = "", foot[81], fontname[81];
 char progname[80];
 
+/* functions */
+int parsepagesize (char *buf);
+void setpagesize (int defpag);
+void get_pagesize (void);
+void psstring (FILE *fh, char *str);
+int isinstr (char *string, char *word);
+int getmaptype (char *string);
+void readmap (void);
+void buildps (void);
+
 /*
  * parsepagesize - Parse page size string into numeric identifier
  *
@@ -124,9 +134,7 @@ char progname[80];
  *   - Returns 0 for any unrecognized input (safe default)
  *   - Used by command-line option processing and environment variable parsing
  */
-int
-parsepagesize (char *buf)
-{
+int parsepagesize (char *buf){
     if (!strcmp(buf, "A4"))
 	return (1);
     if (!strcmp(buf, "a4"))
@@ -179,9 +187,7 @@ parsepagesize (char *buf)
  *   - Default case handles custom/user-defined page sizes
  *   - Values sourced from psmap.h constant definitions
  */
-void
-setpagesize (int defpag)
-{
+void setpagesize (int defpag) {
     switch (defpag) {
     case 1:
 	pagewidth = PAGEWIDTH_A4;
@@ -245,9 +251,7 @@ setpagesize (int defpag)
  *   - Uses parsepagesize() for string-to-code conversion
  *   - Not thread-safe due to global state modifications
  */
-void
-get_pagesize (void)
-{
+void get_pagesize (void) {
     char *buf;
     int defpag = DEFAULTPAGE;
 
@@ -298,9 +302,7 @@ get_pagesize (void)
  *   - Essential for preventing PostScript syntax errors
  *   - Used for titles, footers, and text labels in map output
  */
-void
-psstring (FILE *fh, char *str)
-{
+void psstring (FILE *fh, char *str) {
     fprintf(fh, "(");
     while (*str != '\0') {
 	switch (*str) {
@@ -367,9 +369,7 @@ psstring (FILE *fh, char *str)
  *   - Used by getmaptype() for map format detection
  *   - Efficient for short patterns in header strings
  */
-int
-isinstr (char *string, char *word)
-{
+int isinstr (char *string, char *word) {
     size_t i,l1=strlen(string),l2=strlen(word);
 
     if (l1 < l2) return(FALSE);
@@ -430,9 +430,7 @@ isinstr (char *string, char *word)
  *   - Used during map file parsing to configure rendering pipeline
  *   - Falls back to SIMPLE type for unknown formats
  */
-int
-getmaptype (char *string)
-{
+int getmaptype (char *string) {
     if (isinstr(string, "Altitude"))
 	return (ALTITUDES);
     if (isinstr(string, "Designation"))
@@ -500,9 +498,7 @@ getmaptype (char *string)
  *   - Critical function in the map processing pipeline
  *   - Handles variable-sized maps with automatic dimension detection
  */
-void
-readmap (void)
-{
+void readmap (void) {
     int x, none;
 
     /*
@@ -628,9 +624,7 @@ readmap (void)
  *   - Handles both single-page and multi-page output modes
  *   - PostScript variables enable template customization
  */
-void
-buildps (void)
-{
+void buildps (void) {
     int xbeg, ybeg, xnumb, ynumb, x, y, xpages, ypages, xcorr, ycorr;
 
     /*
@@ -785,9 +779,7 @@ buildps (void)
  *   - Environment variables provide user-specific defaults
  *   - Orchestrates the complete map generation pipeline
  */
-int
-main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     extern char *optarg;
     extern int optind;
     char *buf, firstline[81];
