@@ -1406,6 +1406,7 @@ int readmap (void) {
 		if(y>=MAPY) break;
 	}
 	fprintf(stderr,"done reading %d lines of %zu characters\n",y,strlen(line));
+	fclose(mapfile);
 
 	/* read in veg.map */
 	strcpy(line,scenario);
@@ -1422,6 +1423,7 @@ int readmap (void) {
 		if(y>=MAPY) break;
 	}
 	fprintf(stderr,"done reading %d lines of %zu characters\n",y,strlen(line));
+	fclose(mapfile);
 
 	return(TRUE);
 }

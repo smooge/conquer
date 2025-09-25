@@ -1543,6 +1543,7 @@ void rmessage (void) {
 
 	snprintf(mesgfile, FILELTH, "%s%d", msgfile, country);
 	if ((mesgfp=fopen(mesgfile,"r"))==NULL) {
+		fclose(fptemp);
 		(void) unlink (tempfile) ;
 		clear_bottom(0);
 		errormsg("No Messages");
@@ -1558,6 +1559,8 @@ void rmessage (void) {
 		now = time(0);
 		if (now - fst.st_mtime < TIME_DEAD) {
 			/* someone is sending mail to the country */
+			fclose(mesgfp);
+			fclose(fptemp);
 			(void) unlink (tempfile) ;
 			clear_bottom(0);
 			errormsg("Someone is sending you mail... please wait.");
