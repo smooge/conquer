@@ -173,6 +173,7 @@
 #include <curses.h>
 #include "header.h"
 #include "data.h"
+#include "safe_convert.h"
 
 /*offset of upper left hand corner*/
 extern short xoffset;
@@ -234,11 +235,11 @@ static char *hasseen;
  *   - Critical function - program exits on allocation failure
  */
 void init_hasseen() {
-	hasseen = (char *)malloc(((COLS-10)/2) * (LINES-5));
+	hasseen = (char *)malloc(safe_int_to_size(((COLS-10)/2) * (LINES-5)));
 #ifdef BSD
-	bzero(hasseen,((COLS-10)/2) * (LINES-5));
+	bzero(hasseen, safe_int_to_size(((COLS-10)/2) * (LINES-5)));
 #else
-	memset( hasseen, 0, ((COLS-10)/2) * (LINES-5));
+	memset( hasseen, 0, safe_int_to_size(((COLS-10)/2) * (LINES-5)));
 #endif
 	if (hasseen == (char *)NULL) {
 		errormsg("Cannot allocate memory.");
@@ -571,7 +572,7 @@ char get_display_for(int x,int y,short dmode)
 			if(tofood( &sct[x+xoffset][y+yoffset],country)==0)
 				ch=sct[x+xoffset][y+yoffset].vegetation;
 			else if (tofood( &sct[x+xoffset][y+yoffset],country)<10)
-				ch=tofood( &sct[x+xoffset][y+yoffset],country)+'0';
+				ch=safe_int_to_char(tofood( &sct[x+xoffset][y+yoffset],country)+'0');
 			else ch='+';
 			break;
 		case DI_VEGE: /*vegetation*/
@@ -605,7 +606,7 @@ char get_display_for(int x,int y,short dmode)
 			if(movecost[x+xoffset][y+yoffset]>=0) {
 				if(movecost[x+xoffset][y+yoffset]>=10)
 					ch='+';
-				else ch=movecost[x+xoffset][y+yoffset]+'0';
+				else ch=safe_int_to_char(movecost[x+xoffset][y+yoffset]+'0');
 			} else if(sct[x+xoffset][y+yoffset].altitude==WATER)
 				ch=WATER;
 			else
@@ -635,7 +636,7 @@ char get_display_for(int x,int y,short dmode)
 
 				armbonus+=fort_val(&sct[x+xoffset][y+yoffset]);
 				
-				if(armbonus<200) ch=armbonus/20+'0';
+				if(armbonus<200) ch=safe_int_to_char(armbonus/20+'0');
 				else ch='+';
 			}
 			break;
@@ -649,7 +650,7 @@ char get_display_for(int x,int y,short dmode)
 			else if (sct[x+xoffset][y+yoffset].people>=950)
 				ch='I';
 			else
-				ch=(50+sct[x+xoffset][y+yoffset].people)/100+'0';
+				ch=safe_long_to_char((50+sct[x+xoffset][y+yoffset].people)/100+'0');
 			break;
 		case DI_GOLD:	/*Gold*/
 			if (sct[x+xoffset][y+yoffset].altitude==WATER)
