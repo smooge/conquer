@@ -219,6 +219,31 @@ static inline size_t safe_int_to_size(int value) {
 }
 
 /*
+ * safe_size_to_short - Safely convert size_t to short with range validation
+ *
+ * Converts size_t to short with overflow checking. Used when size_t values
+ * (from strlen, sizeof, etc.) need to be stored in short variables or used
+ * in calculations with short arithmetic.
+ *
+ * Since size_t is unsigned and potentially larger than short, this function
+ * provides safe conversion with overflow detection and clamping.
+ *
+ * Parameters:
+ *   size - size_t value to convert (from strlen, sizeof, etc.)
+ *
+ * Returns:
+ *   short value, clamped to SHRT_MAX if size exceeds short range
+ *
+ * Example Usage:
+ *   x += safe_size_to_short(strlen(unit_name)) + 3;
+ *   short length = safe_size_to_short(string_length);
+ */
+static inline short safe_size_to_short(size_t size) {
+    if (size > SHRT_MAX) return SHRT_MAX;
+    return (short)size;
+}
+
+/*
  * safe_long_to_float - Safely convert long to float with validation
  *
  * Converts long to float with range checking. Used in calculations where

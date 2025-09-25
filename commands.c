@@ -32,6 +32,7 @@
 #include <unistd.h>
 #include "header.h"
 #include "data.h"
+#include "safe_convert.h"
 
 extern long conq_mail_size;
 
@@ -314,7 +315,7 @@ void redesignate (void) {
 			/*simple contour map definitions*/
 			mvprintw(LINES-3,7,"ELEVATIONS: change to %c, %c, %c, %c or %c?",WATER,PEAK,MOUNTAIN,HILL,CLEAR);
 			refresh();
-			newdes=getch();
+			newdes=safe_int_to_char(getch());
 			if(newdes!=WATER&&newdes!=PEAK&&newdes!=MOUNTAIN
 			&&newdes!=HILL&&newdes!=CLEAR) {
 				reset_god();
@@ -334,7 +335,7 @@ void redesignate (void) {
 			VOLCANO,DESERT,TUNDRA,BARREN,LT_VEG,
 			GOOD,WOOD,FOREST,JUNGLE,SWAMP,ICE,NONE);
 			refresh();
-			newdes=getch();
+			newdes=safe_int_to_char(getch());
 			if(newdes!=VOLCANO
 			&&newdes!=DESERT&&newdes!=TUNDRA
 			&&newdes!=BARREN&&newdes!=LT_VEG
@@ -353,8 +354,8 @@ void redesignate (void) {
 		case 'o':
 			mvaddstr(LINES-3,7,"What nation owner:");
 			refresh();
-			x = get_country();
-			if (x>0 && x<NTOTAL) sptr->owner=x;
+			x = safe_int_to_short(get_country());
+			if (x>0 && x<NTOTAL) sptr->owner=safe_short_to_uchar(x);
 			reset_god();
 			return;
 		case 'p':
@@ -388,7 +389,7 @@ void redesignate (void) {
 			if((y!=TG_none)&&(y>END_NORMAL)) {
 				mvaddstr(LINES-1,7,"new sector value: ");
 				refresh();
-				x = get_number();
+				x = safe_long_to_short(get_number());
 				if(x<100 && x>0) {
 				if(y>END_MINE) {
 					sptr->jewels = (char)x;
@@ -422,7 +423,7 @@ void redesignate (void) {
 
 	mvaddstr(LINES-4,0,"Possible sector designations: ");
 	x = 30;
-	y = LINES-4;
+	y = safe_int_to_short(LINES-4);
 	for(newdes=0; *(des+newdes) != '0'; newdes++ ) {
 		if((isgod==TRUE)||desg_ok(FALSE,*(des+newdes),sptr)) {
 			mvprintw(y,x,"(%c)",*(des+newdes));
@@ -443,7 +444,7 @@ void redesignate (void) {
 	refresh();
 
 	/*read answer*/
-	if((newdes=getch())==DSPECIAL) {
+	if((newdes=safe_int_to_char(getch()))==DSPECIAL) {
 		if((sptr->tradegood == TG_none)
 		||( *(tg_stype+sptr->tradegood) == 'x')||(isgod==FALSE
 		&& !desg_ok(FALSE,*(tg_stype+sptr->tradegood),sptr)) ) {
@@ -524,8 +525,8 @@ void redesignate (void) {
 				sct[x][y].designation=DCITY;
 				SADJDES2;
 			}
-			curntn->capx=XREAL;
-			curntn->capy=YREAL;
+			curntn->capx=safe_int_to_uchar(XREAL);
+			curntn->capy=safe_int_to_uchar(YREAL);
 		}
 		sptr->designation=newdes;
 		SADJDES;
@@ -700,7 +701,7 @@ void construct (void) {
 		else
 		mvprintw(LINES-4,0,"<f>ortify sector (+%d%% - %ld talons):",armbonus,cost);
 		refresh();
-		type=getch();
+		type=safe_int_to_char(getch());
 	} else {
 		errormsg("Must construct in town, city, or fortress");
 		if (isgod==TRUE) reset_god();
@@ -716,7 +717,7 @@ void construct (void) {
 			return;
 		}
 
-		nvynum=getselunit()-MAXARM;
+		nvynum=safe_int_to_short(getselunit()-MAXARM);
 		if(type=='r') {
 			if((nvynum>=MAXNAVY)||(nvynum<0)){
 				errormsg("INVALID NAVY");
@@ -729,7 +730,7 @@ void construct (void) {
 				return;
 			}
 			clear_bottom(0);
-			shipsize = flthold(nvynum);
+			shipsize = safe_int_to_short(flthold(nvynum));
 			mvprintw(LINES-4,0,"Repairing Fleet (%d)",nvynum);
 			mvprintw(LINES-4,30,"Storage Units [%d]",shipsize);
 			mvprintw(LINES-3,0,"crew per unit = %d",(int)P_NCREW);
@@ -808,7 +809,7 @@ void construct (void) {
 				}
 				nvynum++;
 			}
-			nvynum=x;
+			nvynum=safe_int_to_short(x);
 			if(nvynum<0){
 				errormsg("NO FREE NAVIES");
 				if(isgod==TRUE) reset_god();
@@ -945,8 +946,8 @@ void construct (void) {
 			sct[XREAL][YREAL].people-=amount*(shipsize+1)*SHIPCREW;
 			curntn->tgold -= cost;
 
-			P_NXLOC =XREAL;
-			P_NYLOC =YREAL;
+			P_NXLOC =safe_int_to_uchar(XREAL);
+			P_NYLOC =safe_int_to_uchar(YREAL);
 			P_NMOVE=0;
 
 			mvprintw(LINES-4,0,"Fleet (%2d):     Warships  = [Light %2hd/Medium %2hd/Heavy %2hd]",nvynum,P_NWAR(N_LIGHT),P_NWAR(N_MEDIUM),P_NWAR(N_HEAVY));
@@ -1147,7 +1148,7 @@ void draft (void) {
 	}
 
 	/*ask what type of unit*/
-	y=LINES-2;
+	y=safe_int_to_short(LINES-2);
 	mvaddstr(y,0,"options: 1) spy 2) scout");
 	clrtoeol();
 	x=25;
@@ -1155,7 +1156,7 @@ void draft (void) {
 		if(unitvalid(i)==TRUE) {
 			mvprintw(y,x+2,"%s",*(shunittype+i));
 			mvprintw(y,x,"(%c)",*(shunittype+i)[0]);
-			x+= strlen( *(shunittype+i) ) +3;
+			x = safe_int_to_short(x + safe_size_to_short(strlen( *(shunittype+i) )) + 3);
 			if(x>COLS-10){
 				x=0;
 				y++;
@@ -1173,7 +1174,7 @@ void draft (void) {
 
 	clrtoeol();
 	refresh();
-	ch = getch();
+	ch = safe_int_to_char(getch());
 	for(newtype=0;newtype<=NOUNITTYPES;newtype++)
 		if(ch == *(shunittype+newtype)[0]) break;
 
@@ -1191,8 +1192,8 @@ void draft (void) {
 	/* marines and sailors may only be drafted in harbors */
 	if(newtype==A_MARINES || newtype==A_SAILOR) {
 		i=FALSE;
-		for (x=XREAL-1;x<=XREAL+1;x++)
-		for (y=YREAL-1;y<=YREAL+1;y++)
+		for (x=safe_int_to_short(XREAL-1);x<=XREAL+1;x++)
+		for (y=safe_int_to_short(YREAL-1);y<=YREAL+1;y++)
 		  if (sct[x][y].altitude==WATER) i=TRUE;
 
 		/* not a harbor */
@@ -1241,7 +1242,7 @@ void draft (void) {
 		for(armynum=0;armynum<MAXARM;armynum++){
 			if(P_ATYPE<MINLEADER) {
 				if(P_ATYPE==A_MERCENARY) mercs+=P_ASOLD;
-				totalsolds+=P_ASOLD;
+				totalsolds=safe_long_to_int(totalsolds+P_ASOLD);
 			}
 		}
 		if(men+mercs > (totalsolds+men)/2) {
@@ -1291,7 +1292,7 @@ void draft (void) {
 
 	/*count is order of that army in sector*/
 	/*armynum is number of that army*/
-	if((armynum=getselunit())>=0){
+	if((armynum=safe_int_to_short(getselunit()))>=0){
 		if(armynum>=MAXARM || newtype==A_SPY || newtype==A_SCOUT) {
 			army = -1;
 		} else {
@@ -1344,7 +1345,7 @@ void draft (void) {
 			clear_bottom(0);
 			mvaddstr(LINES-3,0,"Spy Against What Nation: ");
 			refresh();
-			if((i = get_country())==(-1)) {
+			if((i = safe_int_to_short(get_country()))==(-1)) {
 				if (isgod==TRUE) reset_god();
 				return;
 			}
@@ -1373,8 +1374,8 @@ void draft (void) {
 				if(isgod==TRUE) reset_god();
 				return;
 			}
-			P_AYLOC = YREAL;
-			P_AXLOC = XREAL;
+			P_AYLOC = safe_int_to_uchar(YREAL);
+			P_AXLOC = safe_int_to_uchar(XREAL);
 			mvprintw(LINES-2,0,"Intelligence indicates that %s lies to the %s",ntn[i].name,
 				*(directions+compass((int)P_AXLOC,(int)P_AYLOC,
 				  (int)ntn[i].capx,(int)ntn[i].capy)));
@@ -1383,14 +1384,14 @@ void draft (void) {
 		errormsg("");
 		redraw=PART;
 	} else {
-		P_AYLOC=YREAL;
-		P_AXLOC=XREAL;
+		P_AYLOC=safe_int_to_uchar(YREAL);
+		P_AXLOC=safe_int_to_uchar(XREAL);
 	}
 	if( newtype == A_SPY || newtype == A_SCOUT ) {
 		P_ASTAT = SCOUT;
 		AADJSTAT;
 	}
-	P_ATYPE=newtype;
+	P_ATYPE=safe_short_to_uchar(newtype);
 	if(P_ATYPE != A_MERCENARY){
 		sct[XREAL][YREAL].people -= men;
 		SADJCIV;
@@ -1608,7 +1609,7 @@ void rmessage (void) {
 		mvaddstr(LINES-2,(COLS/2)-16,"HIT RETURN TO DELETE MESSAGE");
 		standend();
 		refresh();
-		inpch=getch();
+		inpch=safe_int_to_char(getch());
 		if((inpch!='\n' && inpch!='\r')) {
 			for(i=0;i<msglen;i++) fputs(save[i],fptemp);
 			strcpy(line,"END\n");
@@ -1820,7 +1821,7 @@ void wmessage (void) {
 				move(y,x);
 				line[x]=' ';
 				refresh();
-				ch=getch();
+				ch=safe_int_to_char(getch());
 				break;
 			case '\n':
 			case '\r':
@@ -1838,7 +1839,7 @@ void wmessage (void) {
 					standend();
 					move(y,x);
 					refresh();
-					ch = getch();
+					ch = safe_int_to_char(getch());
 					move(LINES-3,0);
 					clrtoeol();
 					refresh();
@@ -1857,13 +1858,13 @@ void wmessage (void) {
 					clrtoeol();
 					move(y,x);
 					refresh();
-					ch = getch();
+					ch = safe_int_to_char(getch());
 				}
 				break;
 			case '':
 				/* new page -- end of form */
 				wrefresh(stdscr);
-				ch=getch();
+				ch=safe_int_to_char(getch());
 				break;
 			default:
 				/* any remaining possibilities */
@@ -1874,7 +1875,7 @@ void wmessage (void) {
 					x++;
 					refresh();
 				}
-				ch=getch();
+				ch=safe_int_to_char(getch());
 				break;
 			}
 		}
@@ -2055,7 +2056,7 @@ moveciv (void)
 	mvaddstr(LINES-3,0,"What X location to move to?");
 	clrtoeol();
 	refresh();
-	i = get_number();
+	i = safe_long_to_short(get_number());
 	if (i < 0) {
 		return;
 	}
@@ -2068,7 +2069,7 @@ moveciv (void)
 	mvaddstr(LINES-2,0,"What Y location to move to?");
 	clrtoeol();
 	refresh();
-	j = get_number();
+	j = safe_long_to_short(get_number());
 	if (j < 0) {
 		return;
 	}
@@ -2187,7 +2188,7 @@ moveciv (void)
  */
 int armygoto (void) {
 	short armynum=0,loop=0;
-	armynum=getselunit();
+	armynum=safe_int_to_short(getselunit());
 	if((armynum<0)||(armynum>MAXARM)) armynum=0;
 	else armynum++;
 	/* move to next army with > 0 soldiers or army not in group */
@@ -2327,7 +2328,7 @@ int armygoto (void) {
  */
 int navygoto (void) {
 	short nvynum=0,loop=0;
-	nvynum=getselunit()-MAXARM;
+	nvynum=safe_int_to_short(getselunit()-MAXARM);
 	if((nvynum<0)||(nvynum>MAXNAVY)) nvynum=0;
 	else nvynum++;
 	/* move to next nvy with > 0 soldiers*/
