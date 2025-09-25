@@ -161,7 +161,7 @@ get_number (void)
 	int done=FALSE,count=0,xpos,ypos;
 	/* this routine totally redone to allow deleting */
 	while(!done) {
-		ch=getch();
+		ch=safe_int_to_char(getch());
 		if(isdigit(ch) && count<12) {
 			/* only print numbers to the screen */
 			addch(ch);
@@ -379,7 +379,7 @@ land_2reachp (int ax, int ay, int move_points)
 			if( history_reachp[x][y] >= new_mp ) {
 				continue;
 			}
-			history_reachp[x][y] = new_mp;
+			history_reachp[x][y] = safe_int_to_uchar(new_mp);
 
 			/*
 			*	Test for a hostile army
@@ -509,9 +509,9 @@ land_reachp (int ax, int ay, int gx, int gy, int move_points, int movee)
 		return( 0 );
 
 	history_reachp = (unsigned char **) m2alloc(MAPX,MAPY,sizeof(char));
-	memset((char *) *history_reachp, 0, MAPX*MAPY );
+	memset((char *) *history_reachp, 0, safe_int_to_size(MAPX*MAPY) );
 
-	history_reachp[ax][ay] = move_points;
+	history_reachp[ax][ay] = safe_int_to_uchar(move_points);
 
 	bx = gx;
 	by = gy;
@@ -632,7 +632,7 @@ water_2reachp (int ax, int ay, int move_points)
 	if( history_reachp[ ax ][ ay ] <= move_points )
 		return( 0 );
 
-	history_reachp[ ax ][ ay ] = move_points;
+	history_reachp[ ax ][ ay ] = safe_int_to_uchar(move_points);
 
 	delta_x = ax - bx;
 	delta_y = ay - by;
@@ -1086,7 +1086,7 @@ num_powers (int nation, int type)
 			fprintf(stderr,"fatal error in num_powers");
 			abrt();
 	}
-	for( try = start; try < start+end; try++ )
+	for( try = safe_long_to_int(start); try < start+end; try++ )
 		if( magic(nation, powers[try] ) == 1 ) count_magic++;
 	return(count_magic);
 }
@@ -1325,16 +1325,16 @@ prep (int nation, int leader)
 				||(P_ASOLD<=0)) continue;
 				i=P_AXLOC;
 				j=P_AYLOC;
-				com = P_NTNCOM; /* do communications radius */
+				com = safe_double_to_int(P_NTNCOM); /* do communications radius */
 				for(x=i-com;x<=i+com;x++)
 				for(y=j-com;y<=j+com;y++)
-					if(ONMAP(x,y)) occ[x][y]=nation;
+					if(ONMAP(x,y)) occ[x][y]=safe_int_to_char(nation);
 			} else if((P_ASOLD>0)&&(P_ASTAT!=SCOUT)){
 				i=P_AXLOC;
 				j=P_AYLOC;
 				if((occ[i][j]== 0)||(occ[i][j]== nation))
-					occ[i][j]= nation;
-				else occ[i][j]= NTOTAL;
+					occ[i][j]= safe_int_to_char(nation);
+				else occ[i][j]= safe_int_to_char(NTOTAL);
 			}
 		}
 		if( leader==FALSE ) for(nvynum=0;nvynum<MAXNAVY;nvynum++){
@@ -1342,8 +1342,8 @@ prep (int nation, int leader)
 				i=P_NXLOC;
 				j=P_NYLOC;
 				if((occ[i][j]== 0)||(occ[i][j]== nation))
-					occ[i][j]= nation;
-				else occ[i][j]= NTOTAL;
+					occ[i][j]= safe_int_to_char(nation);
+				else occ[i][j]= safe_int_to_char(NTOTAL);
 			}
 		}
 	}
@@ -1544,7 +1544,7 @@ sackem (int cntry)
 			sct[x][y].designation = DCITY;
 		} else {
 			DEVASTATE(x,y);
-			sct[x][y].owner=cntry;
+			sct[x][y].owner=safe_int_to_uchar(cntry);
 		}
 	}
 
@@ -1577,8 +1577,8 @@ sackem (int cntry)
 			mailclose(cntry);
 			}
 		}
-		curntn->capx=x;
-		curntn->capy=y;
+		curntn->capx=safe_int_to_uchar(x);
+		curntn->capy=safe_int_to_uchar(y);
 	} else {
 		/* no new capitol assignment */
 		if(ispc(curntn->active)) {
@@ -1862,7 +1862,7 @@ updmove (int race, int cntry)
 				movecost[x][y] = veg_cost[ sptr->vegetation ] + ele_cost[ sptr->altitude ];
 		} /* if */
 		if (sptr->designation == DROAD)
-			movecost[x][y] = (movecost[x][y] + 1) / 2;
+			movecost[x][y] = safe_int_to_short((movecost[x][y] + 1) / 2);
 	} /* for */
 } /* updmove() */
 
@@ -2257,7 +2257,7 @@ get_nname (char str[])
 	int done=0,count=0,xpos,ypos;
 
 	while(!done) {
-		ch=getch();
+		ch=safe_int_to_char(getch());
 		if (isprint(ch)) {
 			if (count<NAMELTH) {
 				/* only input displayable characters */
@@ -2371,7 +2371,7 @@ get_country (void)
 	get_nname(name);
 
 	/* return on no entry */
-	if ((l=strlen(name))==0) {
+	if ((l=safe_size_to_int(strlen(name)))==0) {
 		return(-1);
 	}
 
@@ -2491,7 +2491,7 @@ get_god (void)
 	refresh();
 
 	/* return on no entry or bad entry */
-	if ((country=get_country())==(-1) || country==NTOTAL) {
+	if ((country=safe_int_to_short(get_country()))==(-1) || country==NTOTAL) {
 		country = 0;
 		redraw=DONE;
 		makebottom();

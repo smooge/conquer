@@ -436,6 +436,38 @@ static inline long safe_double_to_long(double value) {
 }
 
 /*
+ * safe_double_to_int - Convert double to int with bounds checking
+ *
+ * Safely converts double values to int with range validation.
+ * Used when double-precision floating-point calculations need to be stored
+ * in int variables such as communications radius calculations and macro
+ * evaluations that produce double results.
+ *
+ * This function handles the conversion safely, clamping values to the
+ * valid int integer range and handling NaN/infinity cases. Particularly
+ * useful for macro calculations like P_NTNCOM that produce double values
+ * but need to be used as int parameters.
+ *
+ * Parameters:
+ *   value - double value to convert
+ *
+ * Returns:
+ *   int value clamped to [INT_MIN, INT_MAX] range, 0 for NaN/infinity
+ *
+ * Example Usage:
+ *   com = safe_double_to_int(P_NTNCOM);
+ *   int radius = safe_double_to_int(calculation_result);
+ */
+static inline int safe_double_to_int(double value) {
+    /* Handle NaN and infinity cases */
+    if (value != value || value == INFINITY || value == -INFINITY) return 0;
+
+    if (value > (double)INT_MAX) return INT_MAX;
+    if (value < (double)INT_MIN) return INT_MIN;
+    return (int)value;
+}
+
+/*
  * safe_long_to_uchar - Convert long to unsigned char with bounds checking
  *
  * Safely converts long integers to unsigned char with range validation.
@@ -663,6 +695,12 @@ static inline unsigned int safe_long_to_uint(long value) {
  *    - safe_rand_uchar() for resource generation (metal, jewels)
  *    - safe_rand_uint() for seeding operations
  *    - safe_rand_int() for probability calculations and percentage checks
+ *
+ * 6. FLOATING POINT CONVERSIONS: Use appropriate safe conversion functions
+ *    - safe_float_to_int() for single-precision float to int conversions
+ *    - safe_double_to_int() for double-precision to int conversions (macro results)
+ *    - safe_float_to_long() for float to long conversions
+ *    - safe_double_to_long() for double to long conversions (large calculations)
  */
 
 #endif /* SAFE_CONVERT_H */
