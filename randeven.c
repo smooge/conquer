@@ -139,6 +139,7 @@
 #include <ctype.h>
 #include "header.h"
 #include "data.h"
+#include "safe_convert.h"
 
 #ifdef RANEVENT
 char	*names[] = {		/* must end in single character name */
@@ -402,7 +403,7 @@ disolve (
 			}
 		}
 		new = country;
-		country=target;
+		country = safe_int_to_short(target);
 		xpos = ypos = (-1);
 		while( i++ < 300 ) {
 			rand_sector();
@@ -413,7 +414,7 @@ disolve (
 			return(0);
 		}
 		printf("TMP peasant centered on %d,%d\n",xpos,ypos);
-		country = new;
+		country = safe_int_to_short(new);
 		realx = xpos;
 		realy = ypos;
 	} else for(i=0; i<MAPX; i++) for(j=0; j<MAPY; j++) {
@@ -454,12 +455,12 @@ disolve (
 	sprintf(eventstr,"new nation %s created at %d,%d",ntn[new].name,realx,realy);
 #endif /* HIDELOC */
 	printf("TMP new nation %s created at %d,%d",ntn[new].name,realx,realy);
-	sct[realx][realy].owner=new;
+	sct[realx][realy].owner = safe_int_to_uchar(new);
 #ifdef CHECKUSER
-	ntn[new].uid = getpwnam(LOGIN)->pw_uid;
+	ntn[new].uid = safe_uid_to_short(getpwnam(LOGIN)->pw_uid);
 #endif /* CHECKUSER */
-	ntn[new].capx=realx;
-	ntn[new].capy=realy;
+	ntn[new].capx = safe_int_to_uchar(realx);
+	ntn[new].capy = safe_int_to_uchar(realy);
 	sct[realx][realy].designation=DCAPITOL;
 	ntn[new].class=ntn[target].class;
 	ntn[new].race= ntn[target].race;
@@ -488,12 +489,12 @@ disolve (
 	ntn[new].location= ntn[target].location;
 	ntn[new].powers= ntn[target].powers;
 	ntn[new].tships= 0;
-	ntn[new].tsctrs = split;
+	ntn[new].tsctrs = safe_int_to_short(split);
 	ntn[new].tax_rate = 10;
 
 	/* first check first letter of name */
 	if( markok(toupper(ntn[new].name[0]),FALSE) )
-		ntn[new].mark = toupper(ntn[new].name[0]);
+		ntn[new].mark = safe_int_to_char(toupper(ntn[new].name[0]));
 	else
 		ntn[new].mark = getnewmark();
 
@@ -506,7 +507,7 @@ disolve (
 			&&( sct[i][j].owner == target)){
 				split--;
 				if( sct[i][j].people > 0 )
-					sct[i][j].owner=new;
+					sct[i][j].owner = safe_int_to_uchar(new);
 			}
 		}
 
@@ -539,8 +540,8 @@ disolve (
 		armynum=0;
 		ntn[new].arm[0].sold = 300;
 		ntn[new].arm[0].unittyp = A_INFANTRY;
-		ntn[new].arm[0].xloc = realx;
-		ntn[new].arm[0].yloc = realy;
+		ntn[new].arm[0].xloc = safe_int_to_uchar(realx);
+		ntn[new].arm[0].yloc = safe_int_to_uchar(realy);
 		ntn[new].arm[0].stat = GARRISON;
 		ntn[new].arm[0].smove = 0;
 	}
@@ -978,12 +979,12 @@ printf("TEMP: %s chance of revolt is %d (tax=%d prest=%d)\n",
 			armynum = -1;
 			for(newpower=0; newpower<MAXARM; newpower++)
 				if (ntn[holdval].arm[newpower].sold == 0)
-					armynum=newpower;
+					armynum = safe_long_to_int(newpower);
 			if(armynum == -1) done=4;
 			else if((is_habitable(xpos,ypos))
 			&& ( sct[xpos][ypos].owner == country)) {
-				ntn[holdval].arm[armynum].xloc =xpos;
-				ntn[holdval].arm[armynum].yloc =ypos;
+				ntn[holdval].arm[armynum].xloc = safe_int_to_uchar(xpos);
+				ntn[holdval].arm[armynum].yloc = safe_int_to_uchar(ypos);
 				if(curntn->tmil > 10000)	/* 800-4800 */
 				ntn[holdval].arm[armynum].sold =800+50*(rand()%80);
 				else if(curntn->tmil > 5000) /* 500-2500 */
@@ -1512,14 +1513,14 @@ peasant_revolt(int *newnation)	/* peasant revolt */
 		&&( sct[i][j].designation != DCAPITOL )
 		&&( sct[i][j].people > 0 )
 		&&( solds_in_sector(i,j,country)==0)){
-			sct[i][j].owner = *newnation;
+			sct[i][j].owner = safe_int_to_uchar(*newnation);
 			for(armynum=0;armynum<MAXARM;armynum++)
 			if(P_ASOLD == 0) {
 				P_ASOLD = sct[i][j].people/5;
 				P_ATYPE = A_MILITIA;
 				P_ASTAT = MILITIA;
-				P_AXLOC = i;
-				P_AYLOC = j;
+				P_AXLOC = safe_int_to_uchar(i);
+				P_AYLOC = safe_int_to_uchar(j);
 				sct[i][j].people -= P_ASOLD;
 				break;
 			}
