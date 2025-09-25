@@ -121,6 +121,7 @@
 #include "header.h"
 #include "data.h"
 #include "patchlevel.h"
+#include "safe_convert.h"
 
 extern FILE *fexe;
 /*offset of upper left hand corner*/
@@ -244,7 +245,7 @@ void mapprep (void) {
 		armynum = FALSE;
 	}
 	for (x=0;x<MAPX;x++) for(y=0;y<MAPY;y++) {
-		mapseen[x][y] = armynum;
+		mapseen[x][y] = safe_int_to_char(armynum);
 	}
 
 	/* done for all knowing */
@@ -628,15 +629,15 @@ void writedata (void) {
 		abrt();
 	}
 
-	if((bytes=write(fd,*sct,MAPX*MAPY*sizeof(struct s_sector))) == -1)
+	if((bytes=write(fd,*sct,(size_t)(MAPX*MAPY)*sizeof(struct s_sector))) == -1)
 	{
-		printf("Wrong number of bytes (%ld) written for sct (should be %zu)\n",bytes,MAPX*MAPY*sizeof(struct s_sector));
+		printf("Wrong number of bytes (%ld) written for sct (should be %zu)\n",bytes,(size_t)(MAPX*MAPY)*sizeof(struct s_sector));
 		abrt();
 	};
 	printf("writing %ld bytes of sector data\n",bytes);
 	if((bytes=write(fd,ntn,NTOTAL*sizeof(struct s_nation))) == -1)
 	{
-		printf("Wrong number of bytes (%ld) written for ntn (should be %zu)\n",bytes,NTOTAL*sizeof(struct s_nation));
+		printf("Wrong number of bytes (%ld) written for ntn (should be %zu)\n",bytes,(size_t)NTOTAL*sizeof(struct s_nation));
 		abrt();
 	}
 	printf("writing %ld bytes of nation data\n",bytes);
@@ -722,12 +723,12 @@ void readdata (void) {
 
 	getspace();
 
-	if((n_read=read(fd,*sct,MAPX*MAPY*sizeof(struct s_sector)))==0)
+	if((n_read=read(fd,*sct,(size_t)(MAPX*MAPY)*sizeof(struct s_sector)))==0)
 		printf("EOF\n");
 	else if(n_read==-1) printf("error reading sector data (sct)\n");
-	if(n_read != (ssize_t)(MAPX*MAPY*sizeof(struct s_sector))) {
+	if(n_read != (ssize_t)((size_t)(MAPX*MAPY)*sizeof(struct s_sector))) {
 		printf("error reading sector data (sct)\n");
-		printf( "wrong data format (%zd vs. %zu)\n",n_read,  MAPX*MAPY*sizeof(struct s_sector) );
+		printf( "wrong data format (%zd vs. %zu)\n",n_read,  (size_t)(MAPX*MAPY)*sizeof(struct s_sector) );
 		abrt();
 	}
 #ifdef DEBUG
@@ -735,9 +736,9 @@ void readdata (void) {
 #endif /* DEBUG */
 	if((n_read=read(fd,ntn,NTOTAL*sizeof(struct s_nation))) == -1)
 		printf("error reading s_nation data (ntn)\n");
-	else if(n_read!= (ssize_t)(NTOTAL*sizeof(struct s_nation))) {
+	else if(n_read!= (ssize_t)((size_t)NTOTAL*sizeof(struct s_nation))) {
 		printf("error reading s_nation data (ntn)\n");
-		printf( "wrong data format (%zd vs. %zu)\n",n_read, NTOTAL*sizeof(struct s_nation) );
+		printf( "wrong data format (%zd vs. %zu)\n",n_read, (size_t)NTOTAL*sizeof(struct s_nation) );
 		abrt();
 	}
 #ifdef DEBUG
@@ -931,14 +932,14 @@ void centermap (void) {
 	int xx,yy;
 	xx=XREAL;
 	yy=YREAL;
-	xoffset = xx - (SCREEN_X_SIZE/2);
-	yoffset = yy - (SCREEN_Y_SIZE/2);
+	xoffset = safe_int_to_short(xx - (SCREEN_X_SIZE/2));
+	yoffset = safe_int_to_short(yy - (SCREEN_Y_SIZE/2));
 	if (xoffset<0)
 		xoffset=0;
 	if (yoffset<0)
 		yoffset=0;
-	xcurs= xx-xoffset;
-	ycurs= yy-yoffset;
+	xcurs= safe_int_to_short(xx-xoffset);
+	ycurs= safe_int_to_short(yy-yoffset);
 	whatcansee();
 }
 
@@ -1050,7 +1051,7 @@ void jump_to (int home) {
 		clear_bottom(0);
 		mvaddstr(LINES-3,0,"Jump to what X location? ");
 		refresh();
-		i = get_number();
+		i = safe_long_to_int(get_number());
 		if (i==(-1)) return;
 		if (i>=MAPX) {
 			errormsg("That location is out of this world!");
@@ -1058,7 +1059,7 @@ void jump_to (int home) {
 		}
 		mvaddstr(LINES-2,0,"Jump to what Y location? ");
 		refresh();
-		j = get_number();
+		j = safe_long_to_int(get_number());
 		if (j==(-1)) return;
 		if (j>=MAPY) {
 			errormsg("That location is out of this world!");
@@ -1066,8 +1067,8 @@ void jump_to (int home) {
 		}
 	}
 	/* now center location about given position */
-	xcurs = i;
-	ycurs = j;
+	xcurs = safe_int_to_short(i);
+	ycurs = safe_int_to_short(j);
 	xoffset = yoffset = 0;
 	centermap();
 }
@@ -1258,7 +1259,7 @@ void flee (int x, int y, int isupd, int slaver) {
 
 	country=sct[x][y].owner;
 	if(slaver==TRUE){
-		slaves= sct[x][y].people/4;
+		slaves= safe_long_to_int(sct[x][y].people/4);
 		sct[x][y].people-=slaves;
 	}
 
@@ -1284,7 +1285,7 @@ void flee (int x, int y, int isupd, int slaver) {
 	for(i=x-2;i<=x+2;i++) for(j=y-2;j<=y+2;j++)
 		if(ONMAP(i,j)
 		&&(ntn[sct[i][j].owner].race==ntn[sct[x][y].owner].race)) {
-			people_to_add = sct[x][y].people / count;
+			people_to_add = safe_long_to_int(sct[x][y].people / count);
 			/* don't show until next turn if player move */
 			if(isupd==0) SADJCIV3;
 			else	sct[x][y].people += people_to_add;
@@ -1319,7 +1320,7 @@ void flee (int x, int y, int isupd, int slaver) {
 		DEVASTATE(x,y);
 		if(isupd==0) SADJDES2;
 	}
-	country=svcountry;
+	country=safe_int_to_short(svcountry);
 }
 #ifdef ADMIN
 /*
@@ -1495,7 +1496,7 @@ char ** m2alloc (
 	int	j;
 	entrysize *= ncols;
 	baseaddr = (char **)
-		malloc( (unsigned) (nrows*(sizeof(char *)+entrysize)));
+		malloc( (size_t)nrows*(sizeof(char *)+(size_t)entrysize));
 
 	if( baseaddr == (char **) NULL ) {
 		printf("OOPS - cannot allocate %d by %d blocks of %d bytes\n",nrows,ncols,entrysize);
@@ -1575,7 +1576,7 @@ int get_pass (char *str) {
 	int done=FALSE,count=0;
 
 	while(done==FALSE) {
-		ch = getch();
+		ch = safe_int_to_char(getch());
 		if (ch=='\b' || ch=='\177') {
 			/* delete any entered characters */
 			if (count > 0) {
