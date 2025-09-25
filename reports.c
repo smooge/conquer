@@ -830,12 +830,12 @@ produce (void)
 	fprintf(fp,"LINE %d FILE %s\n",__LINE__,__FILE__);
 	mvprintw(12,0, "%8ld people @ %3.1f eat.%8.0ld tons",spread.civilians,P_EATRATE,(long)(P_EATRATE*(float)spread.civilians));
 	fprintf(fp,"LINE %d FILE %s\n",__LINE__,__FILE__);
-	mvprintw(13,0, "%8ld soldiers eat.....%8.0ld tons",military,(long)(military*2*P_EATRATE));
+	mvprintw(13,0, "%8ld soldiers eat.....%8.0ld tons",military,safe_double_to_long(safe_long_to_double(military)*2*P_EATRATE));
 	military+= military+spread.civilians; /* military is amount eaten */
 	fprintf(fp,"LINE %d FILE %s\n",__LINE__,__FILE__);
 	standout();
-	mvprintw(15,0, "ESTIMATE NET FOOD.........%8.0f tons",spread.food-curntn->tfood-P_EATRATE*(double)military);
-	mvprintw(16,0, "ESTIMATE FOOD SUPPLY......%8.0f tons",spread.food-P_EATRATE*(double)military);
+	mvprintw(15,0, "ESTIMATE NET FOOD.........%8.0f tons",spread.food-curntn->tfood-P_EATRATE*safe_long_to_double(military));
+	mvprintw(16,0, "ESTIMATE FOOD SUPPLY......%8.0f tons",spread.food-P_EATRATE*safe_long_to_double(military));
 	standend();
 	fprintf(fp,"LINE %d FILE %s\n",__LINE__,__FILE__);
 
@@ -1105,17 +1105,16 @@ fleetrpt (void)
 			clrtoeol();
 			refresh();
 			nvynum = safe_long_to_short(get_number());
-			if(nvynum<0) continue;
+			if((nvynum<0)||(nvynum>=MAXNAVY)) {
+				errormsg("Invalid Naval unit");
+				continue;
+			}
 #ifdef TRADE
 			if (isgod == FALSE && curntn->nvy[nvynum].commodity==TRADED) {
 				errormsg("Sorry - That Navy is up for trade");
 				continue;
 			}
 #endif /* TRADE */
-			if((nvynum<0)||(nvynum>=MAXNAVY)) {
-				errormsg("Invalid Naval unit");
-				continue;
-			}
 			mvaddstr(ypos++,0,"OPTIONS: 1) TRANSFER / MERGE, 2) SPLIT NAVY, 3) DISBAND NAVY");
   			clrtoeol();
 #ifdef OGOD
