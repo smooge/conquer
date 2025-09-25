@@ -548,7 +548,7 @@ int takeover (int percent, int target) {
 	save=country;
 	if(target==country) return(0);
 	if(target==0) isupdate=1;
-	country=target;
+	country=safe_int_to_short(target);
 	if(rand()%100<percent){
 		loop=0;
 		y=0;
@@ -562,11 +562,11 @@ int takeover (int percent, int target) {
 			&&(country!=save))
 				loop=TRUE;
 			else if(y>=500) {
-				country=save;
+				country=safe_int_to_short(save);
 				return(0);
 			}
 		}
-		sct[ntn[country].capx][ntn[country].capy].owner=save;
+		sct[ntn[country].capx][ntn[country].capy].owner=safe_int_to_uchar(save);
 		if(isupdate==1){
 		printf("nation %s magically taken over by %s\n",ntn[country].name,ntn[save].name);
 		fprintf(fnews,"1.\tnation %s magically taken over by %s\n",ntn[country].name,ntn[save].name);
@@ -582,10 +582,10 @@ int takeover (int percent, int target) {
 		sct[ntn[country].capx][ntn[country].capy].designation=DCITY;
 		if(isupdate!=1) fclose(fnews);
 		y=country;
-		country=save;
+		country=safe_int_to_short(save);
 		return(y);
 	}
-	country=save;
+	country=safe_int_to_short(save);
 	return(0);
 }
 #endif /* ORCTAKE */
@@ -734,7 +734,7 @@ void exenewmgk (long newpower) {
 				curntn->maxmove+=3;
 			}
 			else if(curntn->repro>11){
-				curntn->maxmove+= x-11;
+				curntn->maxmove+= safe_int_to_uchar(x-11);
 				curntn->repro=14;
 			}
 			else curntn->repro+=3;
@@ -743,7 +743,7 @@ void exenewmgk (long newpower) {
 			curntn->repro+=3;
 		}
 		else {
-			curntn->maxmove+=2*(curntn->repro-9);
+			curntn->maxmove+=safe_int_to_uchar(2*(curntn->repro-9));
 			curntn->repro=12;
 		}
 		return;
@@ -754,7 +754,7 @@ void exenewmgk (long newpower) {
 			curntn->maxmove+=3;
 		}
 		else if(curntn->repro>11){
-			curntn->maxmove+= x-11;
+			curntn->maxmove+= safe_int_to_uchar(x-11);
 			curntn->repro=14;
 		}
 		else curntn->repro+=3;
@@ -871,7 +871,7 @@ void dosummon (void) {
 	count++;
 	mvaddstr(count++,0,"what type of unit do you want to raise:");
 	refresh();
-	ch=getch();
+	ch=safe_int_to_char(getch());
 	for(newtype=MINMONSTER;newtype<=MAXMONSTER;newtype++){
 		if( *(shunittype+(newtype%UTYPE))[0] == ch ) break;
 	}
@@ -907,7 +907,7 @@ void dosummon (void) {
 	while(armynum<MAXARM) {
 		if(P_ASOLD<=0) {
 			P_ASOLD= *(unitminsth+(newtype%UTYPE));
-			P_ATYPE=newtype;
+			P_ATYPE=safe_int_to_uchar(newtype);
 			P_ASTAT=DEFEND; /* set new armies to DEFEND */
 			P_AXLOC=curntn->capx;
 			P_AYLOC=curntn->capy;
@@ -924,7 +924,7 @@ void dosummon (void) {
 		} else armynum++;
   	}
   	curntn->tgold -= e_cost;
-  	curntn->spellpts -= s_cost;
+  	curntn->spellpts -= safe_int_to_short(s_cost);
 	EDECSPL;
 }
 #ifdef ORCTAKE
@@ -1016,7 +1016,7 @@ int orctake (int *count) {
 		&&(ntn[i].race==ORC)){
 			curntn->jewels-=ORCTAKE;
 			s_cost=TAKEPOINTS;
-			curntn->spellpts-=s_cost;
+			curntn->spellpts-=safe_int_to_short(s_cost);
 			EDECSPL;
 			if(( takeover(chance,i)) !=0 )
 				mvprintw((*count)++,0,"  Successful: %d",i);
@@ -1026,7 +1026,7 @@ int orctake (int *count) {
 				EADJDIP(country,i);
 			}
 		} else {
-			if (ntn[i].race==ORC) 
+			if (ntn[i].race==ORC)
 				mvaddstr((*count)++,0,"  That Nation is Outside Your Influence");
 			else mvaddstr((*count)++,0,"  Wrong Race");
 		}
@@ -1276,7 +1276,7 @@ void removemgk (long oldpower) {
 		curntn->aplus+=35;
 		curntn->dplus+=35;
 		for(armynum=0;armynum<MAXARM;armynum++){
-			if(P_ATYPE == A_ZOMBIE) P_ATYPE=defaultunit(country);
+			if(P_ATYPE == A_ZOMBIE) P_ATYPE=safe_long_to_uchar(defaultunit(country));
 		}
 		return;
 	}
@@ -1311,20 +1311,20 @@ void removemgk (long oldpower) {
 	}
 	if(oldpower==MI_MONST) {
 		for(armynum=0;armynum<MAXARM;armynum++){
-			if(P_ATYPE == A_ORC) P_ATYPE=defaultunit(country);
+			if(P_ATYPE == A_ORC) P_ATYPE=safe_long_to_uchar(defaultunit(country));
 		}
 		return;
 	}
 	if(oldpower==AV_MONST) {
 		for(armynum=0;armynum<MAXARM;armynum++){
 			if(P_ATYPE == A_URUK || P_ATYPE == A_OLOG)
-				P_ATYPE=defaultunit(country);
+				P_ATYPE=safe_long_to_uchar(defaultunit(country));
 		}
 		return;
 	}
 	if(oldpower==ARCHER) {
 		for(armynum=0;armynum<MAXARM;armynum++){
-			if(P_ATYPE == A_ARCHER) P_ATYPE=defaultunit(country);
+			if(P_ATYPE == A_ARCHER) P_ATYPE=safe_long_to_uchar(defaultunit(country));
 		}
 		return;
 	}
@@ -1459,7 +1459,7 @@ void god_magk (void) {
 		standend();
 		addch(' ');
 		refresh();
-		choice=get_number();
+		choice=safe_long_to_int(get_number());
 		if(choice > 0 && choice <= MAXPOWER) {
 			if (magic(country,powers[choice-1])==remove) {
 				if (remove)
@@ -1575,7 +1575,7 @@ void wizardry (void) {
 		for (;i<NUMSPELLS;i++) {
 			sprintf(line,"  %s",spellstr[i]);
 			mvaddstr(yspt,xspt,line);
-			xspt += strlen(line);
+			xspt += safe_size_to_int(strlen(line));
 			if (xspt>COLS-20) {
 				xspt=0;
 				yspt++;
@@ -1620,13 +1620,13 @@ void wizardry (void) {
 				errormsg("That unit is too busy marching");
 			} else {
 				/*cost of 1 spell point for magiccost men*/
-				s_cost = (P_ASOLD-1) / magiccost[choice] + 1;
+				s_cost = safe_long_to_int((P_ASOLD-1) / magiccost[choice] + 1);
 				if (s_cost > curntn->spellpts) {
 					sprintf(line,"You don't have %d spell points",s_cost);
 					errormsg(line);
 				} else {
 					change_status(armynum,magicstat[choice]);
-					curntn->spellpts -= s_cost;
+					curntn->spellpts -= safe_int_to_short(s_cost);
 					EDECSPL;
 				}
 			}
