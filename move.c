@@ -27,6 +27,7 @@
 #include <unistd.h>
 #include "header.h"
 #include "data.h"
+#include "safe_convert.h"
 
 extern FILE *fexe;
 extern short redraw;
@@ -140,7 +141,7 @@ mymove()
 	armornvy=AORN;
 	clear_bottom(0);
 
-	if((armynum=getselunit())<0) {		/*get selected army or navy*/
+	if((armynum=safe_int_to_short(getselunit()))<0) {		/*get selected army or navy*/
 		errormsg("Invalid Unit Selected");
 		armornvy=AORN;
 		return;
@@ -198,7 +199,7 @@ mymove()
 					groupmen += P_ASOLD;
 				else	othermen += P_ASOLD;
 			}
-			armynum=x;
+			armynum=safe_int_to_short(x);
 		} else if(P_ATYPE<MINLEADER) {
 			groupmen = P_ASOLD;
 		} else	othermen = P_ASOLD;
@@ -303,8 +304,8 @@ mymove()
 		if (!ONMAP(XREAL,YREAL)) {
 			errormsg("We refuse to go off the edge of the world");
 			valid=FALSE;
-			xcurs=oldxcurs;
-			ycurs=oldycurs;
+			xcurs=safe_int_to_short(oldxcurs);
+			ycurs=safe_int_to_short(oldycurs);
 		}
 		/*if valid move check if have enough movement points*/
 		if(valid==TRUE) {
@@ -316,10 +317,10 @@ mymove()
 				if (fmove<0 || fmove>mveleft) {
 					beep();
 					valid=FALSE;
-					xcurs=oldxcurs;
-					ycurs=oldycurs;
+					xcurs=safe_int_to_short(oldxcurs);
+					ycurs=safe_int_to_short(oldycurs);
 				} else {
-					P_AMOVE-=fmove;
+					P_AMOVE=safe_int_to_uchar(P_AMOVE-fmove);
 					if(P_AMOVE==0) done=TRUE;
 				}
 			}
@@ -329,8 +330,8 @@ mymove()
 					errormsg("Costs Too Much To Move Here!!!");
 				else	errormsg("Can't Move Here");
 				valid=FALSE;
-				xcurs=oldxcurs;
-				ycurs=oldycurs;
+				xcurs=safe_int_to_short(oldxcurs);
+				ycurs=safe_int_to_short(oldycurs);
 			} else {
 
 				/* CANT MOVE IN NON ALLIED / NON WAR/JIHAD COUNTRIES */
@@ -344,8 +345,8 @@ mymove()
 				&&(curntn->dstatus[sct[XREAL][YREAL].owner]<WAR)){
 					errormsg("You May Not Enter Non-Allied Land Without Declaring War.");
 					valid=FALSE;
-					xcurs=oldxcurs;
-					ycurs=oldycurs;
+					xcurs=safe_int_to_short(oldxcurs);
+					ycurs=safe_int_to_short(oldycurs);
 				}
 				else if((sct[XREAL][YREAL].owner!=country)
 				&&(sct[XREAL][YREAL].owner!=0)
@@ -353,10 +354,10 @@ mymove()
 				&&(curntn->dstatus[sct[XREAL][YREAL].owner]==UNMET)){
 					errormsg("Can't Enter Unmet Nations Land");
 					valid=FALSE;
-					xcurs=oldxcurs;
-					ycurs=oldycurs;
+					xcurs=safe_int_to_short(oldxcurs);
+					ycurs=safe_int_to_short(oldycurs);
 				} else {
-					P_AMOVE-=movecost[XREAL][YREAL];
+					P_AMOVE=safe_int_to_uchar(P_AMOVE-movecost[XREAL][YREAL]);
 					if(P_AMOVE==0) done=TRUE;
 				}
 			}
@@ -365,8 +366,8 @@ mymove()
 			if(abs(movecost[XREAL][YREAL])>mveleft){
 				errormsg("Costs Too Much To Move Here!!!");
 				valid=FALSE;
-				xcurs=oldxcurs;
-				ycurs=oldycurs;
+				xcurs=safe_int_to_short(oldxcurs);
+				ycurs=safe_int_to_short(oldycurs);
 			} else if(movecost[XREAL][YREAL] >= 0
 				  || movecost[XREAL][YREAL] == -2){
 				/* LAND OF SOME TYPE */
@@ -378,8 +379,8 @@ mymove()
 
 				if(valid==FALSE) {
 					errormsg("There isn't a waterway over there!");
-					xcurs=oldxcurs;
-					ycurs=oldycurs;
+					xcurs=safe_int_to_short(oldxcurs);
+					ycurs=safe_int_to_short(oldycurs);
 				} else
 				if(((sct[XREAL][YREAL].designation==DTOWN)
 				||(sct[XREAL][YREAL].designation==DCAPITOL)
@@ -392,8 +393,8 @@ mymove()
 					else {
 						errormsg("You need 3 move points for that");
 						valid=FALSE;
-						xcurs=oldxcurs;
-						ycurs=oldycurs;
+						xcurs=safe_int_to_short(oldxcurs);
+						ycurs=safe_int_to_short(oldycurs);
 					}
 				} else {	/* coastland */
 				standout();
@@ -409,8 +410,8 @@ mymove()
 					else {
 						beep();
 						valid=FALSE;
-						xcurs=oldxcurs;
-						ycurs=oldycurs;
+						xcurs=safe_int_to_short(oldxcurs);
+						ycurs=safe_int_to_short(oldycurs);
 						errormsg("You need 4 move points to land");
 						move(ycurs,xcurs*2);
 						refresh();
@@ -419,8 +420,8 @@ mymove()
 					move(LINES-3,0);
 					clrtoeol();
 					valid=FALSE;
-					xcurs=oldxcurs;
-					ycurs=oldycurs;
+					xcurs=safe_int_to_short(oldxcurs);
+					ycurs=safe_int_to_short(oldycurs);
 					move(ycurs,xcurs*2);
 					refresh();
 				}
@@ -430,10 +431,10 @@ mymove()
 				/* warship going into deep water */
 				errormsg("Light Ships May Not Go Into Deep Water!");
 				valid=FALSE;
-				xcurs=oldxcurs;
-				ycurs=oldycurs;
+				xcurs=safe_int_to_short(oldxcurs);
+				ycurs=safe_int_to_short(oldycurs);
 			} else {
-				P_NMOVE -= abs( movecost[XREAL][YREAL] );
+				P_NMOVE = safe_int_to_uchar(P_NMOVE - abs( movecost[XREAL][YREAL] ));
 			}
 
 			if(P_NMOVE==0) done=TRUE;
@@ -462,7 +463,7 @@ mymove()
 				  ||(ntn[Tnation].dstatus[country]>=HOSTILE))
 				&&(ntn[Tnation].arm[Tarmynum].stat!=SCOUT)
 				&&(ntn[Tnation].arm[Tarmynum].unittyp!=A_NINJA))
-					total+=ntn[Tnation].arm[Tarmynum].sold;
+					total=safe_long_to_int(total+ntn[Tnation].arm[Tarmynum].sold);
 			} else {
 		/*naval total is number of at war WARSHIPS within one sector*/
 				for(Tnation=0;Tnation<NTOTAL;Tnation++)
@@ -496,7 +497,7 @@ mymove()
 					errormsg("Zone Of Control - Stopping Movement!");
 				} else if(total>0) {
 					/* remove proportion of starting move */
-					P_AMOVE-= total * curntn->maxmove * *(unitmove+(P_ATYPE%UTYPE))/(10*(groupmen+othermen));
+					P_AMOVE = safe_long_to_uchar(P_AMOVE - total * curntn->maxmove * *(unitmove+(P_ATYPE%UTYPE))/(10*(groupmen+othermen)));
 					if( P_AMOVE>150 )
 						P_AMOVE=0;
 					AADJMOV;
@@ -556,8 +557,8 @@ mymove()
 	clrtoeol();
 	if(armornvy==ARMY){
 
-		P_AXLOC=XREAL;
-		P_AYLOC=YREAL;
+		P_AXLOC=safe_int_to_uchar(XREAL);
+		P_AYLOC=safe_int_to_uchar(YREAL);
 		AADJLOC;
 		if (P_ASTAT==FLIGHT) {
 			P_ASTAT=DEFEND;	/* landed; must stay on ground */
@@ -596,13 +597,13 @@ mymove()
 			  ||(ntn[Tnation].dstatus[country]>=HOSTILE))
 			&&(ntn[Tnation].arm[Tarmynum].stat!=SCOUT)
 			&&(ntn[Tnation].arm[Tarmynum].unittyp!=A_NINJA))
-				total+=ntn[Tnation].arm[Tarmynum].sold;
+				total=safe_long_to_int(total+ntn[Tnation].arm[Tarmynum].sold);
 			if((groupmen>=TAKESECTOR)&&(SOWN==0 )){
 				mvaddstr(LINES-2,0,"Taking Unowned Sector");
 				clrtoeol();
 				refresh();
 				sleep(2);
-				SOWN=country;
+				SOWN=safe_short_to_uchar(country);
 				curntn->popularity++;
 				SADJOWN;
 				P_AMOVE=0;
@@ -635,7 +636,7 @@ mymove()
 				clrtoeol();
 				refresh();
 				sleep(2);
-				SOWN=country;
+				SOWN=safe_short_to_uchar(country);
 				curntn->popularity++;
 				SADJOWN;
 				P_AMOVE=0;
@@ -658,13 +659,13 @@ mymove()
 			x=armynum;
 			for(armynum=0;armynum<MAXARM;armynum++)
 			if(curntn->arm[armynum].stat==x+NUMSTATUS){
-				P_AXLOC=XREAL;
-				P_AYLOC=YREAL;
+				P_AXLOC=safe_int_to_uchar(XREAL);
+				P_AYLOC=safe_int_to_uchar(YREAL);
 				AADJLOC;
 				P_AMOVE=curntn->arm[x].smove;
 				AADJMOV;
 			}
-			armynum=x;
+			armynum=safe_int_to_short(x);
 		}
 	} else if(armornvy==AORN){
 		errormsg("Error in move.c");
@@ -673,15 +674,15 @@ mymove()
 		/*else navy*/
 		mvaddstr(LINES-1,0,"NAVY DONE: ");
 		clrtoeol();
-		P_NXLOC=XREAL;
-		P_NYLOC=YREAL;
+		P_NXLOC=safe_int_to_uchar(XREAL);
+		P_NYLOC=safe_int_to_uchar(YREAL);
 		NADJLOC;
 		NADJMOV;
 		armynum=P_NARMY;
 		/* move army but do not take land -- still in ship */
 		if((armynum>=0)&&(armynum<MAXARM)) {
-			P_AXLOC=XREAL;
-			P_AYLOC=YREAL;
+			P_AXLOC=safe_int_to_uchar(XREAL);
+			P_AYLOC=safe_int_to_uchar(YREAL);
 			AADJLOC;
 			P_AMOVE=0;
 			AADJMOV;
