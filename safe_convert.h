@@ -772,4 +772,25 @@ static inline char safe_long_to_char(long value) {
     return (char)value;
 }
 
+/*
+ * safe_double_to_float - Convert double to float with precision handling
+ *
+ * Safely converts a double value to float, handling potential precision loss.
+ * Used when macro calculations that expand to double need to be assigned to
+ * float variables while eliminating compiler warnings about precision loss.
+ *
+ * Parameters:
+ *   value - The double value to convert (may lose precision)
+ *
+ * Returns:
+ *   float value representing the double (with potential precision loss)
+ *
+ * Example Usage:
+ *   temp = safe_double_to_float(P_EATRATE);     // Instead of: temp = P_EATRATE;
+ *   float rate = safe_double_to_float(macro_expansion);
+ */
+static inline float safe_double_to_float(double value) {
+    return (float)value;
+}
+
 #endif /* SAFE_CONVERT_H */

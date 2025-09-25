@@ -94,6 +94,7 @@
 #include <crypt.h>
 #include "header.h"
 #include "data.h"
+#include "safe_convert.h"
 
 extern FILE	*fexe, *fnews;
 extern short	country,redraw;
@@ -453,7 +454,7 @@ void diploscrn (void) {
 		mvaddstr(LINES-5,COLS/2-21,"HIT ANY OTHER KEY TO SCROLL NATIONS LIST");
 		standend();
 		refresh();
-		k=getch();
+		k=safe_int_to_char(getch());
 		if(k==' ') {
 			if(isgod==TRUE) reset_god();
 			return;
@@ -461,8 +462,8 @@ void diploscrn (void) {
 		if((k!='B')&&(k!='\r')&&(k!='\n')) {
 			/* find start for next listing */
 			for(; i<NTOTAL && (!isntnorp(ntn[i].active)||i==country); i++) ;
-			if(i==NTOTAL) count2=1;
-			else count2=i;
+			if(i==NTOTAL) count2=safe_int_to_short(1);
+			else count2=safe_int_to_short(i);
 			continue;
 		}
 		if(k=='B'){
@@ -476,7 +477,7 @@ void diploscrn (void) {
 			mvaddstr(LINES-4,0,"BRIBES DONT ALWAYS WORK (only the update will show)");
 			mvaddstr(LINES-3,0,"WHAT NATION:");
 			refresh();
-			nation = get_country();
+			nation = safe_int_to_short(get_country());
 
 			/* may only change with NPCs */
 			if((nation<=0)
@@ -530,7 +531,7 @@ void diploscrn (void) {
 		}
 		mvaddstr(LINES-3,0,"WHAT NATION:");
 		refresh();
-		nation = get_country();
+		nation = safe_int_to_short(get_country());
 		/* can't change with nomads...*/
 		if((nation<=0)||(nation>NTOTAL)||(!isntnorp(ntn[nation].active))){
 			if(isgod==TRUE) reset_god();
@@ -573,7 +574,7 @@ void diploscrn (void) {
 			j++;
 			mvaddstr(j++,0,"INPUT:");
 			refresh();
-			temp = get_number();
+			temp = safe_long_to_short(get_number());
 			if(temp<0) {
 				if(isgod==TRUE) reset_god();
 				return;
@@ -595,7 +596,7 @@ void diploscrn (void) {
 				}
 			}
 
-			curntn->dstatus[nation]=temp;
+			curntn->dstatus[nation]=safe_short_to_char(temp);
 			EADJDIP(country,nation);
 
 			if((temp>HOSTILE)
@@ -702,7 +703,7 @@ void change (void) {
 	mvprintw(4,COLS/2-12, "popularity.... %3d",curntn->popularity);
 	mvprintw(5,COLS/2-12, "prestige...... %3d",curntn->prestige);
 	mvprintw(6,COLS/2-12, "knowledge..... %3d",curntn->knowledge);
-	temp = P_EATRATE;
+	temp = safe_double_to_float(P_EATRATE);
 	mvprintw(7,COLS/2-12, "eatrate.......%3.2f",temp);
 	mvprintw(8,COLS/2-12, "wealth........ %3d",curntn->wealth);
 	mvprintw(9,COLS/2-12, "charity....... %2d%%",curntn->charity);
@@ -825,7 +826,7 @@ void change (void) {
 		mvaddstr(LINES-1,0,"WHAT TAX RATE DO YOU WISH:");
 		standend();
 		refresh();
-		intval = get_number();
+		intval = safe_long_to_int(get_number());
 		if( intval < 0 )
 			break;
 		else if( intval > 20 )
@@ -842,7 +843,7 @@ void change (void) {
 		mvaddstr(LINES-1,0,"GIVE WHAT PERCENT OF YOUR INCOME TO THE POOR:");
 		standend();
 		refresh();
-		intval = get_number();
+		intval = safe_long_to_int(get_number());
 		if (intval < 0) {
 			break;
 		} else if( intval > 100 ) {
@@ -854,8 +855,8 @@ void change (void) {
 			if (2 * (intval - (int)curntn->charity) + (int) curntn->popularity > 100) {
 				errormsg("ERROR - you may not increase charity that much");
 			} else {
-				curntn->popularity += (unsigned char) 2*(intval - (int) curntn->charity);
-				curntn->charity = intval;
+				curntn->popularity += safe_int_to_uchar(2*(intval - (int) curntn->charity));
+				curntn->charity = safe_int_to_uchar(intval);
 				NADJNTN;
 				NADJNTN2;
 			}
@@ -863,8 +864,8 @@ void change (void) {
 			if (2 * (intval - (int)curntn->charity) < - (int) curntn->popularity) {
 				errormsg("ERROR - you may not decrease charity that much");
 			} else {
-				curntn->popularity += (unsigned char) 2*(intval - (int) curntn->charity);
-				curntn->charity = intval;
+				curntn->popularity += safe_int_to_uchar(2*(intval - (int) curntn->charity));
+				curntn->charity = safe_int_to_uchar(intval);
 				NADJNTN;
 				NADJNTN2;
 			}
@@ -876,7 +877,7 @@ void change (void) {
 		mvaddstr(LINES-1,0,"HOW MUCH MORE TO TERRORIZE THEM: ");
 		standend();
 		refresh();
-		intval = get_number();
+		intval = safe_long_to_int(get_number());
 		if( intval < 0 )
 			break;
 		else if( intval+curntn->terror > 100 )
@@ -904,12 +905,12 @@ void change (void) {
 			if ((intval=getch())=='A' || intval=='a')  {
 				mvaddstr(LINES-1,0,"Enter new value for Attack Bonus: ");
 				refresh();
-				curntn->aplus = get_number();
+				curntn->aplus = safe_long_to_short(get_number());
 				if (curntn->aplus < 0) curntn->aplus = 0;
 			} else if (intval=='d' || intval == 'D') {
 				mvaddstr(LINES-1,0,"Enter new value for Defense Bonus: ");
 				refresh();
-				curntn->dplus = get_number();
+				curntn->dplus = safe_long_to_short(get_number());
 				if (curntn->dplus < 0) curntn->dplus = 0;
 			}
 			break;
@@ -927,7 +928,7 @@ void change (void) {
 		for(armynum=0;armynum<MAXARM;armynum++)
 			if((P_ASOLD>0)&&(P_ATYPE<MINLEADER)) men+=P_ASOLD;
 		men = max( men, 1500);
-		armynum = max( curntn->aplus-intval, 10 ) / 10;
+		armynum = safe_int_to_short(max( curntn->aplus-intval, 10 ) / 10);
 		cost = METALORE*men*armynum*armynum;
 		if( curntn->race == ORC) cost*=3;
 		mvprintw(LINES-1,0,"Do You Wish Spend %ld Metal On Attack (enter y or n):",cost);
@@ -941,7 +942,7 @@ void change (void) {
 				errormsg("SORRY");
 			}
 		}
-		armynum = max( curntn->dplus-intval, 10 ) / 10;
+		armynum = safe_int_to_short(max( curntn->dplus-intval, 10 ) / 10);
 		cost=METALORE*men*armynum*armynum;
 		if( curntn->race == ORC) cost*=3;
 		mvprintw(LINES-1,0,"Do You Wish Spend %ld Metal On Defense (enter y or n):",cost);
@@ -1124,7 +1125,7 @@ void help (void) {
 					standout();
 					mvaddstr(lineno,i,line+i);
 					/* add a blank space on the end */
-					mvaddch(lineno,strlen(line)-1,' ');
+					mvaddch(lineno,safe_size_to_int(strlen(line))-1,' ');
 					standend();
 				} else mvaddstr(lineno,0,line);
 				lineno++;
@@ -1336,7 +1337,7 @@ void newspaper (void) {
 			PSEASON(i), YEAR(i));
 		/* align all strings */
 		mvprintw(ydist,xdist,"%s",line);
-		xdist += strlen(line);
+		xdist += safe_size_to_int(strlen(line));
 		if (xdist>60) {
 			xdist=0;
 			ydist++;
@@ -1389,7 +1390,7 @@ void newspaper (void) {
 		errormsg("Page not found");
 		pagenum=1;
 	} else {
-		pagenum=i;
+		pagenum=safe_int_to_short(i);
 	}
 
 	do {
@@ -1400,7 +1401,7 @@ void newspaper (void) {
 			standout();
 			mvprintw(0,21,"CONQUER NEWS REPORT  Page %d.%d",pagenum,subpage++);
 			mvprintw(1,28,"%s of Year %d",PSEASON(TURN-choice),YEAR(TURN-choice));
-			mvprintw(3,37-strlen(name)/2,"%s",name+2);
+			mvprintw(3,37-safe_size_to_int(strlen(name))/2,"%s",name+2);
 			standend();
 			/* display any pending non-blank lines */
 			if(strcmp(line,name)!=0 && strlen(line)>2) {
@@ -1412,12 +1413,12 @@ void newspaper (void) {
 			if(line[1]!='.'  && line[1]!=':') {
 				strcpy(name,line);
 				newpage=FALSE;
-				pagenum=todigit(line[0]);
+				pagenum=safe_int_to_short(todigit(line[0]));
 				subpage=1;
 			} else {
 				if(todigit(line[0])!=pagenum) {
 					newpage=FALSE;
-					pagenum=todigit(line[0]);
+					pagenum=safe_int_to_short(todigit(line[0]));
 					subpage=1;
 				}
 				else if(lineno>LINES-4) newpage=FALSE;
@@ -1465,11 +1466,11 @@ void newspaper (void) {
 				/* goto a specific page */
 				i=todigit(c);
 				if (i<=pagenum) {
-					pagenum=i;
+					pagenum=safe_int_to_short(i);
 					fclose(fp);
 					goto backpage;
 				} else {
-					pagenum=i;
+					pagenum=safe_int_to_short(i);
 					goto forpage;
 				}
 				break;
