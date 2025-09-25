@@ -503,8 +503,8 @@ armymove (int armynum)
 		||( P_ATYPE>=MINLEADER)) menok=TRUE;
 		else menok=FALSE;
 		/* range of 4 if menok is FALSE else 2 */
-		for(x=(int)P_AXLOC-4+menok*2;x<=(int)P_AXLOC+4-menok*2;x++)
-		for(y=(int)P_AYLOC-4+menok*2;y<=(int)P_AYLOC+4-menok*2;y++) {
+		for(x=safe_long_to_int(P_AXLOC-4+menok*2);x<=safe_long_to_int(P_AXLOC+4-menok*2);x++)
+		for(y=safe_long_to_int(P_AYLOC-4+menok*2);y<=safe_long_to_int(P_AYLOC+4-menok*2);y++) {
 			if(ONMAP(x,y)) {
 				if( menok==TRUE || ISCITY(sct[x][y].designation) )
 					sum+=attr[x][y];
@@ -552,8 +552,8 @@ armymove (int armynum)
 	} else {	/* move a normal unit */
 		where=rand()%sum;
 		/* range of 4 if menok is FALSE else 2 */
-		for(x=(int)P_AXLOC-4+menok*2;x<=(int)P_AXLOC+4-menok*2;x++)
-		for(y=(int)P_AYLOC-4+menok*2;y<=(int)P_AYLOC+4-menok*2;y++)
+		for(x=safe_long_to_int(P_AXLOC-4+menok*2);x<=safe_long_to_int(P_AXLOC+4-menok*2);x++)
+		for(y=safe_long_to_int(P_AYLOC-4+menok*2);y<=safe_long_to_int(P_AYLOC+4-menok*2);y++)
 		if(ONMAP(x,y)){
 			if( menok==TRUE || ISCITY(sct[x][y].designation) )
 				where -= attr[x][y];
