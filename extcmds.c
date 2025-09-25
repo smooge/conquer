@@ -67,6 +67,7 @@
 #include <curses.h>
 #include "header.h"
 #include "data.h"
+#include "safe_convert.h"
 
 extern FILE *fexe;
 extern short selector;
@@ -135,7 +136,7 @@ void ext_cmd(int armie) {
 		splitarmy(armynum);
 		break;
 	case '/':		/* divide army */
-		men = P_ASOLD/2;
+		men = safe_long_to_int(P_ASOLD/2);
 		reducearmy(armynum,men);
 		break;
 	case '+':		/* combine armies */
@@ -418,7 +419,7 @@ void change_status (int armynum, int new_stat) {
 			errormsg("That troop has gone too far to stop marching");
 			return;
 		}
-		P_AMOVE-=(curntn->maxmove * *(unitmove+(P_ATYPE%UTYPE)))/50;
+		P_AMOVE=safe_int_to_uchar(P_AMOVE-(curntn->maxmove * *(unitmove+(P_ATYPE%UTYPE)))/50);
 		AADJMOV;
 	}
 
@@ -428,7 +429,7 @@ void change_status (int armynum, int new_stat) {
 		P_AMOVE=0;
 		AADJMOV;
 	}
-	P_ASTAT = new_stat;
+	P_ASTAT = safe_int_to_uchar(new_stat);
 	AADJSTAT;
 	if( P_AMOVE != 0 ) P_AMOVE--;
 	AADJMOV;
@@ -514,8 +515,8 @@ void reducearmy (int armynum, int men) {
 		P_AMOVE=curntn->arm[army2].smove;
 		P_ATYPE=curntn->arm[army2].unittyp;
 		P_ASTAT=curntn->arm[army2].stat;
-		P_AXLOC=oldx;
-		P_AYLOC=oldy;
+		P_AXLOC=safe_int_to_uchar(oldx);
+		P_AYLOC=safe_int_to_uchar(oldy);
 		P_ASOLD=men;
 		curntn->arm[army2].sold-=P_ASOLD;
 		AADJSTAT;
@@ -566,7 +567,7 @@ void splitarmy(int armynum) {
 	clear_bottom(2);
 	mvaddstr(LINES-2, 0, "How many men to split? ");
 	refresh();
-	men = get_number();
+	men = safe_long_to_int(get_number());
 	if(men <= 0) {
 		return;
 	}
@@ -717,7 +718,7 @@ void addgroup(int armynum) {
 	}
 	mvaddstr(LINES-4,0,"enter a valid leader unit/army group id: ");
 	refresh();
-	group = get_number();
+	group = safe_long_to_int(get_number());
 	if(group < 0) {
 		return;
 	}
@@ -739,14 +740,14 @@ void addgroup(int armynum) {
 		return;
 	}
 
-	P_ASTAT=group+NUMSTATUS;
+	P_ASTAT=safe_int_to_uchar(group+NUMSTATUS);
 	moverate = P_AMOVE;
 	AADJSTAT;
 	armynum = group;
 	P_ASTAT=GENERAL;
 	AADJSTAT;
 	if( P_AMOVE > moverate ){
-		P_AMOVE = moverate;
+		P_AMOVE = safe_int_to_uchar(moverate);
 		AADJMOV;
 	}
 }
