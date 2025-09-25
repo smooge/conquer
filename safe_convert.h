@@ -703,4 +703,48 @@ static inline unsigned int safe_long_to_uint(long value) {
  *    - safe_double_to_long() for double to long conversions (large calculations)
  */
 
+/*
+ * safe_int_to_float - Convert int to float safely
+ *
+ * Converts int to float without precision loss warnings. Used when
+ * integer calculations need to be converted to floating-point for
+ * mathematical operations while preserving exact representation.
+ *
+ * Parameters:
+ *   value - The int value to convert (will fit exactly in float)
+ *
+ * Returns:
+ *   float value representing the exact integer value
+ *
+ * Example Usage:
+ *   points += Mcost[i] * safe_int_to_float(spent[i]) / safe_int_to_float(Munits[i]);
+ *   float result = safe_int_to_float(calculation);
+ */
+static inline float safe_int_to_float(int value) {
+    return (float)value;
+}
+
+/*
+ * safe_long_to_char - Convert long to char with bounds checking
+ *
+ * Safely converts a long value to char, clamping to valid char range.
+ * Used for calculations that result in long values but need to be stored
+ * in char variables for nation attributes or resource allocation.
+ *
+ * Parameters:
+ *   value - The long value to convert (may exceed char range)
+ *
+ * Returns:
+ *   char value clamped to [CHAR_MIN, CHAR_MAX] range
+ *
+ * Example Usage:
+ *   curntn->repro = safe_long_to_char(Mvalues[CH_REPRO] * spent[CH_REPRO]);
+ *   char attribute = safe_long_to_char(calculation_result);
+ */
+static inline char safe_long_to_char(long value) {
+    if (value > CHAR_MAX) return CHAR_MAX;
+    if (value < CHAR_MIN) return CHAR_MIN;
+    return (char)value;
+}
+
 #endif /* SAFE_CONVERT_H */

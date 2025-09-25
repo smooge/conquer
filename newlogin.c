@@ -132,6 +132,7 @@
 #include "header.h"
 #include "data.h"
 #include "newlogin.h"
+#include "safe_convert.h"
 
 /* information about national classes */
 char *Classwho[]= { "DEHO", "DEH", "DEH", "EH", "H", "DHO", "HE", "DHO",
@@ -651,7 +652,7 @@ newerror (char *str)
 int
 in_str (int ch, char *str)
 {
-	int i,l=strlen(str);
+	int i,l=safe_size_to_int(strlen(str));
 
 	for(i=0;i<l;i++)
 		if (ch == str[i]) return(TRUE);
@@ -705,7 +706,7 @@ errorbar (char *str1, char *str2)
 		addch(' ');
 	standend();
 	mvprintw(LINES-3,0," Conquer %s.%s: %s",VERSION,PATCHLEVEL,str1);
-	mvaddstr(LINES-3,COLS-strlen(str2)-2,str2);
+	mvaddstr(LINES-3,COLS-safe_size_to_int(strlen(str2))-2,str2);
 	move(LINES-2,0);
 	for(i=0;i<COLS-1;i++)
 		addch('-');
@@ -764,10 +765,10 @@ dispitem (int item, long amount)
 	}
 
 	/* now show the extras for the Raw Materials */
-	printw(", %ld jewels", (long) (amount *
-		((float)NLJEWELS/Mvalues[CH_RAWGOODS])));
-	printw(", and %ld metal.", (long) (amount *
-		((float)NLMETAL/Mvalues[CH_RAWGOODS])));
+	printw(", %ld jewels", (long) (safe_long_to_float(amount) *
+		safe_long_to_float(NLJEWELS)/safe_long_to_float(Mvalues[CH_RAWGOODS])));
+	printw(", and %ld metal.", (long) (safe_long_to_float(amount) *
+		safe_long_to_float(NLMETAL)/safe_long_to_float(Mvalues[CH_RAWGOODS])));
 }
 
 /*
@@ -910,11 +911,11 @@ convert (void)
 		break;
 	}
 	curntn->tmil = Mvalues[CH_SOLDIERS] * spent[CH_SOLDIERS];
-	curntn->aplus = (short) Mvalues[CH_ATTACK] * spent[CH_ATTACK];
-	curntn->dplus = (short) Mvalues[CH_DEFEND] * spent[CH_DEFEND];
-	curntn->repro = (char) Mvalues[CH_REPRO] * spent[CH_REPRO];
-	curntn->maxmove = (unsigned char) Mvalues[CH_MOVEMENT]
-		* spent[CH_MOVEMENT];
+	curntn->aplus = safe_long_to_short(Mvalues[CH_ATTACK] * spent[CH_ATTACK]);
+	curntn->dplus = safe_long_to_short(Mvalues[CH_DEFEND] * spent[CH_DEFEND]);
+	curntn->repro = safe_long_to_char(Mvalues[CH_REPRO] * spent[CH_REPRO]);
+	curntn->maxmove = safe_long_to_uchar(Mvalues[CH_MOVEMENT]
+		* spent[CH_MOVEMENT]);
 	for(i = 0; i < spent[CH_MAGIC]; i++) {
 		/* purchase magic */
 		loop = TRUE;
@@ -1091,7 +1092,7 @@ newlogin (int realuser)
 	for(i=1;i<NTOTAL;i++)
 		if(ntn[i].active==INACTIVE)
 		{
-			country=i;
+			country=safe_int_to_short(i);
 			curntn = &ntn[country];
 			break;
 		}
@@ -1173,7 +1174,7 @@ newlogin (int realuser)
 		move(1,0);
 		clrtoeol();
 		standout();
-		mvprintw(0,COLS/2-15-strlen(curntn->name)/2,
+		mvprintw(0,COLS/2-15-safe_size_to_int(strlen(curntn->name))/2,
 			"< Building Country %s >",curntn->name);
 		standend();
 		clrtoeol();
@@ -1370,7 +1371,7 @@ newlogin (int realuser)
 			mvaddstr(5,0,"Enter National Mark (for maps): ");
 			clrtoeol();
 			refresh();
-			tempc[0] = getch();
+			tempc[0] = safe_int_to_char(getch());
 			if( markok( tempc[0], TRUE ) ){
 				curntn->mark=(*tempc);
 				break;
@@ -1610,7 +1611,7 @@ newlogin (int realuser)
 			newerror("Ok, Your Nation has been Added to the World");
 			att_setup(country);	/* setup values ntn attributes */
 #ifdef CHECKUSER
-			curntn->uid = realuser;
+			curntn->uid = safe_int_to_short(realuser);
 #endif
 			fclose(fexe);
 			pccount++;
@@ -1940,18 +1941,18 @@ place (
 
 	/*done with one try*/
 	if(placed==1) {
-		curntn->capx = x;
-		curntn->capy = y;
+		curntn->capx = safe_int_to_uchar(x);
+		curntn->capy = safe_int_to_uchar(y);
 		sct[x][y].designation=DCAPITOL;
 		sct[x][y].tradegood=rand()%(END_KNOWLEDGE-END_SPOILRATE)+END_SPOILRATE+1;
 		sct[x][y].jewels=0;
 		sct[x][y].metal=0;
-		sct[x][y].owner=country;
+		sct[x][y].owner=safe_int_to_uchar(country);
 		sct[x][y].people=curntn->tciv;
 		sct[x][y].fortress=5;
 
 		/* put all military into armies of armysize */
-		armysize = (TAKESECTOR*12)/10;
+		armysize = safe_long_to_int((TAKESECTOR*12)/10);
 		if(armysize<100) armysize=100;
 		/* cant have more than 50% leaders */
 		if( MAXARM < numleaders * 2 ) numleaders = MAXARM / 2;
@@ -1959,18 +1960,18 @@ place (
 		soldsleft = curntn->tmil;
 		P_ASOLD = curntn->tmil/MILINCAP;
 		soldsleft-=P_ASOLD;
-		P_ATYPE=defaultunit(country);
+		P_ATYPE=safe_long_to_uchar(defaultunit(country));
 		P_ASTAT=GARRISON;
 		P_AMOVE=0;
 		P_AXLOC=curntn->capx;
 		P_AYLOC=curntn->capy;
 		armynum++;
 
-		armysize = max( armysize, soldsleft  / (MAXARM-numleaders-1));
+		armysize = safe_long_to_int(max( armysize, soldsleft  / (MAXARM-numleaders-1)));
 
 		/* give you your leaders */
 		leadtype = getleader(curntn->class);
-		P_ATYPE = leadtype-1;	/* This is the national leader */
+		P_ATYPE = safe_int_to_uchar(leadtype-1);	/* This is the national leader */
 		P_ASOLD = *(unitminsth+((leadtype-1)%UTYPE));
 		P_AXLOC = curntn->capx;
 		P_AYLOC = curntn->capy;
@@ -1979,7 +1980,7 @@ place (
 		armynum++;
 		numleaders--;
 		while ((armynum < MAXARM)&&(numleaders>0)) {
-			P_ATYPE=leadtype;
+			P_ATYPE=safe_int_to_uchar(leadtype);
 			P_ASOLD= *(unitminsth+(leadtype%UTYPE));
 			P_AXLOC=curntn->capx;
 			P_AYLOC=curntn->capy;
@@ -1991,7 +1992,7 @@ place (
 
 		/* give you the rest of your armies */
 		while((armynum < MAXARM)&&(soldsleft >0)) {
-			P_ATYPE=defaultunit(country);
+			P_ATYPE=safe_long_to_uchar(defaultunit(country));
 			if(soldsleft >= armysize){
 				P_ASOLD=armysize;
 				soldsleft -=armysize;
@@ -2034,7 +2035,7 @@ place (
 			&&(is_habitable(i,j)==TRUE)
 			&&(sct[i][j].people==0)) {
 				curntn->tsctrs++;
-				sct[i][j].owner=country;
+				sct[i][j].owner=safe_int_to_uchar(country);
 				sct[i][j].designation=DFARM;
 				sct[i][j].people=people;
 				sct[x][y].people-=people;
@@ -2168,7 +2169,7 @@ getclass (int race)
 		if (in_str(race,Classwho[i])==TRUE) {
 			mvprintw(ypos++,0," %2d) %-8s %4s %15s", i, Class[i],
 				Classwho[i], "...............");
-			tmp = strlen(CPowlist[i]);
+			tmp = safe_int_to_short(safe_size_to_int(strlen(CPowlist[i])));
 			for(j=0; j < 10-tmp ; j++) {
 				addch('.');
 			}
@@ -2183,7 +2184,7 @@ getclass (int race)
 		mvaddstr(ypos,0,"Enter the number of your choice: ");
 		clrtoeol();
 		refresh();
-		tmp = get_number();
+		tmp = safe_long_to_short(get_number());
 		if (tmp < 1 || tmp > NUMCLASS) {
 			newerror("Invalid Choice");
 		} else if (in_str(race,Classwho[tmp])==TRUE) {
@@ -2384,7 +2385,7 @@ nstartcst (void)	/* to be used for new method */
 
 	/* calculate cost for all so far */
 	for (i=0; i<CH_NUMBER; i++) {
-		points += Mcost[i] * (float) spent[i] / Munits[i];
+		points += safe_int_to_float(Mcost[i]) * safe_int_to_float(spent[i]) / safe_int_to_float(Munits[i]);
 	}
 
 	/* extra points for starting late */
@@ -2394,7 +2395,7 @@ nstartcst (void)	/* to be used for new method */
 			   (float) (TURN-1) / LATESTART);
 		newerror(temp);
 	}
-	points += 1.0;	/* round up */
+	points += 1.0f;	/* round up */
 	return((int)points);
 }
 
@@ -2511,10 +2512,10 @@ startcost (void)	/* cant be used for npc nations yet!!! see below */
 	else if(curntn->location==GREAT)
 		points += 2*ONLLOCCOST;
 	/* points+=ONLDBLCOST*curntn->tfood/ONLHFOOD; */
-	points -= (TURN-1) / LATESTART;	/* extra points if you start late */
+	points -= safe_int_to_float((TURN-1) / LATESTART);	/* extra points if you start late */
 	if( TURN > 1 )
 	printf("point cost for nation %d is %.2f (bonus for latestart is %f)\n",country,points,(float) (TURN-1)/LATESTART);
 
-	points += 1.0;	/* round up */
+	points += 1.0f;	/* round up */
 	return((int) points);
 }
