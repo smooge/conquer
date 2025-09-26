@@ -182,7 +182,10 @@ getspace()
 	if (occ != NULL) free(occ);
 	occ = (char **) m2alloc(MAPX,MAPY,sizeof(char));
 	if (movecost != NULL) free(movecost);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wanalyzer-allocation-size"
 	movecost = (short **) m2alloc(MAPX,MAPY,sizeof(short));
+#pragma GCC diagnostic pop
 }
 
 #ifdef CONQUER

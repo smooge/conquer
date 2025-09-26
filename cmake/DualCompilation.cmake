@@ -138,6 +138,20 @@ target_compile_definitions(conquer PRIVATE CONQUER)
 # Link with Phase 4 warning preservation and standard libraries
 target_link_libraries(conquer PRIVATE conquer_warnings)
 
+# Game executable also needs ncurses for terminal I/O (display.c, trade.c, etc.)
+if(NOT NCURSES_FOUND)
+    if(NCURSES_LIB)
+        target_link_libraries(conquer PRIVATE ${NCURSES_LIB})
+    endif()
+else()
+    target_link_libraries(conquer PRIVATE ${NCURSES_LIBRARIES})
+endif()
+
+# Game executable also needs crypt library for password functions (main.c, forms.c)
+if(CRYPT_LIB)
+    target_link_libraries(conquer PRIVATE ${CRYPT_LIB})
+endif()
+
 # Add common compile definitions (paths, version, etc.)
 target_compile_definitions(conquer PRIVATE
     DEFAULTDIR="${CONQUER_DEFAULT_DIR}"
@@ -156,8 +170,17 @@ add_executable(conqsort sort.c)
 target_link_libraries(conqsort PRIVATE conquer_warnings)
 
 # PostScript map generator - single-file executable with special definitions
-# Equivalent to: conqps: $(PSSRC) in Makefile
-# TODO: Will be implemented in Phase 5.4 with PostScript-specific definitions
+# Equivalent to: conqps: $(PSSRC) in Makefile with $(PSOPTS)
+# Original Makefile: $(CC) $(OPTFLG) $(PSOPTS) $(PSSRC) -o $@
+# where PSOPTS = -DPSFILE=\"$(EXEDIR)/$(PSDATA)\" -D$(PSPAGE)
+add_executable(conqps psmap.c)
+target_link_libraries(conqps PRIVATE conquer_warnings)
+
+# PostScript-specific definitions matching original Makefile PSOPTS
+target_compile_definitions(conqps PRIVATE
+    PSFILE="${CONQUER_EXE_DIR}/psmap.ps"
+    LETTER  # Default page size (could be A4 instead)
+)
 
 # =============================================================================
 # BUILD INFORMATION AND VERIFICATION
@@ -170,6 +193,8 @@ message(STATUS "  Admin-only sources: ${ADMIN_ONLY_SOURCES}")
 message(STATUS "  Game-only sources: ${GAME_ONLY_SOURCES}")
 message(STATUS "  Admin executable: conqrun (with -DADMIN)")
 message(STATUS "  Game executable: conquer (with -DCONQUER)")
+message(STATUS "  PostScript utility: conqps (with PSFILE and LETTER)")
+message(STATUS "  Sort utility: conqsort")
 
 # Create verification target to ensure dual compilation works correctly
 add_custom_target(verify_dual_compilation
@@ -177,6 +202,7 @@ add_custom_target(verify_dual_compilation
     COMMAND ${CMAKE_COMMAND} -E echo "Admin executable: $<TARGET_FILE:conqrun>"
     COMMAND ${CMAKE_COMMAND} -E echo "Game executable: $<TARGET_FILE:conquer>"
     COMMAND ${CMAKE_COMMAND} -E echo "Sort utility: $<TARGET_FILE:conqsort>"
+    COMMAND ${CMAKE_COMMAND} -E echo "PostScript utility: $<TARGET_FILE:conqps>"
     COMMAND ${CMAKE_COMMAND} -E echo "=== Verification Complete ==="
     COMMENT "Verifying dual compilation system executables"
     VERBATIM

@@ -302,29 +302,29 @@ void get_pagesize (void) {
  *   - Essential for preventing PostScript syntax errors
  *   - Used for titles, footers, and text labels in map output
  */
-void psstring (FILE *fh, char *str) {
-    fprintf(fh, "(");
+void psstring (FILE *output_fh, char *str) {
+    fprintf(output_fh, "(");
     while (*str != '\0') {
 	switch (*str) {
 	case ('('):
-	    fprintf(fh, "\\(");
+	    fprintf(output_fh, "\\(");
 	    break;
 	case (')'):
-	    fprintf(fh, "\\)");
+	    fprintf(output_fh, "\\)");
 	    break;
 	case ('\\'):
-	    fprintf(fh, "\\\\");
+	    fprintf(output_fh, "\\\\");
 	    break;
 	case ('\n'):
 	case ('\f'):
 	    break;
 	default:
-	    fputc(*str, fh);
+	    fputc(*str, output_fh);
 	    break;
 	}
 	str++;
     }
-    fprintf(fh, ")");
+    fprintf(output_fh, ")");
 }
 
 /*
