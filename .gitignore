@@ -96,8 +96,6 @@ build_gcc/
 # Modernization scratch/temporary files
 _modernization/claude/scratch/
 
-# Session memory files (keep current session, ignore historical ones)
-_modernization/memory/SESSION_MEMORY_2025-09-26_PHASE_*
 
 # Compiler testing output files
 clang_build_output.txt
