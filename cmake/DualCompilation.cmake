@@ -117,7 +117,7 @@ endif()
 target_compile_definitions(conqrun PRIVATE
     DEFAULTDIR="${CONQUER_DEFAULT_DIR}"
     EXEDIR="${CONQUER_EXE_DIR}"
-    PATCHLEVEL="${CONQUER_PATCHLEVEL}"
+    # PATCHLEVEL is available via #include "patchlevel.h"
     # LOGIN is now defined in config.h instead of compiler flags
 )
 
@@ -156,7 +156,7 @@ endif()
 target_compile_definitions(conquer PRIVATE
     DEFAULTDIR="${CONQUER_DEFAULT_DIR}"
     EXEDIR="${CONQUER_EXE_DIR}"
-    PATCHLEVEL="${CONQUER_PATCHLEVEL}"
+    # PATCHLEVEL is available via #include "patchlevel.h"
     # LOGIN is now defined in config.h instead of compiler flags
 )
 
