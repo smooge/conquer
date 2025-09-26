@@ -1496,14 +1496,22 @@ char ** m2alloc (
 ) {
 	char	**baseaddr;
 	int	j;
-	entrysize *= ncols;
-	baseaddr = (char **)
-		malloc( (size_t)nrows*(sizeof(char *)+(size_t)entrysize));
+	size_t row_data_size = (size_t)ncols * (size_t)entrysize;  /* Total data per row */
+	size_t total_size = (size_t)nrows * sizeof(char *) + (size_t)nrows * row_data_size;
+
+	/* Suppress analyzer warning for intentional pointer+data allocation pattern */
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wanalyzer-allocation-size"
+	baseaddr = (char **) malloc(total_size);
+	#pragma GCC diagnostic pop
 
 	if( baseaddr == (char **) NULL ) {
 		printf("OOPS - cannot allocate %d by %d blocks of %d bytes\n",nrows,ncols,entrysize);
 		abrt();
 	}
+
+	/* Update entrysize for the rest of the function (backward compatibility) */
+	entrysize = (int)row_data_size;
 	if(nrows>0){
 		*baseaddr = (char *) (baseaddr + nrows);
 		for(j=1; j<nrows; j++)

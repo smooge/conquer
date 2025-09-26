@@ -210,12 +210,9 @@
     #define SPOOLDIR "/usr/spool/mail"
 #endif
 
-/* File locking support */
+/* File locking support - Modern flock() implementation */
 #ifdef PLATFORM_UNIX
-    #define FILELOCK 1             /* BSD flock() support */
-    #ifdef PLATFORM_LINUX
-        #define LOCKF 1            /* lockf() for NFS */
-    #endif
+    #define FILELOCK 1             /* flock() support (POSIX standard) */
 #endif
 
 /* System utilities */

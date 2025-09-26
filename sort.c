@@ -119,8 +119,9 @@ main(int argc, char *argv[])
 {
 	/* declare temporary variables and functions */
 	int i,j,num_args=0,l,innum=0,outnum=0;
-	int get_line();
-	void place(), send_out();
+	int get_line(char data[]);
+	void place(char data[]);
+	void send_out(void);
 
         /* This needs to be done at run-time now */
         infile=stdin;
@@ -379,8 +380,9 @@ send_out(void)
 void
 place(char data[])
 {
-	L_PTR temp, build_node();
-	int comp_line();
+	L_PTR temp;
+	L_PTR build_node(char data[], L_PTR nptr);
+	int comp_line(char *a, char *b);
 
 	/* find location for placing input */
 	if(head==(L_PTR)NULL) {

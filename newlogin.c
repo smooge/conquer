@@ -122,12 +122,15 @@
  * proper resource distribution while maintaining security and data integrity.
  */
 
+#define _GNU_SOURCE  /* For crypt() function */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <curses.h>
 #include <ctype.h>
 #include <pwd.h>
+#include <unistd.h>
+#include <crypt.h>
 #include "patchlevel.h"
 #include "header.h"
 #include "data.h"

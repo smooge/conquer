@@ -376,14 +376,10 @@ void checkout (char *file, int line) {
 #endif /* DEBUG */
 
 #ifdef FILELOCK
-#ifdef LOCKF
-#    include <unistd.h>
-#    define do_lock(fd) lockf(fd,F_TLOCK,0)
-#else
+/* Modern file locking using flock() - POSIX standard across all target platforms */
 #    include <sys/types.h>
 #    include <sys/file.h>
 #    define do_lock(fd) flock(fd,LOCK_EX|LOCK_NB)
-#endif
 #endif /* FILELOCK */
 
 /*
