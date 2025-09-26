@@ -122,7 +122,7 @@ int execute(int isupdate) {	/* 0 if not update, 1 if update */
 	char comment[LINELTH];
 	char temp[LINELTH];
 	long longvar,long2var;
-	int armynum;
+	int armynum = 0;  /* Initialize to prevent undefined behavior with L_ commands */
 	short int x,y;
 	int execed=0;
 	int done=FALSE;

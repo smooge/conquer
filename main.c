@@ -31,6 +31,7 @@
 #include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
+#include <crypt.h>
 #include "header.h"
 #include "data.h"
 #include "patchlevel.h"

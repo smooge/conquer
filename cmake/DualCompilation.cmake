@@ -85,6 +85,34 @@ target_compile_definitions(conqrun PRIVATE ADMIN)
 # Link with Phase 4 warning preservation and standard libraries
 target_link_libraries(conqrun PRIVATE conquer_warnings)
 
+# Find and link crypt library for password encryption (needed by admin.c, makeworl.c, newlogin.c)
+find_library(CRYPT_LIB crypt)
+if(CRYPT_LIB)
+    target_link_libraries(conqrun PRIVATE ${CRYPT_LIB})
+    message(STATUS "Crypt library found: ${CRYPT_LIB}")
+else()
+    message(WARNING "Crypt library not found - admin executable may not link")
+endif()
+
+# Find and link ncurses library for terminal I/O (needed by newlogin.c, makeworl.c, misc.c, io.c)
+find_package(PkgConfig QUIET)
+if(PkgConfig_FOUND)
+    pkg_check_modules(NCURSES ncurses)
+endif()
+
+if(NOT NCURSES_FOUND)
+    find_library(NCURSES_LIB NAMES ncurses curses)
+    if(NCURSES_LIB)
+        target_link_libraries(conqrun PRIVATE ${NCURSES_LIB})
+        message(STATUS "Ncurses library found: ${NCURSES_LIB}")
+    else()
+        message(WARNING "Ncurses library not found - admin executable may not link")
+    endif()
+else()
+    target_link_libraries(conqrun PRIVATE ${NCURSES_LIBRARIES})
+    message(STATUS "Ncurses library found via pkg-config: ${NCURSES_LIBRARIES}")
+endif()
+
 # Add common compile definitions (paths, version, etc.)
 target_compile_definitions(conqrun PRIVATE
     DEFAULTDIR="${CONQUER_DEFAULT_DIR}"
