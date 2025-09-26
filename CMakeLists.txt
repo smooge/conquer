@@ -49,6 +49,16 @@ execute_process(
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
+# Debug: Show LOGIN detection
+message(STATUS "LOGIN Detection: CONQUER_LOGIN='${CONQUER_LOGIN}'")
+if(NOT CONQUER_LOGIN)
+    message(WARNING "LOGIN detection failed - using fallback")
+    set(CONQUER_LOGIN "unknown")
+endif()
+
+# Set LOGIN as a global cache variable to ensure it persists
+set(CONQUER_LOGIN "${CONQUER_LOGIN}" CACHE STRING "Build user login name" FORCE)
+
 # Build timestamp for configuration
 string(TIMESTAMP CONQUER_BUILD_TIMESTAMP "%Y-%m-%d %H:%M:%S UTC" UTC)
 
@@ -109,3 +119,43 @@ add_custom_target(verify_phase4_compliance
     COMMENT "Comprehensive Phase 4 warning compliance verification"
     VERBATIM
 )
+
+#
+# INSTALLATION CONFIGURATION - Complete Makefile Conversion
+#
+
+# Install all executables to bin directory
+# Note: CMake doesn't support setuid bits (4751), those must be set manually after installation
+install(TARGETS conquer conqrun conqsort conqps
+    RUNTIME DESTINATION bin
+    COMPONENT Executables
+)
+
+# Install PostScript data file alongside conqps executable
+install(FILES psmap.ps
+    DESTINATION bin
+    PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
+    COMPONENT Data
+)
+
+# Install manual page
+install(FILES man.pag
+    DESTINATION bin
+    PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
+    COMPONENT Documentation
+)
+
+# TODO: Help file generation and installation
+# The original Makefile generates help0-help5 from txt0-txt5 using sed scripts
+# This requires implementing the helpfile target from Makefile
+# install(FILES help0 help1 help2 help3 help4 help5
+#     DESTINATION share/conquer
+#     PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
+#     COMPONENT Data
+# )
+
+# Installation summary message
+install(CODE "message(STATUS \"Installation complete to \${CMAKE_INSTALL_PREFIX}\")")
+install(CODE "message(STATUS \"Note: Set setuid permissions manually if needed:\")")
+install(CODE "message(STATUS \"  chmod 4755 \${CMAKE_INSTALL_PREFIX}/bin/conquer\")")
+install(CODE "message(STATUS \"  chmod 4755 \${CMAKE_INSTALL_PREFIX}/bin/conqrun\")")
