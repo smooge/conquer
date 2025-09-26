@@ -113,12 +113,13 @@ else()
     message(STATUS "Ncurses library found via pkg-config: ${NCURSES_LIBRARIES}")
 endif()
 
-# Add common compile definitions (paths, version, etc.)
+# Add common compile definitions
+# Note: All configuration now comes from proper headers:
+# - DEFAULTDIR, EXEDIR: defined in config.h (included by header.h)
+# - PATCHLEVEL: available via #include "patchlevel.h"
+# - LOGIN: defined in config.h (included by header.h)
 target_compile_definitions(conqrun PRIVATE
-    DEFAULTDIR="${CONQUER_DEFAULT_DIR}"
-    EXEDIR="${CONQUER_EXE_DIR}"
-    # PATCHLEVEL is available via #include "patchlevel.h"
-    # LOGIN is now defined in config.h instead of compiler flags
+    # All major configuration moved to config.h and header includes
 )
 
 # =============================================================================
@@ -152,12 +153,13 @@ if(CRYPT_LIB)
     target_link_libraries(conquer PRIVATE ${CRYPT_LIB})
 endif()
 
-# Add common compile definitions (paths, version, etc.)
+# Add common compile definitions
+# Note: All configuration now comes from proper headers:
+# - DEFAULTDIR, EXEDIR: defined in config.h (included by header.h)
+# - PATCHLEVEL: available via #include "patchlevel.h"
+# - LOGIN: defined in config.h (included by header.h)
 target_compile_definitions(conquer PRIVATE
-    DEFAULTDIR="${CONQUER_DEFAULT_DIR}"
-    EXEDIR="${CONQUER_EXE_DIR}"
-    # PATCHLEVEL is available via #include "patchlevel.h"
-    # LOGIN is now defined in config.h instead of compiler flags
+    # All major configuration moved to config.h and header includes
 )
 
 # =============================================================================

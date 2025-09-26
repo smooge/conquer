@@ -65,6 +65,10 @@
 /* Legacy LOGIN macro for backward compatibility */
 #define LOGIN "@CONQUER_LOGIN@"
 
+/* Installation paths for runtime use */
+#define DEFAULTDIR "@CONQUER_DEFAULT_DIR@"
+#define EXEDIR "@CONQUER_EXE_DIR@"
+
 /*
  * ============================================================================
  * PLATFORM DETECTION RESULTS - Future Extension Point
