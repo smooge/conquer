@@ -628,9 +628,9 @@ void createworld (void) {	/* create world */
 		else sct[i][j].altitude = WATER;
 
 	/* place  */
-	avvalue	= PMOUNT * (100-pwater);
+	avvalue	= PMOUNT * (float)(100-pwater);
 	avvalue	/= 10000;
-	nmountains	= NUMSECTS * avvalue;
+	nmountains	= safe_float_to_long(NUMSECTS * avvalue);
 
 	mvprintw(11,0,"Hills and Mountains....  %ld out of %ld sectors",nmountains,(long)NUMSECTS);
 	newmsg("Day 3... God created hills and mountains");

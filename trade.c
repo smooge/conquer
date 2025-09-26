@@ -1624,6 +1624,8 @@ uptrade (void)
 		deal[count]=(-1);
 		whobuy[count]=(-1);
 		price[count]=(-1);
+		buy1[count]=(-1);
+		buy2[count]=(-1);
 	}
 	/* open trading file */
 	if ((tfile = fopen(tradefile,"r")) == NULL) {

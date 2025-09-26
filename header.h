@@ -331,7 +331,7 @@
 #define ORCTAKE 100000L /* jewel cost for orc takeover */
 #define MOVECOST 20L    /* cost per move/screen */
 #define TAKEPOINTS 10   /* spell points for orc takeover */
-#define PMOUNT 40       /* % of land that is mountains */
+#define PMOUNT 40.0f    /* % of land that is mountains */
 #define PSTORM 3        /* % chance storm strikes fleet */
 #define CMOVE           /* computer moves for inactive players */
 

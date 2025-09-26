@@ -694,7 +694,7 @@ struct	s_nation		/* player nation stats	*/
 #define	P_NWAR(x)	SHIPS(P_NWSHP,x)
 #define	P_NMER(x)	SHIPS(P_NMSHP,x)
 #define	P_NGAL(x)	SHIPS(P_NGSHP,x)
-#define	NADD_WAR(x)	addwships(nvynum,shipsize,(x));
+#define	NADD_WAR(x)	addwships((short)nvynum,(short)shipsize,(x));
 #define	NADD_MER(x)	addmships(nvynum,shipsize,(x));
 #define	NADD_GAL(x)	addgships(nvynum,shipsize,(x));
 #define	NSUB_WAR(x)	subwships(nvynum,shipsize,(x));

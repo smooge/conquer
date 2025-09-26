@@ -1461,7 +1461,7 @@ deplete (int nation)
 	/* check for sectors breaking away -- not capx, capy */
 	if(ispc(curntn->active)) {
 		/* create a summarized mail message of sectors effected */
-		if (mailopen(nation)!=(1)) {
+		if (mailopen(nation)!=(-1)) {
 			fprintf(fm,"Message to %s from Conquer\n\n",curntn->name);
 			fprintf(fm,"Riots and Rebellion flourish:\n");
 		}
