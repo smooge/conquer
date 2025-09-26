@@ -1344,13 +1344,13 @@ void navalcbt (void) {
 	for(j=0;j<count;j++) if(owner[j]!=(-1)){
 		curntn= &ntn[owner[j]];
 		country= safe_int_to_short(owner[j]);
-		wnum[j]=safe_short_to_char(SHIPS(ntn[country].nvy[unit[j]].warships,N_LIGHT)+
+		wnum[j]=safe_int_to_char(SHIPS(ntn[country].nvy[unit[j]].warships,N_LIGHT)+
 			SHIPS(ntn[country].nvy[unit[j]].warships,N_MEDIUM)+
 			SHIPS(ntn[country].nvy[unit[j]].warships,N_HEAVY));
-		mnum[j]=safe_short_to_char(SHIPS(ntn[country].nvy[unit[j]].merchant,N_LIGHT)+
+		mnum[j]=safe_int_to_char(SHIPS(ntn[country].nvy[unit[j]].merchant,N_LIGHT)+
 			SHIPS(ntn[country].nvy[unit[j]].merchant,N_MEDIUM)+
 			SHIPS(ntn[country].nvy[unit[j]].merchant,N_HEAVY));
-		gnum[j]=safe_short_to_char(SHIPS(ntn[country].nvy[unit[j]].galleys,N_LIGHT)+
+		gnum[j]=safe_int_to_char(SHIPS(ntn[country].nvy[unit[j]].galleys,N_LIGHT)+
 			SHIPS(ntn[country].nvy[unit[j]].galleys,N_MEDIUM)+
 			SHIPS(ntn[country].nvy[unit[j]].galleys,N_HEAVY));
 		if(side[j]==DFND) {
