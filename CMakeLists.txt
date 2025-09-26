@@ -49,8 +49,7 @@ execute_process(
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
-# Debug: Show LOGIN detection
-message(STATUS "LOGIN Detection: CONQUER_LOGIN='${CONQUER_LOGIN}'")
+# Validate LOGIN detection for config.h generation
 if(NOT CONQUER_LOGIN)
     message(WARNING "LOGIN detection failed - using fallback")
     set(CONQUER_LOGIN "unknown")
@@ -58,6 +57,7 @@ endif()
 
 # Set LOGIN as a global cache variable to ensure it persists
 set(CONQUER_LOGIN "${CONQUER_LOGIN}" CACHE STRING "Build user login name" FORCE)
+message(STATUS "LOGIN for config.h: CONQUER_LOGIN='${CONQUER_LOGIN}'")
 
 # Build timestamp for configuration
 string(TIMESTAMP CONQUER_BUILD_TIMESTAMP "%Y-%m-%d %H:%M:%S UTC" UTC)

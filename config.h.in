@@ -62,6 +62,9 @@
 /* Build-time user identification */
 #define CONQUER_BUILD_USER "@CONQUER_LOGIN@"
 
+/* Legacy LOGIN macro for backward compatibility */
+#define LOGIN "@CONQUER_LOGIN@"
+
 /*
  * ============================================================================
  * PLATFORM DETECTION RESULTS - Future Extension Point

@@ -118,7 +118,7 @@ target_compile_definitions(conqrun PRIVATE
     DEFAULTDIR="${CONQUER_DEFAULT_DIR}"
     EXEDIR="${CONQUER_EXE_DIR}"
     PATCHLEVEL="${CONQUER_PATCHLEVEL}"
-    LOGIN="${CONQUER_LOGIN}"
+    # LOGIN is now defined in config.h instead of compiler flags
 )
 
 # =============================================================================
@@ -157,7 +157,7 @@ target_compile_definitions(conquer PRIVATE
     DEFAULTDIR="${CONQUER_DEFAULT_DIR}"
     EXEDIR="${CONQUER_EXE_DIR}"
     PATCHLEVEL="${CONQUER_PATCHLEVEL}"
-    LOGIN="${CONQUER_LOGIN}"
+    # LOGIN is now defined in config.h instead of compiler flags
 )
 
 # =============================================================================
