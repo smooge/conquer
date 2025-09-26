@@ -90,6 +90,13 @@ Thumbs.db
 # CMake build directories
 build/
 /build/
+build_clang/
+build_gcc/
 
 # Modernization scratch/temporary files
 _modernization/claude/scratch/
+
+# Compiler testing output files
+clang_build_output.txt
+gcc_build_output.txt
+*_build_output.txt
