@@ -87,5 +87,9 @@ Thumbs.db
 */.deps/
 */.libs/
 
+# CMake build directories
+build/
+/build/
+
 # Modernization scratch/temporary files
 _modernization/claude/scratch/
