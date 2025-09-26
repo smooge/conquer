@@ -1,8 +1,16 @@
 cmake_minimum_required(VERSION 3.15...3.28)
 
-# Project definition matching strategy document
+# Parse version from patchlevel.h - Single Source of Truth
+file(READ "patchlevel.h" PATCHLEVEL_CONTENT)
+string(REGEX MATCH "#define PATCHLEVEL[ \t]+\"([0-9]+)\"" _ ${PATCHLEVEL_CONTENT})
+if(NOT CMAKE_MATCH_1)
+    message(FATAL_ERROR "Could not parse PATCHLEVEL from patchlevel.h")
+endif()
+set(CONQUER_PATCHLEVEL ${CMAKE_MATCH_1})
+
+# Project definition with version from patchlevel.h
 project(Conquer
-    VERSION 4.12
+    VERSION 4.${CONQUER_PATCHLEVEL}
     DESCRIPTION "Classic strategy game - modernized"
     LANGUAGES C
 )
@@ -29,8 +37,8 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type" FORCE)
 endif()
 
-# Project configuration variables
-set(CONQUER_PATCHLEVEL "12" CACHE STRING "Game patch level")
+# Project configuration variables (PATCHLEVEL now parsed from patchlevel.h)
+# Note: CONQUER_PATCHLEVEL is automatically set from patchlevel.h above
 set(CONQUER_DEFAULT_DIR "${CMAKE_INSTALL_PREFIX}/share/conquer" CACHE PATH "Default game data directory")
 set(CONQUER_EXE_DIR "${CMAKE_INSTALL_PREFIX}/bin" CACHE PATH "Executable installation directory")
 
@@ -41,11 +49,26 @@ execute_process(
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
+# Build timestamp for configuration
+string(TIMESTAMP CONQUER_BUILD_TIMESTAMP "%Y-%m-%d %H:%M:%S UTC" UTC)
+
+# Generate configuration header from template
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/config.h.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/config.h"
+    @ONLY
+)
+
+# Make generated config.h available to all targets
+include_directories("${CMAKE_CURRENT_BINARY_DIR}")
+
 # Basic build information
 message(STATUS "Conquer ${PROJECT_VERSION} - Modern CMake Build System")
+message(STATUS "Patchlevel: ${CONQUER_PATCHLEVEL} (from patchlevel.h)")
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 message(STATUS "C standard: C${CMAKE_C_STANDARD}")
 message(STATUS "Phase 4 warning preservation: ENABLED")
+message(STATUS "Config header: ${CMAKE_CURRENT_BINARY_DIR}/config.h")
 
 # Dual compilation system creates conquer, conqrun, and conqsort executables
 # All configuration is handled by the DualCompilation module
