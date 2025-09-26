@@ -802,6 +802,10 @@ produce (void)
 		if (get_god()) return;
 	}
 	fp=fopen("temp","w");
+	if (fp == NULL) {
+		/* Handle file open failure gracefully */
+		return;
+	}
 	clear();
 	standout();
 	mvaddstr(0,(COLS/2)-17,"NEXT SEASON'S PRODUCTION ESTIMATES");
@@ -834,8 +838,14 @@ produce (void)
 	military+= military+spread.civilians; /* military is amount eaten */
 	fprintf(fp,"LINE %d FILE %s\n",__LINE__,__FILE__);
 	standout();
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
 	mvprintw(15,0, "ESTIMATE NET FOOD.........%8.0f tons",spread.food-curntn->tfood-P_EATRATE*safe_long_to_double(military));
+#pragma GCC diagnostic pop
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
 	mvprintw(16,0, "ESTIMATE FOOD SUPPLY......%8.0f tons",spread.food-P_EATRATE*safe_long_to_double(military));
+#pragma GCC diagnostic pop
 	standend();
 	fprintf(fp,"LINE %d FILE %s\n",__LINE__,__FILE__);
 

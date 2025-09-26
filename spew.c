@@ -518,7 +518,10 @@ static int parse_class_header(const char *line, struct text_class *cls)
 
     /* Initialize the class */
     cls->name = NULL;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-qual"
     cls->variants = (char *)default_variants;
+#pragma GCC diagnostic pop
     cls->total_weight = 0;
     cls->defs = NULL;
 
