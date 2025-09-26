@@ -1,7 +1,0 @@
-     16 /projects/conquer-4.x/safe_convert.h
-      8 /projects/conquer-4.x/magic.c
-      4 /projects/conquer-4.x/trade.h
-      4 /projects/conquer-4.x/io.c
-      2 /projects/conquer-4.x/navy.c
-      2 /projects/conquer-4.x/makeworl.c
-      2 /projects/conquer-4.x/check.c
