@@ -216,9 +216,8 @@ static char *hasseen;
  *
  * Side Effects:
  *   - Allocates dynamic memory for global hasseen array
- *   - Initializes all array elements to zero (unseen state)
+ *   - Initializes all array elements to zero (unseen state) using memset()
  *   - Calls bye(FALSE) and exits program on allocation failure
- *   - Uses platform-specific memory clearing (bzero on BSD, memset elsewhere)
  *
  * Testing Notes:
  *   Category: B (Integration) - Requires terminal environment and global state
@@ -231,16 +230,11 @@ static char *hasseen;
  * Notes:
  *   - Must be called before any screen rendering functions
  *   - Memory is not explicitly freed (program termination cleanup)
- *   - BSD vs non-BSD conditional compilation for memory clearing
  *   - Critical function - program exits on allocation failure
  */
 void init_hasseen() {
 	hasseen = (char *)malloc(safe_int_to_size(((COLS-10)/2) * (LINES-5)));
-#ifdef BSD
-	bzero(hasseen, safe_int_to_size(((COLS-10)/2) * (LINES-5)));
-#else
-	memset( hasseen, 0, safe_int_to_size(((COLS-10)/2) * (LINES-5)));
-#endif
+	memset(hasseen, 0, safe_int_to_size(((COLS-10)/2) * (LINES-5)));
 	if (hasseen == (char *)NULL) {
 		errormsg("Cannot allocate memory.");
 		bye(FALSE);

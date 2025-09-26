@@ -23,7 +23,7 @@
  * reporting mechanisms (detailed error messages with source location).
  *
  * PLATFORM COMPATIBILITY:
- * - Cross-platform file locking (flock/lockf vs timestamp-based)
+ * - Cross-platform file locking (flock vs timestamp-based)
  * - Conditional compilation for debug features
  * - POSIX-compliant file operations with fallback mechanisms
  * - Support for various Unix-like systems and development environments
@@ -403,7 +403,7 @@ void checkout (char *file, int line) {
  *   - May create lock file if keeplock=TRUE and no lock exists
  *   - Removes stale lock files (older than TIME_DEAD*3 seconds)
  *   - Exits program with FAIL status on critical file operation errors
- *   - Uses platform-specific locking mechanism (flock/lockf vs stat-based)
+ *   - Uses platform-specific locking mechanism (flock vs stat-based)
  *
  * Testing Notes:
  *   Category: C (System) - Requires filesystem access and platform-specific locking
@@ -415,7 +415,7 @@ void checkout (char *file, int line) {
  *
  * Notes:
  *   - Two implementation strategies based on FILELOCK compilation flag
- *   - FILELOCK defined: Uses flock() or lockf() for true file locking
+ *   - FILELOCK defined: Uses flock() for true file locking
  *   - FILELOCK undefined: Uses file timestamps for lock detection (fallback)
  *   - Handles stale lock cleanup automatically (TIME_DEAD*3 threshold)
  *   - Critical error conditions cause program termination (defensive programming)

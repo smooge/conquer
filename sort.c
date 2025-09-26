@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include "safe_convert.h"
 
 /* system definitions just in case */
 #ifndef FALSE
@@ -48,6 +49,13 @@ typedef struct holder {
 	char *line;
 	struct holder *next;
 } L_DATA, *L_PTR;
+
+/* Function prototypes */
+static int get_line(char data[]);
+static void send_out(void);
+static void place(char data[]);
+static int comp_line(char *a, char *b);
+static L_PTR build_node(char data[], L_PTR nptr);
 
 /* pointer to head of list of lines */
 L_PTR head;
@@ -147,7 +155,10 @@ main(int argc, char *argv[])
 				break;
 			   default:
 				fprintf(stderr,"%s: Too many parameters\n",argv[0]);
-				fprintf(stderr,usage,argv[0]);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+				fprintf(stderr, usage, argv[0]);
+#pragma GCC diagnostic pop
 				exit(EX_USAGE);
 				break;
 			}
@@ -155,11 +166,14 @@ main(int argc, char *argv[])
 		}
 
 		/* process switch statements */
-		l = strlen(argv[i]);
+		l = safe_size_to_int(strlen(argv[i]));
 		for (j=1; j<l; j++) {
 			switch(argv[i][j]) {
 			   case 'h':
-				fprintf(stderr,usage,argv[0]);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+				fprintf(stderr, usage, argv[0]);
+#pragma GCC diagnostic pop
 				exit(EX_OK);
 				break;
 			   case 'i':
@@ -188,7 +202,10 @@ main(int argc, char *argv[])
 			   default:
 				fprintf(stderr,"%s: invalid option '%c' in <%s>\n",
 					   argv[0],argv[i][j],argv[i]);
-				fprintf(stderr,usage,argv[0]);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+				fprintf(stderr, usage, argv[0]);
+#pragma GCC diagnostic pop
 				exit(EX_USAGE);
 				break;
 			}
@@ -278,7 +295,7 @@ main(int argc, char *argv[])
  *   - Input validation prevents buffer overflows in downstream processing
  *   - Essential preprocessing step for reliable sorting operations
  */
-int
+static int
 get_line(char data[])
 {
 	int in,ch;
@@ -288,7 +305,7 @@ get_line(char data[])
 	{
 		/* copy valid input into data */
 		if((ch=='\t')||(ch==' ')||((ch>=' ')&&(ch<='~'))) {
-			data[in]=ch;
+			data[in]=safe_int_to_char(ch);
 			in++;
 		}
 	}
@@ -331,7 +348,7 @@ get_line(char data[])
  *   - Memory allocated for linked list nodes is not freed (utility exits)
  *   - Essential final phase of sorting pipeline after all input processed
  */
-void
+static void
 send_out(void)
 {
 	L_PTR temp=head;
@@ -377,12 +394,10 @@ send_out(void)
  *   - Memory allocation handled by build_node() with error checking
  *   - Core sorting algorithm that maintains list order incrementally
  */
-void
+static void
 place(char data[])
 {
 	L_PTR temp;
-	L_PTR build_node(char data[], L_PTR nptr);
-	int comp_line(char *a, char *b);
 
 	/* find location for placing input */
 	if(head==(L_PTR)NULL) {
@@ -438,7 +453,7 @@ place(char data[])
  *   - Stops comparison at first null character in either string
  *   - Essential component for customizable sorting behavior
  */
-int
+static int
 comp_line(char *a, char *b)
 {
 	int i;
@@ -494,7 +509,7 @@ comp_line(char *a, char *b)
  *   - Essential memory management component for linked list construction
  *   - Copies string data to prevent external modification issues
  */
-L_PTR
+static L_PTR
 build_node(char data[], L_PTR nptr)
 {
 	L_PTR temp;

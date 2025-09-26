@@ -96,6 +96,40 @@ python3 script.py  # Correct
 python script.py   # May fail - don't use
 ```
 
+### **CMake Build Commands (Modern Build System)**
+
+**⚠️ CRITICAL**: Always use `--clean-first` for accurate warning analysis and compilation testing to prevent stale build artifacts from masking issues.
+
+```bash
+# RECOMMENDED: Clean build for accurate warning detection
+cmake --build build --clean-first
+
+# RECOMMENDED: Clean build with specific target
+cmake --build build --clean-first --target conqrun
+cmake --build build --clean-first --target conquer
+cmake --build build --clean-first --target conqsort
+
+# Warning analysis with clean build (essential for warning elimination)
+cmake --build build --clean-first 2>&1 | grep "warning:"
+cmake --build build --clean-first --target conqrun 2>&1 | grep "warning:"
+
+# Count warnings accurately (clean build prevents false zero counts)
+cmake --build build --clean-first 2>&1 | grep -c "warning:"
+
+# Target-specific clean compilation testing
+cmake --build build --clean-first --target conqrun 2>&1 | tail -20
+
+# AVOID: Regular build without clean-first during warning elimination
+# cmake --build build  # May use cached objects and miss warnings
+```
+
+**Why --clean-first is Essential:**
+- **Accurate Warning Counts**: Prevents cached successful compilations from hiding warnings
+- **Fresh Analysis**: Ensures all files are recompiled with current warning flags
+- **Consistent Results**: Eliminates variability between build sessions
+- **Debugging Reliability**: Essential for verifying that warning fixes actually work
+- **CI/CD Compatibility**: Matches behavior of clean automated build systems
+
 ## Modernization Workflow
 
 **Phase Sequence:**

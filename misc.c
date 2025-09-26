@@ -455,7 +455,7 @@ land_2reachp (int ax, int ay, int move_points)
  *
  * Memory Management:
  *   - Uses m2alloc() for 2D array allocation (MAPX × MAPY × sizeof(char))
- *   - Initializes memory with bzero() (BSD) or memset() (POSIX)
+ *   - Initializes memory with memset() for POSIX compliance
  *   - Guarantees memory cleanup via free() before function return
  *   - History array tracks best movement points to each map sector
  *
@@ -474,9 +474,7 @@ land_2reachp (int ax, int ay, int move_points)
  *   Complexity: Moderate - Wrapper function with memory management and validation
  *
  * Platform Compatibility:
- *   - Conditional compilation for BSD vs POSIX memory initialization
- *   - BSD: Uses bzero() for memory clearing
- *   - Others: Uses memset() for POSIX compliance
+ *   - Uses memset() for POSIX-compliant memory initialization
  *   - Administrative build only (ADMIN preprocessor flag required)
  *
  * Error Conditions:
