@@ -21,6 +21,9 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 # Phase 4 warning preservation - CRITICAL REQUIREMENT
 include(CompilerWarnings)
 
+# Phase 5.2: Dual compilation system implementation
+include(DualCompilation)
+
 # Basic compiler and build type setup
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type" FORCE)
@@ -44,24 +47,8 @@ message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 message(STATUS "C standard: C${CMAKE_C_STANDARD}")
 message(STATUS "Phase 4 warning preservation: ENABLED")
 
-# For now, create a simple test target to verify compilation
-# This will be expanded in subsequent phases
-# Using a Phase 4 warning-eliminated file for testing
-add_executable(conquer_test
-    cexecute.c
-)
-
-# Apply Phase 4 warning levels to test target
-target_link_libraries(conquer_test PRIVATE conquer_warnings)
-
-# Add basic compile definitions
-target_compile_definitions(conquer_test PRIVATE
-    DEFAULTDIR="${CONQUER_DEFAULT_DIR}"
-    EXEDIR="${CONQUER_EXE_DIR}"
-    PATCHLEVEL="${CONQUER_PATCHLEVEL}"
-    LOGIN="${CONQUER_LOGIN}"
-    CONQUER  # Game mode for initial test
-)
+# Dual compilation system creates conquer, conqrun, and conqsort executables
+# All configuration is handled by the DualCompilation module
 
 #
 # VERIFICATION TARGETS - Phase 4 Warning Compliance Validation
@@ -76,22 +63,25 @@ add_custom_target(verify_phase4_warnings
     VERBATIM
 )
 
-# Test for warning regressions in compilation
+# Test for warning regressions in dual compilation
 add_custom_target(test_warning_regression
     COMMAND ${CMAKE_COMMAND} -E echo "=== Testing for Warning Regressions ==="
-    COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target conquer_test --verbose 2>&1 | grep -i warning || ${CMAKE_COMMAND} -E echo "SUCCESS: No warnings detected"
+    COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target conquer --verbose 2>&1 | grep -i warning || ${CMAKE_COMMAND} -E echo "SUCCESS: No warnings in game executable"
+    COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target conqrun --verbose 2>&1 | grep -i warning || ${CMAKE_COMMAND} -E echo "SUCCESS: No warnings in admin executable"
     COMMAND ${CMAKE_COMMAND} -E echo "=== Warning Regression Test Complete ==="
     COMMENT "Testing for any new warnings introduced since Phase 4"
     VERBATIM
 )
 
-# Comprehensive compilation test with verbose output
+# Comprehensive dual compilation test with verbose output
 add_custom_target(verify_phase4_compliance
     COMMAND ${CMAKE_COMMAND} -E echo "=== Phase 4 Compliance Verification ==="
     COMMAND ${CMAKE_COMMAND} -E echo "Compiler: ${CMAKE_C_COMPILER}"
     COMMAND ${CMAKE_COMMAND} -E echo "C Standard: C${CMAKE_C_STANDARD}"
     COMMAND ${CMAKE_COMMAND} -E echo "Build Type: ${CMAKE_BUILD_TYPE}"
-    COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target conquer_test --verbose
+    COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target conquer --verbose
+    COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target conqrun --verbose
+    COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target conqsort --verbose
     COMMAND ${CMAKE_COMMAND} -E echo "=== Phase 4 Compliance Test COMPLETE ==="
     COMMENT "Comprehensive Phase 4 warning compliance verification"
     VERBATIM
