@@ -128,12 +128,16 @@ fi
 OUTFILE=_modernization/claude/scratch/PHASE_${PHASE}.${SUB}_${NAME}_${TYPE}.txt
 TEMPFILE=$(mktemp /tmp/my-app-data.XXXXXX)
 
+# Phase 5 Clean Architecture: Configuration via headers, not compiler flags
+# All DEFAULTDIR, EXEDIR, LOGIN now defined in config.h via header.h inclusion
+DFLAGS="-D_POSIX_C_SOURCE=200809L"
+
 # Define compilation flags for each file type
-ADMIN_FLAGS="-O2 -g -std=${STD} -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -DDEFAULTDIR=\"/projects/conquer/lib\" -DEXEDIR=\"/projects/conquer/bin\" -DLOGIN=\"ssmoogen\" -DADMIN -DCONQUER ${WARN}"
+ADMIN_FLAGS="-O2 -g -std=${STD} ${DFLAGS} -DADMIN -DCONQUER ${WARN}"
 
-GAME_FLAGS="-O2 -g -std=${STD} -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -DDEFAULTDIR=\"/projects/conquer/lib\" -DEXEDIR=\"/projects/conquer/bin\"  -DLOGIN=\"ssmoogen\" -DCONQUER ${WARN}"
+GAME_FLAGS="-O2 -g -std=${STD} ${DFLAGS} -DCONQUER ${WARN}"
 
-PSMAP_FLAGS="-O2 -g -std=${STD} -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -DDEFAULTDIR=\"/projects/conquer/lib\" -DEXEDIR=\"/projects/conquer/bin\" -DLOGIN=\"ssmoogen\" -DPSFILE=\"/projects/conquer/bin/psmap.ps\" -DLETTER ${WARN}"
+PSMAP_FLAGS="-O2 -g -std=${STD} ${DFLAGS} -DPSFILE=\"/projects/conquer/bin/psmap.ps\" -DLETTER ${WARN}"
 
 
 # Verbose output function
