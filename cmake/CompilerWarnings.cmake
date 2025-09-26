@@ -4,13 +4,32 @@
 # by implementing the exact same strict compilation flags that were used for
 # comprehensive warning analysis and fixes.
 #
+# Enhanced with compiler-specific flag intelligence for optimal cross-compiler support
+#
 # ALL GAME TARGETS MUST INHERIT FROM conquer_warnings INTERFACE LIBRARY
 
 include(CheckCCompilerFlag)
 
-# Phase 4 warning flags - MANDATORY minimum requirement
-# These flags achieved 100% warning elimination across 15 files
-set(PHASE4_WARNING_FLAGS
+# Detect compiler type for intelligent flag selection
+set(IS_GCC FALSE)
+set(IS_CLANG FALSE)
+set(IS_MSVC FALSE)
+
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    set(IS_GCC TRUE)
+    message(STATUS "Compiler detected: GCC ${CMAKE_C_COMPILER_VERSION}")
+elseif(CMAKE_C_COMPILER_ID MATCHES "Clang")
+    set(IS_CLANG TRUE)
+    message(STATUS "Compiler detected: Clang ${CMAKE_C_COMPILER_VERSION}")
+elseif(CMAKE_C_COMPILER_ID STREQUAL "MSVC")
+    set(IS_MSVC TRUE)
+    message(STATUS "Compiler detected: MSVC ${CMAKE_C_COMPILER_VERSION}")
+else()
+    message(STATUS "Compiler detected: ${CMAKE_C_COMPILER_ID} ${CMAKE_C_COMPILER_VERSION}")
+endif()
+
+# Core warning flags supported by both GCC and Clang
+set(CORE_WARNING_FLAGS
     -Wall
     -Wextra
     -Wpedantic
@@ -19,20 +38,47 @@ set(PHASE4_WARNING_FLAGS
     -Wsign-conversion
     -Wimplicit-fallthrough
     -Wstrict-prototypes
-    -Wold-style-declaration
     -Wold-style-definition
     -Wshadow
     -Wmissing-prototypes
     -Wcast-qual
 )
 
-# Advanced analysis flags used in Phase 4 intensive testing
-set(PHASE4_ANALYSIS_FLAGS
-    -fanalyzer
+# GCC-specific warning flags
+set(GCC_SPECIFIC_FLAGS
+    -Wold-style-declaration    # Not supported by Clang
 )
 
-# Sanitizer flags for runtime error detection
-set(PHASE4_SANITIZER_FLAGS
+# Clang-specific warning flags
+set(CLANG_SPECIFIC_FLAGS
+    -Wlogical-not-parentheses  # Better logical operator analysis
+    -Wparentheses-equality     # Better equality comparison analysis
+    -Wnewline-eof             # Enforce newline at end of file
+)
+
+# Combine flags based on compiler
+set(PHASE4_WARNING_FLAGS ${CORE_WARNING_FLAGS})
+
+if(IS_GCC)
+    list(APPEND PHASE4_WARNING_FLAGS ${GCC_SPECIFIC_FLAGS})
+    message(STATUS "Using GCC-optimized warning flags")
+elseif(IS_CLANG)
+    list(APPEND PHASE4_WARNING_FLAGS ${CLANG_SPECIFIC_FLAGS})
+    message(STATUS "Using Clang-optimized warning flags")
+endif()
+
+# Compiler-specific analysis flags
+set(GCC_ANALYSIS_FLAGS
+    -fanalyzer                 # GCC static analyzer
+)
+
+set(CLANG_ANALYSIS_FLAGS
+    # Clang has built-in static analyzer, typically invoked separately
+    # -fanalyzer not available in Clang
+)
+
+# Sanitizer flags (both compilers support these)
+set(SANITIZER_FLAGS
     -fsanitize=address,undefined
 )
 
@@ -54,26 +100,38 @@ foreach(flag ${PHASE4_WARNING_FLAGS})
     endif()
 endforeach()
 
-# Conditional advanced analysis support
-check_c_compiler_flag(-fanalyzer COMPILER_SUPPORTS_ANALYZER)
-if(COMPILER_SUPPORTS_ANALYZER)
-    option(ENABLE_ANALYZER "Enable static analysis with -fanalyzer" ON)
-    if(ENABLE_ANALYZER)
-        target_compile_options(conquer_warnings INTERFACE -fanalyzer)
-        message(STATUS "Phase 4 static analysis: ENABLED (-fanalyzer)")
+# Compiler-specific static analysis support
+if(IS_GCC)
+    check_c_compiler_flag(-fanalyzer COMPILER_SUPPORTS_ANALYZER)
+    if(COMPILER_SUPPORTS_ANALYZER)
+        option(ENABLE_ANALYZER "Enable GCC static analysis with -fanalyzer" ON)
+        if(ENABLE_ANALYZER)
+            target_compile_options(conquer_warnings INTERFACE -fanalyzer)
+            message(STATUS "Phase 4 static analysis: ENABLED (GCC -fanalyzer)")
+        endif()
+    else()
+        message(STATUS "Phase 4 static analysis: UNAVAILABLE (GCC lacks -fanalyzer)")
     endif()
+elseif(IS_CLANG)
+    message(STATUS "Phase 4 static analysis: Use 'clang --analyze' or 'scan-build' for Clang static analysis")
 else()
-    message(STATUS "Phase 4 static analysis: UNAVAILABLE (compiler lacks -fanalyzer)")
+    message(STATUS "Phase 4 static analysis: Unknown compiler, use compiler-specific tools")
 endif()
 
-# Conditional sanitizer support
+# Sanitizer support (both compilers support this)
 check_c_compiler_flag("-fsanitize=address,undefined" COMPILER_SUPPORTS_SANITIZERS)
 if(COMPILER_SUPPORTS_SANITIZERS)
     option(ENABLE_SANITIZERS "Enable runtime sanitizers" ON)
     if(ENABLE_SANITIZERS)
         target_compile_options(conquer_warnings INTERFACE -fsanitize=address,undefined)
         target_link_options(conquer_warnings INTERFACE -fsanitize=address,undefined)
-        message(STATUS "Phase 4 sanitizers: ENABLED (address,undefined)")
+        if(IS_GCC)
+            message(STATUS "Phase 4 sanitizers: ENABLED (GCC address,undefined)")
+        elseif(IS_CLANG)
+            message(STATUS "Phase 4 sanitizers: ENABLED (Clang address,undefined)")
+        else()
+            message(STATUS "Phase 4 sanitizers: ENABLED (address,undefined)")
+        endif()
     endif()
 else()
     message(STATUS "Phase 4 sanitizers: UNAVAILABLE (compiler lacks sanitizer support)")
