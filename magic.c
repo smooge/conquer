@@ -681,8 +681,8 @@ void exenewmgk (long newpower) {
 	if(newpower==DESTROYER) {
 /* this ifdef is so that destroyer only takes place in an update */
 #ifdef ADMIN
-		for(x=(int)curntn->capx-3;x<=(int)curntn->capx+3;x++) {
-			for(y=(int)curntn->capy-3;y<=(int)curntn->capy+3;y++){
+		for(x=safe_int_to_short((int)curntn->capx-3);x<=safe_int_to_short((int)curntn->capx+3);x++) {
+			for(y=safe_int_to_short((int)curntn->capy-3);y<=safe_int_to_short((int)curntn->capy+3);y++){
 				if((ONMAP(x,y))
 				&&(sct[x][y].altitude!=WATER)
 #ifdef DERVDESG
@@ -1250,8 +1250,8 @@ void removemgk (long oldpower) {
 		return;
 	}
 	if(oldpower==DESTROYER) {
-		for(x=(int)curntn->capx-3;x<=(int)curntn->capx+3;x++) {
-			for(y=(int)curntn->capy-3;y<=(int)curntn->capy+3;y++){
+		for(x=safe_int_to_short((int)curntn->capx-3);x<=safe_int_to_short((int)curntn->capx+3);x++) {
+			for(y=safe_int_to_short((int)curntn->capy-3);y<=safe_int_to_short((int)curntn->capy+3);y++){
 				if((ONMAP(x,y))
 				&&(sct[x][y].altitude!=WATER)
 				&&((x!=curntn->capx)
@@ -1596,11 +1596,11 @@ void wizardry (void) {
 		case 'f':
 		case 'F':
 			choice--;
-			/* FALLTHROUGH */
+			[[fallthrough]];
 		case 'a':
 		case 'A':
 			choice--;
-			/* FALLTHROUGH */
+			[[fallthrough]];
 		case 'd':
 		case 'D':
 			choice--;

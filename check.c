@@ -113,10 +113,10 @@ void verify_ntn(char __file__[], int __line__) {
 		nptr = &ntn[country];
 
 		if(country !=0 && nptr->active == 0) continue;
-		if( nptr->metals < 0.0 ) {
+		if( nptr->metals < 0L ) {
 			fprintf( stderr, "file %s: line %d: nation[%d] metal = %ld\n",
 				__file__, __line__, country, nptr->metals );
-			nptr->metals = 0.0;
+			nptr->metals = 0L;
 		}
 
 		if( nptr->jewels < 0 ) {

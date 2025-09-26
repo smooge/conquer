@@ -13,6 +13,10 @@ WARN_LEVEL=2
 SINGLE_FILE=""
 VERBOSE=0
 
+# TODO: Make this a flag
+# CC=gcc
+CC=clang
+
 # Usage function
 usage() {
     cat << EOF
@@ -115,6 +119,7 @@ case $WARN_LEVEL in
     8) WARN="-Wall -Wextra -Wpedantic -Wformat=2 -Wconversion -Wsign-conversion -Wimplicit-fallthrough -Wstrict-prototypes" ;;
     9) WARN="-Wall -Wextra -Wpedantic -Wformat=2 -Wconversion -Wsign-conversion -Wimplicit-fallthrough -Wstrict-prototypes -Wold-style-declaration -Wshadow -Wmissing-prototypes -Wcast-qual" ;;
     10) WARN="-Wall -Wextra -Wpedantic -Wformat=2 -Wconversion -Wsign-conversion -Wimplicit-fallthrough -Wstrict-prototypes -Wold-style-declaration -Wshadow -Wmissing-prototypes -Wcast-qual -fanalyzer -fsanitize=address,undefined" ;;
+    11) WARN="-Weverything"
 esac
 
 # Update output file name components based on settings
@@ -133,6 +138,11 @@ TEMPFILE=$(mktemp /tmp/my-app-data.XXXXXX)
 DFLAGS="-D_POSIX_C_SOURCE=200809L"
 
 # Define compilation flags for each file type
++# Phase 5 Clean Architecture: Configuration via headers, not compiler flags
++# All DEFAULTDIR, EXEDIR, LOGIN now defined in config.h via header.h inclusion
++DFLAGS="-D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -DDEFAULTDIR=\"/projects/conquer/lib\" -DEXEDIR=\"/projects/conquer/bin\" -DLOGIN=\"ssmoogen\""
++
+ # Define compilation flags for each file type
 ADMIN_FLAGS="-O2 -g -std=${STD} ${DFLAGS} -DADMIN -DCONQUER ${WARN}"
 
 GAME_FLAGS="-O2 -g -std=${STD} ${DFLAGS} -DCONQUER ${WARN}"
@@ -182,32 +192,32 @@ test_single_file() {
     case $file_type in
         ADMIN|SHARED)
             echo "--- Testing $file (Admin mode) ---" >> ${OUTFILE}
-            gcc $ADMIN_FLAGS -c "$file" -o /tmp/test.o 2>&1 | tee ${TEMPFILE}
+            ${CC} $ADMIN_FLAGS -c "$file" -o /tmp/test.o 2>&1 | tee ${TEMPFILE}
             cat ${TEMPFILE} >> ${OUTFILE}
             ;;
         GAME)
             echo "--- Testing $file (Game mode) ---" >> ${OUTFILE}
-            gcc $GAME_FLAGS -c "$file" -o /tmp/test.o 2>&1 | tee ${TEMPFILE}
+            ${CC} $GAME_FLAGS -c "$file" -o /tmp/test.o 2>&1 | tee ${TEMPFILE}
             cat ${TEMPFILE} >> ${OUTFILE}
             ;;
         DUAL)
             echo "--- Testing $file (Admin mode) ---" >> ${OUTFILE}
-            gcc $ADMIN_FLAGS -c "$file" -o /tmp/test.o 2>&1 | tee ${TEMPFILE}
+            ${CC} $ADMIN_FLAGS -c "$file" -o /tmp/test.o 2>&1 | tee ${TEMPFILE}
             cat ${TEMPFILE} >> ${OUTFILE}
             echo "" >> ${OUTFILE}
 
             echo "--- Testing $file (Game mode) ---" >> ${OUTFILE}
-            gcc $GAME_FLAGS -c "$file" -o /tmp/test.o 2>&1 | tee ${TEMPFILE}
+            ${CC} $GAME_FLAGS -c "$file" -o /tmp/test.o 2>&1 | tee ${TEMPFILE}
             cat ${TEMPFILE} >> ${OUTFILE}
             ;;
         PSMAP)
             echo "--- Testing $file (PostScript mode) ---" >> ${OUTFILE}
-            gcc $PSMAP_FLAGS -c "$file" -o /tmp/test.o 2>&1 | tee ${TEMPFILE}
+            ${CC} $PSMAP_FLAGS -c "$file" -o /tmp/test.o 2>&1 | tee ${TEMPFILE}
             cat ${TEMPFILE} >> ${OUTFILE}
             ;;
         UNKNOWN)
             echo "--- Testing $file (Unknown type, using ADMIN flags) ---" >> ${OUTFILE}
-            gcc $ADMIN_FLAGS -c "$file" -o /tmp/test.o 2>&1 | tee ${TEMPFILE}
+            ${CC} $ADMIN_FLAGS -c "$file" -o /tmp/test.o 2>&1 | tee ${TEMPFILE}
             cat ${TEMPFILE} >> ${OUTFILE}
             ;;
     esac

@@ -303,8 +303,8 @@ static inline double safe_long_to_double(long value) {
  *   int result = safe_float_to_int(calculation);
  */
 static inline int safe_float_to_int(float value) {
-    if (value > INT_MAX) return INT_MAX;
-    if (value < INT_MIN) return INT_MIN;
+    if (value > (float)INT_MAX) return INT_MAX;
+    if (value < (float)INT_MIN) return INT_MIN;
     return (int)(value + 0.5f); /* Round to nearest integer */
 }
 
@@ -588,10 +588,11 @@ static inline short safe_uid_to_short(uid_t uid) {
  *   nation_id = safe_rand_short(active_nations);
  */
 static inline short safe_rand_short(int max_val) {
+	int result = 0;
     if (max_val <= 0 || max_val > SHRT_MAX) {
         return 0;  /* Return 0 for invalid range */
     }
-    int result = rand() % max_val;
+    result = rand() % max_val;
     return (short)result;
 }
 
@@ -618,10 +619,11 @@ static inline short safe_rand_short(int max_val) {
  *   sptr->jewels = safe_rand_uchar(3) + 1;    // Instead of: sptr->jewels = rand()%3 + 1;
  */
 static inline unsigned char safe_rand_uchar(int max_val) {
+	int result = 0;
     if (max_val <= 0 || max_val > UCHAR_MAX) {
         return 0;  /* Return 0 for invalid range */
     }
-    int result = rand() % max_val;
+    result = rand() % max_val;
     return (unsigned char)result;
 }
 

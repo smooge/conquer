@@ -1947,7 +1947,7 @@ place (
 		curntn->capx = safe_int_to_uchar(x);
 		curntn->capy = safe_int_to_uchar(y);
 		sct[x][y].designation=DCAPITOL;
-		sct[x][y].tradegood=rand()%(END_KNOWLEDGE-END_SPOILRATE)+END_SPOILRATE+1;
+		sct[x][y].tradegood=safe_int_to_uchar(rand()%(END_KNOWLEDGE-END_SPOILRATE)+END_SPOILRATE+1);
 		sct[x][y].jewels=0;
 		sct[x][y].metal=0;
 		sct[x][y].owner=safe_int_to_uchar(country);

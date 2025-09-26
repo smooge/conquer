@@ -1201,9 +1201,13 @@ static int read_line(void)
         }
 
         /* Trim trailing whitespace */
-        int len = safe_size_to_int(strlen(input_line));
-        while (len > 0 && isspace(input_line[len-1])) {
-            input_line[--len] = '\0';
+        size_t len = strlen(input_line);
+        if (len > 0) {
+            char *end = input_line + len - 1;
+            while (end >= input_line && isspace((unsigned char)*end)) {
+                *end = '\0';
+                end--;
+            }
         }
 
     } while (input_line[0] == '\0');

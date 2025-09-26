@@ -266,14 +266,14 @@ void makeworld ( int rflag ){		/* TRUE if you wish to read in a map from mapfile
 #endif /*REMAKE*/
 		} else if (strlen(newstring) <= LEADERLTH) {
 			if (getpwnam(newstring)!=NULL) {
-				(void) snprintf(tempc,sizeof(tempc),"The demi-god %s may administrate this new world.",newstring);
+				(void) snprintf(tempc,sizeof(tempc),"The demi-god %.200s may administrate this new world.",newstring);
 				newmsg(tempc);
-				(void) snprintf(ntn[0].leader, LEADERLTH+1, "%s", newstring);
+				(void) snprintf(ntn[0].leader, LEADERLTH+1, "%.9s", newstring);
 				mvprintw(7,0,"Demi-God: %s",ntn[0].leader);
 				clrtoeol();
 				break;
 			} else {
-				(void) snprintf(tempc,sizeof(tempc),"Their is no mortal named %s on this system.",newstring);
+				(void) snprintf(tempc,sizeof(tempc),"Their is no mortal named %.200s on this system.",newstring);
 				newerror(tempc);
 			}
 		} else {
@@ -344,7 +344,7 @@ void makeworld ( int rflag ){		/* TRUE if you wish to read in a map from mapfile
 		fprintf(fm,"5\tGLOBAL ANNOUNCEMENTS\n");
 		fclose(fm);
 	} else {
-		snprintf(tempc,sizeof(tempc),"error opening news file <%s>\n",newstring);
+		snprintf(tempc,sizeof(tempc),"error opening news file <%.200s>\n",newstring);
 		newerror(tempc);
 	}
 	newreset();
@@ -441,7 +441,7 @@ void createworld (void) {	/* create world */
 
 	/*determine # of area types to areas*/
 	for(i=0;i<250;i++) {
-		if((avvalue*NUMAREAS)>alloc) {
+		if((avvalue*(float)NUMAREAS)>(float)alloc) {
 			/*have not allocated high enough so Allocate more */
 			x = rand()%4;   /*0 to 3*/
 			if(number[x]>0) {
@@ -638,7 +638,7 @@ void createworld (void) {	/* create world */
 
 	/* heuristic says that 5 is cutoff number to stop placing ranges */
 	/* and 1 third of mountains are placed as random hills		*/
-	while(nmountains>5 && nmountains> (NUMSECTS*avvalue)/3) {
+	while(nmountains>5 && (float)nmountains> ((float)NUMSECTS*avvalue)/3) {
 		X1 = rand()%(MAPX-8);	/* Place one endpoint of range */
 		Y1 = rand()%(MAPY-8);
 		X2 = (rand()%8) + X1;	/* Place second endpoint */

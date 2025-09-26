@@ -41,6 +41,7 @@ extern	int armornvy,roads_this_turn,terror_adj;
 
 char	fison[FILELTH];
 char	*getpass(const char *prompt);
+void	sect_info(void);
 struct	s_sector **sct;
 struct	s_nation ntn[NTOTAL];	/* player nation stats */
 struct	s_world	world;
@@ -230,7 +231,7 @@ int main(int argc, char **argv) {
 	}
 	if (defaultdir[0] != '/') {
 		strcpy(cq_opts, defaultdir);
-		snprintf(defaultdir, sizeof(defaultdir), "%s/%s", DEFAULTDIR, cq_opts);
+		snprintf(defaultdir, sizeof(defaultdir), "%s/%.200s", DEFAULTDIR, cq_opts);
 	}
 
 	/* process the command line arguments */

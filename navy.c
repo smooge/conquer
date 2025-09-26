@@ -1129,7 +1129,7 @@ loadfleet (void)
 			if (!((sct[XREAL][YREAL].designation==DCITY
 			|| sct[XREAL][YREAL].designation==DCAPITOL)
 			&& (sct[XREAL][YREAL].owner==country
-			|| (!ntn[sct[XREAL][YREAL].owner].dstatus[country]!=UNMET
+			|| (!(ntn[sct[XREAL][YREAL].owner].dstatus[country]!=UNMET)
 			&& ntn[sct[XREAL][YREAL].owner].dstatus[country]<=NEUTRAL)))
 			|| P_NMOVE < N_CITYCOST) {
 				P_NMOVE=0;
@@ -1204,7 +1204,7 @@ loadfleet (void)
 				if (!((sct[XREAL][YREAL].designation==DCITY
 				|| sct[XREAL][YREAL].designation==DCAPITOL)
 				&& (sct[XREAL][YREAL].owner==country
-				|| (!ntn[sct[XREAL][YREAL].owner].dstatus[country]!=UNMET
+				|| (!(ntn[sct[XREAL][YREAL].owner].dstatus[country]!=UNMET)
 				&& ntn[sct[XREAL][YREAL].owner].dstatus[country]<=NEUTRAL)))
 				|| P_NMOVE < N_CITYCOST) {
 					P_NMOVE=0;

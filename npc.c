@@ -360,7 +360,7 @@ monster (void)
 		ntn[nomads].arm[i].stat=ATTACK;
 		neededtroops -= safe_long_to_int(ntn[nomads].arm[i].sold);
 #ifdef DEBUG
-		printf("\t\tAdding nomad army %d size %d at (%d,%d)\n",i,
+		printf("\t\tAdding nomad army %d size %ld at (%d,%d)\n",i,
 		       ntn[nomads].arm[i].sold,x,y);
 #endif
 		}
@@ -394,7 +394,7 @@ monster (void)
 		ntn[savages].arm[i].stat=ATTACK;
 		neededtroops -= safe_long_to_int(ntn[savages].arm[i].sold);
 #ifdef DEBUG
-		printf("\t\tAdding savage army %d size %d at (%d,%d)\n",i,
+		printf("\t\tAdding savage army %d size %ld at (%d,%d)\n",i,
 		       ntn[savages].arm[i].sold,x,y);
 #endif
 		}
@@ -891,8 +891,8 @@ redomil (void)
 		if (P_ATYPE < MINLEADER && P_ASOLD!=A_MILITIA) {
 			curntn->tmil += P_ASOLD;
 		}
-		for(x=(int)P_AXLOC-3;x<=(int)P_AXLOC+3;x++)
-			for(y=(int)P_AYLOC-3;y<=(int)P_AYLOC+3;y++)
+		for(x=safe_int_to_short((int)P_AXLOC-3);x<=safe_int_to_short((int)P_AXLOC+3);x++)
+			for(y=safe_int_to_short((int)P_AYLOC-3);y<=safe_int_to_short((int)P_AYLOC+3);y++)
 				if((ONMAP(x,y))&&(sct[x][y].owner==country)) ok=1;
 		if(ok==0){
 			P_AXLOC=curntn->capx;
@@ -951,8 +951,8 @@ redomil (void)
 	if(peace==8)
 		printf("\t%s IS AT PEACE - garrison in cap is %ld, ideal is %ld\n",curntn->name,P_ASOLD,ideal);
 	else if(peace==12)
-		printf("\t%s IS AT WAR - garrison in cap is %d, ideal is %ld\n",curntn->name,P_ASOLD,ideal);
-	else printf("error - incap is %d ideal is %ld\n",P_ASOLD,ideal);
+		printf("\t%s IS AT WAR - garrison in cap is %ld, ideal is %ld\n",curntn->name,P_ASOLD,ideal);
+	else printf("error - incap is %ld ideal is %ld\n",P_ASOLD,ideal);
 #endif /* DEBUG */
 
 	/*MILRATIO ratio mil:civ for non player countries*/
@@ -972,7 +972,7 @@ redomil (void)
 	if (sct[curntn->capx][curntn->capy].owner != country) diff=0L;
 
 #ifdef DEBUG
-	printf("\tadding %d men to garrison (too few men on garrison)\n",diff);
+	printf("\tadding %ld men to garrison (too few men on garrison)\n",diff);
 #endif /* DEBUG */
 
 	sct[curntn->capx][curntn->capy].people-=diff;
@@ -984,7 +984,7 @@ redomil (void)
 	else curntn->tgold-=diff* *(u_encost + (P_ATYPE%UTYPE));
 	curntn->metals-=(diff* *(u_enmetal + (P_ATYPE%UTYPE)));
 #ifdef DEBUG
-	if(P_ASOLD < 0L) printf("error 2... P_ASOLD=%d <0\n",P_ASOLD);
+	if(P_ASOLD < 0L) printf("error 2... P_ASOLD=%ld <0\n",P_ASOLD);
 #endif /* DEBUG */
 	}
 	/*else split garrison army if 1.25* needed number*/
@@ -992,12 +992,12 @@ redomil (void)
 		/*diff here is a negative number*/
 		diff=((4L*P_ASOLD)-(5L*ideal))/4L;
 #ifdef DEBUG
-		printf("\tsplit garrison of %d men\n",diff);
+		printf("\tsplit garrison of %ld men\n",diff);
 #endif /* DEBUG */
 		free=FALSE;
 		P_ASOLD-=diff;
 #ifdef DEBUG
-		if(P_ASOLD < 0) printf("error... subtracting %d from %d\n",diff,P_ASOLD);
+		if(P_ASOLD < 0) printf("error... subtracting %ld from %ld\n",diff,P_ASOLD);
 #endif /* DEBUG */
 		curntn->tmil-=diff;
 		curntn->tciv+=diff;
@@ -1009,8 +1009,8 @@ redomil (void)
 		} else curntn->tgold+=diff* *(u_encost + (P_ATYPE%UTYPE));
 	}
 #ifdef DEBUG
-	else printf("\tno action - P_ASOLD (%d) ~= ideal (%d)\n",P_ASOLD,ideal);
-	printf("\tFinal Garrison Army %d (%s) type is %s men is %d\n",armynum,curntn->name,*(unittype+(P_ATYPE)),P_ASOLD);
+	else printf("\tno action - P_ASOLD (%ld) ~= ideal (%ld)\n",P_ASOLD,ideal);
+	printf("\tFinal Garrison Army %d (%s) type is %s men is %ld\n",armynum,curntn->name,*(unittype+(P_ATYPE)),P_ASOLD);
 #endif /* DEBUG */
 
 	/*build ships and/or armies*/
@@ -1018,7 +1018,7 @@ redomil (void)
 	ideal = curntn->tciv * peace / (10 * MILRATIO);
 	if(curntn->tgold<0) { ideal*=4; ideal/=5; }
 #ifdef DEBUG
-	printf("\t%s total military is %d -> ideal is %d\n",curntn->name,curntn->tmil,ideal);
+	printf("\t%s total military is %ld -> ideal is %ld\n",curntn->name,curntn->tmil,ideal);
 #endif /* DEBUG */
 	check();
 
@@ -1042,7 +1042,7 @@ redomil (void)
 	&&( fort_val(&sct[P_AXLOC][P_AYLOC]) > 0)
 	&&( sct[P_AXLOC][P_AYLOC].owner == country )) {
 #ifdef DEBUG
-		printf("\tadding %d men to weakened army %d\n",TAKESECTOR+20-P_ASOLD,armynum);
+		printf("\tadding %ld men to weakened army %d\n",TAKESECTOR+20-P_ASOLD,armynum);
 #endif /* DEBUG */
 		if(magic(country,WARRIOR)==TRUE) /* WARRIOR power */
 		curntn->tgold-=((TAKESECTOR+20-P_ASOLD)*
@@ -1066,7 +1066,7 @@ redomil (void)
 			P_ASOLD = min (P_ASOLD, (int) (curntn->tgold/ *(u_encost+(P_ATYPE%UTYPE))));
 			if(P_ASOLD>0){
 #ifdef DEBUG
-				printf("\tnot enough soldiers - build new army %d with %d men\n",armynum,P_ASOLD);
+				printf("\tnot enough soldiers - build new army %d with %ld men\n",armynum,P_ASOLD);
 #endif /* DEBUG */
 				curntn->metals-=(P_ASOLD* *(u_enmetal + (P_ATYPE%UTYPE)));
 				P_AXLOC= curntn->capx;
@@ -1101,7 +1101,7 @@ redomil (void)
 			  ||(sct[P_AXLOC][P_AYLOC].metal>4)
 			  ||(ISCITY(sct[P_AXLOC][P_AYLOC].designation)))){
 #ifdef DEBUG
-				printf("\ttoo many soldiers eliminate army %d (%d men)\n",armynum,P_ASOLD);
+				printf("\ttoo many soldiers eliminate army %d (%ld men)\n",armynum,P_ASOLD);
 #endif /* DEBUG */
 				diff-=P_ASOLD;
 				sct[P_AXLOC][P_AYLOC].people+=P_ASOLD;
@@ -1114,7 +1114,7 @@ redomil (void)
 	}
 	check();
 #ifdef DEBUG
-	printf("\twhew... new tmil is %d\n",curntn->tmil);
+	printf("\twhew... new tmil is %ld\n",curntn->tmil);
 #endif /* DEBUG */
 
 	/*resize armies */
@@ -1191,7 +1191,7 @@ redomil (void)
 				break;
 			}
 		}
-		if((free==TRUE)) {
+		if(free==TRUE) {
 			/* want to have ideal troops */
 			ideal = sct[x][y].people/MILINCITY;
 
@@ -1794,7 +1794,7 @@ nationrun (void)
 			curntn->tax_rate = 10;
 	} else {
 		curntn->tax_rate = safe_int_to_uchar((int)min((int)(curntn->prestige/5),(int)((curntn->popularity+curntn->terror+3*curntn->charity)/10)));
-		curntn->tax_rate = (int)min(curntn->tax_rate,20);
+		curntn->tax_rate = safe_int_to_uchar((int)min(curntn->tax_rate,20));
 		if(curntn->tax_rate < 4)
 			curntn->tax_rate = 4;
 	}

@@ -328,7 +328,7 @@ void redesignate (void) {
 				sptr->fortress=0;
 			}
 			/*will fall through as must change vegetation*/
-			/* FALLTHROUGH */
+			[[fallthrough]];
 		case 'v':
 			/*vegetation types*/
 			mvprintw(LINES-3,7,"VEGETATIONS: change to %c, %c, %c, %c, %c, %c, %c, %c, %c, %c, %c or %c?",
@@ -2202,8 +2202,8 @@ int armygoto (void) {
 		if(P_ASOLD <= 0) return(0);
 	}
 	/*move to correct location*/
-	xcurs = (int)P_AXLOC - xoffset;
-	ycurs = (int)P_AYLOC - yoffset;
+	xcurs = safe_int_to_short((int)P_AXLOC - xoffset);
+	ycurs = safe_int_to_short((int)P_AYLOC - yoffset);
 	coffmap();
 
 	/*select correct unit*/

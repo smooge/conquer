@@ -153,7 +153,7 @@ mymove()
 		mvprintw(LINES-4,0,"NAVY %d: move %d",nvynum,P_NMOVE);
 		standend();
 		clrtoeol();
-		if((P_NMOVE==0)) {
+		if(P_NMOVE==0) {
 			errormsg("That Fleet is Not Able Move Any Farther");
 			redraw=DONE;
 			armornvy=AORN;

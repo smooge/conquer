@@ -149,17 +149,17 @@ void ext_cmd(int armie) {
 		addgroup(armynum);
 		break;
 	case 'a': if(stat==0) stat=ATTACK;
-		/* FALLTHROUGH */
+		[[fallthrough]];
 	case 'd': if(stat==0) stat=DEFEND;
-		/* FALLTHROUGH */
+		[[fallthrough]];
 	case 'm': if(stat==0) stat=MARCH;
-		/* FALLTHROUGH */
+		[[fallthrough]];
 	case 's': if(stat==0) stat=SCOUT;
-		/* FALLTHROUGH */
+		[[fallthrough]];
 	case 'g': if(stat==0) stat=GARRISON;
-		/* FALLTHROUGH */
+		[[fallthrough]];
 	case 'R': if(stat==0) stat=RULE;
-		/* FALLTHROUGH */
+		[[fallthrough]];
 	case 'S':
 		if(stat==0) {
 			if(sct[P_AXLOC][P_AYLOC].owner==country) stat=SORTIE;

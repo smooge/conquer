@@ -721,7 +721,7 @@ void readdata (void) {
 		abrt();
 	}
 #ifdef DEBUG
-	fprintf(stderr,"reading %d bytes of world data\n",sizeof(struct s_world));
+	fprintf(stderr,"reading %zu bytes of world data\n",sizeof(struct s_world));
 #endif /* DEBUG */
 
 	getspace();

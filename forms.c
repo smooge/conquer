@@ -1049,7 +1049,7 @@ void change (void) {
 			refresh();
 			get_nname(string);
 			if (strlen(string)!=0 && getpwnam(string)!=NULL) {
-				snprintf(ntn[0].leader, LEADERLTH+1, "%s", string);
+				snprintf(ntn[0].leader, LEADERLTH+1, "%.9s", string);
 			}
 		}
 		break;
@@ -1363,7 +1363,7 @@ void newspaper (void) {
 	sprintf(name,"%s%d",newsfile,TURN-choice);
 	if ((fp=fopen(name,"r"))==NULL) {
 		clear_bottom(0);
-		snprintf(line, sizeof(line), "unable to open news file <%s>", name);
+		snprintf(line, sizeof(line), "unable to open news file <%.50s>", name);
 		errormsg(line);
 		if (readold)
 		  return;

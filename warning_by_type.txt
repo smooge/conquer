@@ -1,0 +1,8 @@
+     16 -Wimplicit-const-int-float-conversion
+      6 -Wimplicit-int-conversion
+      4 -Wunknown-warning-option
+      4 -Wnewline-eof
+      4 -Wimplicit-int-float-conversion
+      4 -Wanalyzer-allocation-size
+      2 -Wlogical-not-parentheses
+      2 -Wimplicit-fallthrough

@@ -102,6 +102,7 @@ struct	s_sector **sct;
 static char *get_password(const char *prompt) {
     static char password[256];
     struct termios old_termios, new_termios;
+    size_t len;
 
     printf("%s", prompt);
     fflush(stdout);
@@ -130,7 +131,7 @@ static char *get_password(const char *prompt) {
     printf("\n");
 
     /* Remove newline if present */
-    size_t len = strlen(password);
+    len = strlen(password);
     if (len > 0 && password[len-1] == '\n') {
         password[len-1] = '\0';
     }
