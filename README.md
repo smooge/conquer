@@ -74,12 +74,29 @@ II  Installation Instructions
 -----------------------------------------------------------
 SYSTEM REQUIREMENTS:
 - Unix-like operating system (Linux, BSD, macOS)
-- C compiler (gcc recommended)
-- make utility
+- C compiler with C23 support (gcc 13+ or clang 16+ recommended)
+- CMake 3.10 or later (for modern build system)
+- make utility (legacy build system)
 - curses library (ncurses)
 - Standard Unix utilities
 
-COMPILATION:
+SUPPORTED PLATFORMS:
+- Debian Linux / Ubuntu
+- Fedora Linux / RHEL
+- macOS (with Xcode command line tools)
+- FreeBSD
+
+QUICK START (Modern CMake Build):
+1. Extract the source code to a directory
+2. Configure and build:
+   ```bash
+   cmake -B build
+   cmake --build build
+   ```
+3. Run tests: `ctest --output-on-failure`
+4. Set up new game: `make new_game` (in build directory)
+
+LEGACY COMPILATION (Traditional Make):
 1. Extract the source code to a directory
 2. Review and modify configuration files (see Configuration section)
 3. Compile: `make`
@@ -116,7 +133,90 @@ NPCs. You may customize this with local names or creative content following
 the format: %CLASS declares a class, with %MAIN being the top level.
 
 -----------------------------------------------------------
-IV  Compilation Instructions
+IV  Modern Build System (CMake)
+-----------------------------------------------------------
+This project includes a modern CMake build system alongside the traditional
+Makefile for compatibility. The CMake system provides better cross-platform
+support, integrated testing, and modern development features.
+
+CMAKE BUILD PROCESS:
+```bash
+# Configure the build (creates build directory)
+cmake -B build
+
+# Build all targets
+cmake --build build
+
+# Clean and rebuild (recommended during development)
+cmake --build build --clean-first
+
+# Build specific targets
+cmake --build build --target conquer      # Main game client
+cmake --build build --target conqrun      # Game server/admin tool
+cmake --build build --target conqsort     # Utility program
+```
+
+CMAKE BUILD OPTIONS:
+- Enable testing: `cmake -B build -DENABLE_TESTING=ON` (default: ON)
+- Release build: `cmake -B build -DCMAKE_BUILD_TYPE=Release`
+- Debug build: `cmake -B build -DCMAKE_BUILD_TYPE=Debug`
+
+TESTING INFRASTRUCTURE:
+```bash
+# Run all tests
+ctest --output-on-failure
+
+# Run specific test categories
+ctest -L unit                 # Unit tests only
+ctest -L integration          # Integration tests only
+ctest -L regression           # Regression tests only
+
+# Run specific test
+ctest -R test_name
+
+# Using make targets (from build directory)
+make run_all_tests           # Run all tests with detailed output
+make run_unit_tests          # Run unit tests only
+make run_integration_tests   # Run integration tests only
+make run_regression_tests    # Run regression tests only
+make test_info              # Display testing infrastructure information
+```
+
+CROSS-PLATFORM BUILDING:
+```bash
+# Debian/Ubuntu
+sudo apt-get install build-essential cmake libncurses5-dev
+cmake -B build && cmake --build build
+
+# Fedora/RHEL
+sudo dnf install gcc cmake ncurses-devel
+cmake -B build && cmake --build build
+
+# macOS (with Homebrew)
+brew install cmake ncurses
+cmake -B build && cmake --build build
+
+# FreeBSD
+pkg install cmake ncurses
+cmake -B build && cmake --build build
+```
+
+BUILD VERIFICATION:
+```bash
+# Verify zero compilation warnings
+cmake --build build --clean-first 2>&1 | grep -c "warning:"  # Should be 0
+
+# Verify all tests pass
+ctest --output-on-failure  # Should show 100% pass rate
+
+# Check executable functionality
+./build/conqrun -h         # Should display help information
+```
+
+For legacy build system instructions, see section V below.
+
+-----------------------------------------------------------
+V   Legacy Compilation Instructions (Traditional Make)
 -----------------------------------------------------------
 After configuring header.h and Makefile:
 
@@ -136,7 +236,7 @@ TROUBLESHOOTING:
 - Ensure all directory paths in header.h exist and are writable
 
 -----------------------------------------------------------
-V   Administration Instructions
+VI  Administration Instructions
 -----------------------------------------------------------
 COMMAND LINE ADMINISTRATION:
 
@@ -194,7 +294,7 @@ Modify it for your preferred update schedule and system configuration.
 For detailed gameplay help, use the '?' command within the game.
 
 -----------------------------------------------------------
-VI  Contributing and Support
+VII  Contributing and Support
 -----------------------------------------------------------
 This open-source version welcomes contributions:
 - Bug reports and fixes
@@ -202,6 +302,20 @@ This open-source version welcomes contributions:
 - Documentation improvements
 - Platform compatibility updates
 - Translation efforts
+
+DEVELOPMENT WORKFLOW:
+- Use the CMake build system for development
+- Run tests before submitting changes: `ctest --output-on-failure`
+- Follow POSIX compliance standards
+- Maintain compatibility with all supported platforms
+- See tests/README.md for detailed testing documentation
+
+TESTING FRAMEWORK:
+This project uses Unity C testing framework for comprehensive testing:
+- Unit tests: Individual function testing
+- Integration tests: Module interaction testing
+- Regression tests: Modernization validation testing
+- All tests must pass before code integration
 
 Please maintain the spirit of the original game while modernizing the codebase
 for current systems and development practices.
