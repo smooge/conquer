@@ -84,6 +84,19 @@ message(STATUS "Config header: ${CMAKE_CURRENT_BINARY_DIR}/config.h")
 # All configuration is handled by the DualCompilation module
 
 #
+# TESTING INFRASTRUCTURE - Phase 6.1 Unity Integration
+#
+option(ENABLE_TESTING "Enable testing infrastructure" ON)
+
+if(ENABLE_TESTING)
+    enable_testing()
+    message(STATUS "Testing infrastructure: ENABLED")
+    add_subdirectory(tests)
+else()
+    message(STATUS "Testing infrastructure: DISABLED")
+endif()
+
+#
 # VERIFICATION TARGETS - Phase 4 Warning Compliance Validation
 #
 

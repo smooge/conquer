@@ -1,15 +1,48 @@
-# Testing Directory Structure
+# Testing Infrastructure for Conquer 4.x Modernization
 
-This directory contains all testing infrastructure for the conquer-4.x modernization project.
+This directory contains the comprehensive testing infrastructure for the Conquer 4.x modernization project, built using the Unity C testing framework.
+
+## Overview
+
+The testing infrastructure supports the modernization process by providing:
+- **Regression Testing**: Ensure modernization doesn't break existing functionality
+- **Unit Testing**: Test individual functions in isolation
+- **Integration Testing**: Test interactions between modules
+- **Cross-Platform Validation**: Verify POSIX compliance across target platforms
 
 ## Directory Structure
 
+- **`framework/`** - Unity testing framework (3 files: unity.c, unity.h, unity_internals.h)
 - **`unit/`** - Unit tests for individual functions and modules
 - **`integration/`** - Integration tests for component interactions
 - **`regression/`** - Regression tests to ensure modernization preserves functionality
 - **`utils/`** - Testing utility programs and compilation wrappers
 - **`fixtures/`** - Test data files and mock inputs
 - **`scripts/`** - Test runner scripts and automation utilities
+
+## Unity Testing Framework (Phase 6.1)
+
+**Version**: Latest from ThrowTheSwitch/Unity repository
+**Integration Method**: Direct file inclusion (not git submodule)
+**Rationale**: Simplicity, self-contained, easy to switch to submodule later
+
+### Running Tests
+
+```bash
+# Using CMake targets (recommended)
+make run_all_tests
+make run_unit_tests
+make run_integration_tests
+make run_regression_tests
+make test_info
+
+# Using CTest directly
+ctest --output-on-failure
+ctest -L unit --output-on-failure
+
+# Running individual tests
+./tests/unit/test_example_unit
+```
 
 ## Utility Programs
 
