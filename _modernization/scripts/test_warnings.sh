@@ -141,7 +141,6 @@ DFLAGS="-D_POSIX_C_SOURCE=200809L"
 # Phase 5 Clean Architecture: Configuration via headers, not compiler flags
 # All DEFAULTDIR, EXEDIR, LOGIN now defined in config.h via header.h inclusion
 DFLAGS="-D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -DDEFAULTDIR=\"/projects/conquer/lib\" -DEXEDIR=\"/projects/conquer/bin\" -DLOGIN=\"ssmoogen\""
-
  # Define compilation flags for each file type
 ADMIN_FLAGS="-O2 -g -std=${STD} ${DFLAGS} -DADMIN -DCONQUER ${WARN}"
 

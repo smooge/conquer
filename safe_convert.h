@@ -42,6 +42,7 @@
 #include <limits.h>
 #include <sys/types.h>
 #include <math.h>
+#include <stdlib.h>  /* For rand(), srand() used by safe_rand_* functions */
 
 /*
  * Game-specific constants for value range validation
