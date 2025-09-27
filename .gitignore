@@ -93,6 +93,9 @@ build/
 build_clang/
 build_gcc/
 
+# CTest scratch space
+Testing/
+
 # Modernization scratch/temporary files
 _modernization/claude/scratch/
 
