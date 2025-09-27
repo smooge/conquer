@@ -86,7 +86,7 @@ SUPPORTED PLATFORMS:
 - macOS (with Xcode command line tools)
 - FreeBSD
 
-QUICK START (Modern CMake Build):
+QUICK START (CMake Build):
 1. Extract the source code to a directory
 2. Configure and build:
    ```bash
@@ -95,15 +95,6 @@ QUICK START (Modern CMake Build):
    ```
 3. Run tests: `ctest --output-on-failure`
 4. Set up new game: `make new_game` (in build directory)
-
-LEGACY COMPILATION (Traditional Make):
-1. Extract the source code to a directory
-2. Review and modify configuration files (see Configuration section)
-3. Compile: `make`
-4. Install and set up new game: `make new_game`
-
-If curses linking fails, you may need to add "-ltermcap" or "-lncurses"
-to the library flags in the Makefile.
 
 -----------------------------------------------------------
 III Configuration
@@ -219,30 +210,9 @@ ctest --output-on-failure  # Should show 100% pass rate
 ./build/conqrun -h         # Should display help information
 ```
 
-For legacy build system instructions, see section V below.
 
 -----------------------------------------------------------
-V   Legacy Compilation Instructions (Traditional Make)
------------------------------------------------------------
-After configuring header.h and Makefile:
-
-Basic compilation:
-	make			# Compile the game
-	make clean		# Clean up object files
-	make clobber		# Remove all generated files
-
-Game setup:
-	make new_game		# Build and install a complete new game
-	make install		# Install executables only
-	make docs		# Generate documentation
-
-TROUBLESHOOTING:
-- If linking fails with curses errors, add "-ltermcap" to LIBRARIES in Makefile
-- If make gives "command not found" errors, try: setenv SHELL /bin/sh
-- Ensure all directory paths in header.h exist and are writable
-
------------------------------------------------------------
-VI  Administration Instructions
+V   Administration Instructions
 -----------------------------------------------------------
 COMMAND LINE ADMINISTRATION:
 
@@ -300,7 +270,7 @@ Modify it for your preferred update schedule and system configuration.
 For detailed gameplay help, use the '?' command within the game.
 
 -----------------------------------------------------------
-VII  Contributing and Support
+VI  Contributing and Support
 -----------------------------------------------------------
 This open-source version welcomes contributions:
 - Bug reports and fixes
