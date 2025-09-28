@@ -11,6 +11,152 @@
 - [ ] Ensure parameter types are explicit
 - [ ] Add const qualifiers where appropriate
 
+#### **TASK-001: Refactor safe_clamp_uchar to safe_clamp_nation_attr** ⭐ NAMING CLARITY
+**Priority**: Medium
+**Category**: Function Naming Convention / API Clarity
+**Discovered**: Phase 6.3 Testing (2025-09-27)
+**Reporter**: User feedback during comprehensive testing review
+
+**Problem Description**:
+The function `safe_clamp_uchar(long value)` has a misleading name that suggests general unsigned char conversion (0-255 range), but it actually performs **game-specific clamping to MAXTGVAL (100)** for nation attributes. This naming inconsistency:
+
+- **Causes confusion** even when documentation is thorough
+- **Violates semantic clarity** principles
+- **Differs from established naming convention** (safe_type1_to_type2 pattern)
+- **Creates maintenance hazards** for future developers
+
+**Current vs Proposed**:
+```c
+// CURRENT: Misleading name suggesting full unsigned char range
+static inline unsigned char safe_clamp_uchar(long value) {
+    if (value < 0) return 0;
+    if (value > MAXTGVAL) return MAXTGVAL;  // MAXTGVAL = 100, NOT 255!
+    return (unsigned char)value;
+}
+
+// PROPOSED: Clear semantic purpose
+static inline unsigned char safe_clamp_nation_attr(long value) {
+    if (value < 0) return 0;
+    if (value > MAXTGVAL) return MAXTGVAL;  // Obviously game-specific
+    return (unsigned char)value;
+}
+```
+
+**Implementation Plan**:
+1. **Audit Phase**: Find all usages of `safe_clamp_uchar` in codebase
+2. **Script Creation**: Automated find/replace with validation
+3. **Function Update**: Rename in `safe_convert.h`
+4. **Codebase Update**: Update all function calls systematically
+5. **Test Update**: Update test suite and documentation
+6. **Verification**: Ensure all tests pass after refactoring
+
+**Files Affected** (estimated):
+- `safe_convert.h` - Function definition
+- Multiple source files using nation attribute calculations
+- `tests/unit/test_safe_convert.c` - Test function names and calls
+- Documentation and comments referencing the function
+
+**Success Criteria**:
+- [ ] Function renamed consistently across entire codebase
+- [ ] All tests passing after refactoring
+- [ ] No compilation warnings or errors
+- [ ] Function purpose immediately clear from name alone
+- [ ] Documentation updated to reflect new naming
+
+**Related**: This may reveal other similar naming inconsistencies in safe_convert.h that should be addressed for consistency.
+
+#### **TASK-002: Add safe_char_to_uchar function for array indexing safety** ⭐ SECURITY
+**Priority**: High
+**Category**: Memory Safety / Undefined Behavior Prevention
+**Discovered**: Phase 6.3 Testing Review (2025-09-27)
+**Reporter**: User feedback during casting pattern analysis
+
+**Problem Description**:
+The codebase contains numerous `(unsigned char)` explicit casts applied to `char` variables, particularly in array indexing and ctype.h function contexts. On platforms where `char` is signed, negative values can cause:
+
+- **Array indexing vulnerabilities** - Negative indices cause undefined behavior
+- **ctype.h undefined behavior** - Functions like `isspace()` require unsigned char or EOF
+- **Security risks** - Potential buffer overflows with negative array access
+
+**Current Dangerous Patterns**:
+```c
+// DANGEROUS: Array indexing with potentially negative char values
+veg_cost[ (unsigned char)veg[j] ] = EVegcost[j] - '0';      // misc.c:1805
+ele_cost[ (unsigned char)ele[j] ] = DElecost[j] - '0';      // misc.c:1828
+
+// DANGEROUS: ctype.h function with potentially negative char
+isspace((unsigned char)*end)                                // spew.c:1207
+
+// DANGEROUS: Calculations that could underflow
+curntn->poverty = (unsigned char)(95L - curntn->tgold/curntn->tciv);  // update.c:1630
+```
+
+**Proposed Solution**:
+Add a new safe conversion function to `safe_convert.h`:
+
+```c
+/*
+ * safe_char_to_uchar - Safely convert char to unsigned char
+ *
+ * Converts char to unsigned char with negative value protection.
+ * Essential for array indexing and ctype.h function parameters
+ * where negative values would cause undefined behavior.
+ *
+ * Parameters:
+ *   value - char value to convert (may be negative on signed char platforms)
+ *
+ * Returns:
+ *   unsigned char value, with negative values clamped to 0
+ */
+static inline unsigned char safe_char_to_uchar(char value) {
+    if (value < 0) return 0;
+    return (unsigned char)value;
+}
+```
+
+**Implementation Plan**:
+1. **Add Function**: Implement `safe_char_to_uchar()` in `safe_convert.h`
+2. **Audit Phase**: Find all `(unsigned char)` casts in codebase
+3. **Risk Assessment**: Categorize casts by danger level:
+   - **High Risk**: Array indexing, ctype.h functions
+   - **Medium Risk**: Calculations with potential negative results
+   - **Low Risk**: Zero initialization, proven positive values
+4. **Systematic Replacement**: Replace high/medium risk casts with safe function
+5. **Testing**: Comprehensive testing on both signed/unsigned char platforms
+6. **Validation**: Verify no undefined behavior remains
+
+**Files Requiring Updates** (High Priority):
+- `misc.c` - Array indexing with `veg[j]` and `ele[j]` (lines 1805-1838)
+- `spew.c` - ctype.h function usage (line 1207)
+- `update.c` - Poverty calculations (lines 1628-1638)
+- `forms.c` - User input assignments (lines 837, 894-896)
+- `commands.c` - Navy crew calculations (lines 778, 944, 958)
+- `reports.c` - Similar navy calculations (lines 1210-1212)
+
+**Security Impact**:
+- **Array bounds protection** - Prevents negative array indexing
+- **Standards compliance** - Proper ctype.h function usage
+- **Platform robustness** - Safe behavior on both signed/unsigned char systems
+- **Undefined behavior elimination** - Removes potential security vulnerabilities
+
+**Success Criteria**:
+- [ ] `safe_char_to_uchar()` function implemented and tested
+- [ ] All high-risk explicit casts replaced with safe function calls
+- [ ] No undefined behavior with negative char values
+- [ ] All tests passing on both signed and unsigned char platforms
+- [ ] Documentation updated to explain safe usage patterns
+
+**Test Cases Required**:
+```c
+// Test both signed and unsigned char platforms
+TEST_ASSERT_EQUAL_UINT8(0, safe_char_to_uchar(-1));        // Negative handling
+TEST_ASSERT_EQUAL_UINT8(65, safe_char_to_uchar('A'));      // Positive ASCII
+TEST_ASSERT_EQUAL_UINT8(0, safe_char_to_uchar(CHAR_MIN));  // Platform minimum
+TEST_ASSERT_EQUAL_UINT8(127, safe_char_to_uchar(127));     // Safe positive value
+```
+
+**Related**: This function complements the existing safe conversion utilities and addresses a fundamental safety gap in char-to-unsigned-char conversions throughout the codebase.
+
 ### 8.2 Type System Improvements (2 days)
 - [ ] Modernize type declarations (remove implicit int)
 - [ ] Add explicit variable initialization

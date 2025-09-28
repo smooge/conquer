@@ -627,6 +627,80 @@ At the beginning of each project, Claude must create a `_modernization/` directo
 5. **All automation scripts created by Claude sessions must be stored in `_modernization/scripts/` and added to git**
 6. **Scripts must be immediately useful and follow the standardized naming convention**
 
+## 📋 Sub-Phase Protocol (MANDATORY)
+
+**CRITICAL**: This protocol MUST be followed for every phase and sub-phase to maintain project continuity and prevent documentation gaps.
+
+### **Sub-Phase Management Process** ✅
+
+#### **Step 0: Phase Determination**
+- **Read session memory** or ask user what phase needs to be worked on
+- **Identify current phase number** (e.g., Phase 4, Phase 6, etc.)
+- **Confirm phase status** with user before proceeding
+
+#### **Step 1: Strategy Guide Review/Creation**
+- **Always read** the phase strategy guide: `PHASE_NN_STRATEGY.md`
+- **If strategy guide does not exist**: Work with user to create comprehensive strategy
+- **If strategy guide exists but outdated**: Update with user input
+- **Strategy guide must include**: Complete sub-phase breakdown, objectives, deliverables, success criteria
+
+#### **Step 2: Sub-Phase Identification**
+- **Determine current sub-phase** based on strategy guide and session memory
+- **Identify next sub-phase** to work on (e.g., 6.2, 4.8, etc.)
+- **Confirm sub-phase scope** and objectives with user
+
+#### **Step 3: Sub-Phase TODO Creation**
+- **Create detailed TODO file**: `PHASE_XX.YY_TODO.md` (e.g., `PHASE_06.2_TODO.md`)
+- **Work with user** to define specific tasks and deliverables
+- **Include success criteria** and completion requirements
+- **Add Phase Completion Protocol** requirements
+
+#### **Step 4: TODO Execution**
+- **Work through TODO systematically** across multiple sessions as needed
+- **Update session memory** at end of each session
+- **Maintain TODO progress** using TodoWrite tool
+- **Document all deliverables** and decisions made
+
+#### **Step 5: Sub-Phase Completion**
+- **Follow Phase Completion Protocol** (documented in TODO files)
+- **Review actual vs planned work** and assess completion
+- **Update strategy guide** to mark sub-phase complete
+- **Mark TODO list as done** and archive if appropriate
+- **Prepare next sub-phase** documentation
+
+### **File Naming Conventions**
+
+#### **Strategy Documents**
+- **Format**: `PHASE_NN_STRATEGY.md`
+- **Examples**: `PHASE_04_STRATEGY.md`, `PHASE_06_STRATEGY.md`, `PHASE_10_STRATEGY.md`
+- **Location**: `_modernization/claude/reports/`
+- **Content**: Complete phase breakdown with all sub-phases, objectives, deliverables
+
+#### **Sub-Phase TODO Documents**
+- **Format**: `PHASE_XX.YY_TODO.md`
+- **Examples**: `PHASE_06.2_TODO.md`, `PHASE_04.8_TODO.md`, `PHASE_10.1_TODO.md`
+- **Location**: `_modernization/claude/reports/`
+- **Content**: Specific tasks, deliverables, completion criteria for one sub-phase
+
+#### **Session Memory Files**
+- **Format**: `SESSION_MEMORY_YYYY-MM-DD_HHMMSS.md`
+- **Location**: `_modernization/memory/`
+- **Content**: Current progress, key decisions, next steps
+
+### **Why This Protocol is Essential**
+- ✅ **Prevents documentation gaps** that have occurred multiple times
+- ✅ **Ensures systematic progress** through complex modernization phases
+- ✅ **Maintains continuity** across multiple sessions and context clears
+- ✅ **Provides clear audit trail** of all work completed
+- ✅ **Enables effective collaboration** between user and Claude
+- ✅ **Standardizes file organization** for easy reference
+
+### **Protocol Enforcement**
+- **MANDATORY**: Must be followed for every phase and sub-phase
+- **NO EXCEPTIONS**: Cannot skip steps or mark phases complete without following protocol
+- **USER COLLABORATION**: Work with user to ensure protocol is followed correctly
+- **DOCUMENTATION FIRST**: Strategy and TODO documents must exist before technical work begins
+
 ### Memory File Naming Convention
 
 **Session Memory Files** (Saved at end of EVERY session):
