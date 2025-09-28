@@ -92,6 +92,59 @@ if(ENABLE_TESTING)
     enable_testing()
     message(STATUS "Testing infrastructure: ENABLED")
     add_subdirectory(tests)
+
+    # Phase 6.2: Configure cross-compiler test scripts
+    message(STATUS "Configuring Phase 6.2 cross-compiler test scripts")
+
+    # Create build/tests/scripts directory
+    file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/tests/scripts")
+
+    # Create build/reports directory for test output
+    file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/reports")
+
+    # Set CMake variables for script configuration
+    set(DEFAULT_DEFAULTDIR "${CONQUER_DEFAULT_DIR}")
+    set(DEFAULT_EXEDIR "${CONQUER_EXE_DIR}")
+    set(DEFAULT_SHARDIR "${CMAKE_INSTALL_PREFIX}/share")
+    set(DEFAULT_LOGIN "${CONQUER_LOGIN}")
+
+    # Configure test script templates with CMake variables
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/tests/scripts/test_gcc.sh.in"
+        "${CMAKE_BINARY_DIR}/tests/scripts/test_gcc.sh"
+        @ONLY
+    )
+
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/tests/scripts/test_clang.sh.in"
+        "${CMAKE_BINARY_DIR}/tests/scripts/test_clang.sh"
+        @ONLY
+    )
+
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/tests/scripts/run_all_compiler_tests.sh.in"
+        "${CMAKE_BINARY_DIR}/tests/scripts/run_all_compiler_tests.sh"
+        @ONLY
+    )
+
+    # Make test scripts executable
+    file(CHMOD "${CMAKE_BINARY_DIR}/tests/scripts/test_gcc.sh"
+         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                     GROUP_READ GROUP_EXECUTE
+                     WORLD_READ WORLD_EXECUTE)
+
+    file(CHMOD "${CMAKE_BINARY_DIR}/tests/scripts/test_clang.sh"
+         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                     GROUP_READ GROUP_EXECUTE
+                     WORLD_READ WORLD_EXECUTE)
+
+    file(CHMOD "${CMAKE_BINARY_DIR}/tests/scripts/run_all_compiler_tests.sh"
+         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                     GROUP_READ GROUP_EXECUTE
+                     WORLD_READ WORLD_EXECUTE)
+
+    message(STATUS "Cross-compiler test scripts configured in build/tests/scripts/")
+    message(STATUS "Test reports will be saved to build/reports/")
 else()
     message(STATUS "Testing infrastructure: DISABLED")
 endif()
