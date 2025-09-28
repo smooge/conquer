@@ -43,6 +43,8 @@
 #include <sys/types.h>
 #include <math.h>
 #include <stdlib.h>  /* For rand(), srand() used by safe_rand_* functions */
+#include <time.h>    /* For time_t used by safe_time_* functions */
+#include <stdint.h>  /* For SIZE_MAX used by safe_*_to_size functions */
 
 /*
  * Game-specific constants for value range validation
@@ -837,6 +839,1274 @@ static inline float safe_double_to_float(double value) {
 static inline uid_t safe_short_to_uid(short value) {
     if (value < 0) return 0;  /* Invalid UID */
     return (uid_t)value;
+}
+
+/*
+ * =============================================================================
+ * EXTENDED CONVERSION FUNCTION SUITE
+ * =============================================================================
+ *
+ * The following functions provide comprehensive type-safe conversions between
+ * all standard C types. These functions complete the conversion matrix to
+ * enable safe modernization of legacy codebases across multiple projects.
+ *
+ * Design principles maintained:
+ * - Range validation with appropriate clamping
+ * - Consistent error handling across all functions
+ * - Zero performance impact with inline implementation
+ * - Cross-platform compatibility for 32-bit and 64-bit systems
+ * - Comprehensive documentation for maintenance clarity
+ */
+
+/*
+ * safe_uchar_to_int - Convert unsigned char to int safely
+ *
+ * Converts unsigned char to int without any range checking needed,
+ * as unsigned char values [0, 255] always fit in int range.
+ * Used for character-based array indices and calculations.
+ *
+ * Parameters:
+ *   value - unsigned char value to convert (always valid)
+ *
+ * Returns:
+ *   int value (guaranteed to fit in int range)
+ */
+static inline int safe_uchar_to_int(unsigned char value) {
+    return (int)value;
+}
+
+/*
+ * safe_ushort_to_int - Convert unsigned short to int safely
+ *
+ * Converts unsigned short to int without any range checking needed,
+ * as unsigned short values [0, 65535] always fit in int range on
+ * standard platforms where int is at least 32 bits.
+ *
+ * Parameters:
+ *   value - unsigned short value to convert (always valid)
+ *
+ * Returns:
+ *   int value (guaranteed to fit in int range)
+ */
+static inline int safe_ushort_to_int(unsigned short value) {
+    return (int)value;
+}
+
+/*
+ * safe_uint_to_int - Convert unsigned int to int with range checking
+ *
+ * Converts unsigned int to int with overflow checking. Used when
+ * unsigned calculations need to interface with legacy int-based APIs.
+ * Values exceeding INT_MAX are clamped to prevent undefined behavior.
+ *
+ * Parameters:
+ *   value - unsigned int value to convert (may exceed int range)
+ *
+ * Returns:
+ *   int value clamped to [0, INT_MAX] range
+ */
+static inline int safe_uint_to_int(unsigned int value) {
+    if (value > INT_MAX) return INT_MAX;
+    return (int)value;
+}
+
+/*
+ * safe_ulong_to_int - Convert unsigned long to int with range checking
+ *
+ * Converts unsigned long to int with range validation. Used when
+ * large unsigned calculations need to be used with legacy int APIs.
+ * Handles platform differences in long size (32-bit vs 64-bit).
+ *
+ * Parameters:
+ *   value - unsigned long value to convert (may exceed int range)
+ *
+ * Returns:
+ *   int value clamped to [0, INT_MAX] range
+ */
+static inline int safe_ulong_to_int(unsigned long value) {
+    if (value > INT_MAX) return INT_MAX;
+    return (int)value;
+}
+
+/*
+ * safe_time_to_int - Convert time_t to int with range checking
+ *
+ * Converts time_t to int for legacy timestamp handling. time_t may be
+ * 32-bit or 64-bit depending on platform, so range checking prevents
+ * overflow when interfacing with older timestamp APIs.
+ *
+ * Parameters:
+ *   time - time_t value to convert (may exceed int range on 64-bit systems)
+ *
+ * Returns:
+ *   int value clamped to [INT_MIN, INT_MAX] range
+ */
+static inline int safe_time_to_int(time_t time) {
+    if (time > INT_MAX) return INT_MAX;
+    if (time < INT_MIN) return INT_MIN;
+    return (int)time;
+}
+
+/*
+ * safe_uchar_to_short - Convert unsigned char to short safely
+ *
+ * Converts unsigned char to short without range checking needed,
+ * as unsigned char values [0, 255] always fit in short range.
+ * Used for character-based indices stored in short variables.
+ *
+ * Parameters:
+ *   value - unsigned char value to convert (always valid)
+ *
+ * Returns:
+ *   short value (guaranteed to fit in short range)
+ */
+static inline short safe_uchar_to_short(unsigned char value) {
+    return (short)value;
+}
+
+/*
+ * safe_uint_to_short - Convert unsigned int to short with range checking
+ *
+ * Converts unsigned int to short with overflow validation. Used when
+ * unsigned calculations need to be stored in legacy short variables.
+ * Values exceeding SHRT_MAX are clamped to prevent overflow.
+ *
+ * Parameters:
+ *   value - unsigned int value to convert (may exceed short range)
+ *
+ * Returns:
+ *   short value clamped to [0, SHRT_MAX] range
+ */
+static inline short safe_uint_to_short(unsigned int value) {
+    if (value > SHRT_MAX) return SHRT_MAX;
+    return (short)value;
+}
+
+/*
+ * safe_ulong_to_short - Convert unsigned long to short with range checking
+ *
+ * Converts unsigned long to short with range validation. Used when
+ * large unsigned calculations need to fit in short storage fields.
+ * Handles platform differences in long size.
+ *
+ * Parameters:
+ *   value - unsigned long value to convert (may exceed short range)
+ *
+ * Returns:
+ *   short value clamped to [0, SHRT_MAX] range
+ */
+static inline short safe_ulong_to_short(unsigned long value) {
+    if (value > SHRT_MAX) return SHRT_MAX;
+    return (short)value;
+}
+
+/*
+ * safe_time_to_short - Convert time_t to short with range checking
+ *
+ * Converts time_t to short for legacy timestamp handling in limited
+ * storage contexts. Primarily used for relative time differences or
+ * simplified timestamp representations.
+ *
+ * Parameters:
+ *   time - time_t value to convert (may exceed short range)
+ *
+ * Returns:
+ *   short value clamped to [SHRT_MIN, SHRT_MAX] range
+ */
+static inline short safe_time_to_short(time_t time) {
+    if (time > SHRT_MAX) return SHRT_MAX;
+    if (time < SHRT_MIN) return SHRT_MIN;
+    return (short)time;
+}
+
+/*
+ * safe_uchar_to_long - Convert unsigned char to long safely
+ *
+ * Converts unsigned char to long without range checking needed,
+ * as unsigned char values [0, 255] always fit in long range.
+ * Used for character-based calculations that need long precision.
+ *
+ * Parameters:
+ *   value - unsigned char value to convert (always valid)
+ *
+ * Returns:
+ *   long value (guaranteed to fit in long range)
+ */
+static inline long safe_uchar_to_long(unsigned char value) {
+    return (long)value;
+}
+
+/*
+ * safe_ushort_to_long - Convert unsigned short to long safely
+ *
+ * Converts unsigned short to long without range checking needed,
+ * as unsigned short values [0, 65535] always fit in long range.
+ * Used for 16-bit values in long-based calculations.
+ *
+ * Parameters:
+ *   value - unsigned short value to convert (always valid)
+ *
+ * Returns:
+ *   long value (guaranteed to fit in long range)
+ */
+static inline long safe_ushort_to_long(unsigned short value) {
+    return (long)value;
+}
+
+/*
+ * safe_uint_to_long - Convert unsigned int to long safely
+ *
+ * Converts unsigned int to long without range checking needed on most
+ * platforms, as unsigned int values typically fit in long range.
+ * Used for unsigned calculations that need long precision.
+ *
+ * Parameters:
+ *   value - unsigned int value to convert (typically always valid)
+ *
+ * Returns:
+ *   long value (should fit in long range on standard platforms)
+ */
+static inline long safe_uint_to_long(unsigned int value) {
+    return (long)value;
+}
+
+/*
+ * safe_ulong_to_long - Convert unsigned long to long with range checking
+ *
+ * Converts unsigned long to long with overflow validation. Used when
+ * unsigned long calculations exceed LONG_MAX and need to be clamped
+ * for use with signed long APIs.
+ *
+ * Parameters:
+ *   value - unsigned long value to convert (may exceed long range)
+ *
+ * Returns:
+ *   long value clamped to [0, LONG_MAX] range
+ */
+static inline long safe_ulong_to_long(unsigned long value) {
+    if (value > LONG_MAX) return LONG_MAX;
+    return (long)value;
+}
+
+/*
+ * safe_time_to_long - Convert time_t to long safely
+ *
+ * Converts time_t to long for timestamp calculations. On most platforms
+ * time_t fits in long, but provides explicit conversion for clarity
+ * and potential future 128-bit time_t support.
+ *
+ * Parameters:
+ *   time - time_t value to convert
+ *
+ * Returns:
+ *   long value (typically equivalent to input on current platforms)
+ */
+static inline long safe_time_to_long(time_t time) {
+    return (long)time;
+}
+
+/*
+ * safe_char_to_size - Convert char to size_t with validation
+ *
+ * Converts char to size_t, handling negative values appropriately.
+ * Negative char values are converted to 0 as size_t is unsigned.
+ * Used for character-based size calculations.
+ *
+ * Parameters:
+ *   value - char value to convert (may be negative)
+ *
+ * Returns:
+ *   size_t value, 0 for negative inputs, positive for valid inputs
+ */
+static inline size_t safe_char_to_size(char value) {
+    /* Handle platforms where char is unsigned */
+    #if CHAR_MIN == 0
+        /* char is unsigned, all values are valid */
+        return (size_t)value;
+    #else
+        /* char is signed, handle negative values */
+        if (value < 0) return 0;
+        return (size_t)value;
+    #endif
+}
+
+/*
+ * safe_short_to_size - Convert short to size_t with validation
+ *
+ * Converts short to size_t, handling negative values appropriately.
+ * Negative short values are converted to 0 as size_t is unsigned.
+ * Used for short-based size calculations and array indexing.
+ *
+ * Parameters:
+ *   value - short value to convert (may be negative)
+ *
+ * Returns:
+ *   size_t value, 0 for negative inputs, positive for valid inputs
+ */
+static inline size_t safe_short_to_size(short value) {
+    if (value < 0) return 0;
+    return (size_t)value;
+}
+
+/*
+ * safe_long_to_size - Convert long to size_t with validation
+ *
+ * Converts long to size_t, handling negative values appropriately.
+ * Negative long values are converted to 0 as size_t is unsigned.
+ * Used for long-based size calculations and memory operations.
+ *
+ * Parameters:
+ *   value - long value to convert (may be negative)
+ *
+ * Returns:
+ *   size_t value, 0 for negative inputs, positive for valid inputs
+ */
+static inline size_t safe_long_to_size(long value) {
+    if (value < 0) return 0;
+    return (size_t)value;
+}
+
+/*
+ * safe_uchar_to_size - Convert unsigned char to size_t safely
+ *
+ * Converts unsigned char to size_t without range checking needed,
+ * as unsigned char values [0, 255] always fit in size_t range.
+ * Used for character-based size calculations.
+ *
+ * Parameters:
+ *   value - unsigned char value to convert (always valid)
+ *
+ * Returns:
+ *   size_t value (guaranteed to fit in size_t range)
+ */
+static inline size_t safe_uchar_to_size(unsigned char value) {
+    return (size_t)value;
+}
+
+/*
+ * safe_ushort_to_size - Convert unsigned short to size_t safely
+ *
+ * Converts unsigned short to size_t without range checking needed,
+ * as unsigned short values [0, 65535] always fit in size_t range.
+ * Used for 16-bit values in size calculations.
+ *
+ * Parameters:
+ *   value - unsigned short value to convert (always valid)
+ *
+ * Returns:
+ *   size_t value (guaranteed to fit in size_t range)
+ */
+static inline size_t safe_ushort_to_size(unsigned short value) {
+    return (size_t)value;
+}
+
+/*
+ * safe_uint_to_size - Convert unsigned int to size_t safely
+ *
+ * Converts unsigned int to size_t. On most platforms size_t is at least
+ * as large as unsigned int, so no range checking is typically needed.
+ * Used for unsigned calculations in size contexts.
+ *
+ * Parameters:
+ *   value - unsigned int value to convert (typically always valid)
+ *
+ * Returns:
+ *   size_t value (should fit in size_t range on standard platforms)
+ */
+static inline size_t safe_uint_to_size(unsigned int value) {
+    return (size_t)value;
+}
+
+/*
+ * safe_ulong_to_size - Convert unsigned long to size_t with platform handling
+ *
+ * Converts unsigned long to size_t. On some platforms these types may
+ * differ in size, so we handle potential overflow by clamping to SIZE_MAX.
+ * Used for large unsigned calculations in size contexts.
+ *
+ * Parameters:
+ *   value - unsigned long value to convert (may exceed size_t on some platforms)
+ *
+ * Returns:
+ *   size_t value, clamped to SIZE_MAX if necessary
+ */
+static inline size_t safe_ulong_to_size(unsigned long value) {
+    if (value > SIZE_MAX) return SIZE_MAX;
+    return (size_t)value;
+}
+
+/*
+ * safe_time_to_size - Convert time_t to size_t with validation
+ *
+ * Converts time_t to size_t for timestamp-based size calculations.
+ * Handles negative time_t values (invalid timestamps) by returning 0.
+ * Used for time-based buffer sizing and calculations.
+ *
+ * Parameters:
+ *   time - time_t value to convert (may be negative or very large)
+ *
+ * Returns:
+ *   size_t value, 0 for negative times, clamped to SIZE_MAX for very large times
+ */
+static inline size_t safe_time_to_size(time_t time) {
+    if (time < 0) return 0;
+    if ((unsigned long long)time > SIZE_MAX) return SIZE_MAX;
+    return (size_t)time;
+}
+
+/*
+ * safe_char_to_uchar - Convert char to unsigned char with validation
+ *
+ * Converts char to unsigned char, handling negative values appropriately.
+ * Negative char values are converted to 0 to maintain valid unsigned range.
+ * Used for character-based calculations that need unsigned results.
+ *
+ * Parameters:
+ *   value - char value to convert (may be negative)
+ *
+ * Returns:
+ *   unsigned char value, 0 for negative inputs, unchanged for positive inputs
+ */
+static inline unsigned char safe_char_to_uchar(char value) {
+    /* Handle platforms where char is unsigned */
+    #if CHAR_MIN == 0
+        /* char is unsigned, direct conversion is safe */
+        return (unsigned char)value;
+    #else
+        /* char is signed, handle negative values */
+        if (value < 0) return 0;
+        return (unsigned char)value;
+    #endif
+}
+
+/*
+ * safe_size_to_uchar - Convert size_t to unsigned char with range checking
+ *
+ * Converts size_t to unsigned char with overflow validation. Used when
+ * size calculations need to fit in small unsigned char storage fields.
+ * Values exceeding UCHAR_MAX are clamped to prevent overflow.
+ *
+ * Parameters:
+ *   size - size_t value to convert (may exceed unsigned char range)
+ *
+ * Returns:
+ *   unsigned char value clamped to [0, UCHAR_MAX] range
+ */
+static inline unsigned char safe_size_to_uchar(size_t size) {
+    if (size > UCHAR_MAX) return UCHAR_MAX;
+    return (unsigned char)size;
+}
+
+/*
+ * safe_time_to_uchar - Convert time_t to unsigned char with range checking
+ *
+ * Converts time_t to unsigned char for simplified timestamp representations.
+ * Negative times become 0, large times are clamped to UCHAR_MAX.
+ * Used for relative time differences in small storage contexts.
+ *
+ * Parameters:
+ *   time - time_t value to convert (may be negative or exceed uchar range)
+ *
+ * Returns:
+ *   unsigned char value clamped to [0, UCHAR_MAX] range
+ */
+static inline unsigned char safe_time_to_uchar(time_t time) {
+    if (time < 0) return 0;
+    if (time > UCHAR_MAX) return UCHAR_MAX;
+    return (unsigned char)time;
+}
+
+/*
+ * safe_uid_to_uchar - Convert uid_t to unsigned char with range checking
+ *
+ * Converts uid_t to unsigned char for simplified user ID representations.
+ * Large UIDs are clamped to UCHAR_MAX. Used for user ID storage in
+ * limited contexts where full UID precision is not required.
+ *
+ * Parameters:
+ *   uid - uid_t value to convert (may exceed unsigned char range)
+ *
+ * Returns:
+ *   unsigned char value clamped to [0, UCHAR_MAX] range
+ */
+static inline unsigned char safe_uid_to_uchar(uid_t uid) {
+    if (uid > UCHAR_MAX) return UCHAR_MAX;
+    return (unsigned char)uid;
+}
+
+/*
+ * safe_uint_to_uchar - Convert unsigned int to unsigned char with range checking
+ *
+ * Converts unsigned int to unsigned char with overflow validation. Used when
+ * unsigned calculations need to fit in small unsigned char storage fields.
+ * Values exceeding UCHAR_MAX are clamped to prevent overflow.
+ *
+ * Parameters:
+ *   value - unsigned int value to convert (may exceed unsigned char range)
+ *
+ * Returns:
+ *   unsigned char value clamped to [0, UCHAR_MAX] range
+ */
+static inline unsigned char safe_uint_to_uchar(unsigned int value) {
+    if (value > UCHAR_MAX) return UCHAR_MAX;
+    return (unsigned char)value;
+}
+
+/*
+ * safe_ulong_to_uchar - Convert unsigned long to unsigned char with range checking
+ *
+ * Converts unsigned long to unsigned char with overflow validation. Used when
+ * large unsigned calculations need to fit in small unsigned char storage.
+ * Values exceeding UCHAR_MAX are clamped to prevent overflow.
+ *
+ * Parameters:
+ *   value - unsigned long value to convert (may exceed unsigned char range)
+ *
+ * Returns:
+ *   unsigned char value clamped to [0, UCHAR_MAX] range
+ */
+static inline unsigned char safe_ulong_to_uchar(unsigned long value) {
+    if (value > UCHAR_MAX) return UCHAR_MAX;
+    return (unsigned char)value;
+}
+
+/*
+ * safe_ushort_to_uchar - Convert unsigned short to unsigned char with range checking
+ *
+ * Converts unsigned short to unsigned char with overflow validation. Used when
+ * 16-bit unsigned values need to fit in 8-bit unsigned char storage.
+ * Values exceeding UCHAR_MAX are clamped to prevent overflow.
+ *
+ * Parameters:
+ *   value - unsigned short value to convert (may exceed unsigned char range)
+ *
+ * Returns:
+ *   unsigned char value clamped to [0, UCHAR_MAX] range
+ */
+static inline unsigned char safe_ushort_to_uchar(unsigned short value) {
+    if (value > UCHAR_MAX) return UCHAR_MAX;
+    return (unsigned char)value;
+}
+
+/*
+ * safe_int_to_uint - Convert int to unsigned int with validation
+ *
+ * Converts int to unsigned int, handling negative values appropriately.
+ * Negative int values are converted to 0 to maintain valid unsigned range.
+ * Used for signed calculations that need unsigned results.
+ *
+ * Parameters:
+ *   value - int value to convert (may be negative)
+ *
+ * Returns:
+ *   unsigned int value, 0 for negative inputs, unchanged for positive inputs
+ */
+static inline unsigned int safe_int_to_uint(int value) {
+    if (value < 0) return 0;
+    return (unsigned int)value;
+}
+
+/*
+ * safe_short_to_uint - Convert short to unsigned int with validation
+ *
+ * Converts short to unsigned int, handling negative values appropriately.
+ * Negative short values are converted to 0 to maintain valid unsigned range.
+ * Used for short-based calculations that need unsigned int results.
+ *
+ * Parameters:
+ *   value - short value to convert (may be negative)
+ *
+ * Returns:
+ *   unsigned int value, 0 for negative inputs, positive for valid inputs
+ */
+static inline unsigned int safe_short_to_uint(short value) {
+    if (value < 0) return 0;
+    return (unsigned int)value;
+}
+
+/*
+ * safe_size_to_uint - Convert size_t to unsigned int with range checking
+ *
+ * Converts size_t to unsigned int with overflow validation. On 64-bit systems
+ * size_t may exceed unsigned int range, so we clamp to UINT_MAX.
+ * Used for size calculations that need unsigned int compatibility.
+ *
+ * Parameters:
+ *   size - size_t value to convert (may exceed unsigned int range on 64-bit)
+ *
+ * Returns:
+ *   unsigned int value clamped to [0, UINT_MAX] range
+ */
+static inline unsigned int safe_size_to_uint(size_t size) {
+    if (size > UINT_MAX) return UINT_MAX;
+    return (unsigned int)size;
+}
+
+/*
+ * safe_time_to_uint - Convert time_t to unsigned int with validation
+ *
+ * Converts time_t to unsigned int for timestamp handling. Negative times
+ * become 0, large times are clamped to UINT_MAX. Used for timestamp
+ * storage in unsigned int contexts.
+ *
+ * Parameters:
+ *   time - time_t value to convert (may be negative or exceed uint range)
+ *
+ * Returns:
+ *   unsigned int value clamped to [0, UINT_MAX] range
+ */
+static inline unsigned int safe_time_to_uint(time_t time) {
+    if (time < 0) return 0;
+    if ((unsigned long long)time > UINT_MAX) return UINT_MAX;
+    return (unsigned int)time;
+}
+
+/*
+ * safe_uid_to_uint - Convert uid_t to unsigned int safely
+ *
+ * Converts uid_t to unsigned int. On most platforms uid_t is already
+ * unsigned int, so this provides explicit conversion for clarity and
+ * future compatibility if uid_t definition changes.
+ *
+ * Parameters:
+ *   uid - uid_t value to convert (typically already unsigned int)
+ *
+ * Returns:
+ *   unsigned int value (typically equivalent to input)
+ */
+static inline unsigned int safe_uid_to_uint(uid_t uid) {
+    return (unsigned int)uid;
+}
+
+/*
+ * Extended Float/Double Conversion Functions
+ */
+
+/*
+ * safe_size_to_float - Convert size_t to float safely
+ *
+ * Converts size_t to float for floating-point calculations involving sizes.
+ * Large size_t values may lose precision when converted to float.
+ * Used for statistical calculations and ratios involving memory sizes.
+ *
+ * Parameters:
+ *   size - size_t value to convert (may lose precision)
+ *
+ * Returns:
+ *   float value representing the size (with potential precision loss)
+ */
+static inline float safe_size_to_float(size_t size) {
+    return (float)size;
+}
+
+/*
+ * safe_time_to_float - Convert time_t to float safely
+ *
+ * Converts time_t to float for floating-point time calculations.
+ * Large time_t values may lose precision when converted to float.
+ * Used for time difference calculations and statistical analysis.
+ *
+ * Parameters:
+ *   time - time_t value to convert (may lose precision)
+ *
+ * Returns:
+ *   float value representing the timestamp (with potential precision loss)
+ */
+static inline float safe_time_to_float(time_t time) {
+    return (float)time;
+}
+
+/*
+ * safe_uid_to_float - Convert uid_t to float safely
+ *
+ * Converts uid_t to float for floating-point calculations involving user IDs.
+ * Used for statistical analysis of user data and mathematical operations.
+ *
+ * Parameters:
+ *   uid - uid_t value to convert
+ *
+ * Returns:
+ *   float value representing the UID
+ */
+static inline float safe_uid_to_float(uid_t uid) {
+    return (float)uid;
+}
+
+/*
+ * safe_uint_to_float - Convert unsigned int to float safely
+ *
+ * Converts unsigned int to float for floating-point calculations.
+ * Large unsigned int values may lose precision when converted to float.
+ * Used for mathematical operations requiring float precision.
+ *
+ * Parameters:
+ *   value - unsigned int value to convert (may lose precision)
+ *
+ * Returns:
+ *   float value representing the unsigned int (with potential precision loss)
+ */
+static inline float safe_uint_to_float(unsigned int value) {
+    return (float)value;
+}
+
+/*
+ * safe_ulong_to_float - Convert unsigned long to float safely
+ *
+ * Converts unsigned long to float for floating-point calculations.
+ * Large unsigned long values will lose precision when converted to float.
+ * Used for mathematical operations where float precision is sufficient.
+ *
+ * Parameters:
+ *   value - unsigned long value to convert (will lose precision for large values)
+ *
+ * Returns:
+ *   float value representing the unsigned long (with potential precision loss)
+ */
+static inline float safe_ulong_to_float(unsigned long value) {
+    return (float)value;
+}
+
+/*
+ * safe_uchar_to_float - Convert unsigned char to float safely
+ *
+ * Converts unsigned char to float without precision loss, as unsigned char
+ * values [0, 255] fit exactly in float precision. Used for character-based
+ * mathematical operations.
+ *
+ * Parameters:
+ *   value - unsigned char value to convert (always exact)
+ *
+ * Returns:
+ *   float value representing the unsigned char exactly
+ */
+static inline float safe_uchar_to_float(unsigned char value) {
+    return (float)value;
+}
+
+/*
+ * safe_ushort_to_float - Convert unsigned short to float safely
+ *
+ * Converts unsigned short to float without precision loss, as unsigned short
+ * values [0, 65535] fit exactly in float precision. Used for 16-bit values
+ * in floating-point calculations.
+ *
+ * Parameters:
+ *   value - unsigned short value to convert (always exact)
+ *
+ * Returns:
+ *   float value representing the unsigned short exactly
+ */
+static inline float safe_ushort_to_float(unsigned short value) {
+    return (float)value;
+}
+
+/*
+ * safe_size_to_double - Convert size_t to double safely
+ *
+ * Converts size_t to double for high-precision floating-point calculations
+ * involving sizes. Double precision can represent size_t values exactly
+ * in most practical ranges. Used for precise mathematical operations.
+ *
+ * Parameters:
+ *   size - size_t value to convert (typically exact representation)
+ *
+ * Returns:
+ *   double value representing the size with high precision
+ */
+static inline double safe_size_to_double(size_t size) {
+    return (double)size;
+}
+
+/*
+ * safe_time_to_double - Convert time_t to double safely
+ *
+ * Converts time_t to double for high-precision time calculations.
+ * Double precision can represent time_t values exactly in most ranges.
+ * Used for precise time difference calculations and statistical analysis.
+ *
+ * Parameters:
+ *   time - time_t value to convert (typically exact representation)
+ *
+ * Returns:
+ *   double value representing the timestamp with high precision
+ */
+static inline double safe_time_to_double(time_t time) {
+    return (double)time;
+}
+
+/*
+ * safe_uid_to_double - Convert uid_t to double safely
+ *
+ * Converts uid_t to double for high-precision calculations involving user IDs.
+ * Used for statistical analysis and mathematical operations requiring
+ * double precision.
+ *
+ * Parameters:
+ *   uid - uid_t value to convert
+ *
+ * Returns:
+ *   double value representing the UID with high precision
+ */
+static inline double safe_uid_to_double(uid_t uid) {
+    return (double)uid;
+}
+
+/*
+ * safe_uint_to_double - Convert unsigned int to double safely
+ *
+ * Converts unsigned int to double without precision loss. Double precision
+ * can represent unsigned int values exactly. Used for high-precision
+ * mathematical operations.
+ *
+ * Parameters:
+ *   value - unsigned int value to convert (always exact)
+ *
+ * Returns:
+ *   double value representing the unsigned int exactly
+ */
+static inline double safe_uint_to_double(unsigned int value) {
+    return (double)value;
+}
+
+/*
+ * safe_ulong_to_double - Convert unsigned long to double safely
+ *
+ * Converts unsigned long to double for high-precision calculations.
+ * Double precision can represent most unsigned long values exactly,
+ * though very large values may lose precision. Used for mathematical
+ * operations requiring double precision.
+ *
+ * Parameters:
+ *   value - unsigned long value to convert (typically exact)
+ *
+ * Returns:
+ *   double value representing the unsigned long with high precision
+ */
+static inline double safe_ulong_to_double(unsigned long value) {
+    return (double)value;
+}
+
+/*
+ * safe_int_to_double - Convert int to double safely
+ *
+ * Converts int to double without precision loss. Double precision can
+ * represent int values exactly. Used for high-precision mathematical
+ * operations requiring double precision from integer inputs.
+ *
+ * Parameters:
+ *   value - int value to convert (always exact)
+ *
+ * Returns:
+ *   double value representing the int exactly
+ */
+static inline double safe_int_to_double(int value) {
+    return (double)value;
+}
+
+/*
+ * =============================================================================
+ * CRITICAL MISSING CONVERSION FUNCTIONS
+ * =============================================================================
+ *
+ * These functions address the most common overflow bugs where developers
+ * assume values have been clamped but haven't performed safe conversion.
+ * The _to_char and _to_uchar functions are especially critical for preventing
+ * buffer overflows and array index errors.
+ */
+
+/*
+ * Critical _to_char conversion functions
+ * These prevent overflow when storing larger types in char variables
+ */
+
+/*
+ * safe_double_to_char - Convert double to char with bounds checking
+ *
+ * Safely converts double values to char with range validation and proper
+ * handling of NaN/infinity cases. Used when floating-point calculations
+ * need to be stored in char variables for character codes or small indices.
+ *
+ * This function prevents overflow bugs where developers assume double
+ * calculations will fit in char range without explicit bounds checking.
+ *
+ * Parameters:
+ *   value - double value to convert (may be NaN, infinity, or exceed char range)
+ *
+ * Returns:
+ *   char value clamped to [CHAR_MIN, CHAR_MAX] range, 0 for NaN/infinity
+ *
+ * Example Usage:
+ *   char ascii_code = safe_double_to_char(calculation_result);
+ *   char index = safe_double_to_char(interpolated_position);
+ */
+static inline char safe_double_to_char(double value) {
+    /* Handle NaN and infinity cases */
+    if (value != value || value == INFINITY || value == -INFINITY) return 0;
+
+    if (value > (double)CHAR_MAX) return CHAR_MAX;
+    if (value < (double)CHAR_MIN) return CHAR_MIN;
+    return (char)value;
+}
+
+/*
+ * safe_float_to_char - Convert float to char with bounds checking
+ *
+ * Safely converts float values to char with range validation and proper
+ * handling of NaN/infinity cases. Used when single-precision calculations
+ * need to be stored in char variables.
+ *
+ * Parameters:
+ *   value - float value to convert (may be NaN, infinity, or exceed char range)
+ *
+ * Returns:
+ *   char value clamped to [CHAR_MIN, CHAR_MAX] range, 0 for NaN/infinity
+ *
+ * Example Usage:
+ *   char result = safe_float_to_char(floating_calculation);
+ */
+static inline char safe_float_to_char(float value) {
+    /* Handle NaN and infinity cases */
+    if (value != value || value == INFINITY || value == -INFINITY) return 0;
+
+    if (value > (float)CHAR_MAX) return CHAR_MAX;
+    if (value < (float)CHAR_MIN) return CHAR_MIN;
+    return (char)value;
+}
+
+/*
+ * safe_size_to_char - Convert size_t to char with bounds checking
+ *
+ * Safely converts size_t to char with overflow validation. CRITICAL for
+ * preventing buffer overflows when size calculations are used as char
+ * indices or stored in char variables.
+ *
+ * Parameters:
+ *   size - size_t value to convert (may exceed char range)
+ *
+ * Returns:
+ *   char value clamped to [0, CHAR_MAX] range (never negative)
+ *
+ * Example Usage:
+ *   char count = safe_size_to_char(strlen(buffer));
+ *   char index = safe_size_to_char(array_size);
+ */
+static inline char safe_size_to_char(size_t size) {
+    if (size > CHAR_MAX) return CHAR_MAX;
+    return (char)size;
+}
+
+/*
+ * safe_time_to_char - Convert time_t to char with bounds checking
+ *
+ * Safely converts time_t to char for simplified timestamp representations
+ * or time-based calculations. Handles negative times and large values.
+ *
+ * Parameters:
+ *   time - time_t value to convert (may be negative or exceed char range)
+ *
+ * Returns:
+ *   char value clamped to [CHAR_MIN, CHAR_MAX] range
+ *
+ * Example Usage:
+ *   char time_offset = safe_time_to_char(time_diff);
+ */
+static inline char safe_time_to_char(time_t time) {
+    if (time > CHAR_MAX) return CHAR_MAX;
+    if (time < CHAR_MIN) return CHAR_MIN;
+    return (char)time;
+}
+
+/*
+ * safe_uchar_to_char - Convert unsigned char to char with bounds checking
+ *
+ * Safely converts unsigned char to char, handling the case where unsigned
+ * char values exceed signed char range. CRITICAL on platforms where
+ * CHAR_MAX is 127 but unsigned char goes to 255.
+ *
+ * Parameters:
+ *   value - unsigned char value to convert (may exceed signed char range)
+ *
+ * Returns:
+ *   char value clamped to [CHAR_MIN, CHAR_MAX] range
+ *
+ * Example Usage:
+ *   char signed_result = safe_uchar_to_char(unsigned_calculation);
+ */
+static inline char safe_uchar_to_char(unsigned char value) {
+    if (value > CHAR_MAX) return CHAR_MAX;
+    return (char)value;
+}
+
+/*
+ * safe_uid_to_char - Convert uid_t to char with bounds checking
+ *
+ * Safely converts uid_t to char for simplified user ID representations.
+ * Large UIDs are clamped to char range. Used for user ID storage in
+ * limited contexts.
+ *
+ * Parameters:
+ *   uid - uid_t value to convert (may exceed char range)
+ *
+ * Returns:
+ *   char value clamped to [0, CHAR_MAX] range (never negative)
+ *
+ * Example Usage:
+ *   char user_index = safe_uid_to_char(getuid());
+ */
+static inline char safe_uid_to_char(uid_t uid) {
+    if (uid > CHAR_MAX) return CHAR_MAX;
+    return (char)uid;
+}
+
+/*
+ * safe_uint_to_char - Convert unsigned int to char with bounds checking
+ *
+ * Safely converts unsigned int to char with overflow validation. CRITICAL
+ * for preventing overflow when unsigned calculations are stored in char
+ * variables.
+ *
+ * Parameters:
+ *   value - unsigned int value to convert (may exceed char range)
+ *
+ * Returns:
+ *   char value clamped to [0, CHAR_MAX] range (never negative)
+ *
+ * Example Usage:
+ *   char result = safe_uint_to_char(calculation);
+ */
+static inline char safe_uint_to_char(unsigned int value) {
+    if (value > CHAR_MAX) return CHAR_MAX;
+    return (char)value;
+}
+
+/*
+ * safe_ulong_to_char - Convert unsigned long to char with bounds checking
+ *
+ * Safely converts unsigned long to char with overflow validation. CRITICAL
+ * for preventing overflow when large unsigned calculations are stored in
+ * char variables.
+ *
+ * Parameters:
+ *   value - unsigned long value to convert (may exceed char range)
+ *
+ * Returns:
+ *   char value clamped to [0, CHAR_MAX] range (never negative)
+ *
+ * Example Usage:
+ *   char index = safe_ulong_to_char(large_calculation);
+ */
+static inline char safe_ulong_to_char(unsigned long value) {
+    if (value > CHAR_MAX) return CHAR_MAX;
+    return (char)value;
+}
+
+/*
+ * safe_ushort_to_char - Convert unsigned short to char with bounds checking
+ *
+ * Safely converts unsigned short to char with overflow validation. Used
+ * when 16-bit unsigned values need to be stored in char variables.
+ *
+ * Parameters:
+ *   value - unsigned short value to convert (may exceed char range)
+ *
+ * Returns:
+ *   char value clamped to [0, CHAR_MAX] range (never negative)
+ *
+ * Example Usage:
+ *   char result = safe_ushort_to_char(short_calculation);
+ */
+static inline char safe_ushort_to_char(unsigned short value) {
+    if (value > CHAR_MAX) return CHAR_MAX;
+    return (char)value;
+}
+
+/*
+ * Critical _to_uchar conversion functions
+ * These prevent overflow when storing larger types in unsigned char variables
+ */
+
+/*
+ * safe_double_to_uchar - Convert double to unsigned char with bounds checking
+ *
+ * Safely converts double values to unsigned char with range validation.
+ * CRITICAL for preventing overflow when floating-point calculations are
+ * used as array indices or stored in unsigned char variables.
+ *
+ * Parameters:
+ *   value - double value to convert (may be NaN, infinity, or exceed uchar range)
+ *
+ * Returns:
+ *   unsigned char value clamped to [0, UCHAR_MAX] range, 0 for NaN/infinity
+ *
+ * Example Usage:
+ *   unsigned char pixel_value = safe_double_to_uchar(color_calculation);
+ *   unsigned char index = safe_double_to_uchar(interpolated_position);
+ */
+static inline unsigned char safe_double_to_uchar(double value) {
+    /* Handle NaN and infinity cases */
+    if (value != value || value == INFINITY || value == -INFINITY) return 0;
+
+    if (value < 0.0) return 0;
+    if (value > (double)UCHAR_MAX) return UCHAR_MAX;
+    return (unsigned char)value;
+}
+
+/*
+ * safe_float_to_uchar - Convert float to unsigned char with bounds checking
+ *
+ * Safely converts float values to unsigned char with range validation.
+ * CRITICAL for preventing overflow when single-precision calculations are
+ * used as array indices or stored in unsigned char variables.
+ *
+ * Parameters:
+ *   value - float value to convert (may be NaN, infinity, or exceed uchar range)
+ *
+ * Returns:
+ *   unsigned char value clamped to [0, UCHAR_MAX] range, 0 for NaN/infinity
+ *
+ * Example Usage:
+ *   unsigned char brightness = safe_float_to_uchar(calculation);
+ */
+static inline unsigned char safe_float_to_uchar(float value) {
+    /* Handle NaN and infinity cases */
+    if (value != value || value == INFINITY || value == -INFINITY) return 0;
+
+    if (value < 0.0f) return 0;
+    if (value > (float)UCHAR_MAX) return UCHAR_MAX;
+    return (unsigned char)value;
+}
+
+/*
+ * safe_uchar_to_uchar - Identity conversion for unsigned char
+ *
+ * Identity function for unsigned char to unsigned char conversion. Provided
+ * for completeness in generic programming contexts and to maintain consistency
+ * in conversion function naming patterns.
+ *
+ * Parameters:
+ *   value - unsigned char value to convert (always valid)
+ *
+ * Returns:
+ *   unsigned char value unchanged
+ *
+ * Example Usage:
+ *   unsigned char result = safe_uchar_to_uchar(input);
+ */
+static inline unsigned char safe_uchar_to_uchar(unsigned char value) {
+    return value;
+}
+
+/*
+ * Additional high-utility missing conversion functions
+ */
+
+/*
+ * safe_size_to_long - Convert size_t to long safely
+ *
+ * Converts size_t to long for calculations requiring signed arithmetic.
+ * On 64-bit systems, size_t and long are typically the same size, but
+ * provides explicit conversion for clarity and 32-bit compatibility.
+ *
+ * Parameters:
+ *   size - size_t value to convert
+ *
+ * Returns:
+ *   long value (typically equivalent on 64-bit, clamped on 32-bit if needed)
+ *
+ * Example Usage:
+ *   long offset = safe_size_to_long(buffer_size);
+ */
+static inline long safe_size_to_long(size_t size) {
+    if (size > LONG_MAX) return LONG_MAX;
+    return (long)size;
+}
+
+/*
+ * safe_uid_to_long - Convert uid_t to long safely
+ *
+ * Converts uid_t to long for calculations requiring long precision.
+ * Used when user IDs need to be used in long-based calculations.
+ *
+ * Parameters:
+ *   uid - uid_t value to convert
+ *
+ * Returns:
+ *   long value representing the UID
+ *
+ * Example Usage:
+ *   long user_value = safe_uid_to_long(getuid());
+ */
+static inline long safe_uid_to_long(uid_t uid) {
+    return (long)uid;
+}
+
+/*
+ * safe_double_to_short - Convert double to short with bounds checking
+ *
+ * Safely converts double values to short with range validation.
+ * Used when floating-point calculations need to be stored in short variables.
+ *
+ * Parameters:
+ *   value - double value to convert (may exceed short range)
+ *
+ * Returns:
+ *   short value clamped to [SHRT_MIN, SHRT_MAX] range, 0 for NaN/infinity
+ *
+ * Example Usage:
+ *   short coordinate = safe_double_to_short(position_calculation);
+ */
+static inline short safe_double_to_short(double value) {
+    /* Handle NaN and infinity cases */
+    if (value != value || value == INFINITY || value == -INFINITY) return 0;
+
+    if (value > (double)SHRT_MAX) return SHRT_MAX;
+    if (value < (double)SHRT_MIN) return SHRT_MIN;
+    return (short)value;
+}
+
+/*
+ * safe_float_to_short - Convert float to short with bounds checking
+ *
+ * Safely converts float values to short with range validation.
+ * Used when single-precision calculations need to be stored in short variables.
+ *
+ * Parameters:
+ *   value - float value to convert (may exceed short range)
+ *
+ * Returns:
+ *   short value clamped to [SHRT_MIN, SHRT_MAX] range, 0 for NaN/infinity
+ *
+ * Example Usage:
+ *   short result = safe_float_to_short(calculation);
+ */
+static inline short safe_float_to_short(float value) {
+    /* Handle NaN and infinity cases */
+    if (value != value || value == INFINITY || value == -INFINITY) return 0;
+
+    if (value > (float)SHRT_MAX) return SHRT_MAX;
+    if (value < (float)SHRT_MIN) return SHRT_MIN;
+    return (short)value;
+}
+
+/*
+ * safe_ushort_to_short - Convert unsigned short to short with bounds checking
+ *
+ * Safely converts unsigned short to short, handling overflow when unsigned
+ * short values exceed signed short range. CRITICAL on platforms where
+ * unsigned short can be 65535 but short max is 32767.
+ *
+ * Parameters:
+ *   value - unsigned short value to convert (may exceed signed short range)
+ *
+ * Returns:
+ *   short value clamped to [0, SHRT_MAX] range
+ *
+ * Example Usage:
+ *   short result = safe_ushort_to_short(unsigned_calculation);
+ */
+static inline short safe_ushort_to_short(unsigned short value) {
+    if (value > SHRT_MAX) return SHRT_MAX;
+    return (short)value;
 }
 
 #endif /* SAFE_CONVERT_H */
