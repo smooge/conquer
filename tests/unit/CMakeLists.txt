@@ -19,6 +19,20 @@ set_tests_properties(test_comp_line PROPERTIES
     TIMEOUT 30
 )
 
+# Phase 6.5 Session 2: Additional Static Function Tests
+add_conquer_test(test_spew_utils test_spew_utils.c)
+set_tests_properties(test_spew_utils PROPERTIES
+    LABELS "unit;spew_utils;phase6;level0"
+    TIMEOUT 30
+)
+
+# Phase 6.5 Session 3: Sort Utilities Tests
+add_conquer_test(test_sort_utils test_sort_utils.c)
+set_tests_properties(test_sort_utils PROPERTIES
+    LABELS "unit;sort_utils;phase6;level0"
+    TIMEOUT 30
+)
+
 
 
 # Add additional unit tests here as they are created
