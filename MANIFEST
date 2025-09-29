@@ -1,45 +1,35 @@
-   File Name		Archive #	Description
------------------------------------------------------------
- MANIFEST                   1	This shipping list
- Makefile                  14	
- README                     1	
- admin.c                    9	
- cexecute.c                14	
- check.c                    9	
- combat.c                   4	
- commands.c                 6	
- data.c                    13	
- data.h                     8	
- display.c                 11	
- extcmds.c                  2	
- forms.c                   13	
- header.h                  13	
- io.c                       4	
- magic.c                    8	
- main.c                    10	
- makeworl.c                 9	
- man.pag                   14	
- misc.c                     3	
- move.c                     7	
- nations                    6	
- navy.c                     3	
- newhelp.c                 12	
- newlogin.c                 7	
- newlogin.h                 9	
- notes.v4                   2	
- npc.c                      5	
- patchlevel.h               1	
- randeven.c                11	
- reports.c                 10	
- rules                     12	
- run                        4	
- sort.c                    14	
- spew.c                    12	
- trade.c                   12	
- txt0                      13	
- txt1                       5	
- txt2                       6	
- txt3                      14	
- txt4                       7	
- txt5                      11	
- update.c                   1	
+ lines   words chars   FILENAME
+   1110    4988   40115 admin.c
+    450    1770   14920 cexecute.c
+    464    2641   18456 check.c
+   1946    8132   67968 combat.c
+   2360   10187   80392 commands.c
+    800    4793   33900 data.c
+   1051    5234   40824 display.c
+    753    3514   25135 extcmds.c
+   1490    5649   50062 forms.c
+   1619    8999   64848 io.c
+   1641    7079   58890 magic.c
+   1909    6459   58044 main.c
+   1552    5628   48347 makeworl.c
+   3518   17654  124872 misc.c
+    815    2704   26124 move.c
+   1248    6370   43592 navy.c
+    436    1425   16478 newhelp.c
+   2524   11661   90329 newlogin.c
+   3179   15422  127304 npc.c
+    987    4628   33295 psmap.c
+   1884    9132   70267 randeven.c
+   1452    5774   51117 reports.c
+    531    2463   16990 sort.c
+   1596    9089   64784 spew.c
+   1835    8184   63238 trade.c
+   2646   11726   95756 update.c
+   1498    7098   53351 data.h
+    701    3720   27934 header.h
+    282    2034   13645 newlogin.h
+     58     386    2515 patchlevel.h
+    241    1501   11171 psmap.h
+   2115   10284   69101 safe_convert.h
+    205    1349   10145 trade.h
+  44896  207677 1613909 total

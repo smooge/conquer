@@ -153,10 +153,10 @@ CMAKE BUILD OPTIONS:
 - Debug build: `cmake -B build -DCMAKE_BUILD_TYPE=Debug`
 
 CMAKE CONFIGURATION FLAGS:
-- Custom game directory: `cmake -B build -DDEFAULTDIR=/your/game/share/path`
-- Custom executable directory: `cmake -B build -DEXEDIR=/your/new/bin/path`
-- Alternate admin login: `cmake -B build -DLOGIN=alternate_admin_login`
-- Combined example: `cmake -B build -DDEFAULTDIR=/usr/local/share/conquer -DEXEDIR=/usr/local/bin -DLOGIN=gameadmin`
+- Custom game directory: `cmake -B build -DCONQUER_DEFAULT_DIR=/your/game/share/path`
+- Custom executable directory: `cmake -B build -DCONQUER_EXE_DIR=/your/new/bin/path`
+- Alternate admin login: `cmake -B build -DCONQUER_LOGIN=alternate_admin_login`
+- Combined example: `cmake -B build -DCONQUER_DEFAULT_DIR=/usr/local/share/conquer -DCONQUER_EXE_DIR=/usr/local/bin -DCONQUER_LOGIN=gameadmin`
 
 TESTING INFRASTRUCTURE:
 ```bash

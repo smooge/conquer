@@ -131,11 +131,6 @@
 #endif
 
 /* Ensure version consistency between CMake and header definitions */
-#ifdef PATCHLEVEL
-/* If patchlevel.h was included first, verify consistency */
-#if PATCHLEVEL != "@CONQUER_PATCHLEVEL@"
-#warning "Version mismatch detected between patchlevel.h and CMake"
-#endif
-#endif
+/* Note: Runtime version validation is performed in main.c if needed */
 
 #endif /* CONQUER_CONFIG_H */

@@ -12,6 +12,15 @@ set_tests_properties(test_safe_convert PROPERTIES
     TIMEOUT 60  # Allow extra time for performance tests
 )
 
+# Phase 6.5: Core Function Unit Tests
+add_conquer_test(test_comp_line test_comp_line.c)
+set_tests_properties(test_comp_line PROPERTIES
+    LABELS "unit;comp_line;phase6;level0"
+    TIMEOUT 30
+)
+
+
+
 # Add additional unit tests here as they are created
 # Example:
 # add_conquer_test(test_string_utils test_string_utils.c ../src/string_utils.c)

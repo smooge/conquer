@@ -179,8 +179,9 @@ add_executable(conqps psmap.c)
 target_link_libraries(conqps PRIVATE conquer_warnings)
 
 # PostScript-specific definitions matching original Makefile PSOPTS
+# Updated to use data directory for psmap.ps file location
 target_compile_definitions(conqps PRIVATE
-    PSFILE="${CONQUER_EXE_DIR}/psmap.ps"
+    PSFILE="${CONQUER_DEFAULT_DIR}/psmap.ps"
     LETTER  # Default page size (could be A4 instead)
 )
 

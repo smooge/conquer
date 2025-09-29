@@ -1833,7 +1833,10 @@ static inline char safe_time_to_char(time_t time) {
  *   char signed_result = safe_uchar_to_char(unsigned_calculation);
  */
 static inline char safe_uchar_to_char(unsigned char value) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wtype-limits"
     if (value > CHAR_MAX) return CHAR_MAX;
+#pragma GCC diagnostic pop
     return (char)value;
 }
 
