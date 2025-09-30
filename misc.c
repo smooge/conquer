@@ -31,10 +31,12 @@
 #endif /*CONQUER*/
 #include <time.h>
 #include <unistd.h>
+#include <glob.h>
 #include "header.h"
 #include "data.h"
 #include "trade.h"
 #include "safe_convert.h"
+#include "safe_system.h"
 
 extern FILE *fnews;
 extern short country,redraw;
@@ -47,6 +49,8 @@ char    *memset();
 #endif
 
 #ifdef CONQUER
+
+
 /*
  * move_file - Atomic file move operation using UNIX link/unlink pattern
  *
@@ -2821,15 +2825,20 @@ mailclose(int to)
 
 #ifdef CONQUER
 	if((to!=ABORTMAIL)&&(to==mailok)) {
-		char line[BIGLTH];
+		char destination[BIGLTH];
 		if (to==NEWSMAIL) {
 			/* send to the current newspaper */
-			sprintf(line,"cat %s >> news%d",tmp_mail_name,TURN-1);
+			sprintf(destination,"news%d",TURN-1);
 		} else {
 			/* send to the player now */
-			sprintf(line,"cat %s >> %s%d",tmp_mail_name,msgfile,to);
+			sprintf(destination,"%s%d",msgfile,to);
 		}
-		system(line);
+
+		/* Use secure native C file append instead of system() call */
+		if (append_file_to_file(tmp_mail_name, destination) != 0) {
+			/* Handle append failure - could be logged or reported */
+			printf("Warning: Failed to deliver mail to %s\n", destination);
+		}
 	}
 	if (tmp_mail_name[0] != '\0') {
 		(void) unlink(tmp_mail_name);

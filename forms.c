@@ -95,6 +95,7 @@
 #include "header.h"
 #include "data.h"
 #include "safe_convert.h"
+#include "safe_system.h"
 
 extern FILE	*fexe, *fnews;
 extern short	country,redraw;
@@ -983,8 +984,8 @@ void change (void) {
 				}
 				destroy(country);
 				fclose(fnews);
-				snprintf(command, sizeof(command), "%s/%s %s %s", EXEDIR, sortname, filename, filename);
-				system(command);
+				/* Sort news file using native C implementation (replaces system("conqsort filename filename")) */
+				sort_file_in_place(filename, 2);
 			}
 		}
 		break;

@@ -32,6 +32,7 @@
 #include "header.h"
 #include "data.h"
 #include "safe_convert.h"
+#include "safe_system.h"
 
 extern FILE *fnews;
 
@@ -150,7 +151,7 @@ dtol (double d)
 void
 update (void)
 {
-	char command[BIGLTH],filename[FILELTH];
+	char filename[FILELTH];
 
 	sprintf(filename,"%s%d",newsfile,TURN);
 	if ((fnews=fopen(filename,"w"))==NULL) {
@@ -211,13 +212,16 @@ update (void)
 		MERCATT++;
 		MERCDEF++;
 	}
-	sprintf(command,"/bin/rm -f %s*",exefile);
-	printf("%s\n",command);
-	system(command);
+	/* Use secure file deletion instead of system() call */
+	char pattern[BIGLTH];
+	sprintf(pattern, "%s*", exefile);
+	const char *patterns[] = { pattern };
+	int deleted = secure_file_delete(patterns, 1);
+	printf("Removed %d files matching %s*\n", deleted, exefile);
 
-	sprintf( command,"%s/%s %s %s", EXEDIR, sortname, filename, filename );
-	printf("%s\n",command);
-	system(command);
+	/* Sort news file using native C implementation (replaces system("conqsort filename filename")) */
+	printf("Sorting news file: %s\n", filename);
+	sort_file_in_place(filename, 2);
 
 	/* remove old news files */
 	if (TURN>MAXNEWS) {

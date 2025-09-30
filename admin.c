@@ -78,6 +78,8 @@
 #include "header.h"
 #include "data.h"
 #include "safe_convert.h"
+#include "safe_system.h"
+
 
 /*Declarations*/
 struct	s_sector **sct;
@@ -558,8 +560,10 @@ int main (int argc, char **argv) {
 		writedata();
 		unlink(string);
 #ifdef TIMELOG
-		sprintf(string, "date > %s", timefile);
-		system(string);
+		/* Write timestamp using secure native C function instead of system() call */
+		if (write_timestamp_to_file(timefile) != 0) {
+			printf("Warning: Failed to write timestamp to %s\n", timefile);
+		}
 #endif /* TIMELOG */
 		exit(SUCCESS);
 	}

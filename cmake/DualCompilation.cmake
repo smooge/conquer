@@ -25,6 +25,7 @@ set(SHARED_SOURCES
     data.c
     trade.c
     check.c
+    safe_system.c
 )
 
 # Admin-only source files - only compiled for admin executable
