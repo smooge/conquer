@@ -184,8 +184,6 @@
 
 /* Uncomment these as needed for specific old systems */
 /* #define SYSV */     /* uncomment for UNIX SYSV machines */
-/* #define HPUX */     /* uncomment for HP-UNIX */
-/* #define XENIX */    /* this plus SYSV for XENIX machines */
 
 /* ================================================================== */
 /* ADMINISTRATOR CONFIGURATION */

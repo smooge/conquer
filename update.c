@@ -24,10 +24,8 @@
 #include <string.h>
 #include <curses.h>
 #include <ctype.h>
-#ifndef XENIX
 #include <sys/types.h>
 #include <sys/file.h>
-#endif
 #include <unistd.h>
 #include "header.h"
 #include "data.h"
@@ -448,7 +446,6 @@ attract(int x,int y,int race)
  *   Complexity: Complex - multiple AI behaviors and world state interactions
  *
  * Notes:
- *   - XENIX platform has special handling for integer arithmetic
  *   - Kings always return to capitol when set to RULE status
  *   - Two-pass movement algorithm handles difficult terrain situations
  *   - Attractiveness is reduced after army visits to prevent clustering
@@ -459,9 +456,6 @@ int
 armymove (int armynum)
 {
 	long		sum, where;
-#ifdef XENIX
-	register int z;
-#endif /*XENIX*/
 	register int	x, y;
 	int	i;
 	long	menok;			/* enough men in the army? */
@@ -577,24 +571,12 @@ armymove (int armynum)
 				&&(sct[x][y].designation != DCAPITOL)
 				&&(sct[x][y].designation != DTOWN)
 				&&(sct[x][y].owner==country)) {
-#ifdef XENIX
-					z = attr[x][y];
-					z /= 8;
-					attr[x][y] = z;
-#else
 					attr[x][y] /= 8;
-#endif /*XENIX*/
 				}
 				if(sct[x][y].owner==0){
 					sct[x][y].owner=safe_int_to_uchar(country);
 					if (curntn->popularity<MAXTGVAL) curntn->popularity++;
-#ifdef XENIX
-					z = attr[x][y];
-					z /= 8;
-					attr[x][y] = z;
-#else
 					attr[x][y]/=8;
-#endif /*XENIX*/
 					takesctr++;
 				}
 
@@ -889,7 +871,6 @@ cheat (void)
  *   - Random nation execution prevents predictable advantages
  *   - Memory management critical - allocates large matrices
  *   - Leadership system prevents nations from becoming unplayable
- *   - XENIX platform requires special integer arithmetic handling
  *   - Nation disarray occurs when primary leader is killed
  *   - Civilian movement driven by sector attractiveness calculations
  */
@@ -898,9 +879,6 @@ updexecs (void)
 {
 	register struct s_sector	*sptr;
 	register int x, y;
-#ifdef XENIX
-	register int z;
-#endif /*XENIX*/
 	int	armynum;
 	int done, loop=0, number=0;
 	void move_people();
@@ -1055,15 +1033,7 @@ printf("checking for leader in nation %s: armynum=%d\n",curntn->name,armynum);
 	for(country=1;country<NTOTAL;country++) if(isntn(ntn[country].active)){
 		ntn[country].tships=0;
 		ntn[country].tmil=0;
-#ifdef XENIX
-		if (rand()%4 == 0) {
-			z = ntn[country].spellpts;
-			z /= 2;
-			ntn[country].spellpts = z;
-		}
-#else
 		if(rand()%4==0) ntn[country].spellpts/=2;
-#endif /*XENIX*/
 		if(magic(country,SUMMON)==TRUE) {
 			ntn[country].spellpts+=4;
 			if(magic(country,WYZARD)==TRUE)
@@ -1133,7 +1103,6 @@ printf("checking for leader in nation %s: armynum=%d\n",curntn->name,armynum);
  *   Complexity: Moderate - race-specific AI with multiple behavior patterns
  *
  * Platform Notes:
- *   - Uses XENIX-specific integer arithmetic to prevent overflow
  *   - Includes debug output for army position validation
  *   - Handles edge cases for army positioning and water detection
  *
@@ -1152,9 +1121,6 @@ printf("checking for leader in nation %s: armynum=%d\n",curntn->name,armynum);
 void
 do_lizard (void)
 {
-#ifdef XENIX
-	register int x;
-#endif /*XENIX*/
 	register int i, j;
 	int armynum;
 
@@ -1164,14 +1130,8 @@ do_lizard (void)
 	if((P_ASOLD>0)) {
 		P_AMOVE =20;	/* just in case god wants to move them */
 		/* increase population */
-#ifdef XENIX
-		x = P_ASOLD * 102;
-		x /= 100;
-		P_ASOLD = x;
-#else
 		P_ASOLD*=102;
 		P_ASOLD/=100;
-#endif /*XENIX*/
 		if(armynum%2==0) {
 			if(P_ASTAT!=SIEGED) P_ASTAT=GARRISON;
 		} else {

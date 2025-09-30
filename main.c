@@ -1539,13 +1539,8 @@ void makeside(int alwayssee) {	/* see even if cant really see sector */
 	&&((magic(sptr->owner,THE_VOID)!=TRUE)
 	||(sptr->owner==country))){
 		if(i>6) standout();
-#ifndef HPUX
-		if(i<10)	mvprintw(LINES-11,COLS-1,"%d",i);
-		else		mvprintw(LINES-11,COLS-2,"%d",i);
-#else
 		if(i<10)	mvprintw(LINES-11,COLS-2,"%d",i);
 		else		mvprintw(LINES-11,COLS-3,"%d",i);
-#endif /* HPUX */
 		standend();
 	}
 

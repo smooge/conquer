@@ -1428,10 +1428,6 @@ extern	char	*tradefile;
 #define NUMSECTS	(MAPX * MAPY)	/* total # areas, MAXX*MAXY */
 #define MAXHELP		6
 
-#ifdef HPUX
-#define SYSV
-#endif /* HPUX */
-
 /* minor market items */
 #define GETFOOD		97		/* response needed to get food */
 #define GETMETAL	98
