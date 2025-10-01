@@ -448,10 +448,7 @@ static inline short safe_long_to_short(long value) {
  */
 static inline long safe_float_to_long(float value) {
     /* Handle NaN and infinity cases */
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wfloat-equal"
     if (value != value || value == HUGE_VALF || value == -HUGE_VALF) return 0;
-#pragma clang diagnostic pop
 
     if (value > (float)LONG_MAX) return LONG_MAX;
     if (value < (float)LONG_MIN) return LONG_MIN;
@@ -480,10 +477,7 @@ static inline long safe_float_to_long(float value) {
  */
 static inline long safe_double_to_long(double value) {
     /* Handle NaN and infinity cases */
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wfloat-equal"
     if (value != value || value == HUGE_VAL || value == -HUGE_VAL) return 0;
-#pragma clang diagnostic pop
 
     if (value > (double)LONG_MAX) return LONG_MAX;
     if (value < (double)LONG_MIN) return LONG_MIN;
@@ -515,10 +509,7 @@ static inline long safe_double_to_long(double value) {
  */
 static inline int safe_double_to_int(double value) {
     /* Handle NaN and infinity cases */
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wfloat-equal"
     if (value != value || value == HUGE_VAL || value == -HUGE_VAL) return 0;
-#pragma clang diagnostic pop
 
     if (value > (double)INT_MAX) return INT_MAX;
     if (value < (double)INT_MIN) return INT_MIN;
@@ -1750,10 +1741,7 @@ static inline double safe_int_to_double(int value) {
  */
 static inline char safe_double_to_char(double value) {
     /* Handle NaN and infinity cases */
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wfloat-equal"
     if (value != value || value == HUGE_VAL || value == -HUGE_VAL) return 0;
-#pragma clang diagnostic pop
 
     if (value > (double)CHAR_MAX) return CHAR_MAX;
     if (value < (double)CHAR_MIN) return CHAR_MIN;
@@ -1778,10 +1766,7 @@ static inline char safe_double_to_char(double value) {
  */
 static inline char safe_float_to_char(float value) {
     /* Handle NaN and infinity cases */
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wfloat-equal"
     if (value != value || value == HUGE_VALF || value == -HUGE_VALF) return 0;
-#pragma clang diagnostic pop
 
     if (value > (float)CHAR_MAX) return CHAR_MAX;
     if (value < (float)CHAR_MIN) return CHAR_MIN;
@@ -1962,10 +1947,7 @@ static inline char safe_ushort_to_char(unsigned short value) {
  */
 static inline unsigned char safe_double_to_uchar(double value) {
     /* Handle NaN and infinity cases */
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wfloat-equal"
     if (value != value || value == HUGE_VAL || value == -HUGE_VAL) return 0;
-#pragma clang diagnostic pop
 
     if (value < 0.0) return 0;
     if (value > (double)UCHAR_MAX) return UCHAR_MAX;
@@ -1990,10 +1972,7 @@ static inline unsigned char safe_double_to_uchar(double value) {
  */
 static inline unsigned char safe_float_to_uchar(float value) {
     /* Handle NaN and infinity cases */
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wfloat-equal"
     if (value != value || value == HUGE_VALF || value == -HUGE_VALF) return 0;
-#pragma clang diagnostic pop
 
     if (value < 0.0f) return 0;
     if (value > (float)UCHAR_MAX) return UCHAR_MAX;
@@ -2081,10 +2060,9 @@ static inline long safe_uid_to_long(uid_t uid) {
  */
 static inline short safe_double_to_short(double value) {
     /* Handle NaN and infinity cases */
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wfloat-equal"
+
     if (value != value || value == HUGE_VAL || value == -HUGE_VAL) return 0;
-#pragma clang diagnostic pop
+
 
     if (value > (double)SHRT_MAX) return SHRT_MAX;
     if (value < (double)SHRT_MIN) return SHRT_MIN;
@@ -2108,10 +2086,8 @@ static inline short safe_double_to_short(double value) {
  */
 static inline short safe_float_to_short(float value) {
     /* Handle NaN and infinity cases */
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wfloat-equal"
+
     if (value != value || value == HUGE_VALF || value == -HUGE_VALF) return 0;
-#pragma clang diagnostic pop
 
     if (value > (float)SHRT_MAX) return SHRT_MAX;
     if (value < (float)SHRT_MIN) return SHRT_MIN;

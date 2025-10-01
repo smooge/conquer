@@ -54,7 +54,7 @@
 #include "data.h"
 #include "safe_convert.h"
 
-extern	int **attr;     	/*sector attactiveness*/
+static	int **attr;     	/*sector attactiveness*/
 extern	int	dissarray;	/* has nation lost its leader */
 
 static  int stx, sty, endx, endy;	/* npc range of operations */

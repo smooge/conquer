@@ -418,8 +418,8 @@ void hangup (int sig) {
 	fclose(fexe);
 
 	/* remove any existing mail reading/writing file */
+	/* TODO why are we doing this here versus in misc? */
 	if (mailok!=DONEMAIL) {
-		extern char tmp_mail_name[];
 		unlink(tmp_mail_name);
 	}
 
