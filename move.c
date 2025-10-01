@@ -29,14 +29,6 @@
 #include "data.h"
 #include "safe_convert.h"
 
-extern FILE *fexe;
-extern short redraw;
-extern short selector;
-extern short pager;
-extern short xcurs,ycurs,xoffset,yoffset;
-extern short hilmode;   /*highlight modes: 0=owned sectors, 1= armies, 2=none*/
-
-extern short country;
 int armornvy=AORN;
 
 /*
@@ -124,8 +116,7 @@ int armornvy=AORN;
  *   - Display integration: Coordinates with curses library for terminal interface
  *   - Game balance: Movement costs affect tactical and strategic gameplay
  */
-void
-mymove()
+void mymove(void)
 {
 	int	mveleft;	/* movement remaining to army group */
 	long	groupmen = 0;	/* infantry types in current army group */

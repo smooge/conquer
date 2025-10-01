@@ -35,12 +35,13 @@
 #define HALF 2
 #define LAND 3
 
-int pwater;		/* percent water in world (0-100) */
-extern short	country;
-extern int	numleaders,remake;
+int pwater=0;		/* percent water in world (0-100) */
 char datadir[FILELTH];
-char **area_map;			/*Value Map of Areas*/
-char **type;
+
+extern int	numleaders;
+
+static char **area_map;			/*Value Map of Areas*/
+static char **type;
 
 #define TOHILL(x,y) if( nmountains != 0 ) { \
 sct[(x)][(y)].altitude=HILL; \
@@ -90,7 +91,7 @@ nmountains--; \
  *   - Initializes exactly NTOTAL nations as defined in game constants
  *   - Sets default DEFEND status for all armies
  */
-void zeroworld() {
+void zeroworld(void) {
 	int i,armynum;
 	short nvynum=0;
 
@@ -590,7 +591,7 @@ void createworld (void) {	/* create world */
 			default:
 				newerror("Uh oh!!!  The world has gone wacky.");
 				newreset();
-				abrt();
+				abrt()
 			}
 		}
 	}
@@ -680,37 +681,37 @@ void createworld (void) {	/* create world */
 			else		y=Y1;
 
 			if(type[x][y] == LAND){
-				if(rand()%100>80) {	TOPEAK(x,y);
+				if(rand()%100>80) {	TOPEAK(x,y)
 				} else {		TOMT(x,y)
 				}
 			}
 
 			if((y < MAPY - 1) && type[x][y+1] == LAND) {
 				rnd=rand()%100+1;
-				if(rnd>90) {		TOPEAK(x,y+1);
-				} else if(rnd>50) {	TOMT(x,y+1);
-				} else if(rnd>20) {	TOHILL(x,y+1);
+				if(rnd>90) {		TOPEAK(x,y+1)
+				} else if(rnd>50) {	TOMT(x,y+1)
+				} else if(rnd>20) {	TOHILL(x,y+1)
 				}
 			}
 			if((y!=0) && type[x][y-1] == LAND ) {
 				rnd=rand()%100+1;
-				if(rnd>90) {		TOPEAK(x,y-1);
-				} else if(rnd>50) {	TOMT(x,y-1);
-				} else if(rnd>20) {	TOHILL(x,y-1);
+				if(rnd>90) {		TOPEAK(x,y-1)
+				} else if(rnd>50) {	TOMT(x,y-1)
+				} else if(rnd>20) {	TOHILL(x,y-1)
 				}
 			}
 			if((y>=2)
 			&&(type[x][y-2] == LAND )) {
 				rnd=rand()%100+1;
-				if(rnd>90) { 		TOMT(x,y-2);
-				} else if(rnd>50){	TOHILL(x,y-2);
+				if(rnd>90) { 		TOMT(x,y-2)
+				} else if(rnd>50){	TOHILL(x,y-2)
 				}
 			}
 			if((y < MAPY - 2)
 			&&(type[x][y+2] == LAND )) {
 				rnd=rand()%100+1;
-				if(rnd>90) {		TOMT(x,y+2);
-				} else if(rnd>50) {	TOHILL(x,y+2);
+				if(rnd>90) {		TOMT(x,y+2)
+				} else if(rnd>50) {	TOHILL(x,y+2)
 				}
 			}
 		}
@@ -721,7 +722,7 @@ void createworld (void) {	/* create world */
 		x = rand()%(MAPX-1);
 		y = rand()%(MAPY-1);
 		if((type[x][y]==LAND)&&(type[x+1][y]==LAND))
-			TOHILL(x,y);
+			TOHILL(x,y)
 	}
 
 	/*make sure no peak or mountain is next to water*/
@@ -1370,11 +1371,11 @@ populate (void)
 			P_NPEOP=0;
 			P_NARMY=MAXARM;
 			shipsize = N_LIGHT;
-			(void) NADD_WAR( safe_int_to_short(rand()%5+2) );
+			(void) NADD_WAR( safe_int_to_short(rand()%5+2) )
 			shipsize = N_MEDIUM;
-			(void) NADD_WAR( safe_int_to_short(rand()%3+1) );
+			(void) NADD_WAR( safe_int_to_short(rand()%3+1) )
 			shipsize = N_HEAVY;
-			(void) NADD_WAR( rand()%2 );
+			(void) NADD_WAR( rand()%2 )
 			P_NCREW=SHIPCREW;
 			nvynum++;
 			break;
@@ -1521,7 +1522,7 @@ populate (void)
 				sprintf(line,"invalid nation alignment (%c)",allign);
 				newerror(line);
 				newreset();
-				abrt();
+				abrt()
 			}
 			strcpy(curntn->passwd,ntn[0].passwd);
 
@@ -1530,7 +1531,7 @@ populate (void)
 			if(points < 10 ) {
 				newerror("ERROR: nation doesn't have enough points left for 10000 civilians");
 				newreset();
-				abrt();
+				abrt()
 			}
 			curntn->tciv = 1000L * points;
 

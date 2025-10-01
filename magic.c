@@ -133,11 +133,6 @@
 #include "data.h"
 #include "safe_convert.h"
 
-extern short country;
-extern short redraw;
-extern FILE *fexe;
-extern FILE *fnews;
-
 /*
  * getmagic - Acquire a random magic power of specified type
  *
@@ -200,12 +195,12 @@ long getmagic(int type) {
 			break;
 		default:
 			printf("fatal error in num_powers");
-			abrt();
+			abrt()
 	}
 	newpower=powers[start+(rand()%end)];
 	if(newpower==0) {
 		printf("ILLEGAL POWER");
-		abrt();
+		abrt()
 	}
 
 	if((newpower==WARRIOR)||(newpower==CAPTAIN)||(newpower==WARLORD)){
@@ -389,7 +384,7 @@ void domagic (void) {
 	int county, countx, done=FALSE, loop=0, i,type;
 	long price,x;
 #ifdef OGOD
-	void god_magk();
+	void god_magk(void);
 #endif /* OGOD */
 
 	short isgod=0;
@@ -667,7 +662,7 @@ void exenewmgk (long newpower) {
 	if(newpower==RELIGION) {
 		if(curntn->race==ORC) {
 			printf("ORCS CANT HAVE RELIGION POWER\n");
-			abrt();
+			abrt()
 		} else if(curntn->repro<=8){
 			curntn->repro+=2;
 		} else if(curntn->repro==9){
@@ -1245,7 +1240,7 @@ void removemgk (long oldpower) {
 	if(oldpower==RELIGION) {
 		if(curntn->race==ORC) {
 			printf("ORCS CANT HAVE RELIGION POWER\n");
-			abrt();
+			abrt()
 		} else curntn->repro -= 2;
 		return;
 	}
@@ -1404,7 +1399,7 @@ void removemgk (long oldpower) {
  */
 void god_magk (void) {
 	int county,countx,choice;
-	int remove,i,done=FALSE;
+	int remove=FALSE,i,done=FALSE;
 
 	clear();
 	while (done==FALSE) {
@@ -1486,12 +1481,12 @@ void god_magk (void) {
 #endif /* OGOD */
 
 #define NUMSPELLS 4
-char *spellstr[NUMSPELLS]={"(S)ummon","(F)light","(A)ttack Enhancement",
+static char *spellstr[NUMSPELLS]={"(S)ummon","(F)light","(A)ttack Enhancement",
 	"(D)efense Enhancement"};
 /* quick adjustment to allow magical status change */
-int magicstat[NUMSPELLS]={DEFEND, FLIGHT, MAGATT, MAGDEF};
+static int magicstat[NUMSPELLS]={DEFEND, FLIGHT, MAGATT, MAGDEF};
 /* number of soldiers per point of spell cost */
-int magiccost[NUMSPELLS]={0,100,300,300};
+static int magiccost[NUMSPELLS]={0,100,300,300};
 /*
  * wizardry - Interactive spell casting interface for magical combat enhancements
  *
@@ -1563,7 +1558,7 @@ int magiccost[NUMSPELLS]={0,100,300,300};
 void wizardry (void) {
 	int i,xspt,yspt,choice,armynum,s_cost;
 	char line[LINELTH+1];
-	void dosummon();
+	void dosummon(void);
 
 	clear_bottom(0);
 	if(curntn->spellpts>0)

@@ -181,7 +181,7 @@
  * game balance and prevent degenerate nation configurations.
  */
 /* Minimum allocation values for each category (prevents zero allocations in critical areas) */
-int Minvalues[]= { 6, 0, 0, 1, 0, 0, 4, 6, 0, 4, 1 };
+static int Minvalues[]= { 6, 0, 0, 1, 0, 0, 4, 6, 0, 4, 1 };
 /*                 P  T  L  S  A  D  R  M  G  L  W */
 /*                 E  R  O  O  T  E  E  O  I  E  R */
 /*                 O  E  C  L  T  F  P  V  C  A  A */
@@ -192,7 +192,7 @@ int Minvalues[]= { 6, 0, 0, 1, 0, 0, 4, 6, 0, 4, 1 };
 /*                    Y                             */
 
 /* Maximum allocation values for each category (prevents overpowered configurations) */
-int Maxvalues[]= { 50, 10, 2, 20, 80, 80, 10, 30, 5, MAXARM/2, 10 };
+static int Maxvalues[]= { 50, 10, 2, 20, 80, 80, 10, 30, 5, MAXARM/2, 10 };
 
 /*
  * POINT COST SYSTEM
@@ -200,7 +200,7 @@ int Maxvalues[]= { 50, 10, 2, 20, 80, 80, 10, 30, 5, MAXARM/2, 10 };
  * Higher costs make attributes more expensive and limit over-specialization.
  */
 /* Point cost per unit for each allocation category */
-int Mcost[]= { 1, 1, 1, 1, 1, 1, 3, 1, 3, 1, 1 };
+static int Mcost[]= { 1, 1, 1, 1, 1, 1, 3, 1, 3, 1, 1 };
 /*             P  T  L  S  A  D  R  M  G  L  W */
 /*             Note: Reproduction (R) and Magic (G) cost 3x due to their power */
 
@@ -210,7 +210,7 @@ int Mcost[]= { 1, 1, 1, 1, 1, 1, 3, 1, 3, 1, 1 };
  * Higher values mean more units per point (better efficiency).
  */
 /* Number of game units gained per point spent */
-int Munits[]= { 1, 1, 1, 1, 8, 8, 1, 2, 1, 3, 1 };
+static int Munits[]= { 1, 1, 1, 1, 8, 8, 1, 2, 1, 3, 1 };
 /*              P  T  L  S  A  D  R  M  G  L  W */
 /*              Note: Attack/Defense get 8x multiplier, Movement 2x, Leaders 3x */
 
@@ -220,10 +220,9 @@ int Munits[]= { 1, 1, 1, 1, 8, 8, 1, 2, 1, 3, 1 };
  * These values determine the real-world impact of point allocations.
  */
 /* Game value per unit for each allocation category */
-long Mvalues[]= { 1000L, 100000L, 1L, 1000L, 1L, 1L, 1L,
-	1L, 1L, 1L, 30000L };
-/*               P=1000  T=100k  L=1  S=1000  A=1  D=1  R=1  M=1  G=1  L=1  W=30k */
-/*               people  gold    loc  troops  att  def  rep  mov  mag  lea  jewels/metal */
+static long Mvalues[]= { 1000L, 100000L, 1L, 1000L,  1L,  1L,  1L,  1L,  1L,  1L, 30000L };
+/*                      P=1000  T=100k  L=1  S=1000  A=1  D=1  R=1  M=1  G=1  L=1  W=30k */
+/*                      people  gold    loc  troops  att  def  rep  mov  mag  lea  jewels/metal */
 
 /*
  * =============================================================================

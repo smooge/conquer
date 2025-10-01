@@ -138,26 +138,26 @@
 #include "safe_convert.h"
 
 /* information about national classes */
-char *Classwho[]= { "DEHO", "DEH", "DEH", "EH", "H", "DHO", "HE", "DHO",
+static char *Classwho[]= { "DEHO", "DEH", "DEH", "EH", "H", "DHO", "HE", "DHO",
 	"O", "O", "O" };
-char *CPowlist[]= { "None", "None", "None", "SUMMON", "RELIGION", "SAILOR",
+static char *CPowlist[]= { "None", "None", "None", "SUMMON", "RELIGION", "SAILOR",
 	"URBAN", "WARLORD", "DESTROYER", "MA_MONST", "THE_VOID"};
-int  Classcost[]= { 0, 0, 0, 4, 2, 2, 2, 6, 4, 4, 2 };
-long Classpow[]= { 0x0L, 0x0L, 0x0L, SUMMON, RELIGION, SAILOR,
+static int  Classcost[]= { 0, 0, 0, 4, 2, 2, 2, 6, 4, 4, 2 };
+static long Classpow[]= { 0x0L, 0x0L, 0x0L, SUMMON, RELIGION, SAILOR,
 	URBAN, 0x000000007L, DESTROYER, 0x00000700L, THE_VOID };
 
-char *Mprompt[]= { "<ADD", "SUB>" };
-char *LType[]={ "Random", "Fair", "Great" };
+static char *Mprompt[]= { "<ADD", "SUB>" };
+static char *LType[]={ "Random", "Fair", "Great" };
 
-char *Mlabels[]= { "Population", "Treasury", "Location",
+static char *Mlabels[]= { "Population", "Treasury", "Location",
 	"Military", "Attack Bonus", "Defense Bonus", "Reproduction",
 	"Movement", "Magic Powers", "Leaders", "Raw Materials" };
 
-char *Mitems[]= { "people", "gold talons", "location", "soldiers",
+static char *Mitems[]= { "people", "gold talons", "location", "soldiers",
 	"percent", "percent", "percent", "move points", "powers",
 	"nation leaders", "units of food" };
 
-char *Mhelp[]= { "Population: Amount of citizens in your nation",
+static char *Mhelp[]= { "Population: Amount of citizens in your nation",
 	"Treasury: Amount of monetary wealth in your nation",
 	"Location: Relative value of nation placement in world",
 	"Soldiers: Number of men in the national army, not counting leaders",
@@ -171,10 +171,8 @@ char *Mhelp[]= { "Population: Amount of citizens in your nation",
 
 int nstartcst(void);
 extern int pwater;		/* percent water in world (0-100) */
-extern FILE *fexe;
-extern short country;
 int	numleaders;
-int spent[CH_NUMBER];
+static int spent[CH_NUMBER];
 
 /*
  * teraform - Modify terrain around a nation's capital based on racial preferences
@@ -1768,9 +1766,9 @@ place (
 	short	armynum=0;
 	long	people=0;
 	char tempo[LINELTH+1];
-	int	x,y,i,j,temp,t;
-	int	n=0, leadtype;
-	long	soldsleft;	/* soldiers left to place */
+	int	x=0,y=0,i=0,j=0,temp=0,t=0;
+	int	n=0, leadtype=0;
+	long	soldsleft=0;	/* soldiers left to place */
 
 	if( xloc != -1 && yloc != -1 && is_habitable(xloc,yloc)) {
 		placed=1;
@@ -2158,7 +2156,7 @@ int
 getclass (int race)
 {
 	short chk=FALSE;
-	short tmp;
+	short tmp=0;
 	short ypos=4;
 	int i,j;
 
@@ -2379,12 +2377,12 @@ doclass (
  *   - Historical context: Modern evolution of nation creation cost system
  *   - Design pattern: Data-driven calculation using configuration tables
  */
-int
-nstartcst (void)	/* to be used for new method */
+int nstartcst (void)	/* to be used for new method */
 {
-	float points=0.0;
+	float points=0.0f;
 	char temp[LINELTH];
 	int i;
+	float tmpx = 0.0f;
 
 	/* calculate cost for all so far */
 	for (i=0; i<CH_NUMBER; i++) {
@@ -2392,10 +2390,10 @@ nstartcst (void)	/* to be used for new method */
 	}
 
 	/* extra points for starting late */
-	points -= (float) (TURN-1) / LATESTART;
-	if( (float)(TURN-1)/LATESTART > 0.0 ) {
-		sprintf(temp,"%.1f points added for starting late",
-			   (float) (TURN-1) / LATESTART);
+	tmpx = safe_int_to_float(TURN-1) / LATESTART;
+	points -= tmpx;
+	if( tmpx > 0.0f ) {
+		sprintf(temp,"%.1f points added for starting late", tmpx);
 		newerror(temp);
 	}
 	points += 1.0f;	/* round up */

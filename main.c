@@ -37,8 +37,6 @@
 #include "patchlevel.h"
 #include "safe_convert.h"
 
-extern	int armornvy,roads_this_turn,terror_adj;
-
 char	fison[FILELTH];
 char	*getpass(const char *prompt);
 void	sect_info(void);
@@ -55,7 +53,7 @@ short	xoffset=0,yoffset=0;	/*offset of upper left hand corner*/
 /*	position is 2*x,y*/
 short	xcurs=0,ycurs=0;
 short	redraw=FULL;	/* if !DONE: redraw map		*/
-int	done=FALSE;	/* if TRUE: you are done	*/
+static int	done=FALSE;	/* if TRUE: you are done	*/
 short	hilmode=HI_OWN;	/* hilight mode */
 short	dismode=DI_DESI;/* display mode			*/
 short	otherdismode= -(DI_MOVE);
@@ -65,7 +63,7 @@ short	pager=0;	/* pager for selector 0,1,2,3*/
 short	country=0;	/* nation id of owner*/
 struct	s_nation	*curntn;
 short	Gaudy=FALSE;
-uid_t	owneruid;
+static uid_t	owneruid;
 
 FILE *fexe;
 
@@ -300,7 +298,7 @@ int main(int argc, char **argv) {
 		fprintf(stderr,"\t-p       print a map\n");
 		fprintf(stderr,"\t-s       print scores\n");
 		exit(SUCCESS);
-	};
+	}
 
 	/* now that we have parsed the args, we can go to the
 	 * dir where the files are kept and do some work.
@@ -719,7 +717,7 @@ int main(int argc, char **argv) {
  *   - Different display for god mode (country==0) vs normal nations
  *   - Conditional compilation for SYSMAIL feature
  */
-void makebottom() {
+void makebottom(void) {
 	standend();
 	move(LINES-4,0);
 	clrtoeol();
@@ -1342,7 +1340,7 @@ void sect_info() {
  *   - Magic effects influence information visibility
  */
 void makeside(int alwayssee) {	/* see even if cant really see sector */
-	int	i;
+	short	i;
 	int	armbonus;
 	int	found=0,nvyfnd=0;
 	long	enemy;

@@ -69,11 +69,6 @@
 #include "data.h"
 #include "safe_convert.h"
 
-extern FILE *fexe;
-extern short selector;
-extern short country;
-extern short xcurs, ycurs, xoffset, yoffset;
-
 /*
  * ext_cmd - Display and process extended army command menu
  *

@@ -142,19 +142,16 @@
 #include "safe_convert.h"
 
 #ifdef RANEVENT
-char	*names[] = {		/* must end in single character name */
+static char	*names[] = {		/* must end in single character name */
 	"groo","brok","vul","poin","srop","hoga","nobi","bonz","gail",
 	"lynn","zorb","theed","urda","anima","bedlam","delos","quin",
 	"xynd","putz","erde","clym","fanz","ilth","X"
 };
 
-extern FILE *fnews;
-extern short country;
+static char eventstr[LINELTH+1];
+static int xpos,ypos;		/* saved x and y position */
 
-char eventstr[LINELTH+1];
-int xpos,ypos;		/* saved x and y position */
-
-char *randevents[] = {
+static char *randevents[] = {
 /* 0 */  "a military rebellion",
 /* 1 */  "a cult breaks with you",
 /* 2 */  "a province rebels",
@@ -245,9 +242,7 @@ char *randevents[] = {
  *   - Function assumes nation array is properly initialized
  *   - No validation of nation state consistency after initialization
  */
-int
-findnew()
-{
+int findnew(void){
 	int newntn=0,nationis;
 	for ( nationis=NTOTAL-1; nationis >= 1; nationis--)
 		if(ntn[nationis].active == INACTIVE) newntn=nationis;
@@ -306,7 +301,7 @@ findnew()
  *   - Function assumes markok() provides accurate availability information
  *   - No validation of returned character's actual uniqueness
  */
-char 
+char
 getnewmark (void)
 {
 	char tmpchr='A'-1;			/* cap letters first */
@@ -375,7 +370,7 @@ getnewmark (void)
  *   - Uses global country variable temporarily during sector selection
  *   - HIDELOC compilation flag controls location disclosure in event messages
  */
-int 
+int
 disolve (
     int percent,
     int target,
@@ -408,7 +403,7 @@ disolve (
 		while( i++ < 300 ) {
 			rand_sector();
 			if(sct[xpos][ypos].people>=300) break;
-		} 
+		}
 		if( i==300 ) {
 			strcpy(eventstr,"no sectors available");
 			return(0);
@@ -429,7 +424,7 @@ disolve (
 					defaultx = i;
 					defaulty = j;
 				}
-			} 
+			}
 		}
 	}
 	if(realx == (-1)){
@@ -617,7 +612,7 @@ disolve (
  *   - Function assumes names[] array is properly null-terminated
  *   - Does not handle duplicate names within the names[] array itself
  */
-int 
+int
 getnewname (int new)
 {
 	int count,i=0;
@@ -706,7 +701,7 @@ getnewname (int new)
  *   - Military events can paralyze armies or reduce soldier populations
  *   - Architectural events improve fortress defenses across all cities
  */
-void 
+void
 randomevent (void)
 {
 	int percent,count, event, newnation, i, j, armynum,x,y;
@@ -732,7 +727,7 @@ randomevent (void)
 
 		/* clear the event string */
 		strcpy(eventstr,"");
-		
+
 		x = 10*curntn->tax_rate - curntn->popularity- curntn->terror - 3*curntn->charity;
 #ifdef DEBUG
 printf("TEMP: %s chance of peasant revolt is %d (tax=%d pop=%d terror=%d)\n",
@@ -748,7 +743,7 @@ printf("TEMP: %s chance of peasant revolt is %d (tax=%d pop=%d terror=%d)\n",
 				wdisaster(country,ntn[holdval].capx,ntn[holdval].capy,0,"peasant revolt");
 				else printf("revolt in %s fails because:\n\t%s\n",curntn->name,eventstr);
 			}
-		} 
+		}
 
 		x = 5 * curntn->tax_rate - curntn->prestige;
 #ifdef DEBUG
@@ -846,7 +841,7 @@ printf("TEMP: %s chance of revolt is %d (tax=%d prest=%d)\n",
 			break;
 		case 14:
 			/*royal wedding (absorb neighbor nation)*/
-			/*	takeover ( 100, 0 ); */  
+			/*	takeover ( 100, 0 ); */
 			/* sprintf(eventstr,"absorb neighbor nation %s");*/
 			/* something not right.... */
 			done=FALSE;
@@ -953,7 +948,7 @@ printf("TEMP: %s chance of revolt is %d (tax=%d prest=%d)\n",
 			for (y=ypos-1;y<=ypos+1;y++) if(ONMAP(x,y)) {
 				reduce(x,y,percent/5);	/* ADDITIONAL % */
 				if((rand()%2) == 0)
-					DEVASTATE(x,y);
+					DEVASTATE(x,y)
 			}
 
 			if(sptr->fortress < 2) sptr->fortress = 0;
@@ -1011,7 +1006,7 @@ printf("TEMP: %s chance of revolt is %d (tax=%d prest=%d)\n",
 		case 26:
 			/*town burns -- reduce fort and redesignate*/
 			holdval=0;
-			for (xpos=0; xpos<MAPX; xpos++) 
+			for (xpos=0; xpos<MAPX; xpos++)
 			for (ypos=0; ypos<MAPY; ypos++)
 			if(( sct[xpos][ypos].owner == country)
 			&& ( sct[xpos][ypos].designation == DTOWN)){
@@ -1069,7 +1064,7 @@ printf("TEMP: %s chance of revolt is %d (tax=%d prest=%d)\n",
 		case 30: /*new magician + RANDOM POWER*/
 			/*buy new powers and/or new weapons*/
 			if((newpower=getmagic(M_CIV))!=0L){
-				for(i=S_CIV;i<S_CIV+E_CIV;i++) 
+				for(i=S_CIV;i<S_CIV+E_CIV;i++)
 				if(powers[i]==newpower){
 				sprintf(eventstr,"nation %s gets civilian power %s",curntn->name,pwrname[i]);
 				}
@@ -1080,7 +1075,7 @@ printf("TEMP: %s chance of revolt is %d (tax=%d prest=%d)\n",
 		case 31: /*new magic item + RANDOM POWER*/
 			/*buy new powers and/or new weapons*/
 			if((newpower=getmagic(M_MIL))!=0){
-				for(i=S_MIL;i<S_MIL+E_MIL;i++) 
+				for(i=S_MIL;i<S_MIL+E_MIL;i++)
 				if(powers[i]==newpower)
 				sprintf(eventstr,"nation %s gets military power %s",curntn->name,pwrname[i]);
 				exenewmgk(newpower);
@@ -1155,8 +1150,8 @@ printf("TEMP: %s chance of revolt is %d (tax=%d prest=%d)\n",
 			break;
 		case 35:
 			/*diplomat sets up peace*/
-			for(newnation=0;newnation<NTOTAL;newnation++) 
-			if(( country!=newnation ) 
+			for(newnation=0;newnation<NTOTAL;newnation++)
+			if(( country!=newnation )
 			&&( isntn( ntn[newnation].active ))
 			&&( ntn[newnation].dstatus[country]>NEUTRAL )){
 				ntn[newnation].dstatus[country]=NEUTRAL;
@@ -1300,7 +1295,7 @@ printf("TEMP: %s chance of revolt is %d (tax=%d prest=%d)\n",
 			if (curntn->tgold > 0l) {
 				curntn->tgold += curntn->tgold / 5;
 			}
-			else 
+			else
 				curntn->tgold += 50000L;
 			break;
 		case 42:
@@ -1389,7 +1384,7 @@ printf("TEMP: %s chance of revolt is %d (tax=%d prest=%d)\n",
  *   - Percentage reporting allows players to assess event severity/impact
  *   - Administrative console output aids in game monitoring and debugging
  */
-void 
+void
 wdisaster (int cntry, int xloc, int yloc, int prcnt, char *event)
 {
 	fprintf(fnews,"1. \t%s in %s\n",event,ntn[cntry].name);
@@ -1516,7 +1511,7 @@ peasant_revolt(int *newnation)	/* peasant revolt */
 
 	for (i=0; i<MAPX; i++) for (j=0; j<MAPY; j++) {
 		if(( sct[i][j].owner == country)
-		&&( rand()%2==0 ) 
+		&&( rand()%2==0 )
 		&&( sct[i][j].designation != DCAPITOL )
 		&&( sct[i][j].people > 0 )
 		&&( solds_in_sector(i,j,country)==0)){
@@ -1609,7 +1604,7 @@ peasant_revolt(int *newnation)	/* peasant revolt */
  *   - Territorial percentages balance gameplay impact with historical realism
  *   - Each revolt type corresponds to specific event description in randevents[]
  */
-int 
+int
 other_revolt (	/* return reason and new nation number*/
     int *new
 )
@@ -1715,7 +1710,7 @@ other_revolt (	/* return reason and new nation number*/
  *   - Volcano selection algorithm has O(n) complexity where n = total map sectors
  *   - No validation of volcano sector validity before triggering eruption
  */
-void 
+void
 erupt (void)
 {
 	int i, j, nvolcanos=0, volhold;
@@ -1816,7 +1811,7 @@ erupt (void)
  *   - Resource depletion impacts economic recovery for affected nations
  *   - No bounds checking on coordinates - assumes valid map positions
  */
-void 
+void
 blowup (register int i, register int j)
 {
 	register int x,y;
@@ -1827,19 +1822,19 @@ blowup (register int i, register int j)
 	sct[i][j].jewels = 0;
 	sct[i][j].metal = 0;
 	reduce(i,j,100);
-	DEVASTATE(i,j);
+	DEVASTATE(i,j)
 	sct[i][j].fortress = 0;
 	/* decrease neighboring population and armies 30% */
 	for(x=i-1; x<=i+1; x++) for(y=j-1; y<=j+1; y++)
 	if((ONMAP(x,y))&&(sct[x][y].altitude != WATER)) {
 		reduce(x,y,30);
-		DEVASTATE(i,j);
+		DEVASTATE(i,j)
 		sct[x][y].fortress = 0;
 	}
 }
 
 /** reduce will drop armies & and civilians in sector by percent **/
-void 
+void
 reduce (int x, int y, int percent)
 {
 	long temp;	/* used to avoid overflow problems */
@@ -1880,11 +1875,11 @@ rand_sector (void)
 		if(count==0) return(&sct[xpos][ypos]);
 	}
 	fprintf(stderr,"could find no location for country %d\n",country);
-	abrt();
+	abrt()
 	return(NULL);	/* stop lint from complaining */
 }
 
-void 
+void
 weather (void)
 {
 }

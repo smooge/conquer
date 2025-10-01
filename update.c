@@ -32,12 +32,9 @@
 #include "safe_convert.h"
 #include "safe_system.h"
 
-extern FILE *fnews;
-
-extern short country;
-int	disarray;		/* TRUE if nation in disarray */
-int	**attr;			/* sector attractiveness */
-long	**newpop;		/* storage for old population */
+static int	disarray;		/* TRUE if nation in disarray */
+static int	**attr;			/* sector attractiveness */
+static long	**newpop;		/* storage for old population */
 
 /*
  * dtol - Convert double to long with precision control
@@ -156,20 +153,20 @@ update (void)
 		printf("error opening news file\n");
 		exit(FAIL);
 	}
-	check();
+	check()
 
 	updexecs();	/*run each nation in a random order*/
-	check();
+	check()
 
 #ifdef MONSTER
-	check();
+	check()
 	monster();	/* update monster nations */
-	check();
+	check()
 #endif
 
-	check();
+	check()
 	combat();	/* run combat */
-	check();
+	check()
 	updcapture();	/* capture unoccupied sectors */
 
 #ifdef TRADE
@@ -458,7 +455,7 @@ armymove (int armynum)
 	long		sum, where;
 	register int	x, y;
 	int	i;
-	long	menok;			/* enough men in the army? */
+	long	menok = 0;		/* enough men in the army? */
 	int	leadflag=FALSE;		/* leader w/o group */
 	int	takesctr=FALSE; 	/* takesctr is # unowned sctrs*/
 
@@ -881,14 +878,14 @@ updexecs (void)
 	register int x, y;
 	int	armynum;
 	int done, loop=0, number=0;
-	void move_people();
+	void move_people(void);
 	int execed[NTOTAL];
 
-	check();
+	check()
 	attr = (int **) m2alloc(MAPX,MAPY,sizeof(int));
-	check();
+	check()
 	newpop = (long **) m2alloc(5,MAPY,sizeof(long));
-	check();
+	check()
 
 	for(country=0;country<NTOTAL;country++)
 		if( isntn(ntn[country].active) ) execed[country]=FALSE;
@@ -915,7 +912,7 @@ updexecs (void)
 		if(curntn->active == INACTIVE) continue;
 
 		printf("updating nation number %d -> %s\n",country,curntn->name);
-	check();
+	check()
 
 		disarray=FALSE;
 #ifdef TRADE
@@ -934,16 +931,16 @@ updexecs (void)
 				fprintf(fm,"The computer moved for you in the %s of Year %d\n",PSEASON(TURN),YEAR(TURN));
 				mailclose(country);
 			}
-			check();
+			check()
 			nationrun();
-			check();
+			check()
 #endif /*CMOVE*/
 		}
 		/* run npc nations */
 		if(isnpc(curntn->active)) {
-			check();
+			check()
 			nationrun();
-			check();
+			check()
 #ifdef ORCTAKE
 			/*do npc nation magic*/
 			if(magic(country,MA_MONST)==TRUE) {
@@ -2398,7 +2395,7 @@ updleader (void)
 		case C_SHADOW:	born = 2; break;
 		default:
 			printf("ERROR - national class (%d) undefined\n",curntn->class);
-			abrt();
+			abrt()
 		}
 		/* born represents yearly birth rate */
 		if( rand()%400 >= born ) continue;

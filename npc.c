@@ -54,15 +54,13 @@
 #include "data.h"
 #include "safe_convert.h"
 
-extern FILE *fnews;
-
-int	stx, sty, endx, endy;	/* npc range of operations */
-extern	short country;
 extern	int **attr;     	/*sector attactiveness*/
 extern	int	dissarray;	/* has nation lost its leader */
-int	peace;	/*is 8 if at peace, 12 if at war*/
-static	int	Avg_food;
-static	int	Avg_soldiers[NTOTAL];
+
+static  int stx, sty, endx, endy;	/* npc range of operations */
+static  int peace;	/*is 8 if at peace, 12 if at war*/
+static	int Avg_food;
+static	int Avg_soldiers[NTOTAL];
 static	int Avg_tradegood;
 
 /* macros that indicate what the country can see */
@@ -117,9 +115,7 @@ static	int Avg_tradegood;
  *   Category: D (Mock) - Debug-only function requiring specific compile flags
  *   Complexity: Simple - Straightforward debug output with conditional compilation
  */
-void
-prtattr()
-{
+void prtattr(void){
 #ifdef DEBUG
 	int x,y;
 /*	FOR TESTING OF WHAT THE ATTRACTIVENESS ENDS UP LIKE  */
@@ -506,7 +502,7 @@ do_nomad (void)
 				fprintf(fnews,"3:\tnomads capture sector %d,%d\n",x,y);
 				if(sct[x][y].owner!=0) flee(x,y,1,FALSE);
 				sct[x][y].owner=safe_short_to_uchar(country);
-				DEVASTATE(x,y);
+				DEVASTATE(x,y)
 			}
 			break;
 		}
@@ -603,7 +599,7 @@ do_savage (void)
 					if(sct[x][y].owner!=0) flee(x,y,1,FALSE);
 					sct[x][y].owner=safe_short_to_uchar(country);
 				}
-				DEVASTATE(x,y);
+				DEVASTATE(x,y)
 			}
 		}
 	}
@@ -722,7 +718,7 @@ do_pirate (void)
 		if(rand()%15==0) {
 			/*randomly add one warship to pirate fleet*/
 			shipsize = safe_rand_short(N_HEAVY-N_LIGHT+1);
-			(void) NADD_WAR(1);
+			(void) NADD_WAR(1)
 		}
 #endif /* MORE_MONST */
 	}
@@ -876,14 +872,14 @@ redomil (void)
 	long diff=0l;
 	int ok;
 
-	check();
+	check()
 	/* check out any ship crews */
 	for(nvynum=1;nvynum<MAXNAVY;nvynum++) {
 		/* definite cheat -- add some random */
 		if((P_NMSHP!=0)||(P_NWSHP!=0)||(P_NGSHP != 0))
 			if(rand()%2==0) P_NCREW = SHIPCREW;
 	}
-	check();
+	check()
 	curntn->tmil = 0L;
 	for(armynum=1;armynum<MAXARM;armynum++) if(P_ASOLD>0){
 		/* move army back if too far out */
@@ -957,7 +953,7 @@ redomil (void)
 
 	/*MILRATIO ratio mil:civ for non player countries*/
 	/*MILINCAP ratio (mil in cap):mil for NPCs*/
-	check();
+	check()
 
 	if((P_ASOLD*10) < (9*ideal)){
 
@@ -1020,7 +1016,7 @@ redomil (void)
 #ifdef DEBUG
 	printf("\t%s total military is %ld -> ideal is %ld\n",curntn->name,curntn->tmil,ideal);
 #endif /* DEBUG */
-	check();
+	check()
 
 	/* find leader and place on RULE in capitol */
 	for(armynum=0;armynum<MAXARM;armynum++)
@@ -1082,9 +1078,9 @@ redomil (void)
 			}
 			else P_ASOLD=0;
 		}
-		check();
+		check()
 	} else if(curntn->tmil > (6*ideal/5)){
-		check();
+		check()
 		/*disband a pseudo-random army*/
 		done=FALSE;
 		diff=curntn->tmil-(6*ideal/5);
@@ -1112,7 +1108,7 @@ redomil (void)
 			}
 		}
 	}
-	check();
+	check()
 #ifdef DEBUG
 	printf("\twhew... new tmil is %ld\n",curntn->tmil);
 #endif /* DEBUG */
@@ -1166,7 +1162,7 @@ redomil (void)
 			}
 		}
 	}
-	check();
+	check()
 
 	/* assure that a militia unit resides in each city */
 	if(curntn->tgold > 0)
@@ -1215,7 +1211,7 @@ redomil (void)
 			P_ASTAT=MILITIA;
 		}
 	}
-	check();
+	check()
 #ifdef DEBUG
 	printf("\tnow setting all units to default type of %s\n",unittype[defaultunit(country)]);
 #endif /*DEBUG*/
@@ -1662,7 +1658,7 @@ nationrun (void)
 	int x,y,i,p;
 	float	hunger;
 	long zz;
-	check();
+	check()
 	prep(country,FALSE);
 
 	for(x=0;x<MAPX;x++) for(y=0;y<MAPY;y++) attr[x][y]=0;
@@ -1752,7 +1748,7 @@ nationrun (void)
 			}
 		}
 	}
-	check();
+	check()
 
 	/* move infantry then leader/monsters */
 	n_people(TRUE);			/* add to attr for people */
@@ -1859,10 +1855,10 @@ nationrun (void)
 			&&(rand()%5==0)
 			&&(sct[x][y].fortress<(sct[x][y].people%1000)))
 				sct[x][y].fortress++;
-	check();
+	check()
 	/*redo mil*/
 	if(isnotpc(curntn->active)) redomil();
-	check();
+	check()
 
 	/*buy new powers and/or new weapons*/
 	if(getmgkcost(M_MIL,country) < getmgkcost(M_CIV,country)){
@@ -1908,7 +1904,7 @@ nationrun (void)
 		}
 	}
 
-	check();
+	check()
 	if(magic(country,VAMPIRE)!=TRUE) {
 		i=0;
 		if(magic(country,WARLORD)==TRUE) i=30;

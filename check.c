@@ -105,23 +105,23 @@
 void verify_ntn(char __file__[], int __line__) {
 	register struct s_nation	*nptr;
 	register int	i;
-	register int	country;
+	register int	cntry;
 	int j, k;
 	struct army	*a;
 
-	for( country = 0; country < NTOTAL; country++ ) {
-		nptr = &ntn[country];
+	for( cntry = 0; cntry < NTOTAL; cntry++ ) {
+		nptr = &ntn[cntry];
 
-		if(country !=0 && nptr->active == 0) continue;
+		if(cntry !=0 && nptr->active == 0) continue;
 		if( nptr->metals < 0L ) {
 			fprintf( stderr, "file %s: line %d: nation[%d] metal = %ld\n",
-				__file__, __line__, country, nptr->metals );
+				__file__, __line__, cntry, nptr->metals );
 			nptr->metals = 0L;
 		}
 
 		if( nptr->jewels < 0 ) {
 			fprintf( stderr, "file %s: line %d: nation[%d] jewels = %ld\n",
-				__file__, __line__, country, nptr->jewels );
+				__file__, __line__, cntry, nptr->jewels );
 			nptr->jewels = 0.0;
 		}
 
@@ -129,24 +129,24 @@ void verify_ntn(char __file__[], int __line__) {
 			a = &nptr->arm[i];
 			if( a->sold < 0 ) {
 				fprintf( stderr, "file %s: line %d: nation[%d] army[%d] sold = %ld\n",
-					__file__, __line__, country, i, a->sold );
+					__file__, __line__, cntry, i, a->sold );
 				a->sold = 0;
 			}
 			if( a->sold==0 ) continue;
 			if( a->xloc >= MAPX ) {
 				fprintf( stderr, "file %s: line %d: nation[%d] army[%d] xlocation = %d\n",
-					__file__, __line__, country, i, a->xloc );
+					__file__, __line__, cntry, i, a->xloc );
 				a->xloc = 0;
 			}
 			if( a->yloc >= MAPY ) {
 				fprintf( stderr, "file %s: line %d: nation[%d] army[%d] ylocation = %d\n",
-					__file__, __line__, country, i, a->yloc );
+					__file__, __line__, cntry, i, a->yloc );
 				a->yloc = 0;
 			}
 			if( a->stat == ONBOARD) {
 				if (a->smove != 0) {
 					fprintf( stderr, "file %s: line %d: nation[%d] army[%d] onboard move = %d\n",
-						__file__, __line__, country, i, a->smove );
+						__file__, __line__, cntry, i, a->smove );
 					a->smove = 0;
 				}
 				k = 0;
@@ -161,13 +161,13 @@ void verify_ntn(char __file__[], int __line__) {
 				}
 				if (k == 0) {
 					fprintf(stderr, "files %s: line %d: nation[%d] army[%d] onboard nothing\n",
-						__file__,__line__,country,i);
+						__file__,__line__,cntry,i);
 					a->stat = DEFEND;
 				}
 			}
 			if( a->stat != ONBOARD && sct[a->xloc][a->yloc].altitude==WATER ) {
 				fprintf( stderr, "file %s: line %d: nation[%d] army[%d] loc=%d,%d (water) men=%ld\n",
-				__file__,__line__,country,i,a->xloc,a->yloc,a->sold);
+				__file__,__line__,cntry,i,a->xloc,a->yloc,a->sold);
 				a->sold = 0;
 			}
 		} /* for */
@@ -181,7 +181,7 @@ void verify_ntn(char __file__[], int __line__) {
 				a = &(nptr->arm[nptr->nvy[i].armynum]);
 				if (a->sold == 0 || a->stat != ONBOARD) {
 					fprintf(stderr, "file %s: line %d: nation[%d] navy[%d] carrying invalid troop\n",
-					       __file__,__line__,country,i);
+					       __file__,__line__,cntry,i);
 					nptr->nvy[i].armynum = MAXARM;
 				}
 			}
@@ -192,12 +192,12 @@ void verify_ntn(char __file__[], int __line__) {
 				if ( nptr->dstatus[i] != WAR ) {
 					nptr->dstatus[i] = WAR;
 				}
-				if ( ntn[i].dstatus[country] != WAR ) {
-					ntn[i].dstatus[country] = WAR;
+				if ( ntn[i].dstatus[cntry] != WAR ) {
+					ntn[i].dstatus[cntry] = WAR;
 				}
 			} if( nptr->dstatus[i] > JIHAD ) {
 				fprintf( stderr, "file %s: line %d: nation[%d] diplomatic status with %d = %d\n",
-					__file__, __line__, country, i, nptr->dstatus[i] );
+					__file__, __line__, cntry, i, nptr->dstatus[i] );
 				nptr->dstatus[i] = WAR;
 			}
 		} /* for */

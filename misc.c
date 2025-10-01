@@ -1,10 +1,10 @@
 /*
  * misc.c - Miscellaneous utility functions
- * 
+ *
  * This file is part of Conquer.
  * Originally Copyright (C) 1988-1989 by Edward M. Barlow and Adam Bryant
  * Copyright (C) 2025 Juan Manuel Méndez Rey (Vejeta) - Licensed under GPL v3 with permission from original authors
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -38,11 +38,7 @@
 #include "safe_convert.h"
 #include "safe_system.h"
 
-extern FILE *fnews;
-extern short country,redraw;
-
-extern char *HVegcost, *OVegcost, *EVegcost, *DVegcost, *FVegcost;
-extern char *HElecost, *OElecost, *EElecost, *DElecost, *FElecost;
+extern short redraw;
 
 #ifdef SYSV
 char    *memset();
@@ -157,7 +153,7 @@ int move_file(char *from, char *to) {
  *   - Character 127 (\177) handles DEL key on some terminals
  *   - Real-time feedback provides immediate visual confirmation
  */
-long 
+long
 get_number (void)
 {
 	long sum=0;
@@ -194,13 +190,13 @@ get_number (void)
 
 #define INFINITE	1000
 
-int		bx;		/* destination 'x' coordinate */
-int		by;		/* destination 'y' coordinate */
-int		moving_country;	/* country that is moving */
+extern int	bx;		/* destination 'x' coordinate */
+extern int	by;		/* destination 'y' coordinate */
+extern int	moving_country;	/* country that is moving */
 
 #define MAX_MOVE_UNITS	0x7f
-unsigned char	**history_reachp;
-int	level;
+static unsigned char	**history_reachp;
+static int	level=0;
 
 /*
  * land_2reachp - Recursive land pathfinding algorithm with movement optimization
@@ -277,7 +273,7 @@ int	level;
  *   - Early termination optimizations for impossible distances
  *   - Recursion depth tracked via 'level' variable for debugging
  */
-int 
+int
 land_2reachp (int ax, int ay, int move_points)
 {
 	register int	i = 0;
@@ -492,7 +488,7 @@ land_2reachp (int ax, int ay, int move_points)
  *   - Clean separation of concerns from recursive pathfinding engine
  */
 #ifdef ADMIN
-int 
+int
 land_reachp (int ax, int ay, int gx, int gy, int move_points, int movee)
 {
 	int	result;
@@ -501,7 +497,7 @@ land_reachp (int ax, int ay, int gx, int gy, int move_points, int movee)
 		fprintf( stderr, "land_reachp(): move_points = %d\n",
 			move_points );
 
-		abrt();
+		abrt()
 	}
 
 	/* Are we starting or ending in the water or on a peak? */
@@ -614,7 +610,7 @@ land_reachp (int ax, int ay, int gx, int gy, int move_points, int movee)
  *   - Early termination optimizations for impossible paths
  *   - Direction prioritization reduces search space
  */
-int 
+int
 water_2reachp (int ax, int ay, int move_points)
 {
 	register int	i = 0;
@@ -714,14 +710,14 @@ water_2reachp (int ax, int ay, int move_points)
  *	water_reachp()
  */
 
-int 
+int
 water_reachp (int ax, int ay, int gx, int gy, int move_points, int movee)
 {
 	if( move_points >= MAX_MOVE_UNITS ) {
 		fprintf( stderr, "water_reachp(): move_points = %d\n",
 			move_points );
 
-		abrt();
+		abrt()
 	}
 
 #ifdef SYSV
@@ -748,7 +744,7 @@ water_reachp (int ax, int ay, int gx, int gy, int move_points, int movee)
  *	solds_in_sector()
  */
 
-long 
+long
 solds_in_sector (int x, int y, int nation)
 {
 	register struct s_nation	*nptr = &ntn[nation];
@@ -827,7 +823,7 @@ solds_in_sector (int x, int y, int nation)
  *   - Score scaling allows fair comparison between different nation classes
  */
 /* score_one()	*/
-struct wght {
+static struct wght {
 	int	sectors;
 	int	civilians;
 	int	soldiers;
@@ -853,7 +849,7 @@ struct wght {
 /* miner */	{ 0,    0,     5,        0,    10,   10,   1,    5 },
 };
 
-long 
+long
 score_one (int nation)
 {
 	struct	s_nation	*nptr = &ntn[ nation ];
@@ -917,7 +913,7 @@ score_one (int nation)
 #define BUFFER_SIZE	20
 
 /* is_habitable() - returns TRUE/FALSE if habitable */
-int 
+int
 is_habitable (int x, int y)
 {
 	char	temp;
@@ -1061,7 +1057,7 @@ units_in_sector(int x,int y,int nation)
  *   - Powers bitmask allows efficient storage and testing of abilities
  *   - Category system enables balanced scoring across nation classes
  */
-int 
+int
 num_powers (int nation, int type)
 {
 	int	count_magic=0;
@@ -1086,7 +1082,7 @@ num_powers (int nation, int type)
 			break;
 		default:
 			fprintf(stderr,"fatal error in num_powers");
-			abrt();
+			abrt()
 	}
 	for( try = safe_long_to_int(start); try < start+end; try++ )
 		if( magic(nation, powers[try] ) == 1 ) count_magic++;
@@ -1144,7 +1140,7 @@ num_powers (int nation, int type)
  */
 /* returns food value of sector */
 /* 4 is limit of livable land */
-int 
+int
 tofood (struct s_sector *sptr, int cntry)
 {
 	register int i=0;
@@ -1242,7 +1238,7 @@ tofood (struct s_sector *sptr, int cntry)
  *   - Cost calculation uses bit shifting for efficient doubling
  */
 /* returns cost of magic power - returns -1 if invalid */
-long 
+long
 getmgkcost (int type, int nation)
 {
 	int i;
@@ -1285,7 +1281,7 @@ getmgkcost (int type, int nation)
 	return(cost);
 }
 
-int 
+int
 todigit (register int character)
 {
 	if( character >= '0' && character <= '9' )
@@ -1297,7 +1293,7 @@ todigit (register int character)
  * if leader==true, only for leader sectors plus ntn.communicatins range
  * if leader==(-1), do not include ships on the sector search
  */
-void 
+void
 prep (int nation, int leader)
 {
 	short armynum,nvynum;
@@ -1417,7 +1413,7 @@ prep (int nation, int leader)
  *   - Player notification through detailed mail system integration
  *   - Some territorial features marked NOTDONE for future implementation
  */
-void 
+void
 deplete (int nation)
 {
 	struct s_nation *saventn=curntn;
@@ -1476,7 +1472,7 @@ deplete (int nation)
 			if(rand()%100 < PDEPLETE) {
 				/* sector riots */
 				flee(i,j,TRUE,FALSE);
-				DEVASTATE(i,j);
+				DEVASTATE(i,j)
 				if(ispc(curntn->active)) {
 					/* add to listing */
 					fprintf(fm,"\tsector %d, %d has massive riots\n",i,j);
@@ -1509,7 +1505,7 @@ deplete (int nation)
 
 
 /*routine to sack a nation's captiol */
-void 
+void
 sackem (int cntry)
 {
 	struct s_nation *saventn=curntn;
@@ -1545,7 +1541,7 @@ sackem (int cntry)
 		if(isntn(ntn[nation].active)) {
 			sct[x][y].designation = DCITY;
 		} else {
-			DEVASTATE(x,y);
+			DEVASTATE(x,y)
 			sct[x][y].owner=safe_int_to_uchar(cntry);
 		}
 	}
@@ -1600,7 +1596,7 @@ sackem (int cntry)
 #endif /* ADMIN */
 
 /*destroy nation--special case if capitol not owned by other nation*/
-void 
+void
 destroy (int cntry)
 {
 	short armynum, nvynum;
@@ -1645,7 +1641,7 @@ destroy (int cntry)
 			nptr->dstatus[i]=WAR;
 		}
 	}
-	
+
 	/*if take them you get their gold*/
 	if(cntry!=sct[nptr->capx][nptr->capy].owner){
 		if(nptr->tgold>0) ntn[sct[nptr->capx][nptr->capy].owner].tgold+=nptr->tgold;
@@ -1789,7 +1785,7 @@ destroy (int cntry)
  *   - Vegetation and elevation codes used as direct array indices
  *   - Special terrain constants (ICE, DESERT, WATER, DROAD) for comparisons
  */
-void 
+void
 updmove (int race, int cntry)
 {
 	register struct s_sector	*sptr;
@@ -1911,7 +1907,7 @@ updmove (int race, int cntry)
  *   - Cost tables are string-based with character arithmetic ('0' offset)
  */
 /* calculations for cost of movement during flight */
-int 
+int
 flightcost (int i, int j)
 {
 	int cnt,hold=(-1),hold2=(-1);
@@ -1934,7 +1930,7 @@ flightcost (int i, int j)
 #endif /* CONQUER */
 #ifdef ADMIN
 /* determines whether or not a unit has the ability to fly */
-int 
+int
 avian (int typ)
 {
 	switch(typ) {
@@ -2032,7 +2028,7 @@ avian (int typ)
  *   - Tax rate allows player control over revenue vs. population happiness
  *   - Mill adjacency system encourages agricultural cluster development
  */
-void 
+void
 spreadsheet (int nation)
 {
 	register struct s_sector	*sptr;
@@ -2252,7 +2248,7 @@ spreadsheet (int nation)
  *   - Real-time feedback provides immediate visual confirmation to user
  *   - NAMELTH constant defines maximum string length for consistency
  */
-void 
+void
 get_nname (char str[])
 {
 	char ch;
@@ -2363,7 +2359,7 @@ get_nname (char str[])
  *   - CONQUER build only (requires preprocessor flag)
  *   - Function combines user interface and data lookup functionality
  */
-int 
+int
 get_country (void)
 {
 	char name[NAMELTH+1],ch;
@@ -2485,7 +2481,7 @@ get_country (void)
  *   - Error recovery ensures clean state on all failure paths
  *   - Administrative privilege context clearly indicated in prompt
  */
-int 
+int
 get_god (void)
 {
 	clear_bottom(0);
@@ -2572,7 +2568,7 @@ get_god (void)
  *   - Function comment notes readability improvement as design goal
  *   - Extremely simple but important for administrative state management
  */
-void 
+void
 reset_god (void)
 {
 	/* simple routine; but improves readibility */
@@ -2582,7 +2578,7 @@ reset_god (void)
 #endif /* CONQUER */
 
 #ifdef ADMIN
-int 
+int
 getleader (int class)
 {
 	switch(class){
@@ -2601,12 +2597,11 @@ getleader (int class)
 		printf("ERROR-national class (%d) undefined\n",class);
 		exit(0);
 	}
-	return(-1);	/* shut lint up */
 }
 #endif /* ADMIN */
 
 /* name of the currently open mail file */
-char tmp_mail_name[LINELTH];
+static char tmp_mail_name[LINELTH];
 
 /*
  * mailopen - Open mail file for writing messages to specified recipient
@@ -2921,7 +2916,7 @@ mailclose(int to)
  *   - Error reporting helps users select appropriate characters
  *   - Validation ensures long-term map readability and game playability
  */
-int 
+int
 markok (
     int mark,
     int prtflag	/* if true printf reason */
@@ -3053,7 +3048,7 @@ markok (
 /* DEFAULTUNIT() returns the default army type for a given country */
 /* this is mostly used by npc's to take advantage of their powers  */
 /*******************************************************************/
-long 
+long
 defaultunit (int nation)
 {
 	if(magic(nation,VAMPIRE)) return(A_ZOMBIE);
@@ -3069,7 +3064,7 @@ defaultunit (int nation)
 }
 
 #ifdef ADMIN
-void 
+void
 getmetal (struct s_sector *sptr)
 {
 	int randval;
@@ -3102,7 +3097,7 @@ getmetal (struct s_sector *sptr)
 	}
 }
 
-void 
+void
 getjewel (struct s_sector *sptr)
 {
 	int randval;
@@ -3210,7 +3205,7 @@ getjewel (struct s_sector *sptr)
  *   - Technology trees create strategic choices in nation development
  */
 /* tg_ok returns true if a trade good can be seen by the owner of sector */
-int 
+int
 tg_ok (int nation, struct s_sector *sptr)
 {
 	if(( nation == 0)||(nation>=NTOTAL)) return(TRUE);
@@ -3234,7 +3229,7 @@ tg_ok (int nation, struct s_sector *sptr)
 	case TG_diamonds:	if(ntn[nation].wealth < 20) return(0); break;
 	case TG_platinum:	if(ntn[nation].wealth < 25) return(0); break;
 	default:		break;
-	};
+	}
 
 	if(tofood(sptr,nation) >= DESFOOD) return(TRUE);
 	return(FALSE);
@@ -3310,7 +3305,7 @@ tg_ok (int nation, struct s_sector *sptr)
  *   - Stockades provide fixed basic defense regardless of investment level
  */
 /* this routine computes the fortification value of a sector */
-int 
+int
 fort_val (struct s_sector *sptr)
 {
 	if(sptr->designation==DSTOCKADE) {
@@ -3338,7 +3333,7 @@ fort_val (struct s_sector *sptr)
 }
 
 /* routine to determine compass direction of x1,y1 from x0,y0 */
-int 
+int
 compass (int x0, int y0, int x1, int y1)
 {
 	int dx=x1-x0, dy=y1-y0;	/* diplacements */
@@ -3451,7 +3446,7 @@ static off_t sys_mail_size=0;
  *   - File size tracking prevents repeated notifications for same messages
  *   - Graceful error handling ensures stability with missing mail files
  */
-void 
+void
 check_mail (void)
 {
 	struct stat info;

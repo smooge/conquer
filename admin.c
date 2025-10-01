@@ -158,8 +158,6 @@ short	dismode=2;
 short	country=0;
 struct	s_nation	*curntn;
 
-/* External declaration for datadir which is defined in makeworl.c */
-extern char datadir[FILELTH];
 
 /* Note: scenario is already declared in data.h when ADMIN is defined */
 /* char scenario[256]; -- REMOVED to avoid conflict */
@@ -377,7 +375,7 @@ int main (int argc, char **argv) {
 		printf("\t-d DIR      to use play different game\n");
 		/* printf("\t-r SCENARIO read map while making a new world\n\t\t\tuses SCENARIO.ele, SCENARIO.veg, &  SCENARIO.nat\n"); */
 		exit(SUCCESS);
-	};
+	}
 
 	realuser = getuid();
 	/* may now replace user identity */

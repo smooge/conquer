@@ -43,6 +43,9 @@
 
 /*--------I DO NOT BELIEVE IT IS NECESSARY TO ALTER THIS FILE----------------*/
 
+/* Suppress padding warnings - legacy structures optimized for functionality over memory layout */
+#pragma clang diagnostic ignored "-Wpadded"
+
 /*
  * =============================================================================
  * FUNDAMENTAL SYSTEM CONSTANTS
@@ -1051,7 +1054,7 @@ extern int addgships(int nvynum, int shipsize, int nships);
 extern void subwships(int nvynum, int shipsize, int nships);
 extern void submships(int nvynum, int shipsize, int nships);
 extern void subgships(int nvynum, int shipsize, int nships);
-extern int fltships(int country, int nvynum);
+extern int fltships(short nation, int nvynum);
 extern unsigned short fltspeed(int nvynum);
 extern int flthold(int nvynum);
 extern int fltwhold(int nvynum);
@@ -1394,13 +1397,46 @@ extern	char	*des, *desname[], *pwrname[];
 extern	long	powers[];
 extern	char	*tg_value, *tg_name[], *tg_stype;	/* trade goods	*/
 
+extern  FILE    *fexe;
+extern  FILE    *fnews;
+extern char fison[];
+extern	long	startgold;
+extern  short   country;
+extern  short   dismode;
+extern  short   hilmode;
+extern  short   otherdismode;
+extern  short   otherhilmode;
+extern  short   redraw;
+extern  short   xcurs;
+extern  short   xoffset;
+extern  short   ycurs;
+extern  short   yoffset;
+extern  short	Gaudy;
+
+
+/* misc.c needs these from data.h */
+extern char *HVegcost, *OVegcost, *EVegcost, *DVegcost, *FVegcost;
+extern char *HElecost, *OElecost, *EElecost, *DElecost, *FElecost;
+
+
 #ifdef CONQUER
 extern	long	mercgot;
+extern short hilmode;
+extern int armornvy;
+extern int roads_this_turn;
+extern int terror_adj;
+extern short selector;
+extern short pager;
 #endif /* CONQUER */
 
 #ifdef ADMIN
 extern	char	*npcsfile;
+extern  int     remake;
 extern	char	scenario[];
+extern  int     numleaders;
+extern  int     pwater;
+extern char datadir[FILELTH];
+
 #endif /* ADMIN */
 extern	int	unitmove[], unitattack[], unitdefend[];
 
@@ -1410,6 +1446,7 @@ extern	char *helpfile,*newsfile,*isonfile,*timefile;
 
 #ifdef CONQUER
 extern	int	conq_mail_status;
+extern	off_t	conq_mail_size;
 extern	char	conqmail[];
 #ifdef SYSMAIL
 extern	int	sys_mail_status;
