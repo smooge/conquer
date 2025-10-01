@@ -43,9 +43,6 @@
 
 /*--------I DO NOT BELIEVE IT IS NECESSARY TO ALTER THIS FILE----------------*/
 
-/* Suppress padding warnings - legacy structures optimized for functionality over memory layout */
-#pragma clang diagnostic ignored "-Wpadded"
-
 /*
  * =============================================================================
  * FUNDAMENTAL SYSTEM CONSTANTS
@@ -851,16 +848,12 @@ struct	s_nation		/* player nation stats	*/
 #define	beep()
 #endif
 
-#ifdef SYSV
-extern	long		lrand48(void);
-#define	rand()		((int)(lrand48() & 0x7FFFFFFF))
-#define	srand(x)	srand48(x)
-#endif
-
-#ifdef	BSD
-#define	rand()		((int)(random() & 0x7FFFFFFF))
-#define	srand(x)	srandom(x)
-#endif
+/*
+ * Random number generation is now handled by modern RAND()/SRAND() macros
+ * in header.h (lines 586-587) which provide consistent cross-platform behavior.
+ * The previous BSD/SYSV-specific random function mappings have been removed
+ * in favor of the standardized C89 rand()/srand() interface.
+ */
 
 #ifndef DEBUG
 #define	check()	;
@@ -1412,7 +1405,7 @@ extern  short   xoffset;
 extern  short   ycurs;
 extern  short   yoffset;
 extern  short	Gaudy;
-
+extern  char tmp_mail_name[];
 
 /* misc.c needs these from data.h */
 extern char *HVegcost, *OVegcost, *EVegcost, *DVegcost, *FVegcost;

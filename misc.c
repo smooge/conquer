@@ -40,9 +40,7 @@
 
 extern short redraw;
 
-#ifdef SYSV
-char    *memset();
-#endif
+/* Note: memset() is standard C89 - no platform-specific declaration needed */
 
 #ifdef CONQUER
 
@@ -190,9 +188,9 @@ get_number (void)
 
 #define INFINITE	1000
 
-extern int	bx;		/* destination 'x' coordinate */
-extern int	by;		/* destination 'y' coordinate */
-extern int	moving_country;	/* country that is moving */
+static int	bx=0;		/* destination 'x' coordinate */
+static int	by=0;		/* destination 'y' coordinate */
+static int	moving_country;	/* country that is moving */
 
 #define MAX_MOVE_UNITS	0x7f
 static unsigned char	**history_reachp;
@@ -720,15 +718,8 @@ water_reachp (int ax, int ay, int gx, int gy, int move_points, int movee)
 		abrt()
 	}
 
-#ifdef SYSV
-	memset(history_reachp, MAX_MOVE_UNITS, MAPX*MAPY*sizeof(history_reachp));
-#else
-	{ register int i,j;
-		for (i=0; i < MAPX ; i++)
-		for (j=0; j < MAPY ; j++ )
-			history_reachp [i] [j] = MAX_MOVE_UNITS ;
-	}/* eof memset replacement block */
-#endif
+	/* Initialize pathfinding history array to MAX_MOVE_UNITS (modern C89 memset) */
+	memset((char *) *history_reachp, MAX_MOVE_UNITS, safe_int_to_size(MAPX*MAPY));
 
 	history_reachp[ ax ][ ay ] = 0;
 
@@ -2601,7 +2592,7 @@ getleader (int class)
 #endif /* ADMIN */
 
 /* name of the currently open mail file */
-static char tmp_mail_name[LINELTH];
+char tmp_mail_name[LINELTH];
 
 /*
  * mailopen - Open mail file for writing messages to specified recipient
