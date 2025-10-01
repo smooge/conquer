@@ -457,7 +457,14 @@ disolve (
 	printf("TMP new nation %s created at %d,%d",ntn[new].name,realx,realy);
 	sct[realx][realy].owner = safe_int_to_uchar(new);
 #ifdef CHECKUSER
-	ntn[new].uid = safe_uid_to_short(getpwnam(LOGIN)->pw_uid);
+	struct passwd *login_pw = getpwnam(LOGIN);
+	if (login_pw == NULL) {
+		fprintf(stderr, "Error: User '%s' not found during nation creation\n", LOGIN);
+		/* Use a default UID instead of crashing */
+		ntn[new].uid = 0;
+	} else {
+		ntn[new].uid = safe_uid_to_short(login_pw->pw_uid);
+	}
 #endif /* CHECKUSER */
 	ntn[new].capx = safe_int_to_uchar(realx);
 	ntn[new].capy = safe_int_to_uchar(realy);

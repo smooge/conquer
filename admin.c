@@ -411,7 +411,13 @@ int main (int argc, char **argv) {
 			verifydata( __FILE__, __LINE__ );
 
 			/* verify ability to remake the world */
-			if ((realuser != (getpwnam(LOGIN))->pw_uid ) &&
+			struct passwd *login_pw = getpwnam(LOGIN);
+			if (login_pw == NULL) {
+				printf("Error: User '%s' not found or access denied\n", LOGIN);
+				exit(FAIL);
+			}
+
+			if ((realuser != login_pw->pw_uid ) &&
 			    ((pwent=getpwnam(ntn[0].leader)) == NULL ||
 				realuser != pwent->pw_uid )) {
 				printf("Sorry -- you can not create a world\n");
@@ -443,7 +449,12 @@ int main (int argc, char **argv) {
 		}
 #else
 		/* check for god permissions */
-		if(realuser!=(getpwnam(LOGIN))->pw_uid) {
+		struct passwd *login_pw2 = getpwnam(LOGIN);
+		if (login_pw2 == NULL) {
+			printf("Error: User '%s' not found or access denied\n", LOGIN);
+			exit(FAIL);
+		}
+		if(realuser != login_pw2->pw_uid) {
 			printf("Sorry -- you can not create a world\n");
 			printf("you need to be logged in as %s.\n",LOGIN);
 			exit(FAIL);
@@ -512,7 +523,13 @@ int main (int argc, char **argv) {
 	}
 
 #ifdef OGOD
-	if ((realuser != (getpwnam(LOGIN)->pw_uid) ) &&
+	struct passwd *login_pw3 = getpwnam(LOGIN);
+	if (login_pw3 == NULL) {
+		printf("Error: User '%s' not found or access denied\n", LOGIN);
+		exit(FAIL);
+	}
+
+	if ((realuser != login_pw3->pw_uid ) &&
 	  ((pwent=getpwnam(ntn[0].leader)) == NULL ||
 	  realuser != pwent->pw_uid )) {
 		printf("Sorry -- you can not administrate conquer\n");
@@ -527,7 +544,13 @@ int main (int argc, char **argv) {
 
 	if (xflag) {	/* update the game */
 #ifndef OGOD
-		if ((realuser != (getpwnam(LOGIN))->pw_uid ) &&
+		struct passwd *login_pw4 = getpwnam(LOGIN);
+		if (login_pw4 == NULL) {
+			printf("Error: User '%s' not found or access denied\n", LOGIN);
+			exit(FAIL);
+		}
+
+		if ((realuser != login_pw4->pw_uid ) &&
 		  ((pwent=getpwnam(ntn[0].leader)) == NULL ||
 		  realuser != pwent->pw_uid )) {
 			printf("sorry -- your uid is invalid for updating\n");

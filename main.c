@@ -275,9 +275,11 @@ int main(int argc, char **argv) {
 	case 'u':
 		checkuser_mod = TRUE;	/* check for god later */
 		checkuser_uid = safe_uid_to_int(owneruid);
-		if (strlen (optarg) > 0)
-		   if (getpwnam(optarg))
-		      checkuser_uid = safe_uid_to_int(getpwnam(optarg)->pw_uid);
+		if (strlen (optarg) > 0) {
+		   struct passwd *check_pw = getpwnam(optarg);
+		   if (check_pw)
+		      checkuser_uid = safe_uid_to_int(check_pw->pw_uid);
+		}
 		break;
 #endif
 	case 's': /*print the score*/
@@ -352,7 +354,13 @@ int main(int argc, char **argv) {
 	}
 #ifdef OGOD
 	if(strcmp(name,"god")==0 || strcmp(name,"unowned")==0) {
-		if ((owneruid != (getpwnam(LOGIN))->pw_uid ) &&
+		struct passwd *login_pw = getpwnam(LOGIN);
+		if (login_pw == NULL) {
+			fprintf(stderr, "Error: User '%s' not found or access denied\n", LOGIN);
+			exit(FAIL);
+		}
+
+		if ((owneruid != login_pw->pw_uid ) &&
 		  ((pwent=getpwnam(ntn[0].leader)) == NULL ||
 		  owneruid != pwent->pw_uid )) {
 			fprintf(stderr,"Sorry -- you can not login as god\n");
@@ -372,8 +380,19 @@ int main(int argc, char **argv) {
 
 #ifdef CHECKUSER
 	if ((checkuser_mod) || (checkuser_list)) {
-		if ((owneruid == (getpwnam(LOGIN))->pw_uid) ||
-        	    (owneruid == (getpwnam(ntn[0].leader))->pw_uid)) {
+		struct passwd *login_pw2 = getpwnam(LOGIN);
+		struct passwd *leader_pw = getpwnam(ntn[0].leader);
+		if (login_pw2 == NULL) {
+			fprintf(stderr, "Error: User '%s' not found or access denied\n", LOGIN);
+			exit(FAIL);
+		}
+		if (leader_pw == NULL) {
+			fprintf(stderr, "Error: Leader '%s' not found or access denied\n", ntn[0].leader);
+			exit(FAIL);
+		}
+
+		if ((owneruid == login_pw2->pw_uid) ||
+        	    (owneruid == leader_pw->pw_uid)) {
 			/* don't change - already set */
 		}
 		else {
@@ -478,11 +497,21 @@ int main(int argc, char **argv) {
 	if (checkuser_mod)
 	   {
 		fprintf (stderr, "Nation:  %s\n", curntn->name);
-                fprintf (stderr, "   Current player = %s\n",
-			getpwuid(safe_short_to_uid(curntn->uid))->pw_name);;
+		struct passwd *current_user = getpwuid(safe_short_to_uid(curntn->uid));
+		if (current_user == NULL) {
+			fprintf(stderr, "Error: Current user UID not found\n");
+			exit(FAIL);
+		}
+                fprintf (stderr, "   Current player = %s\n", current_user->pw_name);
+
 		curntn->uid = safe_int_to_short(checkuser_uid);
-                fprintf (stderr, "   New player = %s\n",
-			getpwuid(safe_short_to_uid(curntn->uid))->pw_name);
+
+		struct passwd *new_user = getpwuid(safe_short_to_uid(curntn->uid));
+		if (new_user == NULL) {
+			fprintf(stderr, "Error: New user UID not found\n");
+			exit(FAIL);
+		}
+                fprintf (stderr, "   New player = %s\n", new_user->pw_name);
 		writedata();
 		exit (SUCCESS);
 	   }
@@ -490,16 +519,31 @@ int main(int argc, char **argv) {
 	   {
 	      	for (i=0; i < NTOTAL; i++)
 			if (ntn[i].active != INACTIVE)
+			{
+				struct passwd *list_user = getpwuid(safe_short_to_uid(ntn[i].uid));
+				const char *username = (list_user != NULL) ? list_user->pw_name : "UNKNOWN";
 				fprintf (stderr, "%3d %15s %d %-15s\n",
 					i, ntn[i].name,
 					ntn[i].uid,
-					getpwuid(safe_short_to_uid(ntn[i].uid))->pw_name);
+					username);
+			}
 		exit (SUCCESS);
 	   }
+	struct passwd *login_pw3 = getpwnam(LOGIN);
+	struct passwd *leader_pw2 = getpwnam(ntn[0].leader);
+	if (login_pw3 == NULL) {
+		fprintf(stderr, "Error: User '%s' not found or access denied\n", LOGIN);
+		exit(FAIL);
+	}
+	if (leader_pw2 == NULL) {
+		fprintf(stderr, "Error: Leader '%s' not found or access denied\n", ntn[0].leader);
+		exit(FAIL);
+	}
+
         if (((uid_t)curntn->uid != owneruid) &&
-	    (owneruid != (getpwnam(LOGIN))->pw_uid) &&
-            (owneruid != (getpwnam(ntn[0].leader))->pw_uid) &&
-	    ((uid_t)curntn->uid != (getpwnam(LOGIN))->pw_uid))
+	    (owneruid != login_pw3->pw_uid) &&
+            (owneruid != leader_pw2->pw_uid) &&
+	    ((uid_t)curntn->uid != login_pw3->pw_uid))
            {
               fprintf (stderr,"\nSorry -- you are not the owner of %s",curntn->name);
 	      fprintf(stderr,"\nFor information on conquer please contact %s.",OWNER);
@@ -570,8 +614,10 @@ int main(int argc, char **argv) {
 	yoffset = 0;
 #ifdef USERLOG
 	userlog = fopen (".userlog", "a");
+	struct passwd *owner_user = getpwuid(owneruid);
+	const char *owner_name = (owner_user != NULL) ? owner_user->pw_name : "UNKNOWN";
         fprintf (userlog, "%3d %15s %30s %15s\n",
-   		TURN, getpwuid(owneruid)->pw_name, defaultdir, curntn->name);
+   		TURN, owner_name, defaultdir, curntn->name);
         fclose (userlog);
 #endif
 	centermap();
@@ -777,7 +823,11 @@ int parse(int ch) {
 		break;
 #ifdef DEBUG
 	case '\t':	/* debugging information for god and demi-god */
-		if ((owneruid != (getpwnam(LOGIN))->pw_uid ) &&
+		struct passwd *login_pw4 = getpwnam(LOGIN);
+		if (login_pw4 == NULL) {
+			break; /* deny access if login user not found */
+		}
+		if ((owneruid != login_pw4->pw_uid ) &&
 		    ((pwent=getpwnam(ntn[0].leader))==NULL || owneruid != pwent->pw_uid ))
 			break;
 		sect_info();
@@ -1044,7 +1094,11 @@ int parse(int ch) {
 		break;
 	case 'z':	/*login as new user */
 #ifdef OGOD
-		if ((owneruid != (getpwnam(LOGIN))->pw_uid ) &&
+		struct passwd *login_pw5 = getpwnam(LOGIN);
+		if (login_pw5 == NULL) {
+			break; /* deny access if login user not found */
+		}
+		if ((owneruid != login_pw5->pw_uid ) &&
 		    ((pwent=getpwnam(ntn[0].leader))==NULL || owneruid != pwent->pw_uid )) break;
 #endif
 		clear_bottom(0);
