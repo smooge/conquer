@@ -33,7 +33,27 @@ set_tests_properties(test_sort_utils PROPERTIES
     TIMEOUT 30
 )
 
-
+# Phase 7.2: Security System Function Tests
+add_executable(test_safe_system test_safe_system.c ../../safe_system.c)
+target_link_libraries(test_safe_system PRIVATE unity)
+target_compile_features(test_safe_system PRIVATE c_std_23)
+target_compile_definitions(test_safe_system PRIVATE
+    _POSIX_C_SOURCE=200809L
+    PATCHLEVEL="${CONQUER_PATCHLEVEL}"
+)
+target_include_directories(test_safe_system PRIVATE
+    "${CMAKE_SOURCE_DIR}"
+    "${CMAKE_BINARY_DIR}"  # For config.h
+)
+if(COMMAND enable_project_warnings)
+    enable_project_warnings(test_safe_system)
+endif()
+add_test(NAME test_safe_system COMMAND test_safe_system)
+set_tests_properties(test_safe_system PROPERTIES
+    LABELS "unit;safe_system;phase7;security"
+    TIMEOUT 60  # Allow extra time for file operations
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+)
 
 # Add additional unit tests here as they are created
 # Example:

@@ -1,10 +1,10 @@
 /*
  * navy.c - Naval units and fleet management
- * 
+ *
  * This file is part of Conquer.
  * Originally Copyright (C) 1988-1989 by Edward M. Barlow and Adam Bryant
  * Copyright (C) 2025 Juan Manuel Méndez Rey (Vejeta) - Licensed under GPL v3 with permission from original authors
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -141,7 +141,7 @@ addwships(short nvynum, short shipsize, short nships)
  *   Mock Requirements: Global fleet state setup
  *   Complexity: Moderate - Bit manipulation requires careful boundary testing
  */
-int 
+int
 addmships (int nvynum, int shipsize, int nships)
 {
 	int hold=nships;
@@ -214,7 +214,7 @@ addmships (int nvynum, int shipsize, int nships)
  *   Mock Requirements: Global fleet state setup
  *   Complexity: Moderate - Bit manipulation requires careful boundary testing
  */
-int 
+int
 addgships (int nvynum, int shipsize, int nships)
 {
 	int hold=nships;
@@ -287,7 +287,7 @@ addgships (int nvynum, int shipsize, int nships)
  *   Mock Requirements: Global fleet state setup with existing ships
  *   Complexity: Moderate - Bit manipulation with underflow protection logic
  */
-void 
+void
 subwships (int nvynum, int shipsize, int nships)
 {
 	int hold;
@@ -360,7 +360,7 @@ subwships (int nvynum, int shipsize, int nships)
  *   Mock Requirements: Global fleet state setup with existing merchant ships
  *   Complexity: Moderate - Bit manipulation with underflow protection logic
  */
-void 
+void
 submships (int nvynum, int shipsize, int nships)
 {
 	int hold;
@@ -432,7 +432,7 @@ submships (int nvynum, int shipsize, int nships)
  *   Mock Requirements: Global fleet state setup with existing galley ships
  *   Complexity: Moderate - Bit manipulation with underflow protection logic
  */
-void 
+void
 subgships (int nvynum, int shipsize, int nships)
 {
 	int hold;
@@ -503,13 +503,13 @@ subgships (int nvynum, int shipsize, int nships)
  *   Mock Requirements: Multi-nation setup with populated fleets
  *   Complexity: Simple - Mathematical accumulation with context management
  */
-int 
-fltships (int country, int nvynum)
+int
+fltships (short nation, int nvynum)
 {
 	struct s_nation *savntn=curntn;
 	int i, hold=0;
 
-	curntn= &ntn[country];
+	curntn= &ntn[nation];
 	for(i=N_LIGHT;i<=N_HEAVY;i++) {
 		hold += (int) P_NWAR(i);
 		hold += (int) P_NMER(i);
@@ -568,7 +568,7 @@ fltships (int country, int nvynum)
  *   Mock Requirements: Fleet setup with various ship types and sizes
  *   Complexity: Simple - Mathematical minimum calculation with iteration
  */
-unsigned short 
+unsigned short
 fltspeed (int nvynum)
 {
 	int i,hold=99;
@@ -637,7 +637,7 @@ fltspeed (int nvynum)
  *   Mock Requirements: Fleet setup with various ship types and sizes
  *   Complexity: Simple - Mathematical accumulation with size-based multipliers
  */
-int 
+int
 flthold (int nvynum)
 {
 	int i,hold=0;
@@ -702,7 +702,7 @@ flthold (int nvynum)
  *   Mock Requirements: Fleet setup with various warship types and sizes
  *   Complexity: Simple - Mathematical accumulation with size-based multipliers
  */
-int 
+int
 fltwhold (int nvynum)
 {
 	int i,hold=0;
@@ -764,7 +764,7 @@ fltwhold (int nvynum)
  *   Mock Requirements: Fleet setup with various galley types and sizes
  *   Complexity: Simple - Mathematical accumulation with size-based multipliers
  */
-int 
+int
 fltghold (int nvynum)
 {
 	int i,hold=0;
@@ -825,7 +825,7 @@ fltghold (int nvynum)
  *   Mock Requirements: Fleet setup with various merchant types and sizes
  *   Complexity: Simple - Mathematical accumulation with size-based multipliers
  */
-int 
+int
 fltmhold (int nvynum)
 {
 	int i,hold=0;
@@ -838,10 +838,6 @@ fltmhold (int nvynum)
 }
 
 #ifdef CONQUER
-extern short country;
-extern short selector, pager;
-extern short xcurs, ycurs, xoffset, yoffset;
-extern FILE *fexe;
 
 /*
  * get_cargo - Interactive cargo type selection interface (static helper)
@@ -882,7 +878,7 @@ extern FILE *fexe;
  *   Mock Requirements: UI system setup and input simulation
  *   Complexity: Simple - Straightforward input handling with validation
  */
-static int 
+static int
 get_cargo (char *str)
 {
 	int choice=(-1);
@@ -954,7 +950,7 @@ get_cargo (char *str)
  *   Mock Requirements: Army status constant definitions
  *   Complexity: Simple - Switch statement with boolean logic
  */
-int 
+int
 loadstat (int status)
 {
 	switch(status) {
@@ -1053,7 +1049,7 @@ loadstat (int status)
  *   Mock Requirements: Complete game state with fleets, armies, sectors, nations
  *   Complexity: Complex - Extensive branching logic with multiple subsystem interactions
  */
-void 
+void
 loadfleet (void)
 {
 	short nvynum;
@@ -1188,7 +1184,7 @@ loadfleet (void)
 			refresh();
 			armynum = safe_long_to_int(get_number());
 			if(armynum<0) {
-				;
+				// do nothing
 			} else if((armynum>=MAXARM)||(P_ASOLD<=0)
 			||(loadstat(P_ASTAT)==FALSE)) {
 				errormsg("Invalid Army");

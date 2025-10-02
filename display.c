@@ -175,23 +175,9 @@
 #include "data.h"
 #include "safe_convert.h"
 
-/*offset of upper left hand corner*/
-extern short xoffset;
-extern short yoffset;
-/*current cursor postion (relative to 00 in upper corner)*/
-/*	position is 2*x,y*/
-extern short xcurs;
-extern short ycurs;
 /*redraw map in this turn if redraw is a 1*/
 extern short redraw;
 /*display state SEE data.h FOR CURRENT VALUES OF THESE */
-extern short hilmode;
-extern short dismode;
-extern short otherdismode;
-extern short otherhilmode;
-
-/* nation id of owner*/
-extern short country;
 
 static char *hasseen;
 
@@ -232,7 +218,7 @@ static char *hasseen;
  *   - Memory is not explicitly freed (program termination cleanup)
  *   - Critical function - program exits on allocation failure
  */
-void init_hasseen() {
+void init_hasseen(void) {
 	hasseen = (char *)malloc(safe_int_to_size(((COLS-10)/2) * (LINES-5)));
 	memset(hasseen, 0, safe_int_to_size(((COLS-10)/2) * (LINES-5)));
 	if (hasseen == (char *)NULL) {
@@ -343,7 +329,7 @@ void makemap (void) {
  */
 void get_display_mode (short *dmode, short *hmode, short *odmode, short *ohmode) {
 	short temp;
-	
+
 	mvaddstr(LINES-4,0,"viewing options:  (d)esignation, (r)ace, (M)ove cost, (p)eople, (D)efense");
 	clrtoeol();
 	mvaddstr(LINES-3,0,"   (f)ood, (c)ontour, (v)egetation, (m)etal, (n)ation mark, (j)ewels, (i)tems");
@@ -615,7 +601,7 @@ char get_display_for(int x,int y,short dmode)
 				/*Racial combat bonus due to terrain (the faster you move the better)*/
 				armbonus=0;
 				armbonus+=5*(9-movecost[x+xoffset][y+yoffset]);
-				
+
 				if(sct[x+xoffset][y+yoffset].altitude==MOUNTAIN)
 					armbonus+=40;
 				else if(sct[x+xoffset][y+yoffset].altitude==HILL)
@@ -629,7 +615,7 @@ char get_display_for(int x,int y,short dmode)
 					armbonus+=10;
 
 				armbonus+=fort_val(&sct[x+xoffset][y+yoffset]);
-				
+
 				if(armbonus<200) ch=safe_int_to_char(armbonus/20+'0');
 				else ch='+';
 			}
@@ -892,7 +878,7 @@ void coffmap (void) {
 		centermap();
 		redraw=PART;
 	}
-	
+
 	if(redraw!=DONE) {
 		if (redraw==FULL) {
 			clear();	/* clear real screen */

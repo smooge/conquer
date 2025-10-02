@@ -54,15 +54,13 @@
 #include "data.h"
 #include "safe_convert.h"
 
-extern FILE *fnews;
-
-int	stx, sty, endx, endy;	/* npc range of operations */
-extern	short country;
-extern	int **attr;     	/*sector attactiveness*/
+static	int **attr;     	/*sector attactiveness*/
 extern	int	dissarray;	/* has nation lost its leader */
-int	peace;	/*is 8 if at peace, 12 if at war*/
-static	int	Avg_food;
-static	int	Avg_soldiers[NTOTAL];
+
+static  int stx, sty, endx, endy;	/* npc range of operations */
+static  int peace;	/*is 8 if at peace, 12 if at war*/
+static	int Avg_food;
+static	int Avg_soldiers[NTOTAL];
 static	int Avg_tradegood;
 
 /* macros that indicate what the country can see */
@@ -94,7 +92,7 @@ static	int Avg_tradegood;
 /* When a sector cannot be seen by an npc nation because of
  * THE_VOID, a value must still be given to the
  * sector, because there MIGHT be something there.
- * The following unseen (UNS_) value represents this.  
+ * The following unseen (UNS_) value represents this.
  */
 #define	UNS_CITY_VALUE	10	/* If there is an under-defended City
 				 * the value is 500
@@ -117,9 +115,7 @@ static	int Avg_tradegood;
  *   Category: D (Mock) - Debug-only function requiring specific compile flags
  *   Complexity: Simple - Straightforward debug output with conditional compilation
  */
-void
-prtattr()
-{
+void prtattr(void){
 #ifdef DEBUG
 	int x,y;
 /*	FOR TESTING OF WHAT THE ATTRACTIVENESS ENDS UP LIKE  */
@@ -188,11 +184,11 @@ prtattr()
  *   - Special rules for PC (player character) nations
  *   - Orc racial hostility hardcoded for gameplay balance
  */
-void 
+void
 newdip (int ntn1, int ntn2)
 {
 	if( ispc( ntn[ntn1].active ) ) {
-		if( ntn[ntn2].race==ORC ) 
+		if( ntn[ntn2].race==ORC )
 			ntn[ntn1].dstatus[ntn2]=HOSTILE;
 		else	ntn[ntn1].dstatus[ntn2]=NEUTRAL;
 		return;
@@ -273,7 +269,7 @@ newdip (int ntn1, int ntn2)
  *   - Spawning formula maintains balance across different map sizes
  *   - Uses goto statements for army slot allocation (legacy pattern)
  */
-void 
+void
 monster (void)
 {
 	for(country=1;country<NTOTAL;country++) {
@@ -324,7 +320,7 @@ monster (void)
 	    if (ntn[savages].arm[i].sold > 0)
 		actualtroops += safe_long_to_int(ntn[savages].arm[i].sold);
 	    }
-	
+
 #ifdef DEBUG
 	printf("monsters: need %d have %d\n",neededtroops,actualtroops);
 #endif /* DEBUG */
@@ -350,7 +346,7 @@ monster (void)
 #endif
 		nomad_space=0;
 		continue;
-		
+
 	    found_free_nomad_army:
 
 		ntn[nomads].arm[i].xloc=safe_int_to_uchar(x);
@@ -384,7 +380,7 @@ monster (void)
 #endif
 		savage_space=0;
 		continue;
-		
+
 	    found_free_savage_army:
 
 		ntn[savages].arm[i].xloc=safe_int_to_uchar(x);
@@ -465,7 +461,7 @@ monster (void)
  *   - Movement failure protection prevents infinite loops
  *   - Uses P_A* macros for army data access (legacy convenience macros)
  */
-void 
+void
 do_nomad (void)
 {
 	int	count;
@@ -493,7 +489,7 @@ do_nomad (void)
 			/* nomads cannot stay in the same spot */
 			if(( x==P_AXLOC && y==P_AYLOC )
 			||(!ONMAP(x,y)
-			||(!is_habitable(x,y))) 
+			||(!is_habitable(x,y)))
 			||(!land_reachp((int)P_AXLOC,(int)P_AYLOC,
 				x,y,curntn->maxmove,country))) continue;
 
@@ -506,7 +502,7 @@ do_nomad (void)
 				fprintf(fnews,"3:\tnomads capture sector %d,%d\n",x,y);
 				if(sct[x][y].owner!=0) flee(x,y,1,FALSE);
 				sct[x][y].owner=safe_short_to_uchar(country);
-				DEVASTATE(x,y);
+				DEVASTATE(x,y)
 			}
 			break;
 		}
@@ -574,7 +570,7 @@ do_nomad (void)
  *   - Growth mechanic maintains savage threat throughout game
  *   - Uses P_A* macros for army data access (legacy convenience macros)
  */
-void 
+void
 do_savage (void)
 {
 	short armynum;
@@ -590,7 +586,7 @@ do_savage (void)
 		P_AMOVE=safe_int_to_uchar((curntn->maxmove * *(unitmove+P_ATYPE%UTYPE))/10);
 		x=(int)P_AXLOC+rand()%3-1;
 		y=(int)P_AYLOC+rand()%3-1;
-		if(ONMAP(x,y)&&(is_habitable(x,y)) 
+		if(ONMAP(x,y)&&(is_habitable(x,y))
 		&&(land_reachp((int)P_AXLOC,(int)P_AYLOC,x,y,P_AMOVE,country))){
 			P_AXLOC=safe_int_to_uchar(x);
 			P_AYLOC=safe_int_to_uchar(y);
@@ -603,7 +599,7 @@ do_savage (void)
 					if(sct[x][y].owner!=0) flee(x,y,1,FALSE);
 					sct[x][y].owner=safe_short_to_uchar(country);
 				}
-				DEVASTATE(x,y);
+				DEVASTATE(x,y)
 			}
 		}
 	}
@@ -673,7 +669,7 @@ do_savage (void)
  *   - Uses P_N* macros for naval data access (legacy convenience macros)
  *   - Requires both MONSTER and MORE_MONST flags for full functionality
  */
-void 
+void
 do_pirate (void)
 {
 	short nvynum,shipsize;
@@ -706,11 +702,11 @@ do_pirate (void)
 			}
 		}
 	}
-		
+
 	for(nvynum=0;nvynum<MAXNAVY;nvynum++) if (P_NWSHP!=0) {
 		for(x=1;x<NTOTAL;x++) if(isntn(ntn[x].active))
 		for(y=0;y<MAXNAVY;y++)
-		if(ntn[x].nvy[y].warships!=0 || ntn[x].nvy[y].merchant!=0 
+		if(ntn[x].nvy[y].warships!=0 || ntn[x].nvy[y].merchant!=0
 		  || ntn[x].nvy[y].galleys!=0) {
 			if((abs((int)ntn[x].nvy[y].xloc-(int)P_NXLOC)<=PRTZONE)
 			&&(abs((int)ntn[x].nvy[y].yloc-(int)P_NYLOC)<=PRTZONE)) {
@@ -722,7 +718,7 @@ do_pirate (void)
 		if(rand()%15==0) {
 			/*randomly add one warship to pirate fleet*/
 			shipsize = safe_rand_short(N_HEAVY-N_LIGHT+1);
-			(void) NADD_WAR(1);
+			(void) NADD_WAR(1)
 		}
 #endif /* MORE_MONST */
 	}
@@ -867,7 +863,7 @@ void n_redes (int x, int y, int goldthresh, int metalthresh, int citythresh, dou
  *   - Critical for NPC military competitiveness and strategic effectiveness
  *   - Extensive debug output available for military analysis
  */
-void 
+void
 redomil (void)
 {
 	short x,y,armynum,nvynum;
@@ -876,14 +872,14 @@ redomil (void)
 	long diff=0l;
 	int ok;
 
-	check();
+	check()
 	/* check out any ship crews */
 	for(nvynum=1;nvynum<MAXNAVY;nvynum++) {
 		/* definite cheat -- add some random */
 		if((P_NMSHP!=0)||(P_NWSHP!=0)||(P_NGSHP != 0))
 			if(rand()%2==0) P_NCREW = SHIPCREW;
 	}
-	check();
+	check()
 	curntn->tmil = 0L;
 	for(armynum=1;armynum<MAXARM;armynum++) if(P_ASOLD>0){
 		/* move army back if too far out */
@@ -957,7 +953,7 @@ redomil (void)
 
 	/*MILRATIO ratio mil:civ for non player countries*/
 	/*MILINCAP ratio (mil in cap):mil for NPCs*/
-	check();
+	check()
 
 	if((P_ASOLD*10) < (9*ideal)){
 
@@ -1020,7 +1016,7 @@ redomil (void)
 #ifdef DEBUG
 	printf("\t%s total military is %ld -> ideal is %ld\n",curntn->name,curntn->tmil,ideal);
 #endif /* DEBUG */
-	check();
+	check()
 
 	/* find leader and place on RULE in capitol */
 	for(armynum=0;armynum<MAXARM;armynum++)
@@ -1082,9 +1078,9 @@ redomil (void)
 			}
 			else P_ASOLD=0;
 		}
-		check();
+		check()
 	} else if(curntn->tmil > (6*ideal/5)){
-		check();
+		check()
 		/*disband a pseudo-random army*/
 		done=FALSE;
 		diff=curntn->tmil-(6*ideal/5);
@@ -1112,7 +1108,7 @@ redomil (void)
 			}
 		}
 	}
-	check();
+	check()
 #ifdef DEBUG
 	printf("\twhew... new tmil is %ld\n",curntn->tmil);
 #endif /* DEBUG */
@@ -1166,7 +1162,7 @@ redomil (void)
 			}
 		}
 	}
-	check();
+	check()
 
 	/* assure that a militia unit resides in each city */
 	if(curntn->tgold > 0)
@@ -1215,13 +1211,13 @@ redomil (void)
 			P_ASTAT=MILITIA;
 		}
 	}
-	check();
+	check()
 #ifdef DEBUG
 	printf("\tnow setting all units to default type of %s\n",unittype[defaultunit(country)]);
 #endif /*DEBUG*/
 
 	/* setup default units */
-	for(armynum=1;armynum<MAXARM;armynum++) 
+	for(armynum=1;armynum<MAXARM;armynum++)
 	if((P_ASOLD>0)&&(P_ATYPE!=A_MILITIA)&&(P_ATYPE<MINLEADER))
 		P_ATYPE=safe_long_to_uchar(defaultunit(country));
 }
@@ -1288,7 +1284,7 @@ redomil (void)
  *   - Critical for creating dynamic political landscape and strategic challenges
  *   - Prevents diplomatic status changes for certain protected relationships
  */
-void 
+void
 getdstatus (void)
 {
 	int x,oldstat[NTOTAL];
@@ -1298,24 +1294,24 @@ getdstatus (void)
 
 	if(!isnpc(curntn->active)) return;
 
-	if(( curntn->active==GOOD_6FREE ) 
+	if(( curntn->active==GOOD_6FREE )
 	     ||( curntn->active==ISOLATIONIST )
 	     ||( curntn->active==NEUTRAL_6FREE )
 	     ||( curntn->active==EVIL_6FREE )) svhostile=5;
-	else if(( curntn->active==GOOD_4FREE ) 
+	else if(( curntn->active==GOOD_4FREE )
 	     ||( curntn->active==NEUTRAL_4FREE )
 	     ||( curntn->active==EVIL_4FREE )) svhostile=10;
-	else if(( curntn->active==GOOD_2FREE ) 
+	else if(( curntn->active==GOOD_2FREE )
 	     ||( curntn->active==NEUTRAL_2FREE )
 	     ||( curntn->active==EVIL_2FREE )) svhostile=20;
-	else if(( curntn->active==GOOD_0FREE ) 
+	else if(( curntn->active==GOOD_0FREE )
 	     ||( curntn->active==NEUTRAL_0FREE )
 	     ||( curntn->active==EVIL_0FREE )) svhostile=35;
 	else svhostile=5;
 
 	for(x=1;x<NTOTAL;x++) if( isntn(ntn[x].active) ){
 		hostile = svhostile;
-		if(npctype(curntn->active) != npctype(ntn[x].active)) 
+		if(npctype(curntn->active) != npctype(ntn[x].active))
 			hostile+=20;	/* not same alignment */
 		friendly = 60-hostile;
 	     	if( curntn->active==ISOLATIONIST ) friendly -= 20;
@@ -1349,11 +1345,11 @@ getdstatus (void)
 
 		/* break bad treaties */
 		if(curntn->dstatus[x] == TREATY) {
-			if(ntn[x].dstatus[country]>=WAR) 
+			if(ntn[x].dstatus[country]>=WAR)
 				curntn->dstatus[x] = JIHAD;
 			continue;
 		}
-		
+
 		if((curntn->dstatus[x] == JIHAD)
 		||(curntn->dstatus[x]==UNMET)
 		||(ispc(curntn->active)))
@@ -1428,7 +1424,7 @@ getdstatus (void)
 	}
 }
 
-	
+
 /*
  * find_avg_sector - Calculate world averages for AI decision support
  *
@@ -1489,7 +1485,7 @@ getdstatus (void)
  *   - Performance optimized with register variables for map traversal
  *   - Results used throughout AI subsystems for strategic evaluation
  */
-static void 
+static void
 find_avg_sector (void)
 {
 	int armynum, i, nation, repeat, total_sectors, total_food = 0;
@@ -1499,7 +1495,7 @@ find_avg_sector (void)
 	register long useable_land = 0;
 
 	for(x=0;x<MAPX;x++) for(y=0;y<MAPY;y++) {
-		sptr = &sct[x][y];	
+		sptr = &sct[x][y];
 		if(( sptr->altitude!=WATER )&&( sptr->altitude!=PEAK )) {
 			useable_land++;
 			total_food += tofood(sptr,country);
@@ -1521,7 +1517,7 @@ find_avg_sector (void)
 
 	for(nation=1;nation<NTOTAL;nation++) {
 		if(isntn(ntn[nation].active)
-		&& !COUNT_ARMIES(nation,country)) { 
+		&& !COUNT_ARMIES(nation,country)) {
 			/* Count the number of sectors which are occupied by each
 			 * nation's armies.
 			 */
@@ -1531,11 +1527,11 @@ find_avg_sector (void)
 					x = ntn[nation].arm[armynum].xloc;
 					y = ntn[nation].arm[armynum].yloc;
 					repeat = FALSE;
-					for (i=1; (i<armynum) && !repeat; ++i) 
+					for (i=1; (i<armynum) && !repeat; ++i)
 						if((ntn[nation].arm[i].xloc == x)
-						&& (ntn[nation].arm[i].yloc == y)) 
-						repeat = TRUE;	
-					if (!repeat) 
+						&& (ntn[nation].arm[i].yloc == y))
+						repeat = TRUE;
+					if (!repeat)
 						total_sectors++;
 				}
 			if (total_sectors > 0)
@@ -1654,7 +1650,7 @@ find_avg_sector (void)
  *   - Debug Support: Includes comprehensive debug output for AI behavior analysis
  *   - Error Handling: Multiple check() calls ensure data integrity throughout
  */
-void 
+void
 nationrun (void)
 {
 	int goldthresh,metalthresh,citythresh,useful;
@@ -1662,7 +1658,7 @@ nationrun (void)
 	int x,y,i,p;
 	float	hunger;
 	long zz;
-	check();
+	check()
 	prep(country,FALSE);
 
 	for(x=0;x<MAPX;x++) for(y=0;y<MAPY;y++) attr[x][y]=0;
@@ -1700,8 +1696,8 @@ nationrun (void)
 	for(x=1;x<NTOTAL;x++) if(isntn( ntn[x].active )) {
 		/* here is the bit which will occasionally send a randomly
 		   generated message from a hostile NPC to a PC (25% chance) */
-		if((curntn->dstatus[x] >= HOSTILE) 
-		&& (ispc(ntn[x].active))) 
+		if((curntn->dstatus[x] >= HOSTILE)
+		&& (ispc(ntn[x].active)))
 		if (rand()%4 == 0) {	/* send the message!! */
 			if (mailopen(x)!=(-1)) {
 				fprintf(fm,"Message to %s from %s (%s of year %d)\n\n"
@@ -1716,7 +1712,7 @@ nationrun (void)
 	/*move units */
 	/*are they at war with any normal countries*/
 	peace=0;
-	for(i=1;i<NTOTAL;i++) 
+	for(i=1;i<NTOTAL;i++)
 	if(isntn(ntn[i].active)&&(curntn->dstatus[i]>peace)) {
 		peace=curntn->dstatus[i];
 		if( peace>= WAR) break;
@@ -1730,7 +1726,7 @@ nationrun (void)
 		peace=12;
 		/*are they attacking or defending */
 		if(curntn->tmil==0) defattr();
-		else for(x=0;x<NTOTAL;x++) 
+		else for(x=0;x<NTOTAL;x++)
 		if(isntn( ntn[x].active ) && (curntn->dstatus[x]>HOSTILE)){
 			if(100*(curntn->tmil*(curntn->aplus+100))/((curntn->tmil*(curntn->aplus+100))+(ntn[x].tmil*(ntn[x].dplus+100)))>rand()%100){
 				/*attacker*/
@@ -1752,7 +1748,7 @@ nationrun (void)
 			}
 		}
 	}
-	check();
+	check()
 
 	/* move infantry then leader/monsters */
 	n_people(TRUE);			/* add to attr for people */
@@ -1814,7 +1810,7 @@ nationrun (void)
 		for(x=stx;x<endx;x++) for(y=sty;y<endy;y++)
 		if((sct[x][y].owner==country)
 		&&(is_habitable(x,y))
-		&&((isnotpc(curntn->active)) 
+		&&((isnotpc(curntn->active))
 		  ||(sct[x][y].designation==DNODESIG))) {
 			n_redes(x,y,goldthresh,metalthresh,citythresh,hunger);
 			useful=TRUE;
@@ -1859,10 +1855,10 @@ nationrun (void)
 			&&(rand()%5==0)
 			&&(sct[x][y].fortress<(sct[x][y].people%1000)))
 				sct[x][y].fortress++;
-	check();
+	check()
 	/*redo mil*/
 	if(isnotpc(curntn->active)) redomil();
-	check();
+	check()
 
 	/*buy new powers and/or new weapons*/
 	if(getmgkcost(M_MIL,country) < getmgkcost(M_CIV,country)){
@@ -1908,7 +1904,7 @@ nationrun (void)
 		}
 	}
 
-	check();
+	check()
 	if(magic(country,VAMPIRE)!=TRUE) {
 		i=0;
 		if(magic(country,WARLORD)==TRUE) i=30;
@@ -2022,7 +2018,7 @@ nationrun (void)
  *   - Bilateral checking: Ensures both nations agree on diplomatic status
  *   - Integration: Called by defattr(), atkattr(), and pceattr() coordinators
  */
-void 
+void
 n_trespass (void)
 {
 	register int x,y;
@@ -2119,7 +2115,7 @@ n_trespass (void)
  *   - Implementation: Simple but globally comprehensive boundary enforcement
  *   - Integration: Called by all attractiveness coordinators (defattr, atkattr, pceattr)
  */
-void 
+void
 n_toofar (void)
 {
 	register int x,y;
@@ -2229,14 +2225,10 @@ n_toofar (void)
  *   - Strategic design: Balances immediate territorial gains with resource value
  *   - Economic integration: Food production ensures sustainable expansion
  *   - Intelligence handling: Graceful degradation for unexplored territories
- *   - XENIX compatibility: Special integer division handling for older systems
  */
-void 
+void
 n_unowned (void)
 {
-#ifdef XENIX
-	register int z;
-#endif /*XENIX*/
 	register int x,y;
 
 	/* around capitol */
@@ -2269,26 +2261,20 @@ n_unowned (void)
 			if(ntn[sct[x][y].owner].active == NPC_NOMAD)
 				attr[x][y]+=100;
 			}
-			if (SEE_SECTOR(x,y,country)) 
-				attr[x][y] += 50*tofood(&sct[x][y],country); 
+			if (SEE_SECTOR(x,y,country))
+				attr[x][y] += 50*tofood(&sct[x][y],country);
 			else
-			/* give some value: there is probably average food there	*/ 
+			/* give some value: there is probably average food there	*/
 				attr[x][y] += 50*Avg_food;
 
 			if(!is_habitable(x,y)) {
-#ifdef XENIX
-				z = attr[x][y];
-				z /= 5;
-				attr[x][y] = z;
-#else
 				attr[x][y] /= 5;
-#endif /*XENIX*/
 			}
 		}
 	}
 }
 
-void 
+void
 n_defend (int natn)
 {
 	register	int		i,j;
@@ -2314,12 +2300,12 @@ n_defend (int natn)
 				/* insure the average soldiers is only added
 				 * once per sector								*/
 				repeat = FALSE;
-				for (i=1; (i<j) && !repeat; ++i) 
+				for (i=1; (i<j) && !repeat; ++i)
 					if((ntn[natn].arm[i].xloc == x)
-					&& (ntn[natn].arm[i].yloc == y)) 
-						repeat = TRUE;	
+					&& (ntn[natn].arm[i].yloc == y))
+						repeat = TRUE;
 
-				if (!repeat) 
+				if (!repeat)
 					attr[x][y] += Avg_soldiers[natn]/10;
 			}
 		}
@@ -2445,7 +2431,7 @@ n_defend (int natn)
  *   - Tactical integration: Coordinates with other attractiveness functions for strategy
  *   - Combat doctrine: Implements combined-arms coordination with force concentration
  */
-void 
+void
 n_attack (int nation)
 {
 	register int x,y;
@@ -2459,11 +2445,11 @@ n_attack (int nation)
 				||(sct[x][y].designation==DCAPITOL)
 				||(sct[x][y].designation==DTOWN))){
 					solds=0;
-					for(armynum=1;armynum<MAXARM;armynum++) 
+					for(armynum=1;armynum<MAXARM;armynum++)
 						if((ntn[country].arm[armynum].sold > 0)
 						&&(abs(AXLOC-x)<=1)
 						&&(abs(AYLOC-y)<=1)) solds+=ASOLD;
-		
+
 					if (COUNT_ARMIES(nation,country)) {
 						if(solds_in_sector(x,y,nation)*2 < 3*solds)
 							attr[x][y]+=500;
@@ -2687,7 +2673,7 @@ n_undefended(int nation )
  *   - Tactical realism: Population influence reflects real-world military constraints
  *   - Integration: Coordinates with other attractiveness functions for balanced strategy
  */
-void 
+void
 n_people (
     int doadd	/* TRUE if adding, FALSE if subtracting */
 )
@@ -2834,7 +2820,7 @@ n_between(int nation)
  *	if within two of cap add 1/5th of men
  *	if on cap and war and 2x your garrison go jihad and + 1/2 men
  */
-void 
+void
 n_survive (void)
 {
 	int i;
@@ -2851,13 +2837,13 @@ n_survive (void)
 	}
 
 	/*defend your capitol if occupied, +50 more if with their army*/
-	for(nation=1;nation<NTOTAL;nation++) 
+	for(nation=1;nation<NTOTAL;nation++)
 	if((isntn(ntn[nation].active))
 	&&((ntn[nation].dstatus[country]>=WAR)
 	  ||(curntn->dstatus[nation]>=WAR))){
 		if (COUNT_ARMIES(nation,country)) {
 			for(armynum=1;armynum<MAXARM;armynum++)
-			if((ntn[nation].arm[armynum].sold > 0) 
+			if((ntn[nation].arm[armynum].sold > 0)
 			&&( ntn[nation].arm[armynum].xloc<=capx+2)
 			&&( ntn[nation].arm[armynum].xloc>=capx-2)
 			&&( ntn[nation].arm[armynum].yloc<=capy+2)
@@ -2885,15 +2871,15 @@ n_survive (void)
 				 * once per sector
 				 */
 					repeat = FALSE;
-					for (i=1; (i<armynum) && !repeat; ++i) 
+					for (i=1; (i<armynum) && !repeat; ++i)
 						if((ntn[nation].arm[i].xloc == x)
-						&& (ntn[nation].arm[i].yloc == y)) 
-						repeat = TRUE;	
+						&& (ntn[nation].arm[i].yloc == y))
+						repeat = TRUE;
 					if (!repeat) {
 						if((ntn[nation].arm[armynum].xloc==capx)
 						&&(ntn[nation].arm[armynum].yloc==capy)){
 							attr[capx][capy]+=2* Avg_soldiers[nation];
-						} 
+						}
 						else {
 							attr[ntn[nation].arm[armynum].xloc][ntn[nation].arm[armynum].yloc]+= Avg_soldiers[nation];
 						}
@@ -2967,7 +2953,7 @@ n_survive (void)
  *   - Debug Output: Contains incorrect debug message (shows "atkattr" instead of "defattr")
  *   - Legacy Pattern: K&R function declaration needs modernization to ANSI C
  */
-void 
+void
 defattr (void)
 {
 	int nation;
@@ -3063,7 +3049,7 @@ defattr (void)
  *   - Legacy Pattern: K&R function declaration needs modernization to ANSI C
  */
 /*calculate attractiveness of attacking sectors*/
-void 
+void
 atkattr (void)
 {
 	int nation;
@@ -3163,7 +3149,7 @@ atkattr (void)
  *   - Legacy Pattern: K&R function declaration needs modernization to ANSI C
  */
 /*calculate attractiveness when at peace*/
-void 
+void
 pceattr (void)
 {
 #ifdef DEBUG

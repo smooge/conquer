@@ -75,15 +75,15 @@
 #include "psmap.h"
 #include "safe_convert.h"
 
-char buffer[BUFSIZ];
-int c, xsize, ysize;
-int xmin, ymin, xmax, ymax, centx, centy;
-FILE *infile, *outfile, *fh;
-int grid = TRUE, sqsize = 9, maptype = SIMPLE, onepage = FALSE;
-int verbose = FALSE, coords = TRUE, center = TRUE, note = FALSE;
-int pagewidth, pageheight, xoffset, yoffset;
-char title[81] = "", foot[81], fontname[81];
-char progname[80];
+static char buffer[BUFSIZ];
+static int c, xsize, ysize;
+static int xmin, ymin, xmax, ymax, centx, centy;
+static FILE *infile, *outfile, *fh;
+static int grid = TRUE, sqsize = 9, maptype = SIMPLE, onepage = FALSE;
+static int verbose = FALSE, coords = TRUE, center = TRUE, note = FALSE;
+static int pagewidth, pageheight, xoffset, yoffset;
+static char title[81] = "", foot[81], fontname[81];
+static char progname[80];
 
 /* functions */
 int parsepagesize (char *buf);

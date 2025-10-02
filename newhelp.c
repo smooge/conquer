@@ -176,12 +176,8 @@ main(void)
 #else
 	fprintf(fp,"s/XSYSMAIL/(False)/g\n");
 #endif
-#ifdef SYSV
-	fprintf(fp,"s/XSYSV/(True ) /g\n");
-#endif
-#ifdef BSD
-	fprintf(fp,"s/XSYSV/(False:BSD)/g\n");
-#endif
+	/* Modern C89 random number generation - no BSD/SYSV distinction needed */
+	fprintf(fp,"s/XSYSV/(C89 Standard)/g\n");
 #ifdef MONSTER
 	fprintf(fp,"s/XMONSTER/(True )/g\n");
 #else

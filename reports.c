@@ -113,11 +113,6 @@
 #include "data.h"
 #include "safe_convert.h"
 
-extern FILE *fexe;
-extern short country;
-extern long startgold;
-extern short xcurs,ycurs;
-extern short xoffset,yoffset;
 extern short redraw;
 
 #define RPT_LINES 11
@@ -888,7 +883,7 @@ produce (void)
 #define RPT_COLS 11
 #define BUF_LINES 10
 #define BUF_COLS 15
-char *fltstr[]= {"Light", "Medium", "Heavy"};
+static char *fltstr[]= {"Light", "Medium", "Heavy"};
 
 /*
  * fleetrpt - Interactive naval fleet statistics report and management system
@@ -1270,7 +1265,7 @@ fleetrpt (void)
 					refresh();
 					newnavy = safe_long_to_short(get_number());
 					if(newnavy>P_NWAR(shipsize)||newnavy<0) newnavy=0;
-					NSUB_WAR(newnavy);
+					NSUB_WAR(newnavy)
 					(void) addwships(navy,shipsize,newnavy);
 				}
 				for(shipsize=N_LIGHT;shipsize<=N_HEAVY;shipsize++) {
@@ -1280,7 +1275,7 @@ fleetrpt (void)
 					refresh();
 					newnavy = safe_long_to_short(get_number());
 					if(newnavy>P_NMER(shipsize)||newnavy<0) newnavy=0;
-					NSUB_MER(newnavy);
+					NSUB_MER(newnavy)
 					(void) addmships(navy,shipsize,newnavy);
 				}
 				for(shipsize=N_LIGHT;shipsize<=N_HEAVY;shipsize++) {
@@ -1290,7 +1285,7 @@ fleetrpt (void)
 					refresh();
 					newnavy = safe_long_to_short(get_number());
 					if(newnavy>P_NGAL(shipsize)||newnavy<0) newnavy=0;
-					NSUB_GAL(newnavy);
+					NSUB_GAL(newnavy)
 					(void) addgships(navy,shipsize,newnavy);
 				}
 
@@ -1352,10 +1347,10 @@ fleetrpt (void)
 						if (newnavy < 0 || newnavy > N_MASK) continue;
 						newnavy -= safe_int_to_short(P_NWAR(shipsize));
 						if (newnavy > 0) {
-							(void) NADD_WAR(newnavy);
+							(void) NADD_WAR(newnavy)
 						} else if (newnavy < 0) {
 							newnavy = -newnavy;
-							(void) NSUB_WAR(newnavy);
+							(void) NSUB_WAR(newnavy)
 						}
 					}
 					for(shipsize=N_LIGHT;shipsize<=N_HEAVY;shipsize++) {
@@ -1367,10 +1362,10 @@ fleetrpt (void)
 						if(newnavy>N_MASK||newnavy<0) continue;
 						newnavy -= safe_int_to_short(P_NMER(shipsize));
 						if (newnavy > 0) {
-						  (void) NADD_MER(newnavy);
+						  (void) NADD_MER(newnavy)
 						} else if (newnavy < 0) {
 						  newnavy = -newnavy;
-						  (void) NSUB_MER(newnavy);
+						  (void) NSUB_MER(newnavy)
 						}
 					}
 					for(shipsize=N_LIGHT;shipsize<=N_HEAVY;shipsize++) {
@@ -1382,10 +1377,10 @@ fleetrpt (void)
 						if(newnavy>N_MASK||newnavy<0) continue;
 						newnavy -= safe_int_to_short(P_NGAL(shipsize));
 						if (newnavy > 0) {
-						  (void) NADD_GAL(newnavy);
+						  (void) NADD_GAL(newnavy)
 						} else if (newnavy < 0) {
 						  newnavy = -newnavy;
-						  (void) NSUB_GAL(newnavy);
+						  (void) NSUB_GAL(newnavy)
 						}
 					}
 					NADJWAR;

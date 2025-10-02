@@ -175,17 +175,17 @@
 #endif
 
 /* ================================================================== */
-/* LEGACY PLATFORM DEFINES (preserved for compatibility) */
+/* PLATFORM DETECTION: Modernized for C89/POSIX compliance */
 /* ================================================================== */
-
-#ifdef PLATFORM_UNIX
-    #define BSD 1    /* Most modern Unix systems are BSD-like */
-#endif
-
-/* Uncomment these as needed for specific old systems */
-/* #define SYSV */     /* uncomment for UNIX SYSV machines */
-/* #define HPUX */     /* uncomment for HP-UNIX */
-/* #define XENIX */    /* this plus SYSV for XENIX machines */
+/*
+ * Legacy BSD/SYSV platform distinctions have been eliminated:
+ *   - Random number generation: Now uses standard C89 rand()/srand()
+ *   - Memory operations: Now uses standard C89 memset()
+ *   - All platform-specific code paths consolidated to POSIX standards
+ *
+ * Platform detection now focuses on feature availability rather than
+ * historical Unix variants, leveraging CMake's feature detection.
+ */
 
 /* ================================================================== */
 /* ADMINISTRATOR CONFIGURATION */

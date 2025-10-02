@@ -34,15 +34,6 @@
 #include "data.h"
 #include "safe_convert.h"
 
-extern long conq_mail_size;
-
-extern FILE *fexe;			/*execute file pointer*/
-extern short country;
-extern short selector;
-extern short pager;
-extern short xcurs,ycurs,xoffset,yoffset;
-extern short redraw;
-
 int roads_this_turn = 0;
 
 /*
@@ -295,7 +286,7 @@ void redesignate (void) {
 	char	newdes;
 	char	tgtype[NAMELTH+1];
 	struct s_sector *sptr= &sct[XREAL][YREAL];
-	short	x,y;
+	short	x=0,y=0;
 	long	metal=0;
 	int	isgod=FALSE;
 
@@ -924,13 +915,13 @@ void construct (void) {
 
 			if (shipsize>=6) {
 				shipsize %= 3;
-				tmpvar2 = NADD_MER(amount);
+				tmpvar2 = NADD_MER(amount)
 			} else if (shipsize>=3) {
 				shipsize %= 3;
-				tmpvar2 = NADD_GAL(amount);
+				tmpvar2 = NADD_GAL(amount)
 			} else {
 				shipsize %= 3;
-				tmpvar2 = NADD_WAR(amount);
+				tmpvar2 = NADD_WAR(amount)
 			}
 
 			/* check for bad build */
@@ -1752,7 +1743,7 @@ void rmessage (void) {
  *   - Screen management: Complex screen state management for editing interface
  */
 void wmessage (void) {
-	int x,y;
+	int x=0,y=0;
 	int done=FALSE;
 	char ch;
 	char name[NAMELTH+1];

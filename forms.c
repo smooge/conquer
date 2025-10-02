@@ -95,11 +95,7 @@
 #include "header.h"
 #include "data.h"
 #include "safe_convert.h"
-
-extern FILE	*fexe, *fnews;
-extern short	country,redraw;
-extern long	startgold;
-extern short	Gaudy;
+#include "safe_system.h"
 
 static char helplist[MAXHELP][20]={"Commands", "General Info",
 	"Military","Magic","Designations","Other"};
@@ -192,7 +188,7 @@ static char helplist[MAXHELP][20]={"Commands", "General Info",
  *   Mock Requirements: Mock nation database, mock screen dimensions, mock user input
  *   Complexity: Moderate - Multi-column layout with responsive design and pagination
  */
-void showscore() {
+void showscore(void) {
 	int i;
 	int done=FALSE;
 	int xpos,ypos;
@@ -522,7 +518,7 @@ void diploscrn (void) {
 				printf("error opening news file\n");
 				exit(FAIL);
 			}
-			BRIBENATION;
+			BRIBENATION
 
 			ntn[nation].dstatus[country]--;
 
@@ -663,7 +659,7 @@ void change (void) {
 		isgod=TRUE;
 		if (get_god()) return;
 	}
- 
+
 	/* continuous loop */
 	clear();
 	while(1) {
@@ -983,8 +979,8 @@ void change (void) {
 				}
 				destroy(country);
 				fclose(fnews);
-				snprintf(command, sizeof(command), "%s/%s %s %s", EXEDIR, sortname, filename, filename);
-				system(command);
+				/* Sort news file using native C implementation (replaces system("conqsort filename filename")) */
+				sort_file_in_place(filename, 2);
 			}
 		}
 		break;
@@ -1054,7 +1050,7 @@ void change (void) {
 		}
 		break;
 	case 'p':
-	case 'P': 
+	case 'P':
 		produce();
 		if (isgod==TRUE) reset_god();
 		return;
@@ -1306,7 +1302,7 @@ void mvaddstrnahil(int li,int col,char *p)
  *   - Performance considerations for large news archives
  */
 void newspaper (void) {
-	int lineno;
+	int lineno=0;
 	FILE *fp;
 	int newpage,choice,done;
 	short pagenum,subpage;
@@ -1314,7 +1310,7 @@ void newspaper (void) {
 	char line[LINELTH],name[FILELTH];
 	int readold;
 	int c;
-	
+
 	/* check to make sure that there are newspapers */
 	if (TURN==0) {
 		clear_bottom(0);

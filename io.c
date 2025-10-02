@@ -123,15 +123,8 @@
 #include "patchlevel.h"
 #include "safe_convert.h"
 
-extern FILE *fexe;
-/*offset of upper left hand corner*/
-extern short xoffset, yoffset;
-/*current cursor postion (relative to 00 in upper corner)*/
-/*	position is 2*x,y*/
-extern short xcurs,ycurs;
 extern short redraw; 		/*redraw map in this turn if redraw is a 1*/
 extern short hilmode,dismode;			/*display state*/
-extern short country;			/* nation id of owner*/
 
 /*
  * getspace - Allocate memory for core game data structures
@@ -175,7 +168,7 @@ extern short country;			/* nation id of owner*/
  *   - Critical for game initialization and scenario loading operations
  */
 void
-getspace()
+getspace(void)
 {
 	if (sct != NULL) free(sct);
 	sct = (struct s_sector **) m2alloc(MAPX,MAPY,sizeof(struct s_sector));
@@ -189,7 +182,7 @@ getspace()
 }
 
 #ifdef CONQUER
-char **mapseen;
+static char **mapseen;
 
 /*
  * mapprep - Initialize visibility map based on nation perspective
@@ -621,7 +614,7 @@ void writedata (void) {
 	printf("\ndoing write of data\n");
 	if((fd = creat(datafile,0666))==-1) {
 		printf("cannot open data.  check permissions\n");
-		abrt();
+		abrt()
 	}
 
 /* write world structure */
@@ -629,19 +622,19 @@ void writedata (void) {
 	{
 		printf("error writing world data\n");
 		printf("wrong data format (%ld vs. %zu)\n",bytes,sizeof(struct s_world) );
-		abrt();
+		abrt()
 	}
 
 	if((bytes=write(fd,*sct,(size_t)(MAPX*MAPY)*sizeof(struct s_sector))) == -1)
 	{
 		printf("Wrong number of bytes (%ld) written for sct (should be %zu)\n",bytes,(size_t)(MAPX*MAPY)*sizeof(struct s_sector));
-		abrt();
-	};
+		abrt()
+	}
 	printf("writing %ld bytes of sector data\n",bytes);
 	if((bytes=write(fd,ntn,NTOTAL*sizeof(struct s_nation))) == -1)
 	{
 		printf("Wrong number of bytes (%ld) written for ntn (should be %zu)\n",bytes,(size_t)NTOTAL*sizeof(struct s_nation));
-		abrt();
+		abrt()
 	}
 	printf("writing %ld bytes of nation data\n",bytes);
 	close(fd);
@@ -718,7 +711,7 @@ void readdata (void) {
 	{
 		printf("error reading world data\n");
 		printf("wrong data format (%zd vs. %zu)\n",n_read, sizeof(struct s_world) );
-		abrt();
+		abrt()
 	}
 #ifdef DEBUG
 	fprintf(stderr,"reading %zu bytes of world data\n",sizeof(struct s_world));
@@ -732,7 +725,7 @@ void readdata (void) {
 	if(n_read != (ssize_t)((size_t)(MAPX*MAPY)*sizeof(struct s_sector))) {
 		printf("error reading sector data (sct)\n");
 		printf( "wrong data format (%zd vs. %zu)\n",n_read,  (size_t)(MAPX*MAPY)*sizeof(struct s_sector) );
-		abrt();
+		abrt()
 	}
 #ifdef DEBUG
 	fprintf(stderr,"reading %zd bytes of sector data\n",n_read);
@@ -742,7 +735,7 @@ void readdata (void) {
 	else if(n_read!= (ssize_t)((size_t)NTOTAL*sizeof(struct s_nation))) {
 		printf("error reading s_nation data (ntn)\n");
 		printf( "wrong data format (%zd vs. %zu)\n",n_read, (size_t)NTOTAL*sizeof(struct s_nation) );
-		abrt();
+		abrt()
 	}
 #ifdef DEBUG
 	fprintf(stderr,"reading %zd bytes of nation data\n",n_read);
@@ -1320,7 +1313,7 @@ void flee (int x, int y, int isupd, int slaver) {
 	sct[x][y].fortress=0;
 	/*SINFORT;*/
 	if(tofood( &sct[XREAL][YREAL],sct[XREAL][YREAL].owner)!=0) {
-		DEVASTATE(x,y);
+		DEVASTATE(x,y)
 		if(isupd==0) SADJDES2;
 	}
 	country=safe_int_to_short(svcountry);
@@ -1510,7 +1503,7 @@ char ** m2alloc (
 
 	if( baseaddr == (char **) NULL ) {
 		printf("OOPS - cannot allocate %d by %d blocks of %d bytes\n",nrows,ncols,entrysize);
-		abrt();
+		abrt()
 	}
 
 	/* Update entrysize for the rest of the function (backward compatibility) */

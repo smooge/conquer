@@ -24,21 +24,17 @@
 #include <string.h>
 #include <curses.h>
 #include <ctype.h>
-#ifndef XENIX
 #include <sys/types.h>
 #include <sys/file.h>
-#endif
 #include <unistd.h>
 #include "header.h"
 #include "data.h"
 #include "safe_convert.h"
+#include "safe_system.h"
 
-extern FILE *fnews;
-
-extern short country;
-int	disarray;		/* TRUE if nation in disarray */
-int	**attr;			/* sector attractiveness */
-long	**newpop;		/* storage for old population */
+static int	disarray;		/* TRUE if nation in disarray */
+static int	**attr;			/* sector attractiveness */
+static long	**newpop;		/* storage for old population */
 
 /*
  * dtol - Convert double to long with precision control
@@ -150,27 +146,27 @@ dtol (double d)
 void
 update (void)
 {
-	char command[BIGLTH],filename[FILELTH];
+	char filename[FILELTH];
 
 	sprintf(filename,"%s%d",newsfile,TURN);
 	if ((fnews=fopen(filename,"w"))==NULL) {
 		printf("error opening news file\n");
 		exit(FAIL);
 	}
-	check();
+	check()
 
 	updexecs();	/*run each nation in a random order*/
-	check();
+	check()
 
 #ifdef MONSTER
-	check();
+	check()
 	monster();	/* update monster nations */
-	check();
+	check()
 #endif
 
-	check();
+	check()
 	combat();	/* run combat */
-	check();
+	check()
 	updcapture();	/* capture unoccupied sectors */
 
 #ifdef TRADE
@@ -211,13 +207,16 @@ update (void)
 		MERCATT++;
 		MERCDEF++;
 	}
-	sprintf(command,"/bin/rm -f %s*",exefile);
-	printf("%s\n",command);
-	system(command);
+	/* Use secure file deletion instead of system() call */
+	char pattern[BIGLTH];
+	sprintf(pattern, "%s*", exefile);
+	const char *patterns[] = { pattern };
+	int deleted = secure_file_delete(patterns, 1);
+	printf("Removed %d files matching %s*\n", deleted, exefile);
 
-	sprintf( command,"%s/%s %s %s", EXEDIR, sortname, filename, filename );
-	printf("%s\n",command);
-	system(command);
+	/* Sort news file using native C implementation (replaces system("conqsort filename filename")) */
+	printf("Sorting news file: %s\n", filename);
+	sort_file_in_place(filename, 2);
 
 	/* remove old news files */
 	if (TURN>MAXNEWS) {
@@ -444,7 +443,6 @@ attract(int x,int y,int race)
  *   Complexity: Complex - multiple AI behaviors and world state interactions
  *
  * Notes:
- *   - XENIX platform has special handling for integer arithmetic
  *   - Kings always return to capitol when set to RULE status
  *   - Two-pass movement algorithm handles difficult terrain situations
  *   - Attractiveness is reduced after army visits to prevent clustering
@@ -455,12 +453,9 @@ int
 armymove (int armynum)
 {
 	long		sum, where;
-#ifdef XENIX
-	register int z;
-#endif /*XENIX*/
 	register int	x, y;
 	int	i;
-	long	menok;			/* enough men in the army? */
+	long	menok = 0;		/* enough men in the army? */
 	int	leadflag=FALSE;		/* leader w/o group */
 	int	takesctr=FALSE; 	/* takesctr is # unowned sctrs*/
 
@@ -573,24 +568,12 @@ armymove (int armynum)
 				&&(sct[x][y].designation != DCAPITOL)
 				&&(sct[x][y].designation != DTOWN)
 				&&(sct[x][y].owner==country)) {
-#ifdef XENIX
-					z = attr[x][y];
-					z /= 8;
-					attr[x][y] = z;
-#else
 					attr[x][y] /= 8;
-#endif /*XENIX*/
 				}
 				if(sct[x][y].owner==0){
 					sct[x][y].owner=safe_int_to_uchar(country);
 					if (curntn->popularity<MAXTGVAL) curntn->popularity++;
-#ifdef XENIX
-					z = attr[x][y];
-					z /= 8;
-					attr[x][y] = z;
-#else
 					attr[x][y]/=8;
-#endif /*XENIX*/
 					takesctr++;
 				}
 
@@ -885,7 +868,6 @@ cheat (void)
  *   - Random nation execution prevents predictable advantages
  *   - Memory management critical - allocates large matrices
  *   - Leadership system prevents nations from becoming unplayable
- *   - XENIX platform requires special integer arithmetic handling
  *   - Nation disarray occurs when primary leader is killed
  *   - Civilian movement driven by sector attractiveness calculations
  */
@@ -894,19 +876,16 @@ updexecs (void)
 {
 	register struct s_sector	*sptr;
 	register int x, y;
-#ifdef XENIX
-	register int z;
-#endif /*XENIX*/
 	int	armynum;
 	int done, loop=0, number=0;
-	void move_people();
+	void move_people(void);
 	int execed[NTOTAL];
 
-	check();
+	check()
 	attr = (int **) m2alloc(MAPX,MAPY,sizeof(int));
-	check();
+	check()
 	newpop = (long **) m2alloc(5,MAPY,sizeof(long));
-	check();
+	check()
 
 	for(country=0;country<NTOTAL;country++)
 		if( isntn(ntn[country].active) ) execed[country]=FALSE;
@@ -933,7 +912,7 @@ updexecs (void)
 		if(curntn->active == INACTIVE) continue;
 
 		printf("updating nation number %d -> %s\n",country,curntn->name);
-	check();
+	check()
 
 		disarray=FALSE;
 #ifdef TRADE
@@ -952,16 +931,16 @@ updexecs (void)
 				fprintf(fm,"The computer moved for you in the %s of Year %d\n",PSEASON(TURN),YEAR(TURN));
 				mailclose(country);
 			}
-			check();
+			check()
 			nationrun();
-			check();
+			check()
 #endif /*CMOVE*/
 		}
 		/* run npc nations */
 		if(isnpc(curntn->active)) {
-			check();
+			check()
 			nationrun();
-			check();
+			check()
 #ifdef ORCTAKE
 			/*do npc nation magic*/
 			if(magic(country,MA_MONST)==TRUE) {
@@ -1051,15 +1030,7 @@ printf("checking for leader in nation %s: armynum=%d\n",curntn->name,armynum);
 	for(country=1;country<NTOTAL;country++) if(isntn(ntn[country].active)){
 		ntn[country].tships=0;
 		ntn[country].tmil=0;
-#ifdef XENIX
-		if (rand()%4 == 0) {
-			z = ntn[country].spellpts;
-			z /= 2;
-			ntn[country].spellpts = z;
-		}
-#else
 		if(rand()%4==0) ntn[country].spellpts/=2;
-#endif /*XENIX*/
 		if(magic(country,SUMMON)==TRUE) {
 			ntn[country].spellpts+=4;
 			if(magic(country,WYZARD)==TRUE)
@@ -1129,7 +1100,6 @@ printf("checking for leader in nation %s: armynum=%d\n",curntn->name,armynum);
  *   Complexity: Moderate - race-specific AI with multiple behavior patterns
  *
  * Platform Notes:
- *   - Uses XENIX-specific integer arithmetic to prevent overflow
  *   - Includes debug output for army position validation
  *   - Handles edge cases for army positioning and water detection
  *
@@ -1148,9 +1118,6 @@ printf("checking for leader in nation %s: armynum=%d\n",curntn->name,armynum);
 void
 do_lizard (void)
 {
-#ifdef XENIX
-	register int x;
-#endif /*XENIX*/
 	register int i, j;
 	int armynum;
 
@@ -1160,14 +1127,8 @@ do_lizard (void)
 	if((P_ASOLD>0)) {
 		P_AMOVE =20;	/* just in case god wants to move them */
 		/* increase population */
-#ifdef XENIX
-		x = P_ASOLD * 102;
-		x /= 100;
-		P_ASOLD = x;
-#else
 		P_ASOLD*=102;
 		P_ASOLD/=100;
-#endif /*XENIX*/
 		if(armynum%2==0) {
 			if(P_ASTAT!=SIEGED) P_ASTAT=GARRISON;
 		} else {
@@ -2434,7 +2395,7 @@ updleader (void)
 		case C_SHADOW:	born = 2; break;
 		default:
 			printf("ERROR - national class (%d) undefined\n",curntn->class);
-			abrt();
+			abrt()
 		}
 		/* born represents yearly birth rate */
 		if( rand()%400 >= born ) continue;

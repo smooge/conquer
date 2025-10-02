@@ -78,6 +78,8 @@
 #include "header.h"
 #include "data.h"
 #include "safe_convert.h"
+#include "safe_system.h"
+
 
 /*Declarations*/
 struct	s_sector **sct;
@@ -156,8 +158,6 @@ short	dismode=2;
 short	country=0;
 struct	s_nation	*curntn;
 
-/* External declaration for datadir which is defined in makeworl.c */
-extern char datadir[FILELTH];
 
 /* Note: scenario is already declared in data.h when ADMIN is defined */
 /* char scenario[256]; -- REMOVED to avoid conflict */
@@ -375,7 +375,7 @@ int main (int argc, char **argv) {
 		printf("\t-d DIR      to use play different game\n");
 		/* printf("\t-r SCENARIO read map while making a new world\n\t\t\tuses SCENARIO.ele, SCENARIO.veg, &  SCENARIO.nat\n"); */
 		exit(SUCCESS);
-	};
+	}
 
 	realuser = getuid();
 	/* may now replace user identity */
@@ -409,7 +409,13 @@ int main (int argc, char **argv) {
 			verifydata( __FILE__, __LINE__ );
 
 			/* verify ability to remake the world */
-			if ((realuser != (getpwnam(LOGIN))->pw_uid ) &&
+			struct passwd *login_pw = getpwnam(LOGIN);
+			if (login_pw == NULL) {
+				printf("Error: User '%s' not found or access denied\n", LOGIN);
+				exit(FAIL);
+			}
+
+			if ((realuser != login_pw->pw_uid ) &&
 			    ((pwent=getpwnam(ntn[0].leader)) == NULL ||
 				realuser != pwent->pw_uid )) {
 				printf("Sorry -- you can not create a world\n");
@@ -441,7 +447,12 @@ int main (int argc, char **argv) {
 		}
 #else
 		/* check for god permissions */
-		if(realuser!=(getpwnam(LOGIN))->pw_uid) {
+		struct passwd *login_pw2 = getpwnam(LOGIN);
+		if (login_pw2 == NULL) {
+			printf("Error: User '%s' not found or access denied\n", LOGIN);
+			exit(FAIL);
+		}
+		if(realuser != login_pw2->pw_uid) {
 			printf("Sorry -- you can not create a world\n");
 			printf("you need to be logged in as %s.\n",LOGIN);
 			exit(FAIL);
@@ -510,7 +521,13 @@ int main (int argc, char **argv) {
 	}
 
 #ifdef OGOD
-	if ((realuser != (getpwnam(LOGIN)->pw_uid) ) &&
+	struct passwd *login_pw3 = getpwnam(LOGIN);
+	if (login_pw3 == NULL) {
+		printf("Error: User '%s' not found or access denied\n", LOGIN);
+		exit(FAIL);
+	}
+
+	if ((realuser != login_pw3->pw_uid ) &&
 	  ((pwent=getpwnam(ntn[0].leader)) == NULL ||
 	  realuser != pwent->pw_uid )) {
 		printf("Sorry -- you can not administrate conquer\n");
@@ -525,7 +542,13 @@ int main (int argc, char **argv) {
 
 	if (xflag) {	/* update the game */
 #ifndef OGOD
-		if ((realuser != (getpwnam(LOGIN))->pw_uid ) &&
+		struct passwd *login_pw4 = getpwnam(LOGIN);
+		if (login_pw4 == NULL) {
+			printf("Error: User '%s' not found or access denied\n", LOGIN);
+			exit(FAIL);
+		}
+
+		if ((realuser != login_pw4->pw_uid ) &&
 		  ((pwent=getpwnam(ntn[0].leader)) == NULL ||
 		  realuser != pwent->pw_uid )) {
 			printf("sorry -- your uid is invalid for updating\n");
@@ -558,8 +581,10 @@ int main (int argc, char **argv) {
 		writedata();
 		unlink(string);
 #ifdef TIMELOG
-		sprintf(string, "date > %s", timefile);
-		system(string);
+		/* Write timestamp using secure native C function instead of system() call */
+		if (write_timestamp_to_file(timefile) != 0) {
+			printf("Warning: Failed to write timestamp to %s\n", timefile);
+		}
 #endif /* TIMELOG */
 		exit(SUCCESS);
 	}

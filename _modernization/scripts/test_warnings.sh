@@ -35,7 +35,7 @@ OPTIONS:
                 6: Level 5 + -Wsign-conversion
                 7: Level 6 + -Wimplicit-fallthrough
                 8: Level 7 + -Wstrict-prototypes
-                9: Level 8 + -Wold-style-declaration -Wshadow -Wmissing-prototypes -Wcast-qual
+                9: Level 8 + -Wshadow -Wmissing-prototypes -Wcast-qual
                 10: Level 9 + -fanalyzer -fsanitize=address,undefined (intensive analysis)
 
     -x STD    C standard (c89, c99, c11, c17, c2x, default: c99)
@@ -117,8 +117,8 @@ case $WARN_LEVEL in
     6) WARN="-Wall -Wextra -Wpedantic -Wformat=2 -Wconversion -Wsign-conversion" ;;
     7) WARN="-Wall -Wextra -Wpedantic -Wformat=2 -Wconversion -Wsign-conversion -Wimplicit-fallthrough" ;;
     8) WARN="-Wall -Wextra -Wpedantic -Wformat=2 -Wconversion -Wsign-conversion -Wimplicit-fallthrough -Wstrict-prototypes" ;;
-    9) WARN="-Wall -Wextra -Wpedantic -Wformat=2 -Wconversion -Wsign-conversion -Wimplicit-fallthrough -Wstrict-prototypes -Wold-style-declaration -Wshadow -Wmissing-prototypes -Wcast-qual" ;;
-    10) WARN="-Wall -Wextra -Wpedantic -Wformat=2 -Wconversion -Wsign-conversion -Wimplicit-fallthrough -Wstrict-prototypes -Wold-style-declaration -Wshadow -Wmissing-prototypes -Wcast-qual -fanalyzer -fsanitize=address,undefined" ;;
+    9) WARN="-Wall -Wextra -Wpedantic -Wformat=2 -Wconversion -Wsign-conversion -Wimplicit-fallthrough -Wstrict-prototypes -Wshadow -Wmissing-prototypes -Wcast-qual" ;;
+    10) WARN="-Wall -Wextra -Wpedantic -Wformat=2 -Wconversion -Wsign-conversion -Wimplicit-fallthrough -Wstrict-prototypes -Wshadow -Wmissing-prototypes -Wcast-qual -fanalyzer -fsanitize=address,undefined" ;;
     11) WARN="-Weverything"
 esac
 
@@ -169,7 +169,7 @@ get_file_type() {
         commands.c|main.c|forms.c|move.c|reports.c|display.c|extcmds.c)
             echo "GAME"
             ;;
-        cexecute.c|io.c|misc.c|navy.c|magic.c|data.c|trade.c)
+        cexecute.c|io.c|misc.c|navy.c|magic.c|data.c|trade.c|safe_system.c)
             echo "DUAL"
             ;;
         psmap.c)
@@ -257,7 +257,7 @@ else
     done
 
     echo "=== DUAL-COMPILED FILES (7 files) ===" >> ${OUTFILE}
-    for file in cexecute.c io.c misc.c navy.c magic.c data.c trade.c; do
+    for file in cexecute.c io.c misc.c navy.c magic.c data.c trade.c safe_system.c; do
         test_single_file "$file"
     done
 

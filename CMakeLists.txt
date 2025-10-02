@@ -455,11 +455,11 @@ set(SOURCE_FILES
     admin.c cexecute.c check.c combat.c commands.c data.c display.c
     extcmds.c forms.c io.c magic.c main.c makeworl.c misc.c move.c
     navy.c newhelp.c newlogin.c npc.c psmap.c randeven.c reports.c
-    sort.c spew.c trade.c update.c
+    safe_system.c sort.c spew.c trade.c update.c
 )
 
 set(HEADER_FILES
-    data.h header.h newlogin.h patchlevel.h psmap.h safe_convert.h trade.h
+    data.h header.h newlogin.h patchlevel.h psmap.h safe_convert.h safe_system.h trade.h
 )
 
 set(SUPPORT_FILES

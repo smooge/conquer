@@ -51,17 +51,17 @@
 
 extern short country;
 
-char *commodities[NUMPRODUCTS] = { "Gold", "Food", "Metal", "Jewels",
+static char *commodities[NUMPRODUCTS] = { "Gold", "Food", "Metal", "Jewels",
 		"Land", "Soldiers", "Ships"};
 #ifdef ADMIN
-char *tradefail[NUMPRODUCTS] = { "lack of gold", "lack of food",
+static char *tradefail[NUMPRODUCTS] = { "lack of gold", "lack of food",
 	"lack of metal", "lack of jewels", "land not owned",
 	"unavailable or destroyed armies",
 	"unavailable or destoryed navies"};
 #endif /* ADMIN */
 #ifdef CONQUER
 /* Use this when you wish to bid something */
-char *buylist[NUMPRODUCTS] = { "Bid how much gold? ", "Bid how much food? ",
+static char *buylist[NUMPRODUCTS] = { "Bid how much gold? ", "Bid how much food? ",
 	"Bid how much metal? ", "Bid how many jewels? ", "What X location? ",
 	"Bid what army? ", "Bid what navy? "};
 
@@ -112,9 +112,7 @@ char *buylist[NUMPRODUCTS] = { "Bid how much gold? ", "Bid how much food? ",
  *   - Complex state management with trade reservations
  *   - Uses goto-style control flow with while loops and switch statements
  */
-void
-trade()
-{
+void trade(void) {
 	FILE *tfile;
 	int count, done=FALSE, notopen=FALSE;
 	int buysell, holdint, holdint2, extint, inloop;
@@ -242,7 +240,7 @@ trade()
 					curntn->tfood+= (long)(GODFOOD * ((double)holdlong / GODPRICE));
 					if ( (tfile = fopen(tradefile,"a+"))==NULL) {
 						tradeerr("Error opening file for trading");
-						abrt();
+						abrt()
 					}
 					fprintf(tfile, "%d %d %d %d %ld %d %d\n",BUY, country, GETFOOD, 0, curntn->tfood, 0, 0);
 					fclose(tfile);
@@ -365,7 +363,7 @@ trade()
 			if (buysell==BUY) {
 				if ( (tfile = fopen(tradefile,"a+"))==NULL) {
 					tradeerr("Error opening file for trading");
-					abrt();
+					abrt()
 				}
 				setaside(country,type2[holdint],holdlong,(int)holdlong,FALSE);
 				fprintf(tfile, "%d %d %d %d %ld %ld %d\n",BUY, country, holdint, 0, holdlong, holdlong2, 0);
@@ -499,7 +497,7 @@ trade()
 			/* send it out */
 			if ( (tfile = fopen(tradefile,"a+"))==NULL) {
 				tradeerr("Error opening file for trading");
-				abrt();
+				abrt()
 			}
 			fprintf(tfile, "%d %d %d %d %ld %ld %d\n", SELL, country, holdint, holdint2, holdlong, holdlong2, extint);
 			fclose(tfile);
@@ -538,7 +536,7 @@ trade()
 			/* remove it from market */
 			if ( (tfile = fopen(tradefile,"a+"))==NULL) {
 				tradeerr("Error opening file for trading");
-				abrt();
+				abrt()
 			}
 			fprintf(tfile, "%d %d %d %d %ld %ld %d\n", NOSALE, natn[holdint], holdint, 0, 0L, 0L, 0);
 			fclose(tfile);
@@ -1297,11 +1295,11 @@ trademail (int cntry1, int cntry2, int item1, int item2, long lvar1, long lvar2,
 
 	if ((fp[0]=fopen(filename[0],"a+"))==NULL) {
 		printf("error opening <%s>\n",filename[0]);
-		abrt();
+		abrt()
 	}
 	if ((fp[1]=fopen(filename[1],"a+"))==NULL) {
 		printf("error opening <%s>\n",filename[1]);
-		abrt();
+		abrt()
 	}
 
 	for (count=0;count<2;count++) {
@@ -1613,10 +1611,9 @@ uptrade (void)
 	FILE *tfile;
 	int count, itemnum=0, natn[MAXITM];
 	int type1[MAXITM], type2[MAXITM], deal[MAXITM], extra[MAXITM];
-	extern FILE *fnews;
 	int whobuy[MAXITM];
 	long buy1[MAXITM], buy2[MAXITM];
-	long price[MAXITM], longval1, longval2;
+	long price[MAXITM], longval1=0L, longval2=0L;
 	long lvar1[MAXITM], lvar2[MAXITM];
 
 	/* initialize purchase list */
@@ -1673,7 +1670,7 @@ uptrade (void)
 	if ((tfile=fopen(tradefile,"w")) == NULL) {
 		/* error on opening file */
 		printf("Error opening <%s> for trade update\n",tradefile);
-		abrt();
+		abrt()
 	}
 
 	/* compute the trading */
@@ -1814,7 +1811,7 @@ fixtrade (int cntry)
 				if ( (tfile = fopen(tradefile,"a+"))==NULL)
 				{
 					printf("Error opening file for trading");
-					abrt();
+					abrt()
 				}
 
 				fprintf(tfile, "%d %d %d %d %ld %ld %d\n",

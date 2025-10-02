@@ -36,7 +36,6 @@
 /* ================= EXTERNAL DEPENDENCIES ================= */
 
 extern	FILE	*fpmsg;		/* Message file for game communications */
-extern	FILE	*fnews;		/* News file for battle reports */
 extern	short	country;	/* Current nation context for operations */
 
 /* ================= GLOBAL COMBAT STATE VARIABLES ================= */
@@ -49,27 +48,27 @@ extern	short	country;	/* Current nation context for operations */
  * Retreat Coordination Variables
  * Manage unit withdrawal from battle when conditions warrant retreat
  */
-short	retreatside;	/* Retreating side: ATKR, DFND, or none (0) */
-short	retreatx;	/* Retreat destination x coordinate */
-short	retreaty;	/* Retreat destination y coordinate */
+static short	retreatside;	/* Retreating side: ATKR, DFND, or none (0) */
+static short	retreatx;	/* Retreat destination x coordinate */
+static short	retreaty;	/* Retreat destination y coordinate */
 
 /*
  * Battle Participant Arrays
  * Track all units involved in current battle for resolution calculations
  */
-int	unit[MGKNUM];		/* Army/navy unit numbers participating */
-int	owner[MGKNUM];		/* Nation ownership of each unit */
-int	side[MGKNUM];		/* Combat side assignment (ATKR/DFND/NTRL) */
-long	troops[MGKNUM];		/* Starting troop strength for each unit */
+static int	unit[MGKNUM];		/* Army/navy unit numbers participating */
+static int	owner[MGKNUM];		/* Nation ownership of each unit */
+static int	side[MGKNUM];		/* Combat side assignment (ATKR/DFND/NTRL) */
+static long	troops[MGKNUM];		/* Starting troop strength for each unit */
 
 /*
  * Battle Location and Primary Combatants
  * Define the geographic and political context of current battle
  */
-int	xspot,yspot;		/* Map coordinates where battle occurs */
-int	anation;		/* Primary attacking nation in this battle */
-int	dnation;		/* Primary defending nation in this battle */
-int	count=0;                /* Total number of units in battle sector */
+static int	xspot,yspot;		/* Map coordinates where battle occurs */
+static int	anation;		/* Primary attacking nation in this battle */
+static int	dnation;		/* Primary defending nation in this battle */
+static int	count=0;                /* Total number of units in battle sector */
 
 /* ================= COMBAT TYPE AND STATUS INDICATORS ================= */
 /*
@@ -154,7 +153,7 @@ int	count=0;                /* Total number of units in battle sector */
  * - Thread safety issues due to global variable usage
  * - Consider refactoring to use context structure
  */
-void combat() {
+void combat(void) {
 	register int i,j;
 	char	**fought; 		/* SET: if already fought in sctr */
 	int	temp,ctry;
@@ -1525,21 +1524,21 @@ void navalcbt (void) {
 							awcapt++;
 							ahold-=(shipsize+1);
 							capture(QWAR,DFND,shipsize,safe_long_to_int(rand()%dhold+1));
-							NSUB_WAR(1);
+							NSUB_WAR(1)
 						}
 					} else {
 						if (ahold) {
 							dwcapt++;
 							dhold-=(shipsize+1);
 							capture(QWAR,ATKR,shipsize,safe_long_to_int(rand()%ahold+1));
-							NSUB_WAR(1);
+							NSUB_WAR(1)
 						}
 					}
 					if(which==ATKR) akcrew += P_NCREW;
 					else dkcrew += P_NCREW;
 				} else if (rand()%2==0 || Ploss>90) {
 					/* destroy a ship */
-					NSUB_WAR(1);
+					NSUB_WAR(1)
 					k = P_NCREW*(shipsize+1);
 					thold -= (shipsize+1);
 					if(which==ATKR) {
@@ -1570,7 +1569,7 @@ void navalcbt (void) {
 							ghold-=(shipsize+1);
 							thold-=(shipsize+1);
 							capture(QGAL,DFND,shipsize,safe_long_to_int(rand()%dhold+1));
-							NSUB_GAL(1);
+							NSUB_GAL(1)
 						}
 					} else if(which==DFND) {
 						if (ahold) {
@@ -1578,7 +1577,7 @@ void navalcbt (void) {
 							ghold-=(shipsize+1);
 							thold-=(shipsize+1);
 							capture(QGAL,ATKR,shipsize,safe_long_to_int(rand()%ahold+1));
-							NSUB_GAL(1);
+							NSUB_GAL(1)
 						}
 					}
 					if(which==ATKR) akcrew += P_NCREW;
@@ -1602,7 +1601,7 @@ void navalcbt (void) {
 					k = (shipsize+1)*SHIPCREW;
 					if(which==ATKR) akcrew += k;
 					else dkcrew += k;
-					NSUB_GAL(1);
+					NSUB_GAL(1)
 					ghold-=(shipsize+1);
 					thold-=(shipsize+1);
 					/* kill all soldiers onboard */
@@ -1654,13 +1653,13 @@ void navalcbt (void) {
 						if (dhold) {
 							amcapt++;
 							capture(QMER,DFND,shipsize,safe_long_to_int(rand()%dhold+1));
-							NSUB_MER(1);
+							NSUB_MER(1)
 						}
 					} else if(which==DFND) {
 						if (ahold) {
 							dmcapt++;
 							capture(QMER,ATKR,shipsize,safe_long_to_int(rand()%ahold+1));
-							NSUB_MER(1);
+							NSUB_MER(1)
 						}
 					}
 					if(which==ATKR) akcrew += P_NCREW;
@@ -1672,7 +1671,7 @@ void navalcbt (void) {
 					else dkcrew += k;
 					P_NCREW -= safe_int_to_uchar(k/thold);
 					k = P_NCREW*thold;
-					NSUB_MER(1);
+					NSUB_MER(1)
 					if((thold-=(shipsize+1))!=0) P_NCREW = safe_int_to_uchar(k / thold);
 					else P_NCREW = 0;
 					/* kill all people onboard */
@@ -1864,13 +1863,13 @@ void capture (int type, int to, int shipsize, int holdcount) {
 #endif /* DEBUG */
 	switch(type) {
 	case QWAR:
-		(void) NADD_WAR(1);
+		(void) NADD_WAR(1)
 		break;
 	case QGAL:
-		(void) NADD_GAL(1);
+		(void) NADD_GAL(1)
 		break;
 	case QMER:
-		(void) NADD_MER(1);
+		(void) NADD_MER(1)
 		break;
 	default:
 		fprintf(stderr,"unknown type in function capture");

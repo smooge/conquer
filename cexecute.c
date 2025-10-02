@@ -65,16 +65,6 @@
 #include "data.h"
 #include "safe_convert.h"
 
-extern long startgold;
-extern short country;
-extern FILE *fexe, *fnews;
-extern char fison[];
-
-#ifdef CONQUER
-extern int roads_this_turn;
-extern int terror_adj;
-#endif
-
 /*
  * execute - Process nation command execution file and apply game state changes
  *
@@ -121,7 +111,7 @@ int execute(int isupdate) {	/* 0 if not update, 1 if update */
 	int cmd,savectry;
 	char comment[LINELTH];
 	char temp[LINELTH];
-	long longvar,long2var;
+	long longvar = 0,long2var = 0;
 	int armynum = 0;  /* Initialize to prevent undefined behavior with L_ commands */
 	short int x,y;
 	int execed=0;
@@ -428,8 +418,8 @@ void hangup (int sig) {
 	fclose(fexe);
 
 	/* remove any existing mail reading/writing file */
+	/* TODO why are we doing this here versus in misc? */
 	if (mailok!=DONEMAIL) {
-		extern char tmp_mail_name[];
 		unlink(tmp_mail_name);
 	}
 
