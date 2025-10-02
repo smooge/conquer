@@ -92,23 +92,83 @@
 
 ## Technical Implementation Strategy
 
-### 1. Script-Driven Automation (80-90% Time Savings)
+### ⭐ MANDATORY: Stepwise Incremental Methodology
+
+**CRITICAL**: All Phase 8 work must follow this precise stepwise approach to ensure safe, systematic modernization with zero regressions.
+
+#### Step-by-Step Process (MANDATORY)
+
+**1. File Analysis Phase**
+- **Analyze Single File**: Examine one file at a time for modernization needs
+- **Count Changes Required**: Document exactly how many functions/patterns need modification
+- **Categorize Changes**: Group by type (string ops, memory, functions) and complexity
+- **Create File Plan**: Break down into individual function-level tasks
+- **Estimate Effort**: Time/complexity assessment for each function
+
+**2. Function-Level Modernization (ONE AT A TIME)**
+- **Single Function Focus**: Work on ONLY one function per iteration
+- **Make Targeted Change**: Apply specific modernization (string safety, prototype, etc.)
+- **Immediate Recompile**: Test compilation after each function change
+- **Fix Compilation Issues**: Address any errors/warnings immediately
+- **Decision Point**: **ASK USER**: "Continue to next function or save state?"
+- **No Batch Changes**: Never modify multiple functions without validation
+
+**3. File Completion Protocol**
+- **File-Level Validation**: When all functions in file are complete
+- **Comprehensive Testing**: Run full test suite for file changes
+- **Security Validation**: Execute security scripts for file
+- **Decision Point**: **ASK USER**: "Continue to next file or save state?"
+- **Documentation Update**: Record completed file in progress tracking
+
+**4. Session Management Protocol**
+- **Regular Check-ins**: Commit working changes after each file completion
+- **State Preservation**: Save session memory at decision points
+- **Progress Documentation**: Update TODO lists and strategy documents
+- **User-Controlled Pacing**: Respect user preferences for session length
+
+**5. Sub-Phase Completion Control**
+- **User Authority**: Sub-phase completion ONLY when user explicitly approves
+- **No Autonomous Completion**: Claude never declares sub-phase finished independently
+- **Status Reporting**: Provide progress updates but await user confirmation
+- **Quality Validation**: All criteria met but user must approve advancement
+
+#### Quality Assurance at Each Step
+
+**Compilation Validation**:
+- Immediate recompile after every function change
+- Address all warnings/errors before proceeding
+- Use standardized testing script for consistency
+
+**Functional Validation**:
+- Run relevant tests after each function modification
+- Verify no regressions introduced
+- Maintain 100% test success rate
+
+**Security Validation**:
+- Execute security scripts after file completion
+- Monitor unsafe pattern elimination progress
+- Ensure no new vulnerabilities introduced
+
+### 1. Script-Driven Automation (Supporting Tool)
 **Primary Tools**:
 - `_modernization/scripts/detect_legacy_patterns.py` (Enhanced v2.0)
 - `_modernization/scripts/security_validation.py` (Production-ready)
 - Custom automation scripts for specific modernization tasks
 
-**Benefits**:
-- **Consistency**: Standardized patterns across all changes
-- **Speed**: Batch processing of repetitive transformations
-- **Auditability**: Complete change logs and reversibility
-- **Quality**: Built-in validation and error checking
+**Role**: **Analysis and Planning Support** (NOT batch processing)
+- **Pattern Identification**: Help identify functions needing modernization
+- **Change Planning**: Assist in breaking down file-level work
+- **Validation Support**: Automated testing and security checking
+- **Progress Tracking**: Monitor modernization progress
+
+**Important**: Scripts support the stepwise process but DO NOT replace careful, incremental implementation
 
 ### 2. Test-Driven Modernization
 **Integration Points**:
-- **Before Changes**: Establish baseline tests for functions being modernized
-- **During Changes**: Continuous validation with security scripts
-- **After Changes**: Verify functionality preservation and enhancement
+- **Before File**: Establish baseline tests for file being modernized
+- **After Function**: Quick validation after each function change
+- **After File**: Comprehensive testing after file completion
+- **Continuous**: Security script validation throughout
 
 **Test Expansion Strategy**:
 - **Phase 8.1**: +15-25 tests (String safety focus)
@@ -119,12 +179,13 @@
 
 ### 3. Security-First Approach
 **Continuous Validation**:
-- Security script execution after each sub-phase
+- Security script execution after each file completion
 - Real-time monitoring of unsafe pattern elimination
 - Comprehensive regression testing
 
 **Quality Gates**:
-- No sub-phase completion without security validation PASSED
+- No file completion without compilation success
+- No sub-phase completion without user approval
 - Maintain 100% test success rate throughout
 - Zero introduction of new security vulnerabilities
 
@@ -180,6 +241,24 @@
 
 ## Conclusion
 
-Phase 8 represents the core modernization work that transforms the codebase from legacy C to modern C2023 standards. With excellent infrastructure from Phase 7, comprehensive automation tools, and systematic approach, this phase will deliver significant improvements in security, maintainability, and code quality while preserving all functionality.
+Phase 8 represents the core modernization work that transforms the codebase from legacy C to modern C2023 standards. **The stepwise incremental methodology is ESSENTIAL** - working one function at a time, recompiling after each change, and requiring user approval at decision points ensures safe, systematic progress with zero regressions.
 
-**Next Steps**: Begin Phase 8.00 planning session with detailed TODO list creation.
+### Key Success Factors
+
+**Methodical Approach**: The mandatory stepwise process ensures:
+- **Safety**: Immediate validation prevents cascading errors
+- **Quality**: Continuous testing maintains 100% success rate
+- **Control**: User-driven pacing respects project constraints
+- **Confidence**: Small, validated steps build reliable progress
+
+**User-Controlled Progress**:
+- Function-level decision points maintain user oversight
+- File-level completion requires user approval
+- Sub-phase advancement only when user confirms
+- Session pacing respects user availability and preferences
+
+**Infrastructure Advantage**: Phase 7's automation tools support (not replace) the careful stepwise process with analysis, validation, and progress tracking.
+
+This systematic, user-controlled approach will deliver significant improvements in security, maintainability, and code quality while preserving all functionality and maintaining user confidence throughout the modernization process.
+
+**Next Steps**: Begin Phase 8.00 planning session with detailed TODO list creation, emphasizing the stepwise methodology for all implementation work.
