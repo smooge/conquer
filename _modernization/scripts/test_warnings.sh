@@ -14,8 +14,8 @@ SINGLE_FILE=""
 VERBOSE=0
 
 # TODO: Make this a flag
-# CC=gcc
-CC=clang
+CC=gcc
+#CC=clang
 
 # Usage function
 usage() {

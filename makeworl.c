@@ -172,7 +172,7 @@ void makeworld ( int rflag ){		/* TRUE if you wish to read in a map from mapfile
 
 	/* conquer makeworld information */
 	newinit();
-	sprintf(newstring, "Datadir: %s", datadir);
+	snprintf(newstring, sizeof(newstring), "Datadir: %s", datadir);
 	errorbar("World Generator", newstring);
 
 	mvaddstr(0,COLS/2-9,"WELCOME TO CONQUER");
@@ -235,13 +235,16 @@ void makeworld ( int rflag ){		/* TRUE if you wish to read in a map from mapfile
 	mvaddstr(8,0,"Enter a System Login or \"god\" to have none.  [Return for default]");
 #ifdef REMAKE
 	if (remake==FALSE) {
-		(void) strcpy(ntn[0].leader,"god");
+		strncpy(ntn[0].leader, "god", sizeof(ntn[0].leader) - 1);
+		ntn[0].leader[sizeof(ntn[0].leader) - 1] = '\0';
 	} else if (getpwnam(ntn[0].leader)==NULL) {
-		(void) strcpy(ntn[0].leader,"god");
+		strncpy(ntn[0].leader, "god", sizeof(ntn[0].leader) - 1);
+		ntn[0].leader[sizeof(ntn[0].leader) - 1] = '\0';
 		remake=FALSE;
 	}
 #else
-	(void) strcpy(ntn[0].leader,"god");
+	strncpy(ntn[0].leader, "god", sizeof(ntn[0].leader) - 1);
+	ntn[0].leader[sizeof(ntn[0].leader) - 1] = '\0';
 #endif /* REMAKE */
 	while(TRUE) {
 		mvprintw(9,0,"What demi-god shall co-rule this world? [%s]: ",ntn[0].leader);
@@ -253,7 +256,8 @@ void makeworld ( int rflag ){		/* TRUE if you wish to read in a map from mapfile
 		||(strcmp(newstring,"god")==0)) {
 			newmsg("God will personally rule this world!!!");
 			sleep(1);
-			(void) strcpy(ntn[0].leader,LOGIN);
+			strncpy(ntn[0].leader, LOGIN, sizeof(ntn[0].leader) - 1);
+			ntn[0].leader[sizeof(ntn[0].leader) - 1] = '\0';
 			mvaddstr(7,0,"Demi-God: [none]");
 			clrtoeol();
 			break;
@@ -264,13 +268,14 @@ void makeworld ( int rflag ){		/* TRUE if you wish to read in a map from mapfile
 #endif /*REMAKE*/
 				newmsg("God will personally rule this world!!!");
 				sleep(1);
-				(void) strcpy(ntn[0].leader,LOGIN);
+				strncpy(ntn[0].leader, LOGIN, sizeof(ntn[0].leader) - 1);
+				ntn[0].leader[sizeof(ntn[0].leader) - 1] = '\0';
 				mvaddstr(7,0,"Demi-God: [none]");
 				clrtoeol();
 				break;
 #ifdef REMAKE
 			} else {
-				(void) sprintf(tempc,"The demi-god %s will continue to reign.",ntn[0].leader);
+				snprintf(tempc, sizeof(tempc), "The demi-god %s will continue to reign.", ntn[0].leader);
 				newmsg(tempc);
 				sleep(1);
 				mvprintw(7,0,"Demi-God: [%s]",ntn[0].leader);
@@ -352,7 +357,7 @@ void makeworld ( int rflag ){		/* TRUE if you wish to read in a map from mapfile
 	writedata();
 
 	/* initialize news file */
-	sprintf(newstring,"%s0",newsfile);
+	snprintf(newstring, sizeof(newstring), "%s0", newsfile);
 	if( (fm=fopen(newstring,"w"))!=(FILE *)NULL ) {
 		fprintf(fm,"1\tIMPORTANT WORLD NEWS\n");
 		fprintf(fm,"5\tGLOBAL ANNOUNCEMENTS\n");
