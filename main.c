@@ -139,9 +139,9 @@ int main(int argc, char **argv) {
 
 	owneruid=getuid();
 	srand((unsigned) time((long *) 0));
-	strcpy(name,"");
-	strcpy(defaultdir,"");
-	strcpy(cq_opts,"");
+	name[0] = '\0';
+	defaultdir[0] = '\0';
+	cq_opts[0] = '\0';
 
 	/* check conquer options */
 	if (getenv(ENVIRON_OPTS)!=NULL) {
@@ -225,10 +225,12 @@ int main(int argc, char **argv) {
 
 	/* set the default data directory */
 	if (defaultdir[0] == '\0') {
-		strcpy(defaultdir, DEFAULTDIR);
+		strncpy(defaultdir, DEFAULTDIR, sizeof(defaultdir) - 1);
+		defaultdir[sizeof(defaultdir) - 1] = '\0';
 	}
 	if (defaultdir[0] != '/') {
-		strcpy(cq_opts, defaultdir);
+		strncpy(cq_opts, defaultdir, sizeof(cq_opts) - 1);
+		cq_opts[sizeof(cq_opts) - 1] = '\0';
 		snprintf(defaultdir, sizeof(defaultdir), "%s/%.200s", DEFAULTDIR, cq_opts);
 	}
 
@@ -258,13 +260,15 @@ int main(int argc, char **argv) {
 		break;
 	case 'd':
 		if(optarg[0]!='/') {
-			sprintf(defaultdir, "%s/%s", DEFAULTDIR, optarg);
+			snprintf(defaultdir, sizeof(defaultdir), "%s/%s", DEFAULTDIR, optarg);
 		} else {
-			strcpy(defaultdir, optarg);
+			strncpy(defaultdir, optarg, sizeof(defaultdir) - 1);
+			defaultdir[sizeof(defaultdir) - 1] = '\0';
 		}
 		break;
 	case 'n':
-		strcpy(name, optarg);
+		strncpy(name, optarg, sizeof(name) - 1);
+		name[sizeof(name) - 1] = '\0';
 		break;
 #ifdef CHECKUSER
 	case 'l':
@@ -331,7 +335,7 @@ int main(int argc, char **argv) {
     fprintf(stderr,"GPL v3 licensed version (c) 2025 - original authors' permission granted\n");
 
 	/* check for update in progress */
-	sprintf(filename,"%sup",isonfile);
+	snprintf(filename, sizeof(filename), "%sup", isonfile);
 	if(check_lock(filename,FALSE)==TRUE) {
 		fprintf(stderr,"Conquer is updating\n");
 		fprintf(stderr,"Please try again later.\n");
@@ -369,11 +373,15 @@ int main(int argc, char **argv) {
 			fprintf(stderr,"\n");
 			exit(FAIL);
 		}
-		strcpy(name,"unowned");
+		strncpy(name, "unowned", sizeof(name) - 1);
+		name[sizeof(name) - 1] = '\0';
 		hilmode = HI_NONE;
 	}
 #else
-	if(strcmp(name,"god")==0) strcpy(name,"unowned");
+	if(strcmp(name,"god")==0) {
+		strncpy(name, "unowned", sizeof(name) - 1);
+		name[sizeof(name) - 1] = '\0';
+	}
 #endif /* OGOD */
 
 #ifdef CHECKUSER
@@ -419,7 +427,7 @@ int main(int argc, char **argv) {
 		fprintf(stderr,".\n");
 		return EXIT_FAILURE;
 	} else if(country==0 && !pflag) {
-		sprintf(filename,"%sadd",isonfile);
+		snprintf(filename, sizeof(filename), "%sadd", isonfile);
 		if(check_lock(filename,FALSE)==TRUE) {
 			fprintf(stderr,"A new player is being added.\n");
 			fprintf(stderr,"Continue anyway? [y or n]");
@@ -567,7 +575,8 @@ int main(int argc, char **argv) {
 	init_hasseen();		/* now we know how big the screen is,
 					we can init that array!	*/
 
-	strcpy(fison,"START");	/* just in case you abort early */
+	strncpy(fison, "START", sizeof(fison) - 1);	/* just in case you abort early */
+	fison[sizeof(fison) - 1] = '\0';
 	crmode();		/* cbreak mode */
 
 	/* check if user is super-user nation[0] */
@@ -1587,7 +1596,7 @@ void makeside(int alwayssee) {	/* see even if cant really see sector */
 		if(sptr->vegetation==*(veg+i))
 		mvprintw(LINES-11,COLS-10,"%s",*(vegname+i));
 
-	if(((i=tofood(sptr,country)) != 0)
+	if(((i=safe_int_to_short(tofood(sptr,country))) != 0)
 	&&((magic(sptr->owner,THE_VOID)!=TRUE)
 	||(sptr->owner==country))){
 		if(i>6) standout();
