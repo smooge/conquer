@@ -631,7 +631,7 @@ int main(int argc, char **argv) {
 	updmove(curntn->race,country);
 
 	/* open output for future printing*/
-	sprintf(filename,"%s%d",exefile,country);
+	snprintf(filename, sizeof(filename), "%s%d", exefile, country);
 	if ((fexe=fopen(filename,"a"))==NULL) {
 		beep();
 		mvprintw(LINES-2,0,"error opening %s",filename);
@@ -651,12 +651,16 @@ int main(int argc, char **argv) {
 	whatcansee();			/* what can they see */
 
 	/* initialize mail files */
-	(void) sprintf(conqmail,"%s%d",msgfile,country);
+	(void) snprintf(conqmail, FILELTH, "%s%d", msgfile, country);
 #ifdef SYSMAIL
 	if (getenv("MAIL")==0) {
-		(void) sprintf(sysmail,"%s/%s",SPOOLDIR,getenv("USER"));
+		(void) snprintf(sysmail, FILELTH, "%s/%s", SPOOLDIR, getenv("USER"));
 	} else {
-		(void) strcpy(sysmail,getenv("MAIL"));
+		const char* mail_env = getenv("MAIL");
+		if (mail_env != NULL) {
+			strncpy(sysmail, mail_env, FILELTH - 1);
+			sysmail[FILELTH - 1] = '\0';
+		}
 	}
 #endif /* SYSMAIL */
 	mvaddstr(LINES-1, COLS-20, "PRESS ANY KEY");
@@ -1145,7 +1149,11 @@ int parse(int ch) {
 		mvaddstr(LINES-4,0,"What is your Nation's Password: ");
 		refresh();
 		(void) get_pass(passwd);
-		strcpy(name,crypt(passwd,SALT));
+		const char* encrypted = crypt(passwd, SALT);
+		if (encrypted != NULL) {
+			strncpy(name, encrypted, sizeof(name) - 1);
+			name[sizeof(name) - 1] = '\0';
+		}
 
 		if((strncmp(name,ntn[country].passwd,PASSLTH)!=0)
 		&&(strncmp(name,ntn[0].passwd,PASSLTH)!=0)){
@@ -1162,13 +1170,13 @@ int parse(int ch) {
 		}
 
 		/* remove old lock file -- new one already made */
-		sprintf(fison,"%s%d",isonfile,ocountry);
+		snprintf(fison, sizeof(fison), "%s%d", isonfile, ocountry);
 		unlink(fison);
 
 		fclose(fexe);
 		/* open output for future printing*/
-		sprintf(fison,"%s%d",isonfile,country);
-	 	sprintf(name,"%s%d",exefile,country);
+		snprintf(fison, sizeof(fison), "%s%d", isonfile, country);
+	 	snprintf(name, sizeof(name), "%s%d", exefile, country);
 	 	if ((fexe=fopen(name,"a"))==NULL) {
 			beep();
 			fprintf(stderr,"error opening %s\n",name);
@@ -1184,7 +1192,7 @@ int parse(int ch) {
 		readdata();
 		execute(FALSE);
 
-		(void) sprintf(conqmail,"%s%d",msgfile,country);
+		(void) snprintf(conqmail, FILELTH, "%s%d", msgfile, country);
 		updmove(curntn->race,country);
 		/*go to that nations capitol*/
 		if((country==0)||(!isntn(ntn[country].active))) {
@@ -1665,7 +1673,7 @@ void makeside(int alwayssee) {	/* see even if cant really see sector */
  */
 int aretheyon(void) {
 	/* return file descriptor for lock file */
-	sprintf(fison,"%s%d",isonfile,country);
+	snprintf(fison, sizeof(fison), "%s%d", isonfile, country);
 	return(check_lock(fison,TRUE));
 }
 
