@@ -229,6 +229,7 @@ void makeworld ( int rflag ){		/* TRUE if you wish to read in a map from mapfile
 		} else valid=TRUE;
 	}
 	strncpy(ntn[0].passwd,crypt(passwd,SALT),PASSLTH);
+	ntn[0].passwd[PASSLTH] = '\0';
 
 	/* finally ask for the secondary administrator */
 	mvaddstr(7,0,"You may designate an other user as an alternate \"god\" for this world.");
@@ -987,19 +988,19 @@ rawmaterials (void) 		 /*PLACE EACH SECTOR'S RAW MATERIALS */
 	sleep(1);
 	newmsg("Day 7... God rested (to get rid of that stupid hangover)");
 	sleep(1);
-	sprintf(newstring," ...Log in via 'conquer -n god");
+	snprintf(newstring, sizeof(newstring), " ...Log in via 'conquer -n god");
 	if (strcmp(datadir,"[default]")!=0) {
-		strcat(newstring," -d ");
-		strcat(newstring,datadir);
+		strncat(newstring," -d ", sizeof(newstring) - strlen(newstring) - 1);
+		strncat(newstring,datadir, sizeof(newstring) - strlen(newstring) - 1);
 	}
-	strcat(newstring,"'");
+	strncat(newstring,"'", sizeof(newstring) - strlen(newstring) - 1);
 	newerror(newstring);
-	sprintf(newstring," ...Players may be added via 'conqrun -a");
+	snprintf(newstring, sizeof(newstring), " ...Players may be added via 'conqrun -a");
 	if (strcmp(datadir,"[default]")!=0) {
-		strcat(newstring," -d ");
-		strcat(newstring,datadir);
+		strncat(newstring," -d ", sizeof(newstring) - strlen(newstring) - 1);
+		strncat(newstring,datadir, sizeof(newstring) - strlen(newstring) - 1);
 	}
-	strcat(newstring,"'");
+	strncat(newstring,"'", sizeof(newstring) - strlen(newstring) - 1);
 	newerror(newstring);
 }
 
@@ -1177,7 +1178,8 @@ populate (void)
 
 	/*set up god but dont place -- do not change leader name*/
 	curntn = &ntn[0];
-	strcpy(curntn->name,"unowned");
+	strncpy(curntn->name,"unowned", sizeof(curntn->name) - 1);
+	curntn->name[sizeof(curntn->name) - 1] = '\0';
 	curntn->race=GOD;
 	curntn->location=GOD;
 	curntn->powers=KNOWALL;	/* so god can see the map */
@@ -1190,7 +1192,7 @@ populate (void)
 			newerror("THIS SHOULDNT HAPPEN");
 			continue;
 		}
-		strcpy(curntn->passwd,ntn[0].passwd);
+		snprintf(curntn->passwd, PASSLTH+1, "%s", ntn[0].passwd);
 		curntn->powers=0;
 		curntn->repro=0;
 		curntn->active=INACTIVE;
@@ -1210,22 +1212,30 @@ populate (void)
 		curntn = &ntn[country];
 		if( country==NTOTAL-1 ) {
 			strncpy(curntn->name,"lizard",10);
+			curntn->name[9] = '\0';
 			strncpy(curntn->leader,"dragon",10);
+			curntn->leader[9] = '\0';
 			curntn->active=NPC_LIZARD;
 			curntn->race=LIZARD;
 		} else if( country==NTOTAL-2 ) {
-			strcpy(curntn->name,"savages");
-			strcpy(curntn->leader,"shaman");
+			strncpy(curntn->name,"savages", sizeof(curntn->name) - 1);
+			curntn->name[sizeof(curntn->name) - 1] = '\0';
+			strncpy(curntn->leader,"shaman", sizeof(curntn->leader) - 1);
+			curntn->leader[sizeof(curntn->leader) - 1] = '\0';
 			curntn->active=NPC_SAVAGE;
 			curntn->race=SAVAGE;
 		} else if( country==NTOTAL-3 ) {
-			strcpy(curntn->name,"nomad");
-			strcpy(curntn->leader,"khan");
+			strncpy(curntn->name,"nomad", sizeof(curntn->name) - 1);
+			curntn->name[sizeof(curntn->name) - 1] = '\0';
+			strncpy(curntn->leader,"khan", sizeof(curntn->leader) - 1);
+			curntn->leader[sizeof(curntn->leader) - 1] = '\0';
 			curntn->active=NPC_NOMAD;
 			curntn->race=NOMAD;
 		} else if( country==NTOTAL-4 ) {
-			strcpy(curntn->name,"pirate");
-			strcpy(curntn->leader,"captain");
+			strncpy(curntn->name,"pirate", sizeof(curntn->name) - 1);
+			curntn->name[sizeof(curntn->name) - 1] = '\0';
+			strncpy(curntn->leader,"captain", sizeof(curntn->leader) - 1);
+			curntn->leader[sizeof(curntn->leader) - 1] = '\0';
 			curntn->active=NPC_PIRATE;
 			curntn->race=PIRATE;
 		}
@@ -1380,7 +1390,7 @@ populate (void)
 			shipsize = N_MEDIUM;
 			(void) NADD_WAR( safe_int_to_short(rand()%3+1) )
 			shipsize = N_HEAVY;
-			(void) NADD_WAR( rand()%2 )
+			(void) NADD_WAR( safe_int_to_short(rand()%2) )
 			P_NCREW=SHIPCREW;
 			nvynum++;
 			break;
@@ -1433,10 +1443,10 @@ populate (void)
 #endif /* MONSTER */
 
 	for (i=0;i<MAXHELP;i++) {
-		sprintf(fname,"%s/%s%d",DEFAULTDIR,helpfile,i);
+		snprintf(fname, sizeof(fname), "%s/%s%d", DEFAULTDIR, helpfile, i);
 		if ((fp=fopen(fname,"r"))==NULL) {
 			char tempc[BIGLTH];
-			sprintf(tempc,"cannot find helpfile <%s>.",fname);
+			snprintf(tempc, sizeof(tempc), "cannot find helpfile <%s>.", fname);
 			newerror(tempc);
 		}
 	}
@@ -1457,7 +1467,7 @@ populate (void)
 		refresh();
 		while( ((i=getchar()) != 'y')&&(i != 'n') ) ;
 		if( i=='y'){
-			sprintf(line,"%s/%s",DEFAULTDIR,npcsfile);
+			snprintf(line, sizeof(line), "%s/%s", DEFAULTDIR, npcsfile);
 			if ((fp=fopen(line,"r"))==NULL) {
 				newerror("Cannot read nation file... no NPCs added");
 				return;
@@ -1489,7 +1499,7 @@ populate (void)
 			country=safe_int_to_short(cnum);
 			curntn = &ntn[country];
 			curntn->class = (short)class;
-			sprintf(line," %s (%s)",curntn->name,*(Class+curntn->class));
+			snprintf(line, sizeof(line), " %s (%s)", curntn->name, *(Class+curntn->class));
 			mvaddstr(ypos,xpos,line);
 			xpos += safe_size_to_int(strlen(line));
 			if (xpos > COLS-20) {
@@ -1498,12 +1508,12 @@ populate (void)
 			}
 			refresh();
 			if( cnum > MAPX*MAPY/NPC*(100-pwater)/100 ) {
-				sprintf(line,"World too small to add npc nation %d %s",cnum,curntn->name);
+				snprintf(line, sizeof(line), "World too small to add npc nation %d %s", cnum, curntn->name);
 				newerror(line);
 				continue;
 			}
 			if( isactive(ntn[cnum].active) ) {
-				sprintf(line,"Not enough available nations to add npc nation %d %s",cnum,curntn->name);
+				snprintf(line, sizeof(line), "Not enough available nations to add npc nation %d %s", cnum, curntn->name);
 				newerror(line);
 				continue;
 			}
@@ -1524,12 +1534,12 @@ populate (void)
 			else if( allign == 'i' )
 				curntn->active = ISOLATIONIST;
 			else {
-				sprintf(line,"invalid nation alignment (%c)",allign);
+				snprintf(line, sizeof(line), "invalid nation alignment (%c)", allign);
 				newerror(line);
 				newreset();
 				abrt()
 			}
-			strcpy(curntn->passwd,ntn[0].passwd);
+			snprintf(curntn->passwd, PASSLTH+1, "%s", ntn[0].passwd);
 
 			points -= doclass( class, FALSE );
 			points -= startcost();
