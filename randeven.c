@@ -247,8 +247,9 @@ int findnew(void){
 	for ( nationis=NTOTAL-1; nationis >= 1; nationis--)
 		if(ntn[nationis].active == INACTIVE) newntn=nationis;
 	if (newntn == 0) return (0);
-	strcpy(ntn[newntn].leader,"rebel");
-	strcpy(ntn[newntn].passwd,ntn[0].passwd);
+	strncpy(ntn[newntn].leader, "rebel", sizeof(ntn[newntn].leader) - 1);
+	ntn[newntn].leader[sizeof(ntn[newntn].leader) - 1] = '\0';
+	snprintf(ntn[newntn].passwd, PASSLTH+1, "%s", ntn[0].passwd);
 	ntn[newntn].score=0L;
 	ntn[newntn].tsctrs=0;
 	ntn[newntn].active=NEUTRAL_6FREE;
@@ -384,7 +385,8 @@ disolve (
 
 	split =  ntn[target].tsctrs * percent / 100;
 	if((split<=7)&&(!ispsnt)) {
-		strcpy(eventstr,"nation too small->no sectors will be split");
+		strncpy(eventstr, "nation too small->no sectors will be split", sizeof(eventstr) - 1);
+		eventstr[sizeof(eventstr) - 1] = '\0';
 		return(0);
 	}
 	/* find starting town */
@@ -393,7 +395,7 @@ disolve (
 			if((ntn[new].race==ntn[target].race )
 			&&( ntn[new].active==NPC_PEASANT )) {
 				printf("\tntn %s peasants of same type as target %d\n",ntn[new].name,target);
-				sprintf(eventstr,"rebellion joins nation %s",ntn[new].name);
+				snprintf(eventstr, sizeof(eventstr), "rebellion joins nation %s", ntn[new].name);
 				return(new);
 			}
 		}
@@ -405,7 +407,8 @@ disolve (
 			if(sct[xpos][ypos].people>=300) break;
 		}
 		if( i==300 ) {
-			strcpy(eventstr,"no sectors available");
+			strncpy(eventstr, "no sectors available", sizeof(eventstr) - 1);
+			eventstr[sizeof(eventstr) - 1] = '\0';
 			return(0);
 		}
 		printf("TMP peasant centered on %d,%d\n",xpos,ypos);
@@ -432,22 +435,25 @@ disolve (
 		realy = defaulty;
 	}
 	if(realx == (-1)) {
-		strcpy(eventstr,"no cities available");
+		strncpy(eventstr, "no cities available", sizeof(eventstr) - 1);
+		eventstr[sizeof(eventstr) - 1] = '\0';
 		return(0);
 	}
 	if((new=findnew()) == 0) {
-		strcpy(eventstr,"no nations available");
+		strncpy(eventstr, "no nations available", sizeof(eventstr) - 1);
+		eventstr[sizeof(eventstr) - 1] = '\0';
 		return(0);
 	}
 	if(getnewname(new) == 0) {
-		strcpy(eventstr,"no names available");
+		strncpy(eventstr, "no names available", sizeof(eventstr) - 1);
+		eventstr[sizeof(eventstr) - 1] = '\0';
 		return(0);
 	}
 
 #ifdef HIDELOC
-	sprintf(eventstr,"new nation %s created",ntn[new].name);
+	snprintf(eventstr, sizeof(eventstr), "new nation %s created", ntn[new].name);
 #else
-	sprintf(eventstr,"new nation %s created at %d,%d",ntn[new].name,realx,realy);
+	snprintf(eventstr, sizeof(eventstr), "new nation %s created at %d,%d", ntn[new].name, realx, realy);
 #endif /* HIDELOC */
 	printf("TMP new nation %s created at %d,%d",ntn[new].name,realx,realy);
 	sct[realx][realy].owner = safe_int_to_uchar(new);
@@ -621,7 +627,8 @@ getnewname (int new)
 		for(count=0;count<NTOTAL;count++)
 			if(strcmp(ntn[count].name, *(names+i))==0) break;
 		if( count==NTOTAL ) {
-			strcpy(ntn[new].name,*(names+i));
+			strncpy(ntn[new].name, *(names+i), sizeof(ntn[new].name) - 1);
+			ntn[new].name[sizeof(ntn[new].name) - 1] = '\0';
 			return(1);
 		}
 	}
@@ -726,7 +733,7 @@ randomevent (void)
 			continue;
 
 		/* clear the event string */
-		strcpy(eventstr,"");
+		eventstr[0] = '\0';
 
 		x = 10*curntn->tax_rate - curntn->popularity- curntn->terror - 3*curntn->charity;
 #ifdef DEBUG
@@ -763,7 +770,7 @@ printf("TEMP: %s chance of revolt is %d (tax=%d prest=%d)\n",
 		if( (rand()%100) < PWEATHER )	weather();
 
 		/* clear the event string for other random events */
-		strcpy(eventstr,"");
+		eventstr[0] = '\0';
 
 		/* do truely random events */
 		if((rand()%100)* WORLDSCORE < RANEVENT * WORLDNTN * curntn->score){
@@ -775,13 +782,15 @@ printf("TEMP: %s chance of revolt is %d (tax=%d prest=%d)\n",
 		/* do the event */
 		switch(event) {
 		case 9: /*dragon raid -- lose 30% of food*/
-			strcpy(eventstr,"lose 30% of food");
+			strncpy(eventstr, "lose 30% of food", sizeof(eventstr) - 1);
+			eventstr[sizeof(eventstr) - 1] = '\0';
 			curntn->tfood *= 7L;
 			curntn->tfood /= 10L;
 			break;
 		case 10: /*famine -- food=0 10% starve*/
 			curntn->tfood /= 4L;
-			strcpy(eventstr,"lose 3/4ths of food & 10% starve");
+			strncpy(eventstr, "lose 3/4ths of food & 10% starve", sizeof(eventstr) - 1);
+			eventstr[sizeof(eventstr) - 1] = '\0';
 			for (i=0; i<MAPX; i++) for (j=0; j<MAPY; j++)
 			if(sct[i][j].owner==country)
 				sct[i][j].people -= sct[i][j].people / 10;
@@ -826,7 +835,7 @@ printf("TEMP: %s chance of revolt is %d (tax=%d prest=%d)\n",
 				break;
 			}
 
-			sprintf(eventstr,"all flee, 30%% die in 1 sector range");
+			snprintf(eventstr, sizeof(eventstr), "all flee, 30%% die in 1 sector range");
 			for (xpos=0; count && (xpos<MAPX); xpos++)
 			for (ypos=0;count && (ypos<MAPY); ypos++)
 			if (( sct[xpos][ypos].owner == country)
@@ -851,17 +860,20 @@ printf("TEMP: %s chance of revolt is %d (tax=%d prest=%d)\n",
 			if(magic(country,WARRIOR)!=1){
 				curntn->powers|=WARRIOR;
 				exenewmgk(WARRIOR);
-				strcpy(eventstr,"gives WARRIOR power");
+				strncpy(eventstr, "gives WARRIOR power", sizeof(eventstr) - 1);
+				eventstr[sizeof(eventstr) - 1] = '\0';
 			}
 			else if(magic(country,CAPTAIN)!=1){
 				curntn->powers|=CAPTAIN;
 				exenewmgk(CAPTAIN);
-				strcpy(eventstr,"gives CAPTAIN power");
+				strncpy(eventstr, "gives CAPTAIN power", sizeof(eventstr) - 1);
+				eventstr[sizeof(eventstr) - 1] = '\0';
 			}
 			else if(magic(country,WARLORD)!=1){
 				curntn->powers|=WARLORD;
 				exenewmgk(WARLORD);
-				strcpy(eventstr,"gives WARLORD power");
+				strncpy(eventstr, "gives WARLORD power", sizeof(eventstr) - 1);
+				eventstr[sizeof(eventstr) - 1] = '\0';
 			}
 			else {	/* have all three powers... oh well */
 				done=FALSE;
@@ -962,7 +974,7 @@ printf("TEMP: %s chance of revolt is %d (tax=%d prest=%d)\n",
 		case 24:
 			/*dragon killed + 50000 jewels*/
 			longval = rand()%10 * 10000;
-			sprintf(eventstr,"you gain %ld jewels",longval);
+			snprintf(eventstr, sizeof(eventstr), "you gain %ld jewels", longval);
 			curntn->jewels+=longval;
 			break;
 		case 25:
@@ -1037,7 +1049,8 @@ printf("TEMP: %s chance of revolt is %d (tax=%d prest=%d)\n",
 			break;
 		case 27:
 			/*plague -- 40% of populace in cities dies*/
-			strcpy(eventstr,"40% of populace & armies in towns die");
+			strncpy(eventstr, "40% of populace & armies in towns die", sizeof(eventstr) - 1);
+			eventstr[sizeof(eventstr) - 1] = '\0';
 			for (i=0; i<MAPX; i++) for (j=0; j<MAPY; j++)
 			if( sct[i][j].owner == country ){
 				sptr = &sct[i][j];
@@ -1066,7 +1079,7 @@ printf("TEMP: %s chance of revolt is %d (tax=%d prest=%d)\n",
 			if((newpower=getmagic(M_CIV))!=0L){
 				for(i=S_CIV;i<S_CIV+E_CIV;i++)
 				if(powers[i]==newpower){
-				sprintf(eventstr,"nation %s gets civilian power %s",curntn->name,pwrname[i]);
+				snprintf(eventstr, sizeof(eventstr), "nation %s gets civilian power %s", curntn->name, pwrname[i]);
 				}
 				exenewmgk(newpower);
 			}
@@ -1077,7 +1090,7 @@ printf("TEMP: %s chance of revolt is %d (tax=%d prest=%d)\n",
 			if((newpower=getmagic(M_MIL))!=0){
 				for(i=S_MIL;i<S_MIL+E_MIL;i++)
 				if(powers[i]==newpower)
-				sprintf(eventstr,"nation %s gets military power %s",curntn->name,pwrname[i]);
+				snprintf(eventstr, sizeof(eventstr), "nation %s gets military power %s", curntn->name, pwrname[i]);
 				exenewmgk(newpower);
 			}
 			else done=FALSE;
@@ -1269,7 +1282,7 @@ printf("TEMP: %s chance of revolt is %d (tax=%d prest=%d)\n",
 				if(magic(country,newpower)==TRUE) {
 					curntn->powers ^= newpower;
 					removemgk(newpower);
-					sprintf(eventstr,"nation %s loses %s power",curntn->name,pwrname[i]);
+					snprintf(eventstr, sizeof(eventstr), "nation %s loses %s power", curntn->name, pwrname[i]);
 				} else {
 					done=FALSE;
 					fprintf(stderr,"ERROR: removing no-magic\n");
@@ -1286,7 +1299,8 @@ printf("TEMP: %s chance of revolt is %d (tax=%d prest=%d)\n",
 			break;
 		case 39: /*ninja attack paralyzes half your armys P_AMOVE=0*/
 		case 40: /*general found to be spy P_AMOVE=0*/
- 			strcpy(eventstr,"1/2 nations armies are paralyzed");
+ 			strncpy(eventstr, "1/2 nations armies are paralyzed", sizeof(eventstr) - 1);
+ 			eventstr[sizeof(eventstr) - 1] = '\0';
 			for(armynum=0;armynum<MAXARM;armynum++) if(rand()%2==0)
 				P_AMOVE = 0;
 			break;
@@ -1500,7 +1514,8 @@ peasant_revolt(int *newnation)	/* peasant revolt */
 
 	/* a little cheating for now */
 	if(isnpc( ntn[country].active ) && (rand()%2==0)) {
-		strcpy(eventstr,"npc cheating");
+		strncpy(eventstr, "npc cheating", sizeof(eventstr) - 1);
+		eventstr[sizeof(eventstr) - 1] = '\0';
 		return;
 	}
 	if((*newnation=disolve(10, country, TRUE)) == 0 ) return;
@@ -1609,7 +1624,7 @@ other_revolt (	/* return reason and new nation number*/
     int *new
 )
 {
-	short	reason = rand()%8;
+	short	reason = safe_int_to_short(rand()%8);
 	switch( reason ) {
 	case 0: /* general */
 		if((*new=disolve(10, country, FALSE))!=0) return(reason);
