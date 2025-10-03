@@ -1387,8 +1387,9 @@ int readmap (void) {
 	register int x,y;
 
 	/* read in ele.map */
-	strcpy(line,scenario);
-	strcat(line,".ele");
+	strncpy(line, scenario, sizeof(line));
+	line[sizeof(line) - 1] = '\0';
+	strncat(line, ".ele", sizeof(line) - strlen(line) - 1);
 	if ((mapfile=fopen(line,"r"))==NULL) {
 		fprintf(stderr,"error on read of %s file\n",line);
 		return(TRUE);
@@ -1405,8 +1406,9 @@ int readmap (void) {
 	fclose(mapfile);
 
 	/* read in veg.map */
-	strcpy(line,scenario);
-	strcat(line,".veg");
+	strncpy(line, scenario, sizeof(line));
+	line[sizeof(line) - 1] = '\0';
+	strncat(line, ".veg", sizeof(line) - strlen(line) - 1);
 	if ((mapfile=fopen(line,"r"))==NULL) {
 		fprintf(stderr,"error on read of %s file\n",line);
 		return(TRUE);
