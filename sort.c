@@ -525,7 +525,9 @@ build_node(char data[], L_PTR nptr)
 	}
 
 	/* assign the values */
-	(void) strcpy(temp->line,data);
+	size_t data_len = strlen(data);
+	memcpy(temp->line, data, data_len);
+	temp->line[data_len] = '\0';
 	temp->next = nptr;
 	return(temp);
 }

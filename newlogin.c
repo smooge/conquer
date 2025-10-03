@@ -810,7 +810,6 @@ dispitem (int item, long amount)
  *   - Conditional compilation (#if NLJEWELS==NLMETAL) handles display variants
  *   - Right-aligned formatting ensures consistent column alignment
  *   - Essential for displaying current allocation state during registration
- *   - Note: nsprintf on line 851 appears to be typo for sprintf
  */
 void
 showitem (int line, int item)
@@ -819,10 +818,10 @@ showitem (int line, int item)
 
 	move(line,15);
 	if (item == CH_LOCATE) {
-		sprintf(tempc,"%s %s", LType[spent[item]], Mitems[item]);
+		snprintf(tempc, sizeof(tempc), "%s %s", LType[spent[item]], Mitems[item]);
 		printw("%23s",tempc);
 	} else {
-		sprintf(tempc,"%ld %s", spent[item]*Mvalues[item], Mitems[item]);
+		snprintf(tempc, sizeof(tempc), "%ld %s", spent[item]*Mvalues[item], Mitems[item]);
 		printw("%23s",tempc);
 	}
 
@@ -831,16 +830,16 @@ showitem (int line, int item)
 
 	/* now show the extras for the Raw Materials */
 #if NLJEWELS==NLMETAL
-	sprintf(tempc,"%ld jewels & metal",
+	snprintf(tempc, sizeof(tempc), "%ld jewels & metal",
 		   spent[CH_RAWGOODS]*NLJEWELS);
 	mvprintw(line,0,"%38s",tempc);
 	mvprintw(line,COLS/2+13,"%ld jewels & metal",NLJEWELS);
 #else
-	sprintf(tempc,"%ld jewels",
+	snprintf(tempc, sizeof(tempc), "%ld jewels",
 		   spent[CH_RAWGOODS]*NLJEWELS);
 	mvprintw(line,0,"%38s",tempc);
 	mvprintw(line++,COLS/2+10,"%ld jewels",NLJEWELS);
-	nsprintf(tempc,"%ld metal",
+	snprintf(tempc, sizeof(tempc), "%ld metal",
 		    spent[CH_RAWGOODS]*NLMETAL);
 	mvprintw(line,0,"%38s",tempc);
 	mvprintw(line,COLS/2+13,"%ld metals",NLMETAL);
@@ -1117,7 +1116,7 @@ newlogin (int realuser)
 	while(more==TRUE) {
 		clear();
 
-		sprintf(tempc,"Country #%d", country);
+		snprintf(tempc, sizeof(tempc), "Country #%d", country);
 		errorbar("Nation Builder",tempc);
 		if((country==0)||(pccount+1>=NTOTAL-REVSPACE)) {
 			newerror("No more nations available");
@@ -1127,7 +1126,7 @@ newlogin (int realuser)
 
 		/* open output for future printing*/
 		mvprintw(0,0,"Building Country Number %d",country);
-		sprintf(tempc,"%s%d",exefile,i);
+		snprintf(tempc, sizeof(tempc), "%s%d", exefile, i);
 		if ((fexe=fopen(tempc,"w"))==NULL) {
 			char errmsg[LINELTH*2];
 			snprintf(errmsg,sizeof(errmsg),"Error opening <%s>",tempc);
@@ -1169,7 +1168,12 @@ newlogin (int realuser)
 				valid=FALSE;
 			}
 		}
-		strcpy(curntn->name,tempc);
+		size_t len = strlen(tempc);
+		if (len >= NAMELTH) {
+			len = NAMELTH - 1;
+		}
+		memcpy(curntn->name, tempc, len);
+		curntn->name[len] = '\0';
 		move(0,0);
 		clrtoeol();
 		move(1,0);
@@ -1217,7 +1221,10 @@ newlogin (int realuser)
 				newerror("Invalid Name Length");
 				valid=FALSE;
 			}
-			else strcpy(curntn->leader,tempc);
+			else {
+				strncpy(curntn->leader, tempc, LEADERLTH);
+				curntn->leader[LEADERLTH] = '\0';
+			}
 		}
 
 		mvprintw(2,0,"Leader Name: %s", curntn->leader);
@@ -1473,7 +1480,7 @@ newlogin (int realuser)
 					spent[CH_PEOPLE] += temp;
 					showitem(ypos+CH_PEOPLE,CH_PEOPLE);
 					points = 0;
-					sprintf(tempc,"Buying %ld more civilians", x);
+					snprintf(tempc, sizeof(tempc), "Buying %ld more civilians", x);
 					newerror(tempc);
 				}
 				newmsg("Is the modification complete? (y or n)");
@@ -1564,7 +1571,7 @@ newlogin (int realuser)
 				} else temp = Munits[choice];
 				if (direct == ADDITION) {
 					if (Mcost[choice] > points) {
-						sprintf(tempc, "You do not have %d points to spend",
+						snprintf(tempc, sizeof(tempc), "You do not have %d points to spend",
 							Mcost[choice]);
 						newerror(tempc);
 					} else if ((choice == CH_REPRO)&&(curntn->race==ORC)
@@ -1616,7 +1623,7 @@ newlogin (int realuser)
 #endif
 			fclose(fexe);
 			pccount++;
-			sprintf(tempc,"NOTICE: Nation %s added to world on turn %d\n",curntn->name,TURN);
+			snprintf(tempc, sizeof(tempc), "NOTICE: Nation %s added to world on turn %d\n", curntn->name, TURN);
 			mailtopc(tempc);
 			/* cannot clear until after placement and initializing */
 			curntn->powers=0;
@@ -2060,7 +2067,7 @@ place (
 			curntn->location=OOPS;
 			place(-1,-1);
 		} else if(curntn->location==FAIR) {
-			sprintf(tempo,"Fair Place Failed, trying again - Adding %ld people to nation",Munits[CH_PEOPLE]*Mvalues[CH_PEOPLE]/Mcost[CH_PEOPLE]);
+			snprintf(tempo, sizeof(tempo), "Fair Place Failed, trying again - Adding %ld people to nation", Munits[CH_PEOPLE]*Mvalues[CH_PEOPLE]/Mcost[CH_PEOPLE]);
 			newerror(tempo);
 			/*give back one point -> NLPOP people*/
 			curntn->tciv += Munits[CH_PEOPLE] * Mvalues[CH_PEOPLE]
@@ -2068,7 +2075,7 @@ place (
 			curntn->location=RANDOM;
 			place(-1,-1);
 		} else if(curntn->location==GREAT) {
-			sprintf(tempo,"Great Place Failed, trying again - Adding %ld people to nation",Munits[CH_PEOPLE]*Mvalues[CH_PEOPLE]/Mcost[CH_PEOPLE]);
+			snprintf(tempo, sizeof(tempo), "Great Place Failed, trying again - Adding %ld people to nation", Munits[CH_PEOPLE]*Mvalues[CH_PEOPLE]/Mcost[CH_PEOPLE]);
 			newerror(tempo);
 			/*give back one point -> NLPOP people*/
 			curntn->tciv+= Munits[CH_PEOPLE] * Mvalues[CH_PEOPLE]
@@ -2393,7 +2400,7 @@ int nstartcst (void)	/* to be used for new method */
 	tmpx = safe_int_to_float(TURN-1) / LATESTART;
 	points -= tmpx;
 	if( tmpx > 0.0f ) {
-		sprintf(temp,"%.1f points added for starting late", tmpx);
+		snprintf(temp, sizeof(temp), "%.1f points added for starting late", tmpx);
 		newerror(temp);
 	}
 	points += 1.0f;	/* round up */

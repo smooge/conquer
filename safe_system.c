@@ -287,13 +287,15 @@ static SORT_LINE *create_sort_node(const char *line, SORT_LINE *next) {
         return NULL;
     }
 
-    node->line = (char *)malloc(strlen(line) + 1);
+    size_t line_len = strlen(line);
+    node->line = (char *)malloc(line_len + 1);
     if (node->line == NULL) {
         free(node);
         return NULL;
     }
 
-    strcpy(node->line, line);
+    memcpy(node->line, line, line_len);
+    node->line[line_len] = '\0';
     node->next = next;
     return node;
 }

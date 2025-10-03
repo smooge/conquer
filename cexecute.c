@@ -134,7 +134,7 @@ int execute(int isupdate) {	/* 0 if not update, 1 if update */
 				sct[x][y].i_people = -1;
 
 	/*open exefile file*/
-	sprintf(line,"%s%d",exefile,country);
+	snprintf(line, sizeof(line), "%s%d", exefile, country);
 	if ((fp=fopen(line,"r"))==NULL) {
 		/*THIS MEANS THAT THE NATION HAS NOT MOVED YET*/
 		return(0);
@@ -227,7 +227,7 @@ int execute(int isupdate) {	/* 0 if not update, 1 if update */
 			curntn->nvy[armynum].armynum=(unsigned char)x;
 			break;
 		case XECNAME:	/*Nadjname*/
-			strcpy(curntn->name,comment);
+			snprintf(curntn->name, sizeof(curntn->name), "%.*s", (int)(sizeof(curntn->name) - 1), comment);
 			break;
 		case XECPAS:	/*Nadjpas*/
 			snprintf(curntn->passwd, PASSLTH+1, "%.*s", PASSLTH, comment);
@@ -425,7 +425,7 @@ void hangup (int sig) {
 
 	/* remove the lock file */
 	unlink(fison);
-	sprintf(line,"%s%hd.tmp",msgfile,country);
+	snprintf(line, sizeof(line), "%s%hd.tmp", msgfile, country);
 	unlink(line);
 
 	/*send a message to God*/

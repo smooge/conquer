@@ -1288,10 +1288,12 @@ trademail (int cntry1, int cntry2, int item1, int item2, long lvar1, long lvar2,
 	int count;
 	char cname[2][NAMELTH+1],filename[2][FILELTH];
 
-	sprintf(filename[0],"%s%d",msgfile,cntry1);
-	sprintf(filename[1],"%s%d",msgfile,cntry2);
-	strcpy(cname[0],ntn[cntry1].name);
-	strcpy(cname[1],ntn[cntry2].name);
+	snprintf(filename[0], sizeof(filename[0]), "%s%d", msgfile, cntry1);
+	snprintf(filename[1], sizeof(filename[1]), "%s%d", msgfile, cntry2);
+	strncpy(cname[0], ntn[cntry1].name, sizeof(cname[0]));
+	cname[0][sizeof(cname[0]) - 1] = '\0';
+	strncpy(cname[1], ntn[cntry2].name, sizeof(cname[1]));
+	cname[1][sizeof(cname[1]) - 1] = '\0';
 
 	if ((fp[0]=fopen(filename[0],"a+"))==NULL) {
 		printf("error opening <%s>\n",filename[0]);

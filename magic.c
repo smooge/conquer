@@ -884,7 +884,7 @@ void dosummon (void) {
 
 	s_cost= *(u_encost+(newtype%UTYPE));
 	if(s_cost > curntn->spellpts) {
-		sprintf(line,"you dont have %d spell points",s_cost);
+		snprintf(line, sizeof(line), "you dont have %d spell points", s_cost);
 		clear_bottom(0);
 		errormsg(line);
 		return;
@@ -892,7 +892,7 @@ void dosummon (void) {
 
 	e_cost= (long) *(u_encost+(newtype%UTYPE)) * *(unitminsth+(newtype%UTYPE));
 	if(e_cost >  curntn->tgold) {
-		sprintf(line,"you dont have %ld gold talons in your treasury",e_cost);
+		snprintf(line, sizeof(line), "you dont have %ld gold talons in your treasury", e_cost);
 		clear_bottom(0);
 		errormsg(line);
 		return;
@@ -1568,7 +1568,7 @@ void wizardry (void) {
 		if (magic(country,SUMMON)==TRUE) i=0;
 		else i=1;
 		for (;i<NUMSPELLS;i++) {
-			sprintf(line,"  %s",spellstr[i]);
+			snprintf(line, sizeof(line), "  %s", spellstr[i]);
 			mvaddstr(yspt,xspt,line);
 			xspt += safe_size_to_int(strlen(line));
 			if (xspt>COLS-20) {
@@ -1617,7 +1617,7 @@ void wizardry (void) {
 				/*cost of 1 spell point for magiccost men*/
 				s_cost = safe_long_to_int((P_ASOLD-1) / magiccost[choice] + 1);
 				if (s_cost > curntn->spellpts) {
-					sprintf(line,"You don't have %d spell points",s_cost);
+					snprintf(line, sizeof(line), "You don't have %d spell points", s_cost);
 					errormsg(line);
 				} else {
 					change_status(armynum,magicstat[choice]);
