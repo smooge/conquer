@@ -1610,7 +1610,7 @@ destroy (int cntry)
 
 	nptr->active=INACTIVE;
 	nptr->score=0;
-	sprintf(buf,"%s%d",msgfile,cntry);
+	snprintf(buf, sizeof(buf), "%s%d", msgfile, cntry);
 	unlink(buf);
 
 	for(armynum=0;armynum<MAXARM;armynum++) if(ASOLD>0) {
@@ -2678,13 +2678,13 @@ mailopen(int to)
 #ifdef CONQUER
 		struct stat fst;
 		/* check if the player is currently reading messages */
-		sprintf(line,"%s%hd.tmp",msgfile,to);
+		snprintf(line, sizeof(line), "%s%hd.tmp", msgfile, to);
 		if (stat(line,&fst)==0) {
 			long now;
 			now = time(0);
 			if (now - fst.st_mtime < TIME_DEAD) {
 				if (to>=0 && to<NTOTAL) {
-					sprintf(line,"Nation %s is reading their mail... try again later.", ntn[to].name);
+					snprintf(line, sizeof(line), "Nation %s is reading their mail... try again later.", ntn[to].name);
 					errormsg(line);
 				}
 				return(-1);
@@ -2696,13 +2696,13 @@ mailopen(int to)
 
 		/* otherwise continue; checking for others */
 		/* this file name is also used in rmessages() */
-		sprintf(tmp_mail_name,"send.%s%hd",msgfile,to);
+		snprintf(tmp_mail_name, sizeof(tmp_mail_name), "send.%s%hd", msgfile, to);
 		if (stat(tmp_mail_name,&fst)==0) {
 			long now;
 			now = time(0);
 			if (now - fst.st_mtime < TIME_DEAD) {
 				if (to>=0 && to<NTOTAL) {
-					sprintf(line,"Someone is already mailing Nation %s... try again later.", ntn[to].name);
+					snprintf(line, sizeof(line), "Someone is already mailing Nation %s... try again later.", ntn[to].name);
 					errormsg(line);
 				}
 				return(-1);
@@ -2713,11 +2713,11 @@ mailopen(int to)
 		}
 #endif /*CONQUER*/
 #ifdef ADMIN
-		sprintf(tmp_mail_name,"%s%hd",msgfile,to);
+		snprintf(tmp_mail_name, sizeof(tmp_mail_name), "%s%hd", msgfile, to);
 #endif /*ADMIN*/
 	} else {
 		/* send to a location marked by the current player */
-		sprintf(tmp_mail_name,"send.news%d", country);
+		snprintf(tmp_mail_name, sizeof(tmp_mail_name), "send.news%d", country);
 	}
 	if ((fm=fopen(tmp_mail_name,"a+"))==NULL) {
 		fprintf(stderr,"error opening %s",tmp_mail_name);
@@ -2814,10 +2814,10 @@ mailclose(int to)
 		char destination[BIGLTH];
 		if (to==NEWSMAIL) {
 			/* send to the current newspaper */
-			sprintf(destination,"news%d",TURN-1);
+			snprintf(destination, sizeof(destination), "news%d", TURN-1);
 		} else {
 			/* send to the player now */
-			sprintf(destination,"%s%d",msgfile,to);
+			snprintf(destination, sizeof(destination), "%s%d", msgfile, to);
 		}
 
 		/* Use secure native C file append instead of system() call */
@@ -2918,7 +2918,7 @@ markok (
 
 	if((isprint(mark)==0)||(isspace(mark)!=0)) {
 		if(prtflag) {
-			sprintf(temp,"%c is white space",mark);
+			snprintf(temp, sizeof(temp), "%c is white space", mark);
 			newerror(temp);
 		}
 		return(FALSE);
@@ -2926,7 +2926,7 @@ markok (
 
 	for(i=0;ele[i]!='0';i++) if(mark==(*(ele+i))) {
 		if(prtflag) {
-			sprintf(temp,"%c is an elevation character",mark);
+			snprintf(temp, sizeof(temp), "%c is an elevation character", mark);
 			newerror(temp);
 		}
 		return(FALSE);
@@ -2934,7 +2934,7 @@ markok (
 
 	for(i=0;veg[i]!='0';i++) if(mark==(*(veg+i))) {
 		if(prtflag) {
-			sprintf(temp,"%c is a vegetation character",mark);
+			snprintf(temp, sizeof(temp), "%c is a vegetation character", mark);
 			newerror(temp);
 		}
 		return(FALSE);
@@ -2942,7 +2942,7 @@ markok (
 
 	for(i=1;i<NTOTAL;i++) if(isactive(ntn[i].active) && ntn[i].mark==mark) {
 		if(prtflag) {
-			sprintf(temp,"%c is already used",mark);
+			snprintf(temp, sizeof(temp), "%c is already used", mark);
 			newerror(temp);
 		}
 		return(FALSE);
@@ -2950,7 +2950,7 @@ markok (
 
 	if(mark=='*') {
 		if(prtflag) {
-			sprintf(temp,"%c is used by Monsters",mark);
+			snprintf(temp, sizeof(temp), "%c is used by Monsters", mark);
 			newerror(temp);
 		}
 		return(FALSE);
@@ -2958,7 +2958,7 @@ markok (
 
 	if(!isalpha(mark)) {
 		if(prtflag) {
-			sprintf(temp,"%c is not an alpha character",mark);
+			snprintf(temp, sizeof(temp), "%c is not an alpha character", mark);
 			newerror(temp);
 		}
 		return(FALSE);

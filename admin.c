@@ -282,8 +282,10 @@ int main (int argc, char **argv) {
 	umask (MASK);
 	mflag = aflag = xflag = rflag = 0;
 	srand((unsigned) time((long *) 0));
-	strcpy(datadir,"");
-	strcpy(cq_opts,"");
+	strncpy(datadir, "", sizeof(datadir) - 1);
+	datadir[sizeof(datadir) - 1] = '\0';
+	strncpy(cq_opts, "", sizeof(cq_opts) - 1);
+	cq_opts[sizeof(cq_opts) - 1] = '\0';
 	name = string;
 	*name = 0;
 
@@ -362,10 +364,12 @@ int main (int argc, char **argv) {
 			fprintf(stderr,"ERROR: MAPFILE STEM LONGER THAN %d\n",NAMELTH);
 			exit(FAIL);
 		}
-		strcpy(scenario, optarg);
+		strncpy(scenario, optarg, NAMELTH);
+		scenario[NAMELTH] = '\0';
 		break;
 	case 'd':
-		strcpy(datadir, optarg);
+		strncpy(datadir, optarg, sizeof(datadir) - 1);
+		datadir[sizeof(datadir) - 1] = '\0';
 		break;
 	case '?': /*  print out command line arguments */
 		printf("Command line format: %s [-max -dDIR -rSCENARIO]\n",argv[0]);
@@ -384,13 +388,16 @@ int main (int argc, char **argv) {
 	/* set proper defaultdir */
 	if (datadir[0] != '/') {
 		if (strlen(datadir) > 0) {
-			sprintf(defaultdir, "%s/%s", DEFAULTDIR, datadir);
+			snprintf(defaultdir, sizeof(defaultdir), "%s/%s", DEFAULTDIR, datadir);
 		} else {
-			strcpy(defaultdir,DEFAULTDIR);
-			strcpy(datadir,"[default]");
+			strncpy(defaultdir, DEFAULTDIR, sizeof(defaultdir) - 1);
+			defaultdir[sizeof(defaultdir) - 1] = '\0';
+			strncpy(datadir, "[default]", sizeof(datadir) - 1);
+			datadir[sizeof(datadir) - 1] = '\0';
 		}
 	} else {
-		strcpy(defaultdir,datadir);
+		strncpy(defaultdir, datadir, sizeof(defaultdir) - 1);
+		defaultdir[sizeof(defaultdir) - 1] = '\0';
 	}
 
 	/* now that we have parsed the args, we can got to the
@@ -468,7 +475,7 @@ int main (int argc, char **argv) {
 #endif /* REMAKE */
 
 		makeworld(rflag);
-		sprintf(string,"%sup",isonfile);
+		snprintf(string, sizeof(string), "%sup", isonfile);
 		unlink(string);
 		exit(SUCCESS);
 	}
@@ -478,14 +485,14 @@ int main (int argc, char **argv) {
 	verifydata( __FILE__, __LINE__ );
 
 	if (aflag) { /* a new player */
-		sprintf(string,"%sup",isonfile);
+		snprintf(string, sizeof(string), "%sup", isonfile);
 		if(check_lock(string,FALSE)==TRUE) {
 			printf("Conquer is updating\n");
 			printf("Please try again later.\n");
 			exit(FAIL);
 		}
 
-		sprintf(string,"%s0",isonfile);
+		snprintf(string, sizeof(string), "%s0", isonfile);
 		if(check_lock(string,FALSE)==TRUE) {
 			printf("God is currently logged in.\n");
 			printf("Please try again later.\n");
@@ -505,7 +512,7 @@ int main (int argc, char **argv) {
 			}
 		}
 		/* prevent more than one addition */
-		sprintf(string,"%sadd",isonfile);
+		snprintf(string, sizeof(string), "%sadd", isonfile);
 		if(check_lock(string,TRUE)==TRUE) {
 			printf("Someone else is adding\n");
 			printf("Please try again later.\n");
@@ -563,7 +570,7 @@ int main (int argc, char **argv) {
 #ifdef RUNSTOP
 		/* check if any players are on */
 		for (i=0;i<NTOTAL;i++) {
-			sprintf(string,"%s%zu",isonfile,i);
+			snprintf(string, sizeof(string), "%s%zu", isonfile, i);
 			if(check_lock(string,FALSE)==TRUE) {
 				printf("Nation %zu is still in the game.\n",i);
 				printf("Update aborted.\n");
@@ -571,7 +578,7 @@ int main (int argc, char **argv) {
 			}
 		}
 #endif /* RUNSTOP */
-		sprintf(string,"%sup",isonfile);
+		snprintf(string, sizeof(string), "%sup", isonfile);
 		if(check_lock(string,TRUE)==TRUE) {
 			printf("Another update is still executing.\n");
 			printf("Update aborted.\n");

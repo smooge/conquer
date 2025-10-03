@@ -34,7 +34,7 @@ OPTIONS:
                 5: Level 4 + -Wconversion
                 6: Level 5 + -Wsign-conversion
                 7: Level 6 + -Wimplicit-fallthrough
-                8: Level 7 + -Wstrict-prototypes
+                8: Level 7 + -Wstrict-prototypes -Wstringop-truncation
                 9: Level 8 + -Wshadow -Wmissing-prototypes -Wcast-qual
                 10: Level 9 + -fanalyzer -fsanitize=address,undefined (intensive analysis)
 
@@ -116,8 +116,8 @@ case $WARN_LEVEL in
     5) WARN="-Wall -Wextra -Wpedantic -Wformat=2 -Wconversion" ;;
     6) WARN="-Wall -Wextra -Wpedantic -Wformat=2 -Wconversion -Wsign-conversion" ;;
     7) WARN="-Wall -Wextra -Wpedantic -Wformat=2 -Wconversion -Wsign-conversion -Wimplicit-fallthrough" ;;
-    8) WARN="-Wall -Wextra -Wpedantic -Wformat=2 -Wconversion -Wsign-conversion -Wimplicit-fallthrough -Wstrict-prototypes" ;;
-    9) WARN="-Wall -Wextra -Wpedantic -Wformat=2 -Wconversion -Wsign-conversion -Wimplicit-fallthrough -Wstrict-prototypes -Wshadow -Wmissing-prototypes -Wcast-qual" ;;
+    8) WARN="-Wall -Wextra -Wpedantic -Wformat=2 -Wconversion -Wsign-conversion -Wimplicit-fallthrough -Wstrict-prototypes -Wstringop-truncation" ;;
+    9) WARN="-Wall -Wextra -Wpedantic -Wformat=2 -Wconversion -Wsign-conversion -Wimplicit-fallthrough -Wstrict-prototypes -Wstringop-truncation -Wshadow -Wmissing-prototypes -Wcast-qual" ;;
     10) WARN="-Wall -Wextra -Wpedantic -Wformat=2 -Wconversion -Wsign-conversion -Wimplicit-fallthrough -Wstrict-prototypes -Wshadow -Wmissing-prototypes -Wcast-qual -fanalyzer -fsanitize=address,undefined" ;;
     11) WARN="-Weverything"
 esac
