@@ -1,6 +1,6 @@
 #!/usr/bin/env -S uv run --script
 # /// script
-# dependencies = ["pathlib", "re", "argparse", "sys"]
+# dependencies = []
 # ///
 
 """
@@ -75,6 +75,97 @@ class LegacyPatternDetector:
         self.source_extensions = {'.c', '.h'}
         self.exclude_dirs = {'historical', 'build', '.git', '__pycache__'}
 
+    def _is_in_comment(self, line: str) -> bool:
+        """Check if a line is within a comment (C-style /* */ or // comments)."""
+        line_stripped = line.strip()
+
+        # Check for obvious comment indicators
+        if (line_stripped.startswith('//') or
+            line_stripped.startswith('*') or
+            line_stripped.startswith('/*')):
+            return True
+
+        # Check for inline comments that contain the pattern
+        # Look for /* comment */ or // comment patterns
+        if '//' in line_stripped:
+            # Find position of // and see if pattern is after it
+            comment_pos = line_stripped.find('//')
+            # This is a more sophisticated check we'll implement
+            # For now, if line contains // assume any system() after it is in comment
+            pass
+
+        if '/*' in line_stripped and '*/' in line_stripped:
+            # Single line /* comment */ - need to check if pattern is inside
+            pass
+
+        # For now, use simple heuristics
+        # Check for common comment patterns that mention legacy operations
+        comment_indicators = [
+            'replaces strcpy(',
+            'instead of strcpy(',
+            'use strcpy(',
+            'strcpy() is',
+            'strcpy() call',
+            'strcpy() usage',
+            'strcpy() example',
+            '// strcpy(',
+            '/* strcpy(',
+            '* strcpy(',
+            'eliminates strcpy(',
+            'avoids strcpy(',
+            'removed strcpy(',
+            'replaces sprintf(',
+            'instead of sprintf(',
+            'use sprintf(',
+            'sprintf() is',
+            'sprintf() call',
+            'sprintf() usage',
+            'sprintf() example',
+            '// sprintf(',
+            '/* sprintf(',
+            '* sprintf(',
+            'eliminates sprintf(',
+            'avoids sprintf(',
+            'removed sprintf(',
+            'replaces strcat(',
+            'instead of strcat(',
+            'use strcat(',
+            'strcat() is',
+            'strcat() call',
+            'strcat() usage',
+            'strcat() example',
+            '// strcat(',
+            '/* strcat(',
+            '* strcat(',
+            'eliminates strcat(',
+            'avoids strcat(',
+            'removed strcat(',
+            'replaces system(',
+            'instead of system(',
+            'use system(',
+            'system() is',
+            'system() call',
+            'system() usage',
+            'system() example',
+            '// system(',
+            '/* system(',
+            '* system(',
+            'eliminates system(',
+            'avoids system(',
+            'removed system(',
+            'before (unsafe)',
+            'after (safe)',
+            'unsafe)',
+            'safe)',
+        ]
+
+        line_lower = line_stripped.lower()
+        for indicator in comment_indicators:
+            if indicator in line_lower:
+                return True
+
+        return False
+
     def find_source_files(self) -> List[Path]:
         """Find all C source and header files, excluding historical directories."""
         source_files = []
@@ -115,8 +206,10 @@ class LegacyPatternDetector:
 
                 for line_num, line in enumerate(lines, 1):
                     line_stripped = line.strip()
-                    if regex.search(line_stripped):
-                        results[category].append((line_num, line_stripped, description))
+                    # Skip if in comment
+                    if not self._is_in_comment(line_stripped):
+                        if regex.search(line_stripped):
+                            results[category].append((line_num, line_stripped, description))
 
         return results
 

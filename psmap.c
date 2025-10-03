@@ -784,15 +784,18 @@ int main(int argc, char *argv[]) {
     extern int optind;
     char *buf, firstline[81];
 
-    strcpy(progname, argv[0]);
+    strncpy(progname, argv[0], sizeof(progname) - 1);
+    progname[sizeof(progname) - 1] = '\0';
     infile = stdin;
     outfile = stdout;
     buf = (char *) getenv("CONQ_PSFONT");
     if (buf != NULL) {
 	strncpy(fontname, buf, 80);
 	fontname[79] = '\0';
-    } else
-	strcpy(fontname, "Times-Roman");
+    } else {
+	strncpy(fontname, "Times-Roman", sizeof(fontname) - 1);
+	fontname[sizeof(fontname) - 1] = '\0';
+    }
     get_pagesize();
 
     while ((c = getopt(argc, argv, "nuf:gs:t:vcho:p:lW:L:X:Y:")) != -1)

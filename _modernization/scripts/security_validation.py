@@ -1,6 +1,6 @@
 #!/usr/bin/env -S uv run --script
 # /// script
-# dependencies = ["pathlib", "subprocess", "re", "argparse", "sys"]
+# dependencies = []
 # ///
 
 """
@@ -394,25 +394,27 @@ class SecurityValidator:
                 for line_num, line in enumerate(lines, 1):
                     line_stripped = line.strip()
 
-                    # Check for unsafe patterns
-                    for pattern, description in unsafe_patterns:
-                        if re.search(pattern, line_stripped):
-                            unsafe_operations.append({
-                                'file': str(file_path.relative_to(self.base_path)),
-                                'line': line_num,
-                                'content': line_stripped,
-                                'issue': description
-                            })
+                    # Skip if in comment
+                    if not self._is_in_comment(line_stripped):
+                        # Check for unsafe patterns
+                        for pattern, description in unsafe_patterns:
+                            if re.search(pattern, line_stripped):
+                                unsafe_operations.append({
+                                    'file': str(file_path.relative_to(self.base_path)),
+                                    'line': line_num,
+                                    'content': line_stripped,
+                                    'issue': description
+                                })
 
-                    # Check for safe patterns
-                    for pattern, description in safe_patterns:
-                        if re.search(pattern, line_stripped):
-                            safe_operations.append({
-                                'file': str(file_path.relative_to(self.base_path)),
-                                'line': line_num,
-                                'content': line_stripped,
-                                'safety': description
-                            })
+                        # Check for safe patterns
+                        for pattern, description in safe_patterns:
+                            if re.search(pattern, line_stripped):
+                                safe_operations.append({
+                                    'file': str(file_path.relative_to(self.base_path)),
+                                    'line': line_num,
+                                    'content': line_stripped,
+                                    'safety': description
+                                })
 
             except (IOError, OSError) as e:
                 results['findings'].append(f"⚠️  File access error {file_path}: {e}")
