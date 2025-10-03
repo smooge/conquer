@@ -270,7 +270,8 @@ void makemess(int count, FILE *output)
     }
 
     /* Generate the requested number of messages */
-    strcpy(main_class, "MAIN/ ");
+    strncpy(main_class, "MAIN/ ", sizeof(main_class));
+    main_class[sizeof(main_class) - 1] = '\0';
     for (i = 0; i < count; i++) {
         generate_text(main_class, ' ', output);
         if (i < count - 1) {
@@ -1186,7 +1187,8 @@ static int read_line(void)
 
     do {
         if (!fgets(input_line, MAX_LINE_LEN, rules_file)) {
-            strcpy(input_line, "%%"); /* EOF marker */
+            strncpy(input_line, "%%", MAX_LINE_LEN); /* EOF marker */
+            input_line[MAX_LINE_LEN - 1] = '\0';
             return 0;
         }
 
@@ -1435,7 +1437,7 @@ static char *duplicate_string(const char *str)
     int len = safe_size_to_int(strlen(str));
     char *copy = malloc(safe_int_to_size(len + 1));
     if (copy) {
-        strcpy(copy, str);
+        memcpy(copy, str, safe_int_to_size(len + 1));
     }
     return copy;
 }
