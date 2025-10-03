@@ -513,7 +513,7 @@ void diploscrn (void) {
 			}
 			curntn->tgold-=bribecost;
 
-			sprintf(name,"%s%d",exefile,nation);
+			snprintf(name, sizeof(name), "%s%d", exefile, nation);
 			if ((fm=fopen(name,"a+"))==NULL) {
 				printf("error opening news file\n");
 				exit(FAIL);
@@ -777,7 +777,10 @@ void change (void) {
 		    }
 		}
 		errormsg("New name can be used following next update");
-		strcpy(curntn->name,string);
+		size_t len = strlen(string);
+		if (len >= NAMELTH) len = NAMELTH - 1;
+		memcpy(curntn->name, string, len);
+		curntn->name[len] = '\0';
 		ECHGNAME;
 		break;
 	case '2': /*change password */
@@ -972,7 +975,7 @@ void change (void) {
 
 			if(getch()=='y') {
 				/* save to last turns news file */
-				sprintf(filename,"%s%d",newsfile,TURN-1);
+				snprintf(filename, sizeof(filename), "%s%d", newsfile, TURN-1);
 				if ((fnews=fopen(filename,"a+"))==NULL) {
 					printf("error opening news file\n");
 					exit(FAIL);
@@ -988,7 +991,7 @@ void change (void) {
 	case '9':
 		if (isgod==TRUE) {
 			/* open the target country's files */
-			sprintf(filename,"%s%d",exefile,country);
+			snprintf(filename, sizeof(filename), "%s%d", exefile, country);
 			if ((ftmp=fopen(filename,"a"))==NULL) {
 				beep();
 				errormsg("error opening country's file");
@@ -1039,7 +1042,8 @@ void change (void) {
 			mvaddstr(LINES-2,0,"ENTER CONQUER SUPER-USER PASSWORD:");
 			refresh();
 			(void) get_pass(string);
-			strcpy(passwd,crypt(string,SALT));
+			strncpy(passwd, crypt(string, SALT), PASSLTH);
+			passwd[PASSLTH] = '\0';
 			if(strncmp(passwd,ntn[0].passwd,PASSLTH)!=0) break;
 			mvaddstr(LINES-1,0,"PROMOTE WHAT USER TO DEMI-GOD? ");
 			refresh();
@@ -1098,7 +1102,7 @@ void help (void) {
 	}
 
 	/*open help file*/
-	sprintf(fname,"%s/%s%d",DEFAULTDIR,helpfile,i);
+	snprintf(fname, sizeof(fname), "%s/%s%d", DEFAULTDIR, helpfile, i);
 	if ((fp=fopen(fname,"r"))==NULL) {
 		mvprintw(0,0,"\nerror on read of %s\n",fname);
 		refresh();
@@ -1125,7 +1129,7 @@ void help (void) {
 					standend();
 				} else mvaddstr(lineno,0,line);
 				lineno++;
-				if(lineno>LINES-3) strcpy(line,"END");
+				if(lineno>LINES-3) strncpy(line, "END", sizeof(line) - 1);
 				else fgets(line,80,fp);
 			}
 			standout();
@@ -1329,7 +1333,7 @@ void newspaper (void) {
 
 	/* check for all newspapers up until the current turn */
 	for (i=TURN-1;i>=0 && i>=TURN-MAXNEWS;i--) {
-		sprintf(line,"   %d) %s of Year %d",TURN-i,
+		snprintf(line, sizeof(line), "   %d) %s of Year %d", TURN-i,
 			PSEASON(i), YEAR(i));
 		/* align all strings */
 		mvprintw(ydist,xdist,"%s",line);
@@ -1356,7 +1360,7 @@ void newspaper (void) {
 	/* select page to read */
 	pagenum=1;
 	backpage:    /* label for reading previous pages. pagenum set to page */
-	sprintf(name,"%s%d",newsfile,TURN-choice);
+	snprintf(name, sizeof(name), "%s%d", newsfile, TURN-choice);
 	if ((fp=fopen(name,"r"))==NULL) {
 		clear_bottom(0);
 		snprintf(line, sizeof(line), "unable to open news file <%.50s>", name);
@@ -1373,7 +1377,7 @@ void newspaper (void) {
 	subpage=1;
 	newpage=FALSE;
 	line[0]='\0';
-	strcpy(name,"");
+	name[0] = '\0';
 	/* reading to correct page */
 	i=0;
 	done=FALSE;
@@ -1407,7 +1411,8 @@ void newspaper (void) {
 		} else if(fgets(line,80,fp)==NULL) done=TRUE;
 		else {
 			if(line[1]!='.'  && line[1]!=':') {
-				strcpy(name,line);
+				strncpy(name, line, FILELTH - 1);
+				name[FILELTH - 1] = '\0';
 				newpage=FALSE;
 				pagenum=safe_int_to_short(todigit(line[0]));
 				subpage=1;

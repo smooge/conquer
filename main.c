@@ -229,8 +229,12 @@ int main(int argc, char **argv) {
 		defaultdir[sizeof(defaultdir) - 1] = '\0';
 	}
 	if (defaultdir[0] != '/') {
-		strncpy(cq_opts, defaultdir, sizeof(cq_opts) - 1);
-		cq_opts[sizeof(cq_opts) - 1] = '\0';
+		size_t len = strlen(defaultdir);
+		if (len >= sizeof(cq_opts)) {
+			len = sizeof(cq_opts) - 1;
+		}
+		memcpy(cq_opts, defaultdir, len);
+		cq_opts[len] = '\0';
 		snprintf(defaultdir, sizeof(defaultdir), "%s/%.200s", DEFAULTDIR, cq_opts);
 	}
 

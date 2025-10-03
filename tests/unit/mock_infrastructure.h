@@ -64,7 +64,8 @@ static inline void nation_mock_init(nation_mock_t *mock) {
     memset(mock, 0, sizeof(nation_mock_t));
 
     /* Create test nation 0 */
-    strcpy(mock->nations[0].name, "TestNation0");
+    strncpy(mock->nations[0].name, "TestNation0", sizeof(mock->nations[0].name) - 1);
+    mock->nations[0].name[sizeof(mock->nations[0].name) - 1] = '\0';
     mock->nations[0].active = 1;
     mock->nations[0].power = 100;
     mock->nations[0].cash = 1000;
@@ -72,7 +73,8 @@ static inline void nation_mock_init(nation_mock_t *mock) {
     mock->nations[0].y = 20;
 
     /* Create test nation 1 */
-    strcpy(mock->nations[1].name, "TestNation1");
+    strncpy(mock->nations[1].name, "TestNation1", sizeof(mock->nations[1].name) - 1);
+    mock->nations[1].name[sizeof(mock->nations[1].name) - 1] = '\0';
     mock->nations[1].active = 1;
     mock->nations[1].power = 200;
     mock->nations[1].cash = 2000;

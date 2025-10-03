@@ -372,6 +372,9 @@ class SecurityValidator:
             (r'\bstrcat\s*\(', 'strcat() - no bounds checking'),
             (r'\bsprintf\s*\(', 'sprintf() - no bounds checking'),
             (r'\bgets\s*\(', 'gets() - extremely unsafe'),
+            (r'\bscanf\s*\([^)]*%s', 'scanf() with %s - no field width limit'),
+            (r'\bsscanf\s*\([^)]*%s', 'sscanf() with %s - no field width limit'),
+            (r'\bfscanf\s*\([^)]*%s', 'fscanf() with %s - no field width limit'),
         ]
 
         # Safer alternatives
@@ -380,6 +383,9 @@ class SecurityValidator:
             (r'\bstrncat\s*\(', 'strncat() - bounds checking'),
             (r'\bsnprintf\s*\(', 'snprintf() - bounds checking'),
             (r'\bfgets\s*\(', 'fgets() - safer input'),
+            (r'\bscanf\s*\([^)]*%[0-9]+s', 'scanf() with field width - bounds checking'),
+            (r'\bsscanf\s*\([^)]*%[0-9]+s', 'sscanf() with field width - bounds checking'),
+            (r'\bfscanf\s*\([^)]*%[0-9]+s', 'fscanf() with field width - bounds checking'),
         ]
 
         source_files = self.find_source_files()

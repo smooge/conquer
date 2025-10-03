@@ -133,7 +133,7 @@ int desg_ok(int prtflag, char desg, struct s_sector *sptr) {
 	||sptr->designation==DCAPITOL)) {
 		if(prtflag) {
 			char buf[LINELTH+1];
-			sprintf(buf,"Must first burn down city/capitol (designate as '%c')",DRUIN);
+			snprintf(buf, sizeof(buf), "Must first burn down city/capitol (designate as '%c')", DRUIN);
 			errormsg(buf);
 		}
 		return(FALSE);
@@ -1581,7 +1581,12 @@ void rmessage (void) {
 		standout();
 		/*print to end of message*/
 		while(contd==FALSE) {
-			if(msglen<LINELTH) strcpy(save[msglen],line);
+			if(msglen<LINELTH) {
+				size_t len = strlen(line);
+				if (len >= LINELTH) len = LINELTH - 1;
+				memcpy(save[msglen], line, len);
+				save[msglen][len] = '\0';
+			}
 			if(count==LINES-3) {
 				standout();
 				mvaddstr(LINES-3,(COLS/2)-8,"--- more ---");
@@ -1606,7 +1611,8 @@ void rmessage (void) {
 		inpch=safe_int_to_char(getch());
 		if((inpch!='\n' && inpch!='\r')) {
 			for(i=0;i<msglen;i++) fputs(save[i],fptemp);
-			strcpy(line,"END\n");
+			strncpy(line, "END\n", LINELTH);
+			line[LINELTH] = '\0';
 			fputs(line,fptemp);
 		}
 		if(fgets(line,LINELTH,mesgfp)==NULL) done=TRUE;
@@ -1759,7 +1765,8 @@ void wmessage (void) {
 	temp=get_country();
 
 	if( temp == NEWSMAIL ) {
-		strcpy(name,"news");
+		strncpy(name, "news", NAMELTH);
+		name[NAMELTH] = '\0';
 	} else {
 		/* quick return on bad input */
 		if(temp==(-1) || temp>=NTOTAL
@@ -1767,7 +1774,10 @@ void wmessage (void) {
 			makebottom();
 			return;
 		}
-		strcpy(name,ntn[temp].name);	/* find nation name */
+		size_t len = strlen(ntn[temp].name);
+		if (len >= NAMELTH) len = NAMELTH - 1;
+		memcpy(name, ntn[temp].name, len);
+		name[len] = '\0';
 	}
 
 	if(mailopen( temp )==(-1)) {
@@ -1781,7 +1791,7 @@ void wmessage (void) {
 		fprintf(fm,"Message to %s from GOD (%s of year %d)\n\n",name,PSEASON(TURN),YEAR(TURN));
 		else	fprintf(fm,"Message to %s from %s (%s of year %d)\n\n",name,curntn->name,PSEASON(TURN),YEAR(TURN));
 	} else fprintf(fm,"5.----------\n");
-	strcpy(line,"");
+	line[0] = '\0';
 
 	while(done==FALSE) {
 		if (dotitles==TRUE) {

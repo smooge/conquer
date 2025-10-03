@@ -51,7 +51,8 @@ static char *duplicate_string(const char *str)
     int len = safe_size_to_int(strlen(str));
     char *copy = malloc(safe_int_to_size(len + 1));
     if (copy) {
-        strcpy(copy, str);
+        memcpy(copy, str, safe_int_to_size(len));
+        copy[len] = '\0';
     }
     return copy;
 }

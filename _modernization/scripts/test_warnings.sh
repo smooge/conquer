@@ -148,7 +148,7 @@ build_warning_flags() {
         10)
             WARN="-Wall -Wextra -Wpedantic -Wformat=2 -Wconversion -Wsign-conversion -Wimplicit-fallthrough -Wshadow -Wmissing-prototypes -Wcast-qual"
             if [[ "$CC" == "gcc" ]]; then
-                WARN="$WARN -Wstrict-prototypes -Wstringop-truncation -fanalyzer"
+                WARN="$WARN -Wstrict-prototypes -Wstringop-truncation -fanalyzer -fsanitize=address,undefined"
             else
                 WARN="$WARN -Wstrict-prototypes -Wunused-parameter -Wunused-variable -Warray-bounds"
             fi
