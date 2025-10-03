@@ -77,7 +77,7 @@ dtol (double d)
 {
 	char tempstr[BIGLTH];
 	long l;
-	sprintf(tempstr,"%-60.0lf",d);
+	snprintf(tempstr, sizeof(tempstr), "%-60.0lf", d);
 	sscanf(tempstr,"%ld",&l);
 	return(l);
 }
@@ -148,7 +148,7 @@ update (void)
 {
 	char filename[FILELTH];
 
-	sprintf(filename,"%s%d",newsfile,TURN);
+	snprintf(filename, sizeof(filename), "%s%d", newsfile, TURN);
 	if ((fnews=fopen(filename,"w"))==NULL) {
 		printf("error opening news file\n");
 		exit(FAIL);
@@ -209,7 +209,7 @@ update (void)
 	}
 	/* Use secure file deletion instead of system() call */
 	char pattern[BIGLTH];
-	sprintf(pattern, "%s*", exefile);
+	snprintf(pattern, sizeof(pattern), "%s*", exefile);
 	const char *patterns[] = { pattern };
 	int deleted = secure_file_delete(patterns, 1);
 	printf("Removed %d files matching %s*\n", deleted, exefile);
@@ -220,7 +220,7 @@ update (void)
 
 	/* remove old news files */
 	if (TURN>MAXNEWS) {
-		sprintf(filename,"%s%d",newsfile,TURN-MAXNEWS);
+		snprintf(filename, sizeof(filename), "%s%d", newsfile, TURN-MAXNEWS);
 		unlink(filename);
 	}
 
@@ -738,7 +738,7 @@ cheat (void)
 
 	/* take inventory of countries */
 	for(x=1;x<NTOTAL;x++) {
-		sprintf(tempc,"%s%d", exefile, x);
+		snprintf(tempc, sizeof(tempc), "%s%d", exefile, x);
 		if (isnpc(ntn[x].active) && access(tempc,00)==0) {
 			realnpc[x]=TRUE;
 		} else {
