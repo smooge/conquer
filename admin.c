@@ -438,13 +438,19 @@ int main (int argc, char **argv) {
 			printf("    There is already a game in progress.\n\n");
 			printf("*********************************************\n\n");
 			printf("Do you wish to destroy the current game? ");
-			scanf("%s",string);
+			if (scanf("%79s", string) != 1) {
+				/* Input error - default to "no" for safety */
+				string[0] = '\0';
+			}
 			if (strcmp(string,"yes")!=0 && strcmp(string,"y")!=0) {
 				printf("Okay... the world is left intact\n");
 				exit(FAIL);
 			}
 			printf("Are you absolutely certain? ");
-			scanf("%s",string);
+			if (scanf("%79s", string) != 1) {
+				/* Input error - default to "no" for safety */
+				string[0] = '\0';
+			}
 			if (strcmp(string,"yes")!=0 && strcmp(string,"y")!=0) {
 				printf("Okay... the world is left intact\n");
 				exit(FAIL);

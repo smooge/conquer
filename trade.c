@@ -134,13 +134,15 @@ void trade(void) {
 				&deal[itemnum],&natn[itemnum],&type1[itemnum],
 				&type2[itemnum],&lvar1[itemnum],
 				&lvar2[itemnum],&extra[itemnum]);
-			if (holdint == 7) {
-				if (deal[itemnum]==NOSALE) {
-					/* remove item from sales list */
-					deal[type1[itemnum]]=NOSALE;
-				} else if (deal[itemnum]==SELL) {
-					itemnum++;
-				}
+			if (holdint != 7) {
+				/* Parse error or EOF - stop reading */
+				break;
+			}
+			if (deal[itemnum]==NOSALE) {
+				/* remove item from sales list */
+				deal[type1[itemnum]]=NOSALE;
+			} else if (deal[itemnum]==SELL) {
+				itemnum++;
 			}
 		}
 		if (notopen==FALSE) fclose(tfile);

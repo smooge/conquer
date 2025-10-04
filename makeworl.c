@@ -1489,12 +1489,18 @@ populate (void)
 		/*read and parse a new line*/
 		if(line[0]!='#') {
 			xloc = yloc = -1;
-			sscanf(line,"%s %s %c %c %c %hd %hd %hd %ld %ld %d %hd %c %d %d %hd",
+			int result = sscanf(line,"%9s %9s %c %c %c %hd %hd %hd %ld %ld %d %hd %c %d %d %hd",
 			ntn[cnum].name,ntn[cnum].leader,&ntn[cnum].race,
 			&ntn[cnum].mark,&ntn[cnum].location,&ntn[cnum].aplus,
 			&ntn[cnum].dplus,&short1,&ntn[cnum].tgold,
 			&ntn[cnum].tmil,&points,&short2,&allign,&xloc,&yloc,
 			&class);
+			if (result != 16) {
+				/* Parse error - skip malformed nation data line */
+				ntn[cnum].name[0] = '\0';
+				ntn[cnum].leader[0] = '\0';
+				continue;
+			}
 
 			country=safe_int_to_short(cnum);
 			curntn = &ntn[country];

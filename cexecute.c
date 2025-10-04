@@ -147,11 +147,25 @@ int execute(int isupdate) {	/* 0 if not update, 1 if update */
 		/*read and parse a new line*/
 		/*CODE IF YOU USE LONG VAR IS L_*/
 		if( line[0] == 'L' && line[1] == '_' ) {
-			sscanf(line,"%s %d %hd %ld %ld %hd %s",
+			int result = sscanf(line,"%79s %d %hd %ld %ld %hd %79s",
 				temp,&cmd,&country,&longvar,&long2var,&y,comment);
+			if (result != 7) {
+				/* Parse error - skip malformed command line */
+				temp[0] = '\0';
+				comment[0] = '\0';
+				if(fgets(line,80,fp)==NULL) done=TRUE;
+				continue;
+			}
 		} else {
-			sscanf(line,"%s %d %hd %d %hd %hd %s",
+			int result = sscanf(line,"%79s %d %hd %d %hd %hd %79s",
 				temp,&cmd,&country,&armynum,&x,&y,comment);
+			if (result != 7) {
+				/* Parse error - skip malformed command line */
+				temp[0] = '\0';
+				comment[0] = '\0';
+				if(fgets(line,80,fp)==NULL) done=TRUE;
+				continue;
+			}
 		}
 		curntn = &ntn[country];
 

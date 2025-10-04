@@ -76,9 +76,12 @@ long
 dtol (double d)
 {
 	char tempstr[BIGLTH];
-	long l;
+	long l = 0;
 	snprintf(tempstr, sizeof(tempstr), "%-60.0lf", d);
-	sscanf(tempstr,"%ld",&l);
+	if (sscanf(tempstr,"%ld",&l) != 1) {
+		/* Parse error - return 0 as fallback */
+		return 0;
+	}
 	return(l);
 }
 

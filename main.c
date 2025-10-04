@@ -475,7 +475,13 @@ int main(int argc, char **argv) {
 		fprintf(stderr,"\t\t3) nations\n");
 		fprintf(stderr,"\t\t4) designations\n\n");
 		fprintf(stderr,"\tWhat type of map? ");
-		scanf("%hd", &dismode);
+		if (scanf("%hd", &dismode) != 1) {
+			/* Input error - clear buffer and exit */
+			int c;
+			while ((c = getchar()) != '\n' && c != EOF);
+			fprintf(stderr,"Invalid input\n");
+			exit(FAIL);
+		}
 		fprintf(stderr,"\n");
 		switch(dismode) {
 		case 1:
