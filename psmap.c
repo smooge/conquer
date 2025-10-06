@@ -784,6 +784,12 @@ int main(int argc, char *argv[]) {
     extern int optind;
     char *buf, firstline[81];
 
+    /* Validate argv before dereferencing (satisfies static analyzer) */
+    if (argv == NULL || argv[0] == NULL) {
+        fprintf(stderr, "Error: Invalid program invocation\n");
+        exit(1);
+    }
+
     strncpy(progname, argv[0], sizeof(progname) - 1);
     progname[sizeof(progname) - 1] = '\0';
     infile = stdin;

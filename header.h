@@ -104,15 +104,16 @@
  * configuration system. This provides automatic detection of the target
  * platform and sets appropriate compatibility flags.
  *
- * Supported Platforms:
+ * Supported Platforms (POSIX-compliant systems only):
  * - PLATFORM_LINUX: All Linux distributions (Debian, Fedora, Ubuntu, etc.)
  * - PLATFORM_MACOS: macOS (all versions supporting modern Xcode)
  * - PLATFORM_FREEBSD: FreeBSD (all recent versions)
  * - PLATFORM_OPENBSD: OpenBSD (security-focused BSD variant)
  * - PLATFORM_NETBSD: NetBSD (portable BSD variant)
- * - PLATFORM_WINDOWS: Windows (with Cygwin or native compilation)
  * - PLATFORM_CYGWIN: Cygwin environment on Windows
  * - PLATFORM_UNIX: Generic Unix-like systems (auto-detected)
+ *
+ * Note: Windows users should use WSL (Windows Subsystem for Linux) for full compatibility.
  *
  * Legacy Compatibility:
  * - Original code used manual BSD/SYSV defines
@@ -134,8 +135,6 @@
 #elif defined(__NetBSD__)
     #define PLATFORM_NETBSD 1
     #define PLATFORM_UNIX 1
-#elif defined(_WIN32) || defined(_WIN64)
-    #define PLATFORM_WINDOWS 1
 #elif defined(__CYGWIN__)
     #define PLATFORM_CYGWIN 1
     #define PLATFORM_UNIX 1
@@ -162,16 +161,6 @@
     /* Declare BSD random functions for compatibility */
     extern long random(void);
     extern void srandom(unsigned int seed);
-#elif defined(PLATFORM_WINDOWS)
-    #ifndef WIN32_LEAN_AND_MEAN
-        #define WIN32_LEAN_AND_MEAN
-    #endif
-    #include <windows.h>
-    #include <io.h>
-    #include <direct.h>
-    #define unlink _unlink
-    #define mkdir(path, mode) _mkdir(path)
-    #define access _access
 #endif
 
 /* ================================================================== */
@@ -200,7 +189,7 @@
 /* SYSTEM CAPABILITIES (modernized detection) */
 /* ================================================================== */
 
-/* Mail system support */
+/* Mail system support - POSIX platforms only */
 #ifdef PLATFORM_UNIX
     #define SYSMAIL 1              /* system mail support */
     #ifdef PLATFORM_LINUX
@@ -212,9 +201,6 @@
     #else
         #define SPOOLDIR "/usr/spool/mail"  /* fallback */
     #endif
-#elif defined(PLATFORM_WINDOWS)
-    #define SPOOLDIR "C:\\temp"
-    /* No SYSMAIL on Windows */
 #else
     #define SPOOLDIR "/usr/spool/mail"
 #endif
@@ -224,11 +210,9 @@
     #define FILELOCK 1             /* flock() support (POSIX standard) */
 #endif
 
-/* System utilities */
+/* System utilities - POSIX platforms only */
 #ifdef PLATFORM_UNIX
     #define TIMELOG 1              /* date command available */
-#elif defined(PLATFORM_WINDOWS)
-    #define TIMELOG 1              /* Windows also has date */
 #endif
 
 /* ================================================================== */
@@ -542,24 +526,18 @@
  * Cross-Platform File Operations
  *
  * Abstracts platform differences in file system operations,
- * allowing the same code to work on Unix and Windows systems.
+ * POSIX access() system call with F_OK constant.
  */
-#ifdef PLATFORM_WINDOWS
-    #define FILE_EXISTS(path) (_access((path), 0) == 0)
-#else
-    #define FILE_EXISTS(path) (access((path), F_OK) == 0)
-#endif
+#define FILE_EXISTS(path) (access((path), F_OK) == 0)
 
 /*
  * Terminal Control Abstraction
  *
- * Provides platform-appropriate terminal control sequences for
- * clearing the screen on different operating systems.
+ * Uses ANSI escape sequences for clearing the screen.
+ * Works on all POSIX platforms and modern Windows terminals (Windows 10+).
  */
 #ifdef PLATFORM_UNIX
     #define CLEAR_SCREEN() printf("\033[2J\033[H")
-#elif defined(PLATFORM_WINDOWS)
-    #define CLEAR_SCREEN() system("cls")
 #else
     #define CLEAR_SCREEN()
 #endif
@@ -593,19 +571,11 @@
 /* ================================================================== */
 
 #ifndef DEFAULTDIR
-    #ifdef PLATFORM_WINDOWS
-        #define DEFAULTDIR "C:\\Program Files\\Conquer\\share"
-    #else
-        #define DEFAULTDIR "/usr/local/share/conquer"
-    #endif
+    #define DEFAULTDIR "/usr/local/share/conquer"
 #endif
 
 #ifndef EXEDIR
-    #ifdef PLATFORM_WINDOWS
-        #define EXEDIR "C:\\Program Files\\Conquer\\bin"
-    #else
-        #define EXEDIR "/usr/local/bin"
-    #endif
+    #define EXEDIR "/usr/local/bin"
 #endif
 
 /* ================================================================== */
