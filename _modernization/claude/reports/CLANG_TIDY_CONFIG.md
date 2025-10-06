@@ -198,6 +198,36 @@ Every clang-tidy target automatically uses `.clang-tidy`:
 
 To re-enable: Uncomment the target definition in `cmake/StaticAnalysis.cmake` and update status messages.
 
+### Understanding Warning Counts
+
+**Important**: Clang-tidy's reported warning count is misleading!
+
+During analysis, clang-tidy parses all included headers and reports total warnings:
+```
+360436 warnings and 28 errors generated.
+Suppressed 360436 warnings (360436 in non-user code).
+```
+
+This means:
+- **360,436** warnings found while parsing (mostly from headers)
+- **360,436** suppressed by HeaderFilterRegex (non-project code)
+- **Real warnings**: What's left in the report file
+
+**To get the REAL warning count:**
+```bash
+# Count actual project warnings from report
+grep -c "warning:" build/reports/clang-tidy/full_report.txt
+
+# Example results:
+# - Reported during run: "58301 warnings and 6 errors generated"
+# - Suppressed: "58265 warnings in non-user code"
+# - REAL count: 36 warnings (from grep)
+```
+
+**Why this happens**: Clang-tidy must parse all `#include` files to understand the code, generating warnings for every header. The HeaderFilterRegex then filters them out, but the initial count is already reported.
+
+**Always use the report file for actual warning counts, not the console output!**
+
 ### Configuration Override
 
 To temporarily override configuration:
