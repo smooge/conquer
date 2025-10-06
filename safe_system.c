@@ -12,6 +12,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <glob.h>
+#include <stdint.h>
 
 #include "safe_system.h"
 #include "header.h"  /* Must come before data.h for constants */
@@ -273,27 +274,65 @@ static int compare_lines(const char *a, const char *b, int compnum) {
  * create_sort_node - Create new linked list node for sorting
  *
  * Allocates memory for a new sorting node and copies the line data.
+ * Performs comprehensive validation to prevent crashes from invalid inputs.
+ *
+ * VALIDATION CHECKS:
+ * - NULL parameter check (prevents segmentation fault)
+ * - String length validation (MAX_SORT_LINE = 200 bytes)
+ * - Allocation size overflow prevention (SIZE_MAX check)
+ * - Partial failure cleanup (frees node if string allocation fails)
  *
  * Parameters:
- *   line - Line data to store (null-terminated)
+ *   line - Line data to store (must not be NULL, max length MAX_SORT_LINE)
  *   next - Pointer to next node in list (may be NULL)
  *
  * Returns:
- *   Pointer to new node, or NULL on allocation failure
+ *   Pointer to new node on success, NULL on validation failure or allocation failure
+ *
+ * Error Conditions:
+ *   Returns NULL if:
+ *   - line parameter is NULL
+ *   - line length exceeds MAX_SORT_LINE (200 bytes)
+ *   - line length >= SIZE_MAX (overflow prevention)
+ *   - malloc() fails for node structure
+ *   - malloc() fails for line buffer
+ *
+ * Memory Management:
+ *   - Caller must free returned node using free_sort_list()
+ *   - On partial allocation failure, automatically cleans up node structure
+ *   - No memory leaks on error paths
  */
 static SORT_LINE *create_sort_node(const char *line, SORT_LINE *next) {
+    /* Parameter validation - prevent NULL pointer dereference */
+    if (line == NULL) {
+        return NULL;
+    }
+
+    /* Validate string length is within bounds */
+    size_t line_len = strlen(line);
+    if (line_len > MAX_SORT_LINE) {
+        return NULL;  /* String exceeds maximum sort line length */
+    }
+
+    /* Check for allocation size overflow (defensive programming) */
+    if (line_len >= SIZE_MAX) {
+        return NULL;
+    }
+
+    /* Allocate node structure */
     SORT_LINE *node = (SORT_LINE *)malloc(sizeof(SORT_LINE));
     if (node == NULL) {
         return NULL;
     }
 
-    size_t line_len = strlen(line);
+    /* Allocate string buffer */
     node->line = (char *)malloc(line_len + 1);
     if (node->line == NULL) {
-        free(node);
+        free(node);  /* Critical: cleanup on partial failure */
         return NULL;
     }
 
+    /* Copy string data */
     memcpy(node->line, line, line_len);
     node->line[line_len] = '\0';
     node->next = next;
