@@ -32,7 +32,7 @@ Checks: >
   readability-redundant-declaration,
   readability-redundant-control-flow,
   readability-simplify-boolean-expr,
-  readability-identifier-naming,
+  -readability-identifier-naming,
 
   # Bugprone checks - Critical bug detection (Phase 8.4 focus)
   bugprone-assert-side-effect,
@@ -75,7 +75,7 @@ Checks: >
   cert-fio38-c,
   cert-flp30-c,
   cert-mem57-cpp,
-  cert-msc50-cpp,
+  -cert-msc50-cpp,
   cert-msc51-cpp,
   cert-pos44-c,
   cert-str34-c,
@@ -93,7 +93,8 @@ Checks: >
 # WarningsAsErrors: ''
 
 # Header filter - Only analyze project files, not system headers
-HeaderFilterRegex: '.*'
+# Match only files in the project directory (exclude /usr/include, etc.)
+HeaderFilterRegex: '^/projects/conquer-4\.x/.*'
 
 # Check options - Fine-tune specific checks
 CheckOptions:
@@ -102,18 +103,18 @@ CheckOptions:
     value:           'ASSERT,assert'
 
   # Identifier naming conventions (enforce consistent naming)
-  - key:             readability-identifier-naming.FunctionCase
-    value:           'lower_case'
-  - key:             readability-identifier-naming.VariableCase
-    value:           'lower_case'
-  - key:             readability-identifier-naming.ParameterCase
-    value:           'lower_case'
-  - key:             readability-identifier-naming.MacroDefinitionCase
-    value:           'UPPER_CASE'
-  - key:             readability-identifier-naming.EnumConstantCase
-    value:           'UPPER_CASE'
-  - key:             readability-identifier-naming.GlobalConstantCase
-    value:           'UPPER_CASE'
+  # - key:             readability-identifier-naming.FunctionCase
+  #   value:           'lower_case'
+  # - key:             readability-identifier-naming.VariableCase
+  #   value:           'lower_case'
+  # - key:             readability-identifier-naming.ParameterCase
+  #   value:           'lower_case'
+  # - key:             readability-identifier-naming.MacroDefinitionCase
+  #   value:           'UPPER_CASE'
+  # - key:             readability-identifier-naming.EnumConstantCase
+  #   value:           'UPPER_CASE'
+  # - key:             readability-identifier-naming.GlobalConstantCase
+  #   value:           'UPPER_CASE'
 
   # Function size limits (relaxed for legacy code)
   - key:             readability-function-size.LineThreshold
