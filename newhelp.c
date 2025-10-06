@@ -51,6 +51,7 @@
 #include "header.h"
 #include "data.h"
 #include "patchlevel.h"
+#include "safe_convert.h"
 
 /*
  * main - Generate sed script files for help system template processing
@@ -147,7 +148,7 @@ main(void)
 	fprintf(fp,"s/XLOGIN/%s/g\n",LOGIN);
 	fprintf(fp,"s/XVERSION/%s.%s/g\n",VERSION,PATCHLEVEL);
 	fprintf(fp,"s/XPVULCAN/%d/g\n",PVULCAN);
-	fprintf(fp,"s/XPMOUNT/%d/g\n",PMOUNT);
+	fprintf(fp,"s/XPMOUNT/%d/g\n",safe_float_to_int(PMOUNT));
 	fprintf(fp,"s/XDEPLETE/%d/g\n",PDEPLETE);
 	fprintf(fp,"s/XPSTORM/%d/g\n",PSTORM);
 	fprintf(fp,"s/XNTOTAL/%d/g\n",NTOTAL);

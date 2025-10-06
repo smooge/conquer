@@ -396,8 +396,10 @@ int main (int argc, char **argv) {
 			datadir[sizeof(datadir) - 1] = '\0';
 		}
 	} else {
-		strncpy(defaultdir, datadir, sizeof(defaultdir) - 1);
-		defaultdir[sizeof(defaultdir) - 1] = '\0';
+		/* Copy absolute path from datadir
+		 * Use FILELTH (datadir size) to prevent buffer over-read of source buffer */
+		strncpy(defaultdir, datadir, FILELTH - 1);
+		defaultdir[FILELTH - 1] = '\0';
 	}
 
 	/* now that we have parsed the args, we can got to the
