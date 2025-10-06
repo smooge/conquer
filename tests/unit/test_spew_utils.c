@@ -8,6 +8,13 @@
  * - duplicate_string() - String duplication with dynamic allocation
  * - compare_classes() - qsort comparator for text_class structures
  *
+ * IMPORTANT: The production duplicate_string() now uses exit() on errors
+ * (NULL input, overlength strings, malloc failure). The test version
+ * returns NULL instead of exit() to enable testability. Production behavior:
+ * - NULL input -> exit(EX_SOFTWARE)
+ * - String > MAX_DEF_LEN (1000) -> exit(EX_SOFTWARE)
+ * - malloc() failure -> exit(EX_SOFTWARE)
+ *
  * Testing Category: Level 0 (Static Functions)
  * Testing Approach: Direct function testing with controlled inputs
  * Testing Framework: Unity
@@ -43,17 +50,26 @@ static int compare_classes(const void *a, const void *b);
  * duplicate_string - Create dynamic copy of string with memory allocation
  *
  * Copied implementation from spew.c for testing
+ * NOTE: This implementation now exits on errors for production use,
+ * but test version returns NULL for testability
  */
 static char *duplicate_string(const char *str)
 {
-    if (!str) return NULL;
+    if (!str) return NULL;  /* Test version returns NULL instead of exit */
 
-    int len = safe_size_to_int(strlen(str));
-    char *copy = malloc(safe_int_to_size(len + 1));
-    if (copy) {
-        memcpy(copy, str, safe_int_to_size(len));
-        copy[len] = '\0';
+    size_t str_len = strlen(str);
+    /* Test version: Production code limits to MAX_DEF_LEN and exits */
+    if (str_len > 1000) {
+        return NULL;  /* Test version returns NULL instead of exit */
     }
+
+    int len = safe_size_to_int(str_len);
+    char *copy = malloc(safe_int_to_size(len + 1));
+    if (!copy) {
+        return NULL;  /* Test version returns NULL instead of exit */
+    }
+
+    memcpy(copy, str, safe_int_to_size(len + 1));
     return copy;
 }
 
