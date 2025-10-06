@@ -855,7 +855,10 @@ int main(int argc, char *argv[]) {
 	    grid = FALSE;
 	    break;
 	case 's':
-	    sscanf(optarg, "%d", &sqsize);
+	    if (sscanf(optarg, "%d", &sqsize) != 1) {
+		fprintf(stderr, "Error: Invalid square size for -s option\n");
+		exit(1);
+	    }
 	    break;
 	case 'f':
 	    strncpy(fontname, optarg, 80);
@@ -872,16 +875,28 @@ int main(int argc, char *argv[]) {
 	    coords = FALSE;
 	    break;
 	case 'W':
-	    sscanf(optarg, "%d", &pagewidth);
+	    if (sscanf(optarg, "%d", &pagewidth) != 1) {
+		fprintf(stderr, "Error: Invalid page width for -W option\n");
+		exit(1);
+	    }
 	    break;
 	case 'L':
-	    sscanf(optarg, "%d", &pageheight);
+	    if (sscanf(optarg, "%d", &pageheight) != 1) {
+		fprintf(stderr, "Error: Invalid page height for -L option\n");
+		exit(1);
+	    }
 	    break;
 	case 'X':
-	    sscanf(optarg, "%d", &xoffset);
+	    if (sscanf(optarg, "%d", &xoffset) != 1) {
+		fprintf(stderr, "Error: Invalid X offset for -X option\n");
+		exit(1);
+	    }
 	    break;
 	case 'Y':
-	    sscanf(optarg, "%d", &yoffset);
+	    if (sscanf(optarg, "%d", &yoffset) != 1) {
+		fprintf(stderr, "Error: Invalid Y offset for -Y option\n");
+		exit(1);
+	    }
 	    break;
 	default:
 	    fprintf(stderr, USAGE, argv[0]);
