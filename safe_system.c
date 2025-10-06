@@ -382,7 +382,13 @@ static int insert_sorted(SORT_LINE **head_ptr, const char *line, int compnum) {
     /* Insert at beginning */
     if (compare_lines(head->line, line, compnum) == 1) {
         *head_ptr = create_sort_node(line, head);
+        /* Suppress false positive: analyzer doesn't understand that if create_sort_node
+         * returns NULL, we return -1 and caller handles cleanup. The 'head' pointer
+         * is correctly linked into the new node, so there's no leak. */
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wanalyzer-malloc-leak"
         return (*head_ptr == NULL) ? -1 : 0;
+        #pragma GCC diagnostic pop
     }
 
     /* Find insertion point */

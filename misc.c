@@ -38,10 +38,6 @@
 #include "safe_convert.h"
 #include "safe_system.h"
 
-extern short redraw;
-
-/* Note: memset() is standard C89 - no platform-specific declaration needed */
-
 #ifdef CONQUER
 
 
@@ -2803,6 +2799,12 @@ void
 mailclose(int to)
 {
 	if(mailok==DONEMAIL) return;
+
+	/* Validate fm file handle before use */
+	if (fm == NULL) {
+		mailok = DONEMAIL;
+		return;
+	}
 
 	if(to >= 0) {
 		fputs("END\n",fm);
