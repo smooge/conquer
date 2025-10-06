@@ -1,0 +1,179 @@
+# =============================================================================
+# Clang-Tidy Configuration for Conquer Modernization Project
+# =============================================================================
+# Phase 8.4 - Memory Management Enhancement
+# This configuration balances strict analysis with pragmatic legacy code handling
+#
+# Usage:
+#   - Automatically used by clang-tidy when run from project directory
+#   - Integrated with CMake static analysis targets
+#   - Run: clang-tidy -p build file.c
+#
+# Configuration sections:
+#   1. Checks - Which analysis checks to enable/disable
+#   2. CheckOptions - Configuration for specific checks
+#   3. ExtraArgs - Additional compiler arguments
+# =============================================================================
+
+---
+Checks: >
+  # Performance checks - Always enable for game optimization
+  performance-*,
+
+  # Misc checks - General code quality
+  misc-*,
+  -misc-no-recursion,
+  -misc-unused-parameters,
+
+  # Readability checks - Code clarity (selective for legacy code)
+  readability-duplicate-include,
+  readability-misleading-indentation,
+  readability-inconsistent-declaration-parameter-name,
+  readability-redundant-declaration,
+  readability-redundant-control-flow,
+  readability-simplify-boolean-expr,
+  readability-identifier-naming,
+
+  # Bugprone checks - Critical bug detection (Phase 8.4 focus)
+  bugprone-assert-side-effect,
+  bugprone-macro-repeated-side-effects,
+  bugprone-infinite-loop,
+  bugprone-macro-parentheses,
+  bugprone-posix-return,
+  bugprone-reserved-identifier,
+  bugprone-signal-handler,
+  bugprone-signed-char-misuse,
+  bugprone-sizeof-expression,
+  bugprone-branch-clone,
+  bugprone-dangling-handle,
+  bugprone-forwarding-reference-overload,
+  bugprone-misplaced-widening-cast,
+  bugprone-not-null-terminated-result,
+  bugprone-sizeof-container,
+  bugprone-string-constructor,
+  bugprone-suspicious-memset-usage,
+  bugprone-suspicious-string-compare,
+  bugprone-undefined-memory-manipulation,
+  bugprone-use-after-move,
+
+  # Modernize checks - C modernization (Phase 8.5 preparation)
+  modernize-macro-to-enum,
+  modernize-use-bool-literals,
+  modernize-deprecated-headers,
+  -modernize-use-trailing-return-type,
+
+  # Portability checks - Cross-platform compatibility
+  portability-*,
+
+  # CERT secure coding checks - Security compliance
+  cert-dcl03-c,
+  cert-dcl37-c,
+  cert-dcl51-cpp,
+  cert-env33-c,
+  cert-err34-c,
+  cert-err52-cpp,
+  cert-fio38-c,
+  cert-flp30-c,
+  cert-mem57-cpp,
+  cert-msc50-cpp,
+  cert-msc51-cpp,
+  cert-pos44-c,
+  cert-str34-c,
+
+  # Clang analyzer checks - Deep static analysis
+  clang-analyzer-core.*,
+  clang-analyzer-deadcode.*,
+  clang-analyzer-nullability.*,
+  clang-analyzer-unix.*,
+  -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,
+  -clang-analyzer-security.insecureAPI.strcpy,
+  -clang-analyzer-security.insecureAPI.gets,
+
+# Treat warnings as errors (disabled by default for incremental improvement)
+# WarningsAsErrors: ''
+
+# Header filter - Only analyze project files, not system headers
+HeaderFilterRegex: '.*'
+
+# Check options - Fine-tune specific checks
+CheckOptions:
+  # Assert side effect detection
+  - key:             bugprone-assert-side-effect.AssertMacros
+    value:           'ASSERT,assert'
+
+  # Identifier naming conventions (enforce consistent naming)
+  - key:             readability-identifier-naming.FunctionCase
+    value:           'lower_case'
+  - key:             readability-identifier-naming.VariableCase
+    value:           'lower_case'
+  - key:             readability-identifier-naming.ParameterCase
+    value:           'lower_case'
+  - key:             readability-identifier-naming.MacroDefinitionCase
+    value:           'UPPER_CASE'
+  - key:             readability-identifier-naming.EnumConstantCase
+    value:           'UPPER_CASE'
+  - key:             readability-identifier-naming.GlobalConstantCase
+    value:           'UPPER_CASE'
+
+  # Function size limits (relaxed for legacy code)
+  - key:             readability-function-size.LineThreshold
+    value:           '500'
+  - key:             readability-function-size.StatementThreshold
+    value:           '500'
+  - key:             readability-function-size.BranchThreshold
+    value:           '100'
+
+  # Magic numbers (relaxed for game code with many constants)
+  - key:             readability-magic-numbers.IgnoredIntegerValues
+    value:           '0;1;2;3;4;5;6;7;8;10;16;32;64;100;256;1000'
+
+  # Uppercase literal suffix
+  - key:             readability-uppercase-literal-suffix.NewSuffixes
+    value:           'L;LL;LU;LLU'
+
+# Extra compiler arguments - Match project build configuration
+ExtraArgs:
+  - '-std=c2x'
+  - '-D_POSIX_C_SOURCE=200809L'
+  - '-DCONQUER_CMAKE_BUILD=1'
+  - '-Wno-unknown-warning-option'
+
+# System includes - Suppress warnings in system headers
+SystemHeaders: false
+
+# Output format
+# Options: '' (default), 'llvm', 'google', 'webkit', 'mozilla'
+FormatStyle: 'none'
+
+# =============================================================================
+# Configuration Notes
+# =============================================================================
+#
+# Disabled Checks and Rationale:
+# -------------------------------
+# -misc-no-recursion: Game logic legitimately uses recursion (pathfinding, etc)
+# -misc-unused-parameters: Legacy code has many callbacks with unused params
+# -modernize-use-trailing-return-type: C doesn't support this C++ feature
+# -clang-analyzer-security.insecureAPI.*: Too noisy for legacy code migration
+#
+# Phase-Specific Focus:
+# ---------------------
+# Phase 8.4 (Current): Memory safety checks (bugprone-*, cert-mem*)
+# Phase 8.5 (Next): Modernization checks (modernize-*)
+# Phase 9+: Full strict analysis with WarningsAsErrors enabled
+#
+# Integration with CMake:
+# -----------------------
+# This file is automatically used by:
+#   - make clang-tidy-full
+#   - make clang-tidy-memory
+#   - make clang-tidy-security
+#   - ctest -L static-analysis
+#
+# Manual Usage:
+# -------------
+# clang-tidy -p build file.c
+# clang-tidy -p build --fix file.c  # Auto-fix (use with caution)
+# clang-tidy -p build --list-checks # Show all active checks
+#
+# =============================================================================

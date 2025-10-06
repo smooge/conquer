@@ -152,26 +152,19 @@ if(CLANG_TIDY_FOUND)
         ${CMAKE_SOURCE_DIR}/check.c
     )
 
-    # Clang-tidy configuration with modernization checks
-    set(CLANG_TIDY_CHECKS
-        "-checks=\
-readability-*,\
-modernize-*,\
-bugprone-*,\
-clang-analyzer-*,\
-performance-*,\
-portability-*,\
-cert-*,\
--modernize-use-trailing-return-type,\
--readability-magic-numbers"
-    )
+    # Check for .clang-tidy configuration file
+    if(EXISTS "${CMAKE_SOURCE_DIR}/.clang-tidy")
+        message(STATUS "  Using .clang-tidy configuration from project root")
+    else()
+        message(WARNING "  No .clang-tidy file found - using clang-tidy defaults")
+    endif()
 
     # Full project clang-tidy analysis
     add_custom_target(clang-tidy-full
         COMMAND ${CMAKE_COMMAND} -E echo "=== Running clang-tidy on full project ==="
+        COMMAND ${CMAKE_COMMAND} -E echo "Using configuration: ${CMAKE_SOURCE_DIR}/.clang-tidy"
         COMMAND ${CLANG_TIDY_EXECUTABLE}
             -p ${CMAKE_BINARY_DIR}
-            ${CLANG_TIDY_CHECKS}
             ${CMAKE_SOURCE_DIR}/*.c
             2>&1 | tee ${CMAKE_BINARY_DIR}/reports/clang-tidy/full_report.txt
         COMMAND ${CMAKE_COMMAND} -E echo "✓ Clang-tidy analysis complete"
@@ -184,9 +177,9 @@ cert-*,\
     # Memory management focused clang-tidy
     add_custom_target(clang-tidy-memory
         COMMAND ${CMAKE_COMMAND} -E echo "=== Clang-tidy: Memory Management Files ==="
+        COMMAND ${CMAKE_COMMAND} -E echo "Using configuration: ${CMAKE_SOURCE_DIR}/.clang-tidy"
         COMMAND ${CLANG_TIDY_EXECUTABLE}
             -p ${CMAKE_BINARY_DIR}
-            ${CLANG_TIDY_CHECKS}
             ${MEMORY_MGMT_FILES}
             2>&1 | tee ${CMAKE_BINARY_DIR}/reports/clang-tidy/memory_report.txt
         COMMAND ${CMAKE_COMMAND} -E echo "✓ Memory-focused clang-tidy complete"
@@ -199,9 +192,9 @@ cert-*,\
     # Security critical files clang-tidy
     add_custom_target(clang-tidy-security
         COMMAND ${CMAKE_COMMAND} -E echo "=== Clang-tidy: Security Critical Files ==="
+        COMMAND ${CMAKE_COMMAND} -E echo "Using configuration: ${CMAKE_SOURCE_DIR}/.clang-tidy"
         COMMAND ${CLANG_TIDY_EXECUTABLE}
             -p ${CMAKE_BINARY_DIR}
-            -checks="cert-*,bugprone-*,clang-analyzer-security.*"
             ${SECURITY_CRITICAL_FILES}
             2>&1 | tee ${CMAKE_BINARY_DIR}/reports/clang-tidy/security_report.txt
         COMMAND ${CMAKE_COMMAND} -E echo "✓ Security-focused clang-tidy complete"
@@ -215,9 +208,9 @@ cert-*,\
     add_custom_target(clang-tidy-fix
         COMMAND ${CMAKE_COMMAND} -E echo "=== Clang-tidy: Auto-fix mode (CAUTION) ==="
         COMMAND ${CMAKE_COMMAND} -E echo "This will modify source files. Ensure clean git state!"
+        COMMAND ${CMAKE_COMMAND} -E echo "Using configuration: ${CMAKE_SOURCE_DIR}/.clang-tidy"
         COMMAND ${CLANG_TIDY_EXECUTABLE}
             -p ${CMAKE_BINARY_DIR}
-            -checks="modernize-*,readability-*"
             -fix
             ${CMAKE_SOURCE_DIR}/*.c
             2>&1 | tee ${CMAKE_BINARY_DIR}/reports/clang-tidy/fix_report.txt
