@@ -247,24 +247,29 @@ if(CLANG_TIDY_FOUND)
         VERBATIM
     )
 
-    # Clang-tidy with auto-fix (use with caution)
-    add_custom_target(clang-tidy-fix
-        COMMAND ${CMAKE_COMMAND} -E echo "=== Clang-tidy: Auto-fix mode (CAUTION) ==="
-        COMMAND ${CMAKE_COMMAND} -E echo "This will modify source files. Ensure clean git state!"
-        COMMAND ${CMAKE_COMMAND} -E echo "Using configuration: ${CMAKE_SOURCE_DIR}/.clang-tidy"
-        COMMAND ${CLANG_TIDY_EXECUTABLE}
-            -p ${CMAKE_BINARY_DIR}
-            --extra-arg=-Wno-unknown-warning-option
-            -fix
-            ${ALL_C_SOURCES}
-            2>&1 | tee ${CMAKE_BINARY_DIR}/reports/clang-tidy/fix_report.txt
-        COMMAND ${CMAKE_COMMAND} -E echo "✓ Auto-fix complete - review changes before committing!"
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        COMMENT "Running clang-tidy with automatic fixes"
-        VERBATIM
-    )
+    # Clang-tidy with auto-fix - DISABLED
+    # Reason: Too many warnings currently (~100k+), auto-fix would make extensive
+    #         changes that need careful review. Re-enable after reducing warning
+    #         noise and refining .clang-tidy configuration.
+    # To enable: Uncomment the add_custom_target block below and update message()
+    #
+    # add_custom_target(clang-tidy-fix
+    #     COMMAND ${CMAKE_COMMAND} -E echo "=== Clang-tidy: Auto-fix mode (CAUTION) ==="
+    #     COMMAND ${CMAKE_COMMAND} -E echo "This will modify source files. Ensure clean git state!"
+    #     COMMAND ${CMAKE_COMMAND} -E echo "Using configuration: ${CMAKE_SOURCE_DIR}/.clang-tidy"
+    #     COMMAND ${CLANG_TIDY_EXECUTABLE}
+    #         -p ${CMAKE_BINARY_DIR}
+    #         --extra-arg=-Wno-unknown-warning-option
+    #         -fix
+    #         ${ALL_C_SOURCES}
+    #         2>&1 | tee ${CMAKE_BINARY_DIR}/reports/clang-tidy/fix_report.txt
+    #     COMMAND ${CMAKE_COMMAND} -E echo "✓ Auto-fix complete - review changes before committing!"
+    #     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    #     COMMENT "Running clang-tidy with automatic fixes"
+    #     VERBATIM
+    # )
 
-    message(STATUS "  Clang-tidy targets: clang-tidy-full, clang-tidy-memory, clang-tidy-security, clang-tidy-remaining, clang-tidy-fix")
+    message(STATUS "  Clang-tidy targets: clang-tidy-full, clang-tidy-memory, clang-tidy-security, clang-tidy-remaining")
 endif()
 
 # =============================================================================
@@ -358,7 +363,7 @@ if(CLANG_TIDY_FOUND)
     message(STATUS "  - make clang-tidy-memory    (Phase 8.4 memory files)")
     message(STATUS "  - make clang-tidy-security  (security critical files)")
     message(STATUS "  - make clang-tidy-remaining (game logic, UI, utilities)")
-    message(STATUS "  - make clang-tidy-fix       (auto-fix - use with caution)")
+    message(STATUS "  NOTE: clang-tidy-fix disabled (too noisy, needs config refinement)")
 endif()
 
 if(SCAN_BUILD_FOUND AND CLANG_TIDY_FOUND)

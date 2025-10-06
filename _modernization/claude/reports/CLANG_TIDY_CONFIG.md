@@ -182,13 +182,21 @@ Every clang-tidy target automatically uses `.clang-tidy`:
 - `make clang-tidy-memory` - Analyzes memory management focused files (7 files)
 - `make clang-tidy-security` - Analyzes security critical files (4 files)
 - `make clang-tidy-remaining` - Analyzes game logic, UI, and utility files (17 files)
-- `make clang-tidy-fix` - Auto-fix mode (modifies source files)
+- ~~`make clang-tidy-fix`~~ - **DISABLED** (auto-fix too aggressive with current warning volume)
 
 **Requirements**:
 - Static analysis must be enabled: `cmake -B build -DENABLE_STATIC_ANALYSIS=ON`
 - clang-tidy must be installed on the system
 
-**Note**: The `clang-tidy-full` and `clang-tidy-fix` targets use `file(GLOB)` to collect all `*.c` files in the project root, ensuring proper shell expansion even with CMake's `VERBATIM` flag.
+**Note**: The `clang-tidy-full` target uses `file(GLOB)` to collect all `*.c` files in the project root, ensuring proper shell expansion even with CMake's `VERBATIM` flag.
+
+**Auto-fix target status**: The `clang-tidy-fix` target is currently disabled because the project generates ~100k+ warnings. Running auto-fix would make extensive changes requiring careful manual review. Re-enable after:
+1. Refining `.clang-tidy` configuration to reduce noise
+2. Disabling overly aggressive checks
+3. Establishing baseline of acceptable warnings
+4. Testing auto-fix on individual files first
+
+To re-enable: Uncomment the target definition in `cmake/StaticAnalysis.cmake` and update status messages.
 
 ### Configuration Override
 
