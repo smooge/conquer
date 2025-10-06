@@ -220,11 +220,11 @@ static char *hasseen;
  */
 void init_hasseen(void) {
 	hasseen = (char *)malloc(safe_int_to_size(((COLS-10)/2) * (LINES-5)));
-	memset(hasseen, 0, safe_int_to_size(((COLS-10)/2) * (LINES-5)));
 	if (hasseen == (char *)NULL) {
 		errormsg("Cannot allocate memory.");
 		bye(FALSE);
 	}
+	memset(hasseen, 0, safe_int_to_size(((COLS-10)/2) * (LINES-5)));
 }
 
 /*
