@@ -1415,7 +1415,6 @@ extern char *HElecost, *OElecost, *EElecost, *DElecost, *FElecost;
 
 #ifdef CONQUER
 extern	long	mercgot;
-extern short hilmode;
 extern int armornvy;
 extern int roads_this_turn;
 extern int terror_adj;

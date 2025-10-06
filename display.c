@@ -175,10 +175,6 @@
 #include "data.h"
 #include "safe_convert.h"
 
-/*redraw map in this turn if redraw is a 1*/
-extern short redraw;
-/*display state SEE data.h FOR CURRENT VALUES OF THESE */
-
 static char *hasseen;
 
 /*
@@ -1033,5 +1029,4 @@ void whatcansee (void) {
 		&& i<SCREEN_X_SIZE && j<SCREEN_Y_SIZE)
 			HAS_SEEN(i,j)=TRUE;
 
-	return;
 }
