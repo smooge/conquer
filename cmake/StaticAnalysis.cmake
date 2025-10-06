@@ -143,6 +143,7 @@ if(CLANG_TIDY_FOUND)
         ${CMAKE_SOURCE_DIR}/combat.c
         ${CMAKE_SOURCE_DIR}/update.c
         ${CMAKE_SOURCE_DIR}/io.c
+        ${CMAKE_SOURCE_DIR}/m2alloc.c
     )
 
     set(SECURITY_CRITICAL_FILES
@@ -159,13 +160,17 @@ if(CLANG_TIDY_FOUND)
         message(WARNING "  No .clang-tidy file found - using clang-tidy defaults")
     endif()
 
+    # Collect all C source files for full analysis
+    file(GLOB ALL_C_SOURCES "${CMAKE_SOURCE_DIR}/*.c")
+
     # Full project clang-tidy analysis
     add_custom_target(clang-tidy-full
         COMMAND ${CMAKE_COMMAND} -E echo "=== Running clang-tidy on full project ==="
         COMMAND ${CMAKE_COMMAND} -E echo "Using configuration: ${CMAKE_SOURCE_DIR}/.clang-tidy"
         COMMAND ${CLANG_TIDY_EXECUTABLE}
             -p ${CMAKE_BINARY_DIR}
-            ${CMAKE_SOURCE_DIR}/*.c
+            --extra-arg=-Wno-unknown-warning-option
+            ${ALL_C_SOURCES}
             2>&1 | tee ${CMAKE_BINARY_DIR}/reports/clang-tidy/full_report.txt
         COMMAND ${CMAKE_COMMAND} -E echo "✓ Clang-tidy analysis complete"
         COMMAND ${CMAKE_COMMAND} -E echo "Report: ${CMAKE_BINARY_DIR}/reports/clang-tidy/full_report.txt"
@@ -180,6 +185,7 @@ if(CLANG_TIDY_FOUND)
         COMMAND ${CMAKE_COMMAND} -E echo "Using configuration: ${CMAKE_SOURCE_DIR}/.clang-tidy"
         COMMAND ${CLANG_TIDY_EXECUTABLE}
             -p ${CMAKE_BINARY_DIR}
+            --extra-arg=-Wno-unknown-warning-option
             ${MEMORY_MGMT_FILES}
             2>&1 | tee ${CMAKE_BINARY_DIR}/reports/clang-tidy/memory_report.txt
         COMMAND ${CMAKE_COMMAND} -E echo "✓ Memory-focused clang-tidy complete"
@@ -195,6 +201,7 @@ if(CLANG_TIDY_FOUND)
         COMMAND ${CMAKE_COMMAND} -E echo "Using configuration: ${CMAKE_SOURCE_DIR}/.clang-tidy"
         COMMAND ${CLANG_TIDY_EXECUTABLE}
             -p ${CMAKE_BINARY_DIR}
+            --extra-arg=-Wno-unknown-warning-option
             ${SECURITY_CRITICAL_FILES}
             2>&1 | tee ${CMAKE_BINARY_DIR}/reports/clang-tidy/security_report.txt
         COMMAND ${CMAKE_COMMAND} -E echo "✓ Security-focused clang-tidy complete"
@@ -211,8 +218,9 @@ if(CLANG_TIDY_FOUND)
         COMMAND ${CMAKE_COMMAND} -E echo "Using configuration: ${CMAKE_SOURCE_DIR}/.clang-tidy"
         COMMAND ${CLANG_TIDY_EXECUTABLE}
             -p ${CMAKE_BINARY_DIR}
+            --extra-arg=-Wno-unknown-warning-option
             -fix
-            ${CMAKE_SOURCE_DIR}/*.c
+            ${ALL_C_SOURCES}
             2>&1 | tee ${CMAKE_BINARY_DIR}/reports/clang-tidy/fix_report.txt
         COMMAND ${CMAKE_COMMAND} -E echo "✓ Auto-fix complete - review changes before committing!"
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}

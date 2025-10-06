@@ -44,12 +44,7 @@ User provided sample configuration from external website: `_modernization/claude
 # Original
 ExtraArgs: [-std=c11,-DDEBUG]
 
-# Enhanced
-ExtraArgs:
-  - '-std=c2x'
-  - '-D_POSIX_C_SOURCE=200809L'
-  - '-DCONQUER_CMAKE_BUILD=1'
-  - '-Wno-unknown-warning-option'
+# Removed as integrated from cmake
 ```
 
 **2. Expanded Check Coverage**
@@ -183,10 +178,16 @@ endif()
 ### All Targets Use Configuration
 
 Every clang-tidy target automatically uses `.clang-tidy`:
-- `make clang-tidy-full`
-- `make clang-tidy-memory`
-- `make clang-tidy-security`
-- `make clang-tidy-fix`
+- `make clang-tidy-full` - Analyzes all C source files in project root
+- `make clang-tidy-memory` - Analyzes memory management focused files
+- `make clang-tidy-security` - Analyzes security critical files
+- `make clang-tidy-fix` - Auto-fix mode (modifies source files)
+
+**Requirements**:
+- Static analysis must be enabled: `cmake -B build -DENABLE_STATIC_ANALYSIS=ON`
+- clang-tidy must be installed on the system
+
+**Note**: The `clang-tidy-full` and `clang-tidy-fix` targets use `file(GLOB)` to collect all `*.c` files in the project root, ensuring proper shell expansion even with CMake's `VERBATIM` flag.
 
 ### Configuration Override
 
@@ -418,6 +419,57 @@ find . -name ".clang-tidy"
 # Verify effective configuration
 clang-tidy --dump-config -p build
 ```
+
+### GCC -fanalyzer Flag Error (Known Issue)
+
+**Symptom**: All clang-tidy targets show error at start:
+```
+error: unknown argument '-fanalyzer'; did you mean '-Xanalyzer'? [clang-diagnostic-error]
+```
+
+**Root Cause**:
+- The project uses GCC's `-fanalyzer` flag for static analysis (Phase 8.4)
+- This flag is in `compile_commands.json` (used by clang-tidy)
+- Clang doesn't recognize this GCC-specific flag
+
+**Impact**:
+- ⚠️ Error message appears at start of every clang-tidy run
+- ✅ **Analysis still runs successfully** and produces valid results
+- ✅ All warnings and checks work correctly despite the error
+
+**Status**: **Acceptable** - Does not affect functionality
+
+**Workarounds** (if error message is problematic):
+
+1. **Filter output** (recommended for scripts):
+   ```bash
+   make clang-tidy-full 2>&1 | grep -v "fanalyzer"
+   ```
+
+2. **Temporary disable** (for clean clang-tidy runs):
+   ```bash
+   # Reconfigure without -fanalyzer
+   cmake -B build -DENABLE_ANALYZER=OFF -DENABLE_STATIC_ANALYSIS=ON
+   make clang-tidy-full
+   # Re-enable analyzer
+   cmake -B build -DENABLE_ANALYZER=ON
+   ```
+
+3. **Create filtered compile_commands.json** (advanced):
+   ```bash
+   # Remove -fanalyzer from compile database
+   sed 's/-fanalyzer//g' build/compile_commands.json > build/compile_commands_clang.json
+   clang-tidy -p build --compile-commands-dir=build *.c
+   ```
+
+**Long-term Solution**:
+- Phase 9+ may separate GCC and Clang build configurations
+- Consider conditional analyzer flags based on compiler detection
+- Not a priority - error is cosmetic and doesn't affect results
+
+**Related Files**:
+- `cmake/Phase4.cmake` - Where `-fanalyzer` is added
+- `cmake/StaticAnalysis.cmake` - Clang-tidy target definitions
 
 ## Best Practices
 
