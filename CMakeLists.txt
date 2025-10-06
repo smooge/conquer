@@ -35,6 +35,9 @@ include(CompilerWarnings)
 # Phase 5.2: Dual compilation system implementation
 include(DualCompilation)
 
+# Phase 8.4: Static analysis tools integration
+include(StaticAnalysis)
+
 # Basic compiler and build type setup
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type" FORCE)
