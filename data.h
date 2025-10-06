@@ -970,6 +970,7 @@ extern void jump_to(int home);
 extern void printscore(void);
 extern void flee(int x, int y, int isupd, int slaver);
 extern int readmap(void);
+extern char **m2alloc_safe(int nrows, int ncols, int entrysize, char *error_msg, size_t error_msg_size);
 extern char **m2alloc(int nrows, int ncols, int entrysize);
 extern int get_pass(char *str);
 /* magic.c */

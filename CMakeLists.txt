@@ -456,7 +456,7 @@ add_custom_command(TARGET docs POST_BUILD
 # Define file sets for archive creation
 set(SOURCE_FILES
     admin.c cexecute.c check.c combat.c commands.c data.c display.c
-    extcmds.c forms.c io.c magic.c main.c makeworl.c misc.c move.c
+    extcmds.c forms.c io.c m2alloc.c magic.c main.c makeworl.c misc.c move.c
     navy.c newhelp.c newlogin.c npc.c psmap.c randeven.c reports.c
     safe_system.c sort.c spew.c trade.c update.c
 )

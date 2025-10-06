@@ -1428,95 +1428,9 @@ int readmap (void) {
 #endif /* ADMIN */
 
 /*
- * m2alloc - Two-dimensional array memory allocator utility
- *
- * Provides a convenient interface for allocating contiguous two-dimensional
- * arrays in C, overcoming the language's limitations in dynamic multi-dimensional
- * array allocation. This function creates properly aligned arrays that can be
- * accessed using standard array notation (array[row][col]) while ensuring
- * memory efficiency through contiguous allocation patterns.
- *
- * Allocation Strategy:
- * 1. Single malloc() call for all required memory (pointers + data)
- * 2. Pointer array construction for row indexing
- * 3. Contiguous data layout for cache efficiency
- * 4. Proper alignment for all data types through entrysize parameter
- * 5. Error handling with program termination on allocation failure
- *
- * Memory Layout:
- * - First section: Array of row pointers (nrows * sizeof(char*))
- * - Second section: Actual data storage (nrows * ncols * entrysize)
- * - Row pointers calculated to point into data section
- * - Enables standard array[i][j] syntax for access
- *
- * The function includes comprehensive error reporting and terminates the
- * program if memory allocation fails, ensuring that allocation failures
- * are immediately detected rather than causing silent corruption later.
- * This aggressive error handling is appropriate for game systems where
- * memory allocation failure indicates a fundamental system problem.
- *
- * Parameters:
- *   nrows - Number of rows in the two-dimensional array
- *   ncols - Number of columns in each row
- *   entrysize - Size in bytes of each individual array element
- *
- * Returns:
- *   char** - Pointer to allocated array (can be cast to appropriate type)
- *
- * Side Effects:
- *   - Allocates memory using malloc() that must be freed by caller
- *   - Terminates program via abrt() if allocation fails
- *   - Writes error message to stdout on allocation failure
- *   - Modifies allocated memory to construct pointer array structure
- *
- * Testing Notes:
- *   Category: A (Unit) - Self-contained memory allocation utility
- *   Approach: Unit tests with various array sizes and element types
- *   Key Tests: Allocation success, pointer arithmetic, error handling, memory layout
- *   Dependencies: Standard library malloc(), program termination functions
- *   Mock Requirements: Memory allocation mocking, error condition simulation
- *   Complexity: Simple - Straightforward allocation with pointer arithmetic
- *
- * Notes:
- *   - Essential utility for dynamic game world arrays (sct, occ, movecost)
- *   - Contiguous allocation improves cache performance for large arrays
- *   - Single allocation/free cycle simplifies memory management
- *   - Generic interface supports any data type through entrysize parameter
- *   - Error handling prevents silent allocation failures
- *   - Widely used throughout game system for dynamic data structures
- *   - Critical infrastructure for scalable world sizes
- *   - Enables efficient two-dimensional array access patterns
+ * NOTE: m2alloc() and m2alloc_safe() functions have been moved to m2alloc.c
+ * for better testability and modularity. See m2alloc.c for implementation.
  */
-char ** m2alloc (
-    int nrows,		/* row dimension */
-    int ncols,		/* column dimension */
-    int entrysize	/* # bytes in items to be stored */
-) {
-	char	**baseaddr;
-	int	j;
-	size_t row_data_size = (size_t)ncols * (size_t)entrysize;  /* Total data per row */
-	size_t total_size = (size_t)nrows * sizeof(char *) + (size_t)nrows * row_data_size;
-
-	/* Suppress analyzer warning for intentional pointer+data allocation pattern */
-	#pragma GCC diagnostic push
-	#pragma GCC diagnostic ignored "-Wanalyzer-allocation-size"
-	baseaddr = (char **) malloc(total_size);
-	#pragma GCC diagnostic pop
-
-	if( baseaddr == (char **) NULL ) {
-		printf("OOPS - cannot allocate %d by %d blocks of %d bytes\n",nrows,ncols,entrysize);
-		abrt()
-	}
-
-	/* Update entrysize for the rest of the function (backward compatibility) */
-	entrysize = (int)row_data_size;
-	if(nrows>0){
-		*baseaddr = (char *) (baseaddr + nrows);
-		for(j=1; j<nrows; j++)
-			baseaddr[j] = baseaddr[j-1] + entrysize;
-	}
-	return(baseaddr);
-}
 
 /*
  * get_pass - Secure password input with character masking
