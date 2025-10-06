@@ -6,6 +6,105 @@ Legacy code modernization project guidance for `/projects/conquer-4.x/`.
 
 **Target Platforms**: Debian Linux, Fedora Linux, macOS, FreeBSD (POSIX-compliant)
 
+## Directory Change Protocol
+
+**CRITICAL**: Claude must maintain consistent working directory to avoid confusion and errors.
+
+**Project Root**: `/projects/conquer-4.x` (always return to this directory as "home base")
+
+### Best Practices (MANDATORY)
+
+**Rule 1: Prefer Absolute Paths Over cd**
+```bash
+# ✅ PREFERRED - No directory change needed
+cmake --build /projects/conquer-4.x/build --clean-first
+ctest --test-dir /projects/conquer-4.x/build --output-on-failure
+_modernization/scripts/test_warnings.sh -w 8 -x c2x filename.c
+
+# ❌ AVOID - Changes persistent directory state
+cd build
+cmake --build . --clean-first
+```
+
+**Rule 2: Single-Command Pattern with &&**
+When `cd` is necessary, use single-command pattern to avoid persistent state change:
+```bash
+# ✅ GOOD - Command runs in target directory, doesn't change persistent location
+cd /projects/conquer-4.x/build && ctest --output-on-failure
+
+# ❌ BAD - Changes persistent directory, causes confusion in future commands
+cd build
+ctest --output-on-failure
+```
+
+**Rule 3: Always Use Absolute Paths for cd**
+```bash
+# ✅ GOOD - Unambiguous, works from any location
+cd /projects/conquer-4.x/build && make test
+
+# ❌ BAD - Relative path fails if already in target directory
+cd build && make test
+```
+
+**Rule 4: Verify Location When Unsure**
+Before running location-sensitive commands, check current directory:
+```bash
+pwd  # Check location first
+cd /projects/conquer-4.x  # Return to project root if needed
+```
+
+### Common Scenarios
+
+**Scenario 1: Running CMake Build**
+```bash
+# ✅ BEST - Absolute path, no cd needed
+cmake --build /projects/conquer-4.x/build --clean-first
+
+# ✅ ACCEPTABLE - Single command with &&
+cd /projects/conquer-4.x && cmake --build build --clean-first
+```
+
+**Scenario 2: Running Tests**
+```bash
+# ✅ BEST - Use --test-dir option
+ctest --test-dir /projects/conquer-4.x/build --output-on-failure
+
+# ✅ ACCEPTABLE - Single command with &&
+cd /projects/conquer-4.x/build && ctest --output-on-failure
+```
+
+**Scenario 3: Running Scripts**
+```bash
+# ✅ BEST - Run from project root with relative path
+_modernization/scripts/test_warnings.sh -w 8 filename.c
+
+# ✅ ACCEPTABLE - Use absolute path
+/projects/conquer-4.x/_modernization/scripts/test_warnings.sh -w 8 filename.c
+```
+
+**Scenario 4: Git Operations**
+```bash
+# ✅ BEST - Git works from any subdirectory, but use project root for clarity
+cd /projects/conquer-4.x && git status
+cd /projects/conquer-4.x && git add file.c && git commit -m "message"
+```
+
+### Recovery Protocol
+
+**If Claude appears confused about directory location:**
+1. User says: "Check directory change protocol"
+2. Claude runs: `pwd` to verify current location
+3. Claude runs: `cd /projects/conquer-4.x` to return to project root
+4. Claude continues with absolute paths or single-command pattern
+
+### Benefits
+
+- **Eliminates confusion** about current working directory
+- **Prevents errors** from attempting `cd` into already-current directory
+- **Improves reliability** by making commands location-independent
+- **Reduces back-and-forth** between user and Claude
+- **Maintains consistent state** throughout session
+
 ## Build and Testing Commands
 
 **PRIMARY**: Use standardized testing script: `_modernization/scripts/test_warnings.sh -w 8 -x c2x -p 4 -s 8 -n c2x -t [BASELINE|ADMIN|GAME|UPDATE|FINAL|PROJECT] filename.c`
