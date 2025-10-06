@@ -179,8 +179,9 @@ endif()
 
 Every clang-tidy target automatically uses `.clang-tidy`:
 - `make clang-tidy-full` - Analyzes all C source files in project root
-- `make clang-tidy-memory` - Analyzes memory management focused files
-- `make clang-tidy-security` - Analyzes security critical files
+- `make clang-tidy-memory` - Analyzes memory management focused files (7 files)
+- `make clang-tidy-security` - Analyzes security critical files (4 files)
+- `make clang-tidy-remaining` - Analyzes game logic, UI, and utility files (17 files)
 - `make clang-tidy-fix` - Auto-fix mode (modifies source files)
 
 **Requirements**:

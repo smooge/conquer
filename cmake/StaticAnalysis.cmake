@@ -153,6 +153,26 @@ if(CLANG_TIDY_FOUND)
         ${CMAKE_SOURCE_DIR}/check.c
     )
 
+    set(REMAINING_FILES
+        ${CMAKE_SOURCE_DIR}/cexecute.c
+        ${CMAKE_SOURCE_DIR}/commands.c
+        ${CMAKE_SOURCE_DIR}/data.c
+        ${CMAKE_SOURCE_DIR}/extcmds.c
+        ${CMAKE_SOURCE_DIR}/forms.c
+        ${CMAKE_SOURCE_DIR}/magic.c
+        ${CMAKE_SOURCE_DIR}/main.c
+        ${CMAKE_SOURCE_DIR}/move.c
+        ${CMAKE_SOURCE_DIR}/navy.c
+        ${CMAKE_SOURCE_DIR}/newhelp.c
+        ${CMAKE_SOURCE_DIR}/npc.c
+        ${CMAKE_SOURCE_DIR}/psmap.c
+        ${CMAKE_SOURCE_DIR}/randeven.c
+        ${CMAKE_SOURCE_DIR}/reports.c
+        ${CMAKE_SOURCE_DIR}/sort.c
+        ${CMAKE_SOURCE_DIR}/spew.c
+        ${CMAKE_SOURCE_DIR}/trade.c
+    )
+
     # Check for .clang-tidy configuration file
     if(EXISTS "${CMAKE_SOURCE_DIR}/.clang-tidy")
         message(STATUS "  Using .clang-tidy configuration from project root")
@@ -211,6 +231,22 @@ if(CLANG_TIDY_FOUND)
         VERBATIM
     )
 
+    # Remaining files clang-tidy (game logic, UI, utilities)
+    add_custom_target(clang-tidy-remaining
+        COMMAND ${CMAKE_COMMAND} -E echo "=== Clang-tidy: Remaining Files ==="
+        COMMAND ${CMAKE_COMMAND} -E echo "Using configuration: ${CMAKE_SOURCE_DIR}/.clang-tidy"
+        COMMAND ${CLANG_TIDY_EXECUTABLE}
+            -p ${CMAKE_BINARY_DIR}
+            --extra-arg=-Wno-unknown-warning-option
+            ${REMAINING_FILES}
+            2>&1 | tee ${CMAKE_BINARY_DIR}/reports/clang-tidy/remaining_report.txt
+        COMMAND ${CMAKE_COMMAND} -E echo "✓ Remaining files clang-tidy complete"
+        COMMAND ${CMAKE_COMMAND} -E echo "Report: ${CMAKE_BINARY_DIR}/reports/clang-tidy/remaining_report.txt"
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        COMMENT "Running clang-tidy on game logic, UI, and utility files"
+        VERBATIM
+    )
+
     # Clang-tidy with auto-fix (use with caution)
     add_custom_target(clang-tidy-fix
         COMMAND ${CMAKE_COMMAND} -E echo "=== Clang-tidy: Auto-fix mode (CAUTION) ==="
@@ -228,7 +264,7 @@ if(CLANG_TIDY_FOUND)
         VERBATIM
     )
 
-    message(STATUS "  Clang-tidy targets: clang-tidy-full, clang-tidy-memory, clang-tidy-security, clang-tidy-fix")
+    message(STATUS "  Clang-tidy targets: clang-tidy-full, clang-tidy-memory, clang-tidy-security, clang-tidy-remaining, clang-tidy-fix")
 endif()
 
 # =============================================================================
@@ -321,6 +357,7 @@ if(CLANG_TIDY_FOUND)
     message(STATUS "  - make clang-tidy-full      (full project analysis)")
     message(STATUS "  - make clang-tidy-memory    (Phase 8.4 memory files)")
     message(STATUS "  - make clang-tidy-security  (security critical files)")
+    message(STATUS "  - make clang-tidy-remaining (game logic, UI, utilities)")
     message(STATUS "  - make clang-tidy-fix       (auto-fix - use with caution)")
 endif()
 
