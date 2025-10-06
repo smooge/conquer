@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #include <sysexits.h>
 #include "unity.h"
 
@@ -23,9 +24,32 @@ typedef struct holder {
     struct holder *next;
 } L_DATA, *L_PTR;
 
-/* Copy build_node implementation from sort.c for testing */
+/* Copy constant from sort.c */
+#define MAX_STR 200
+
+/* Copy build_node implementation from sort.c for testing (Phase 8.4.3.2 - with validation) */
 static L_PTR build_node(char data[], L_PTR nptr) {
     L_PTR temp;
+
+    /* Validate input parameter */
+    if (data == NULL) {
+        fprintf(stderr, "build_node: NULL data parameter\n");
+        exit(EX_SOFTWARE);
+    }
+
+    /* Check string length and bounds */
+    size_t data_len = strlen(data);
+    if (data_len > MAX_STR) {
+        fprintf(stderr, "build_node: String too long (%zu > %d)\n",
+                data_len, MAX_STR);
+        exit(EX_SOFTWARE);
+    }
+
+    /* Check for overflow in allocation size calculation */
+    if (data_len >= SIZE_MAX - 1) {
+        fprintf(stderr, "build_node: String length overflow\n");
+        exit(EX_SOFTWARE);
+    }
 
     /* build the memory space */
     if((temp=(L_PTR)malloc(sizeof(L_DATA)))==(L_PTR)NULL) {
@@ -38,7 +62,6 @@ static L_PTR build_node(char data[], L_PTR nptr) {
     }
 
     /* assign the values */
-    size_t data_len = strlen(data);
     memcpy(temp->line, data, data_len);
     temp->line[data_len] = '\0';
     temp->next = nptr;
