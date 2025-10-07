@@ -637,6 +637,7 @@ static int parse_class_header(const char *line, struct text_class *cls)
  *
  * ERROR HANDLING STRATEGY:
  * ======================
+ * - NULL parameter validation: exits with EX_SOFTWARE (parameter error)
  * - Memory allocation failures exit with EX_SOFTWARE (critical failure)
  * - Invalid weight syntax defaults to weight 1
  * - Text overflow truncated at MAX_DEF_LEN boundary
@@ -665,18 +666,26 @@ static int parse_class_header(const char *line, struct text_class *cls)
  * Testing Notes:
  *   Category: A (Unit) - Isolated parsing with clear input/output
  *   Approach: Unit tests with various definition formats and edge cases
- *   Key Tests: Weight parsing, escape sequences, memory allocation, text limits
+ *   Key Tests: NULL parameter, weight parsing, escape sequences, memory allocation, text limits
  *   Dependencies: duplicate_string() function, malloc availability
- *   Mock Requirements: malloc failure injection, MAX_DEF_LEN boundary testing
+ *   Mock Requirements: malloc failure injection, MAX_DEF_LEN boundary testing, NULL parameter handling
  *   Complexity: Moderate - Text processing with multiple parsing states
  */
 static struct definition *parse_definition(const char *line)
 {
     struct definition *def;
-    const char *p = line;
+    const char *p;
     int weight = 1; /* default weight */
     static char processed_text[MAX_DEF_LEN];
     char *out = processed_text;
+
+    /* Validate parameter */
+    if (!line) {
+        fprintf(stderr, "parse_definition: NULL parameter\n");
+        exit(EX_SOFTWARE);
+    }
+
+    p = line;
 
     def = malloc(sizeof(struct definition));
     if (!def) {
