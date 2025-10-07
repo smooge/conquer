@@ -1,0 +1,85 @@
+---
+# Clang-Format Configuration for Conquer 4.x Modernization
+# Based on updated .indent.pro settings with function brace improvements
+# Created: 2025-10-07
+# Purpose: Consistent code formatting to eliminate indentation warnings
+
+Language: C
+BasedOnStyle: LLVM
+
+# Line Length (from .indent.pro)
+ColumnLimit: 96
+
+# Indentation (from .indent.pro: 4 spaces, no tabs)
+IndentWidth: 4
+TabWidth: 8
+UseTab: Never
+ContinuationIndentWidth: 4
+IndentCaseLabels: true
+
+# Brace Placement - KEY DIFFERENCE FROM .indent.pro
+# This addresses the function brace issue that GNU indent can't handle
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterFunction: false          # int foo(){ - SAME LINE (user preference)
+  AfterControlStatement: Never  # if(){ for(){ while(){ - SAME LINE
+  AfterStruct: false            # struct foo{ - SAME LINE
+  AfterEnum: false              # enum bar{ - SAME LINE
+  AfterUnion: false             # union baz{ - SAME LINE
+  BeforeElse: false             # } else { - CUDDLE (from .indent.pro)
+  BeforeWhile: false            # } while() - CUDDLE (from .indent.pro)
+  AfterClass: false
+  AfterNamespace: false
+  AfterExternBlock: false
+  SplitEmptyFunction: false
+  SplitEmptyRecord: false
+
+# Spacing (from .indent.pro)
+SpaceAfterCStyleCast: false                # (int)value not (int) value
+SpaceBeforeParens: ControlStatements       # if() not if ()
+SpaceBeforeParensOptions:
+  AfterFunctionDeclarationName: false      # int foo() not int foo ()
+  AfterFunctionDefinitionName: false       # Same for definitions
+SpacesInParentheses: false
+
+# Alignment - MINIMAL (from updated .indent.pro)
+AlignConsecutiveDeclarations: false        # No forced column alignment
+AlignConsecutiveAssignments: false
+AlignTrailingComments: false               # Keep comments where they are
+PointerAlignment: Right                    # int *ptr not int* ptr
+
+# Boolean Operators (from .indent.pro --break-before-boolean-operator)
+BreakBeforeBinaryOperators: NonAssignment
+
+# Function Declaration/Definition (from .indent.pro --dont-break-procedure-type)
+AlwaysBreakAfterReturnType: None          # Keep return type on same line as name
+
+# Blank Lines (from .indent.pro)
+MaxEmptyLinesToKeep: 2
+KeepEmptyLinesAtTheStartOfBlocks: false
+
+# Short Constructs - Force multi-line for clarity
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+AllowShortBlocksOnASingleLine: Never
+AllowShortCaseLabelsOnASingleLine: false
+
+# Comments (from .indent.pro - natural positioning)
+ReflowComments: true
+
+# Include Sorting
+SortIncludes: false                        # Don't reorder includes (preserve existing)
+
+# Penalties (fine-tuning for readability)
+PenaltyBreakBeforeFirstCallParameter: 19
+PenaltyBreakComment: 300
+PenaltyBreakFirstLessLess: 120
+PenaltyBreakString: 1000
+PenaltyExcessCharacter: 1000000
+PenaltyReturnTypeOnItsOwnLine: 60
+
+# Other Settings
+IndentGotoLabels: false
+IndentPPDirectives: None
+DerivePointerAlignment: false

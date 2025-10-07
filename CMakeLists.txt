@@ -38,6 +38,9 @@ include(DualCompilation)
 # Phase 8.4: Static analysis tools integration
 include(StaticAnalysis)
 
+# Code formatting tools integration
+include(CodeFormatting)
+
 # Basic compiler and build type setup
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type" FORCE)

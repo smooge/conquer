@@ -5,7 +5,7 @@
 --indent-level4					/* indent N spaces per level */
 --case-indentation4				/* indent case statements */
 --parameter-indentation4			/* indent old-style parameter declarations */
---declaration-indentation40			/* variable declarations line up here */
+--declaration-indentation0			/* minimal spacing for variable declarations */
 --tab-size8					/* tabs get expanded into N characters */
 
 --break-before-boolean-operator			/* break before boolean operators if possible */
@@ -21,13 +21,16 @@
 --braces-on-struct-decl-line			/* put opening brace ON struct declaration line */
 --continue-at-parentheses			/* line up continuations at parens */
 
+/* NOTE: GNU indent doesn't support function braces on same line (int foo(){)
+ * This will be addressed in .clang-format configuration instead */
+
 --no-space-after-function-call-names		/* function() not function () */
 --dont-space-special-semicolon			/* no extra spacing of semicolons */
 --no-space-after-casts				/* (type)cast not (type) cast */
 
---comment-indentation64				/* line up comments at column N */
---declaration-comment-column64			/* line up comments after declarations in column N */
---else-endif-column64				/* preprocessor #else and #endif comments line up here */
+--comment-indentation0				/* keep comments at their natural position */
+--declaration-comment-column0			/* keep declaration comments at natural position */
+--else-endif-column0				/* preprocessor #else and #endif comments at natural position */
 --start-left-side-of-comments			/* add stars in block comments */
 --format-all-comments				/* try to reformat comments */
 --dont-format-first-column-comments		/* unless they are on the left! */
