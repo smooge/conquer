@@ -123,9 +123,6 @@
 #include "patchlevel.h"
 #include "safe_convert.h"
 
-extern short redraw; 		/*redraw map in this turn if redraw is a 1*/
-extern short hilmode,dismode;			/*display state*/
-
 /*
  * getspace - Allocate memory for core game data structures
  *

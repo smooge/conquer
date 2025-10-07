@@ -1,10 +1,10 @@
 /*
  * sort.c - Data sorting utilities
- * 
+ *
  * This file is part of Conquer.
  * Originally Copyright (C) 1988-1989 by Edward M. Barlow and Adam Bryant
  * Copyright (C) 2025 Juan Manuel Méndez Rey (Vejeta) - Licensed under GPL v3 with permission from original authors
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -295,8 +295,7 @@ main(int argc, char *argv[])
  *   - Input validation prevents buffer overflows in downstream processing
  *   - Essential preprocessing step for reliable sorting operations
  */
-static int
-get_line(char data[])
+static int get_line(char data[])
 {
 	int in,ch;
 

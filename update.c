@@ -2565,10 +2565,13 @@ move_people (void)
 			sptr = &sct[x][y];
 			if ((sptr->owner == country) && (sptr->people != 0)) {
 
-				for (t_attr = 0, i = x - 2; i < x + 3; i++)
-				for (j = y - 2; j < y + 3; j++)
-				if (ONMAP(i, j))
-					t_attr += attr[i][j];
+				for (t_attr = 0, i = x - 2; i < x + 3; i++){
+					for (j = y - 2; j < y + 3; j++){
+						if (ONMAP(i, j)) {
+							t_attr += attr[i][j];
+						}
+					}
+				}
 
 				if (t_attr > 0) {
 					t_attr *= 5;

@@ -840,7 +840,7 @@ int main(void) {
 
     printf("\n=== Safe System Test Summary ===\n");
     printf("Functions Tested: 4 (append_file_to_file, write_timestamp_to_file, secure_file_delete, sort_file_in_place)\n");
-    printf("Total Test Cases Run: %d\n", Unity.NumberOfTests);
+    printf("Total Test Cases Run: %lu\n", Unity.NumberOfTests);
     printf("Security Features: Command injection prevention, safe file operations\n");
     printf("Coverage: Normal operations, error conditions, security validation, sorting algorithms\n");
 

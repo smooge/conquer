@@ -275,7 +275,6 @@ int main (int argc, char **argv) {
 	/* rflag = make world from read in files */
 	int mflag, aflag, xflag, rflag;
 	char string[FILELTH];
-	extern char *optarg;
 	char defaultdir[BIGLTH],cq_opts[BIGLTH];
 	struct passwd *pwent;
 

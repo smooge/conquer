@@ -259,7 +259,7 @@
 #define	TURN		world.turn	/* current game turn */
 #define	SEASON(x)	((x)%4)		/* calculate season from turn number */
 #define	PSEASON(x)	seasonstr[((x)%4)]	/* season name string */
-#define	YEAR(x)		((int)((x+3)/4))	/* calculate year from turn */
+#define	YEAR(x)		((int)(((x)+3)/4))	/* calculate year from turn */
 #define	WINTER		0		/* Winter season */
 #define	SPRING		1		/* Spring season */
 #define	SUMMER		2		/* Summer season */
@@ -1200,18 +1200,18 @@ extern	struct sprd_sht
 #define	DMNTNATTR	40	/* DWARF ATTRACTIVENESS	*/
 #define	DHILLATTR	20
 #define	DCLERATTR	0
-#define	DCITYATTR	-20
-#define	DTOWNATTR	-20
+#define	DCITYATTR	(-20)
+#define	DTOWNATTR	(-20)
 #define	DGOLDATTR	40
 #define	DMINEATTR	40
-#define	DFOREATTR	-20
-#define	DWOODATTR	-10
+#define	DFOREATTR	(-20)
+#define	DWOODATTR	(-10)
 
-#define	EMNTNATTR	-40	/* ELF	*/
-#define	EHILLATTR	-20
+#define	EMNTNATTR	(-40)	/* ELF	*/
+#define	EHILLATTR	(-20)
 #define	ECLERATTR	0
-#define	ECITYATTR	-50
-#define	ETOWNATTR	-50
+#define	ECITYATTR	(-50)
+#define	ETOWNATTR	(-50)
 #define	EGOLDATTR	0
 #define	EMINEATTR	0
 #define	EFOREATTR	40
@@ -1224,17 +1224,17 @@ extern	struct sprd_sht
 #define	OTOWNATTR	25
 #define	OGOLDATTR	20
 #define	OMINEATTR	20
-#define	OFOREATTR	-40
-#define	OWOODATTR	-20
+#define	OFOREATTR	(-40)
+#define	OWOODATTR	(-20)
 
-#define	HMNTNATTR	-10	/* HUMAN	*/
+#define	HMNTNATTR	(-10)	/* HUMAN	*/
 #define	HHILLATTR	0
 #define	HCLERATTR	30
 #define	HCITYATTR	50
 #define	HTOWNATTR	40
 #define	HGOLDATTR	10
 #define	HMINEATTR	10
-#define	HFOREATTR	-20
+#define	HFOREATTR	(-20)
 #define	HWOODATTR	0
 
 /* EXOTIC TRADE GOODS	*/
@@ -1338,7 +1338,7 @@ extern	struct sprd_sht
 #define	C_SHADOW	10
 #define	C_END		10
 
-#define	ISCITY(desig)	((desig==DCITY)||(desig==DCAPITOL)||(desig==DFORT)||(desig==DTOWN))
+#define	ISCITY(desig)	(((desig)==DCITY)||((desig)==DCAPITOL)||((desig)==DFORT)||((desig)==DTOWN))
 
 #define	PWR_NA	10	/* national attributes gained from power	*/
 #define	CLA_NA	30	/* national attributes gained from class	*/

@@ -113,8 +113,6 @@
 #include "data.h"
 #include "safe_convert.h"
 
-extern short redraw;
-
 #define RPT_LINES 11
 #define RPT_COLS 10
 #define BUF_LINES 10

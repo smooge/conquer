@@ -780,8 +780,6 @@ void buildps (void) {
  *   - Orchestrates the complete map generation pipeline
  */
 int main(int argc, char *argv[]) {
-    extern char *optarg;
-    extern int optind;
     char *buf, firstline[81];
 
     /* Validate argv before dereferencing (satisfies static analyzer) */

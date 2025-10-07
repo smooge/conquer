@@ -49,8 +49,6 @@
 #define	NOSALE	3
 #define TRADECOST(cost)	(100-cost)/100	/* twenty percent cost is normal*/
 
-extern short country;
-
 static char *commodities[NUMPRODUCTS] = { "Gold", "Food", "Metal", "Jewels",
 		"Land", "Soldiers", "Ships"};
 #ifdef ADMIN

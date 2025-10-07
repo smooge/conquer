@@ -127,7 +127,7 @@ int main(int argc, char **argv) {
 #endif
 	void init_hasseen(void),mapprep(void);
 	char passwd[PASSLTH+1];
-	extern char *optarg, conqmail[];
+	extern char conqmail[];
 #ifdef SYSMAIL
 	extern char sysmail[];
 #endif /* SYSMAIL */

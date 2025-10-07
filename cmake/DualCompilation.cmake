@@ -19,6 +19,7 @@
 set(SHARED_SOURCES
     cexecute.c
     io.c
+    m2alloc.c
     navy.c
     magic.c
     misc.c

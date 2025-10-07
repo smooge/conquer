@@ -36,7 +36,6 @@
 /* ================= EXTERNAL DEPENDENCIES ================= */
 
 extern	FILE	*fpmsg;		/* Message file for game communications */
-extern	short	country;	/* Current nation context for operations */
 
 /* ================= GLOBAL COMBAT STATE VARIABLES ================= */
 /*
