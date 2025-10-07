@@ -209,6 +209,14 @@ static char *hasseen;
  *   Mock Requirements: Terminal dimensions, memory allocation testing
  *   Complexity: Simple - Basic memory management with platform compatibility
  *
+ * Memory Management:
+ *   - Allocates global hasseen array using malloc()
+ *   - Size: ((COLS-10)/2) * (LINES-5) bytes (varies by terminal size)
+ *   - **Memory is never freed** - acceptable for program-lifetime global
+ *   - Deallocation handled by operating system on program termination
+ *   - Terminates program via bye(FALSE) on allocation failure
+ *   - Memory ownership: global hasseen pointer (lifetime: entire program)
+ *
  * Notes:
  *   - Must be called before any screen rendering functions
  *   - Memory is not explicitly freed (program termination cleanup)

@@ -69,6 +69,14 @@
  *   - Writes to error_msg buffer if provided
  *   - Modifies allocated memory to construct pointer array structure
  *
+ * Memory Management:
+ *   - Allocates contiguous memory block using malloc()
+ *   - Total size: (nrows * sizeof(char*)) + (nrows * ncols * entrysize) bytes
+ *   - **CALLER MUST FREE** returned pointer using free()
+ *   - Single free() call releases entire 2D array (no need to free individual rows)
+ *   - Returns NULL on failure (errno set to EINVAL or ENOMEM)
+ *   - No memory leaks on error paths (nothing allocated before failure)
+ *
  * Testing Notes:
  *   Category: A (Unit) - Fully testable allocation utility
  *   Approach: Comprehensive unit tests for success and all error paths
@@ -222,6 +230,14 @@ char **m2alloc_safe(
  *   - Terminates program via abrt() if allocation fails or parameters invalid
  *   - Writes error message to stdout on any error
  *   - Modifies allocated memory to construct pointer array structure
+ *
+ * Memory Management:
+ *   - Allocates contiguous memory block via m2alloc_safe()
+ *   - Total size: (nrows * sizeof(char*)) + (nrows * ncols * entrysize) bytes
+ *   - **CALLER MUST FREE** returned pointer using free()
+ *   - Single free() call releases entire 2D array (no need to free individual rows)
+ *   - Never returns NULL (terminates program on allocation failure)
+ *   - Memory ownership transfers to caller on successful return
  *
  * Testing Notes:
  *   Category: B (Integration) - Wrapper function, test m2alloc_safe() instead

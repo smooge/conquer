@@ -505,6 +505,13 @@ comp_line(char *a, char *b)
  *   - Enforces maximum string length (MAX_STR = 200 bytes)
  *   - Prevents integer overflow in allocation size calculation
  *
+ * Memory Management:
+ *   - Allocates L_DATA structure using malloc() (sizeof(L_DATA) bytes)
+ *   - Allocates string storage using malloc() (strlen(data) + 1 bytes)
+ *   - **Memory is never freed** - acceptable for short-lived utility program
+ *   - Program exits on allocation failure (no memory leak possible)
+ *   - Total allocation per node: ~16 bytes + string length
+ *
  * Testing Notes:
  *   Category: A (Unit) - Testable with controlled inputs and mock allocation
  *   Approach: Unit tests with various string lengths, NULL checks, and mock malloc

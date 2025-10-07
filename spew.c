@@ -364,6 +364,14 @@ void makemess(int count, FILE *output)
  *   - Modifies global classes array with sorted class data
  *   - May output error messages to stderr on parsing failures
  *
+ * Memory Management:
+ *   - Allocates global classes array using calloc() (MAX_CLASSES * sizeof(struct text_class))
+ *   - Allocates definition structures for each message template via parse_definition()
+ *   - Allocates string copies for class names and variant lists via duplicate_string()
+ *   - **Memory freed by cleanup_memory()** when message system is deinitialized
+ *   - Returns -1 on failure (partial allocations are cleaned up before return)
+ *   - Total allocation: ~300 classes + definitions + strings (varies by rules file)
+ *
  * Testing Notes:
  *   Category: B (Integration) - Requires filesystem access and file fixtures
  *   Approach: Integration testing with various rules file formats and error conditions
@@ -628,13 +636,6 @@ static int parse_class_header(const char *line, struct text_class *cls)
  * - Text length limited by MAX_DEF_LEN for memory safety
  * - Input text copied with escape processing applied
  *
- * MEMORY ALLOCATION:
- * ================
- * - Definition structure allocated dynamically
- * - Processed text string allocated via duplicate_string()
- * - Memory allocation failures return NULL
- * - Caller responsible for linking into class definition list
- *
  * ERROR HANDLING STRATEGY:
  * ======================
  * - NULL parameter validation: exits with EX_SOFTWARE (parameter error)
@@ -662,6 +663,14 @@ static int parse_class_header(const char *line, struct text_class *cls)
  *   - Outputs error messages to stderr on failure conditions
  *   - Processes escape sequences in static buffer
  *   - No global state modification
+ *
+ * Memory Management:
+ *   - Allocates definition structure using malloc() (sizeof(struct definition))
+ *   - Allocates processed text string via duplicate_string()
+ *   - **Caller responsible for linking into class definition list**
+ *   - Memory freed by cleanup_memory() during system deinitialization
+ *   - Exits program with EX_SOFTWARE on allocation failure (never returns NULL)
+ *   - Total allocation per definition: ~32 bytes + message text length
  *
  * Testing Notes:
  *   Category: A (Unit) - Isolated parsing with clear input/output
@@ -1447,6 +1456,14 @@ static int compare_classes(const void *a, const void *b)
  *   - Outputs error messages to stderr on failure conditions
  *   - No modification of input string or global state
  *   - Memory allocation affects heap state
+ *
+ * Memory Management:
+ *   - Allocates string copy using malloc() (strlen(str) + 1 bytes)
+ *   - **Caller owns allocated memory** until freed by cleanup_memory()
+ *   - Validates string length (max MAX_DEF_LEN = 1000 bytes)
+ *   - Prevents allocation overflow (checks SIZE_MAX before allocation)
+ *   - Exits program with EX_SOFTWARE on allocation failure (never returns NULL)
+ *   - Memory freed during system deinitialization by cleanup_memory()
  *
  * Testing Notes:
  *   Category: A (Unit) - Simple utility function with clear behavior
