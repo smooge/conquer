@@ -465,7 +465,7 @@ clang-tidy -p build display.c misc.c makeworl.c combat.c update.c
 ### Alternative Next Session Options
 
 **Option 1**: Continue Phase 8.4.3 - Bounds Checking Enhancement
-- Analyze io.c alloc2d() function
+- Analyze io.c m2alloc() function
 - Review sort.c linked list operations
 - Check spew.c buffer allocations
 - Estimated: 6-8 hours
