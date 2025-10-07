@@ -21,7 +21,7 @@
 
 Based on Phase 8.4 TODO analysis, we have **4 files** with array allocations:
 
-1. **io.c** - 2D array allocation (alloc2d function)
+1. **io.c** - 2D array allocation (m2alloc function)
 2. **sort.c** - Linked list node allocation (addnode function)
 3. **spew.c** - Text generation buffers (3 allocation sites)
 4. **safe_system.c** - Sorting nodes (create_sort_node function)
@@ -75,22 +75,22 @@ Based on Phase 8.4 TODO analysis, we have **4 files** with array allocations:
 
 ### File 1: io.c - 2D Array Allocation
 
-**Function**: `alloc2d()` (lines 1430-1519)
+**Function**: `m2alloc()` (lines 1430-1519)
 
 **Current Implementation Analysis Needed**:
 ```c
 // Expected signature (to be verified):
-void **alloc2d(int nrows, int ncols, size_t element_size);
+void **m2alloc(int nrows, int ncols, size_t element_size);
 ```
 
 **Analysis Tasks**:
-- [ ] Read alloc2d() function implementation
+- [ ] Read m2alloc() function implementation
 - [ ] Identify parameter types (int, size_t, unsigned?)
 - [ ] Check for parameter validation
 - [ ] Review size calculation: `nrows * ncols * element_size`
 - [ ] Check for integer overflow in multiplication
 - [ ] Review error handling on allocation failure
-- [ ] Identify all callers of alloc2d()
+- [ ] Identify all callers of m2alloc()
 - [ ] Review caller usage patterns
 
 **Potential Issues to Check**:
@@ -102,7 +102,7 @@ void **alloc2d(int nrows, int ncols, size_t element_size);
 
 **Improvement Pattern**:
 ```c
-void **alloc2d(int nrows, int ncols, size_t element_size) {
+void **m2alloc(int nrows, int ncols, size_t element_size) {
     /* Parameter validation */
     if (nrows < 0 || ncols < 0) {
         fprintf(stderr, "Error: Invalid array dimensions (negative values)\n");
@@ -440,7 +440,7 @@ dest[len] = '\0';
 - [ ] User approval to proceed
 
 #### Sub-Phase 8.4.3.1: io.c - 2D Array Allocation
-1. [ ] Read alloc2d() function
+1. [ ] Read m2alloc() function
 2. [ ] Analyze current validation
 3. [ ] Define improvement plan
 4. [ ] User approval
@@ -514,26 +514,26 @@ dest[len] = '\0';
 **Boundary Condition Tests**:
 ```c
 /* Test zero dimensions */
-void test_alloc2d_zero_dimensions(void) {
-    void **arr = alloc2d(0, 10, sizeof(int));
+void test_m2alloc_zero_dimensions(void) {
+    void **arr = m2alloc(0, 10, sizeof(int));
     TEST_ASSERT_NULL(arr);  /* Should reject */
 }
 
 /* Test negative dimensions */
-void test_alloc2d_negative_dimensions(void) {
-    void **arr = alloc2d(-5, 10, sizeof(int));
+void test_m2alloc_negative_dimensions(void) {
+    void **arr = m2alloc(-5, 10, sizeof(int));
     TEST_ASSERT_NULL(arr);  /* Should reject */
 }
 
 /* Test large dimensions (near overflow) */
-void test_alloc2d_large_dimensions(void) {
-    void **arr = alloc2d(INT_MAX / 2, INT_MAX / 2, sizeof(int));
+void test_m2alloc_large_dimensions(void) {
+    void **arr = m2alloc(INT_MAX / 2, INT_MAX / 2, sizeof(int));
     TEST_ASSERT_NULL(arr);  /* Should reject before overflow */
 }
 
 /* Test valid dimensions */
-void test_alloc2d_valid_dimensions(void) {
-    void **arr = alloc2d(10, 10, sizeof(int));
+void test_m2alloc_valid_dimensions(void) {
+    void **arr = m2alloc(10, 10, sizeof(int));
     TEST_ASSERT_NOT_NULL(arr);
     /* Cleanup */
     free(arr);
@@ -652,7 +652,7 @@ void test_addnode_long_string(void) {
 1. **User Review**: Review this strategy document
 2. **User Approval**: Get approval to proceed with Sub-Phase 8.4.3.1
 3. **Constant Definition**: Define MAX_* constants based on code analysis
-4. **Begin io.c**: Start with alloc2d() function analysis
+4. **Begin io.c**: Start with m2alloc() function analysis
 
 ### Questions for User
 
@@ -681,7 +681,7 @@ void test_addnode_long_string(void) {
 
 **PHASE 8.4.3 STATUS**: 🔄 PLANNING COMPLETE
 **NEXT ACTION**: User approval to begin Sub-Phase 8.4.3.1 (io.c bounds checking)
-**RECOMMENDATION**: Start with io.c alloc2d() function (2-3 hours)
+**RECOMMENDATION**: Start with io.c m2alloc() function (2-3 hours)
 
 **Approach**: Incremental, systematic, user-controlled
 **Risk**: LOW (adding validation to already-good code)

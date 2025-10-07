@@ -19,7 +19,7 @@ Legacy code modernization project guidance for `/projects/conquer-4.x/`.
 # ✅ PREFERRED - No directory change needed
 cmake --build /projects/conquer-4.x/build --clean-first
 ctest --test-dir /projects/conquer-4.x/build --output-on-failure
-_modernization/scripts/test_warnings.sh -w 8 -x c2x filename.c
+_modernization/scripts/test_warnings.sh -w 9 -x c2x filename.c
 
 # ❌ AVOID - Changes persistent directory state
 cd build
@@ -76,10 +76,10 @@ cd /projects/conquer-4.x/build && ctest --output-on-failure
 **Scenario 3: Running Scripts**
 ```bash
 # ✅ BEST - Run from project root with relative path
-_modernization/scripts/test_warnings.sh -w 8 filename.c
+_modernization/scripts/test_warnings.sh -w 9 filename.c
 
 # ✅ ACCEPTABLE - Use absolute path
-/projects/conquer-4.x/_modernization/scripts/test_warnings.sh -w 8 filename.c
+/projects/conquer-4.x/_modernization/scripts/test_warnings.sh -w 9 filename.c
 ```
 
 **Scenario 4: Git Operations**
@@ -97,17 +97,9 @@ cd /projects/conquer-4.x && git add file.c && git commit -m "message"
 3. Claude runs: `cd /projects/conquer-4.x` to return to project root
 4. Claude continues with absolute paths or single-command pattern
 
-### Benefits
-
-- **Eliminates confusion** about current working directory
-- **Prevents errors** from attempting `cd` into already-current directory
-- **Improves reliability** by making commands location-independent
-- **Reduces back-and-forth** between user and Claude
-- **Maintains consistent state** throughout session
-
 ## Build and Testing Commands
 
-**PRIMARY**: Use standardized testing script: `_modernization/scripts/test_warnings.sh -w 8 -x c2x -p 4 -s 8 -n c2x -t [BASELINE|ADMIN|GAME|UPDATE|FINAL|PROJECT] filename.c`
+**PRIMARY**: Use standardized testing script: `_modernization/scripts/test_warnings.sh -w 9 -x c2x -p 4 -s 8 -n c2x -t [BASELINE|ADMIN|GAME|UPDATE|FINAL|PROJECT] filename.c`
 
 **FALLBACK**: Manual GCC commands if script unavailable:
 ```bash
@@ -125,7 +117,7 @@ cmake --build build --clean-first --target conqrun 2>&1 | grep "warning:"
 
 ## Modernization Workflow
 
-**Phases**: 1) Triage/Setup 2) Assessment/Planning 3) Documentation 4) Warning Elimination 5) Modern Build 6) Testing Infrastructure 7) Configuration 8) Syntactic Modernization 9) Deep Refactoring 10) Advanced Analysis
+**Phases**: 1) Triage/Setup 2) Assessment/Planning 3) Documentation 4) Warning Elimination 5) Modern Build 6) Testing Infrastructure 7) Configuration 8) Syntactic Modernization 9) Code Formatting 10) Deep Refactoring 11) Advanced Analysis
 
 ### Phase 1: Triage and Environment Setup
 - Version Control: Git setup, `.gitignore` for build artifacts
@@ -171,7 +163,7 @@ cmake --build build --clean-first --target conqrun 2>&1 | grep "warning:"
 ### Phase 6: Testing Infrastructure Setup ✅ **COMPLETE**
 **Status**: 158 tests passing (100% success rate), Unity framework operational, strategic analysis complete
 
-**Deferred to Phase 10+**: Integration testing (6.6), Game world testing (6.7)
+**Deferred to Phase 11+**: Integration testing (6.6), Game world testing (6.7)
 
 ### Phase 7: Configuration Modernization
 **Tasks**: Audit configuration files, replace hardcoded configs with automated feature detection, add configuration testing
@@ -185,14 +177,34 @@ cmake --build build --clean-first --target conqrun 2>&1 | grep "warning:"
 
 **Goal**: 50-75 additional tests, 200+ total tests passing
 
-### Phase 9: Deep Refactoring and Portability
+### Phase 9: Code Formatting and Style Standardization
+**Reference**: `_modernization/claude/reports/PHASE_09_STRATEGY.md`
+
+**Objective**: Apply consistent formatting across entire codebase using clang-format
+
+**Tasks**: Format 28 files, eliminate 69 indentation warnings, establish automated formatting standard
+
+**Formatting Standards**:
+- Function braces on same line: `int foo(){`
+- Control flow braces on same line: `if(){`, `for(){`, `while(){`
+- 4-space indentation, no tabs
+- 96-column line limit
+- Minimal alignment (no forced column positioning)
+
+**Impact**: Reduce clang-tidy warnings from 177 → ~108 (39% reduction), improve code readability
+
+**CMake Targets**: `make format-check`, `make format-fix`, `make format-report`
+
+**Sub-phases**: 9.1) Infrastructure validation 9.2) Pilot formatting 9.3) Core files 9.4) Remaining files 9.5) Verification 9.6) Documentation
+
+### Phase 10: Deep Refactoring and Portability
 **Focus**: Architecture evolution with dependency injection, pure function extraction, interface abstraction
 
 **Improvements**: 1) Abstract system dependencies 2) Separate business logic from I/O 3) Externalize configuration 4) Add return values for error handling 5) Standardize APIs
 
 **Goal**: 75-100 additional tests, 300+ total tests, cross-platform compatibility
 
-### Phase 10: Advanced Analysis and Maintenance
+### Phase 11: Advanced Analysis and Maintenance
 **Tasks**: Implement deferred Phase 6 components (integration/game world testing), static/dynamic analysis, security analysis
 
 **Analysis Tools**: AddressSanitizer, UndefinedBehaviorSanitizer, Valgrind, security scanners
@@ -474,8 +486,8 @@ gh issue create --title "DOC-BUG: [Brief Description]" --body "
 **Implementation Requirements**:
 ```bash
 # Example usage that should be established in Phase 2
-_modernization/scripts/test_warnings.sh -w 8 -x c2x -p 4 -s 8 -n c2x -t BASELINE filename.c
-_modernization/scripts/test_warnings.sh -w 8 -x c2x -p 4 -s 8 -n c2x -t FINAL filename.c
+_modernization/scripts/test_warnings.sh -w 9 -x c2x -p 4 -s 8 -n c2x -t BASELINE filename.c
+_modernization/scripts/test_warnings.sh -w 9 -x c2x -p 4 -s 8 -n c2x -t FINAL filename.c
 ```
 
 **Impact**: This single infrastructure investment in Phase 2 **eliminates entire categories of problems** in Phases 4-10 and dramatically improves modernization efficiency and reliability.

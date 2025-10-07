@@ -223,7 +223,7 @@ Step 8: Test and validate
 **Tasks**:
 
 1. **io.c - 2D Array Allocation**
-   - [ ] Review alloc2d() function (lines 1430-1519)
+   - [ ] Review m2alloc() function (lines 1430-1519)
    - [ ] Analyze bounds checking for nrows/ncols parameters
    - [ ] Review array indexing patterns in callers
    - [ ] Add parameter validation if needed
