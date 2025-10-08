@@ -1119,12 +1119,8 @@ printf("checking for leader in nation %s: armynum=%d\n",curntn->name,armynum);
  *   - Population growth gives lizards significant long-term advantage
  *   - Army coordination provides tactical military benefits
  *   - Thread safety: Not thread-safe due to global variable dependencies
+  * @last_documented: 2025-09-18
  */
-
-/****************************************************************/
-/*	DO_LIZARD() 						*/
-/* update lizards	 					*/
-/****************************************************************/
 void
 do_lizard (void)
 {
@@ -1258,12 +1254,8 @@ do_lizard (void)
  *   - Capital capture triggers catastrophic nation destruction
  *   - Scout mechanics encourage careful intelligence operations
  *   - Thread safety: Not thread-safe due to global variable dependencies
+  * @last_documented: 2025-09-18
  */
-
-/****************************************************************/
-/*	UPDCAPTURE() 						*/
-/* capture unoccupied sectors					*/
-/****************************************************************/
 void
 updcapture (void)
 {
@@ -1462,12 +1454,8 @@ updcapture (void)
  *   - Implements sophisticated economic modeling for strategy game
  *   - Creates pressure for territorial expansion and resource control
  *   - Thread safety: Not thread-safe due to extensive global variable usage
+  * @last_documented: 2025-09-18
  */
-
-/**************************************************************/
-/*	UPDSECTORS() 						*/
-/* update sectors one at a time				*/
-/**************************************************************/
 void
 updsectors (void)
 {
@@ -1648,6 +1636,7 @@ updsectors (void)
 	}
 }
 
+#define MAXSIEGE (NTOTAL)
 /*
  * updmil - Comprehensive military system update and movement calculation
  *
@@ -1758,13 +1747,8 @@ updsectors (void)
  *   - Integrates leadership, magic, and economic systems
  *   - Creates meaningful strategic choices between unit types
  *   - Thread safety: Not thread-safe due to extensive global variable usage
+  * @last_documented: 2025-09-18
  */
-
-/****************************************************************/
-/*	UPDMIL() 						*/
-/* reset military stuff 					*/
-/****************************************************************/
-#define MAXSIEGE (NTOTAL)
 void
 updmil (void)
 {
@@ -2149,12 +2133,8 @@ updmil (void)
  *   - Creates meaningful resource management decisions
  *   - Famine system adds realistic consequences to poor planning
  *   - Thread safety: Not thread-safe due to global variable dependencies
+  * @last_documented: 2025-09-18
  */
-
-/****************************************************************/
-/*	UPDCOMODITIES()						*/
-/* update commodities						*/
-/****************************************************************/
 void
 updcomodities (void)
 {
@@ -2347,12 +2327,9 @@ updcomodities (void)
  *   - Provides both mundane and supernatural leadership sources
  *   - Creates strategic value for capital protection
  *   - Thread safety: Not thread-safe due to global variable dependencies
+  * @last_documented: 2025-09-18
  */
 
-/****************************************************************/
-/* Conquer: Copyright (c) 1988 by Edward M Barlow              */
-/*	UPDLEADER()						*/
-/****************************************************************/
 void
 updleader (void)
 {
@@ -2538,9 +2515,8 @@ updleader (void)
  *   - Essential for realistic economic modeling and strategic depth
  *   - Mathematical precision ensures stable long-term demographic patterns
  *   - Thread safety: Not thread-safe due to global buffer and sector modifications
- */
-
-/* MOVE CIVILIANS based on the ratio of attractivenesses
+ *
+ * MOVE CIVILIANS based on the ratio of attractivenesses
  *
  * EQUILIBRIUM(1) = A1 / (A1 + A2) * (P1 + P2)
  * EQUILIBRIUM(2) = A2 / (A1 + A2) * (P1 + P2)
@@ -2548,6 +2524,7 @@ updleader (void)
  * DELTA(1) = (EQUILIBRIUM(1) - P1) / 5 =(A1P2 - P1A2) / 5(A1 + A2)
  * DELTA(2) = (EQUILIBRIUM(2) - P2) / 5 =(A2P1 - P2A1) / 5(A1 + A2) = -DELTA(1)
  * (i, j) is refered to as 1, (x, y) as 2
+  * @last_documented: 2025-09-18
  */
 void
 move_people (void)
