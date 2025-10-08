@@ -482,6 +482,50 @@ land_2reachp (int ax, int ay, int move_points)
  *   - Clean separation of concerns from recursive pathfinding engine
  */
 #ifdef ADMIN
+
+/*
+ * land_reachp - Determine if a land unit can reach a destination within movement points
+ *
+ * Pathfinding wrapper function that determines whether a land-based unit can
+ * travel from a starting location (ax, ay) to a goal location (gx, gy) within
+ * the available movement points. Allocates and manages pathfinding history array,
+ * validates terrain constraints (no water/peaks), and delegates to recursive
+ * pathfinding algorithm land_2reachp().
+ *
+ * Movement is constrained to land sectors only - water and peak sectors are
+ * impassable for land units. The function uses a history array to track visited
+ * sectors and remaining movement points to prevent redundant path exploration.
+ *
+ * Parameters:
+ *   ax - Starting X coordinate on the map
+ *   ay - Starting Y coordinate on the map
+ *   gx - Goal X coordinate on the map
+ *   gy - Goal Y coordinate on the map
+ *   move_points - Available movement points for the unit (must be < MAX_MOVE_UNITS)
+ *   movee - Nation ID of the moving unit (for movement cost calculations)
+ *
+ * Returns:
+ *   1 if destination is reachable within movement points
+ *   0 if destination is unreachable (blocked, too far, invalid terrain)
+ *
+ * Side Effects:
+ *   - Allocates and frees history_reachp array (MAPX × MAPY)
+ *   - Sets global variables: bx, by, moving_country, level
+ *   - Aborts program if move_points >= MAX_MOVE_UNITS
+ *
+ * Testing Notes:
+ *   Category: B - Integration testing with land_2reachp() - Depends on map state - Medium complexity
+ *   Approach: Test valid paths, blocked paths, terrain constraints, movement point limits
+ *   Dependencies: Requires initialized map (sct[][]), land_2reachp(), m2alloc()
+ *   Complexity: Medium - Pathfinding with terrain validation
+ *
+ * Notes:
+ *   - ADMIN mode only (disabled in CONQUER player mode)
+ *   - Aborts on invalid move_points rather than returning error
+ *   - Memory allocation failure not checked (relies on m2alloc() aborting on failure)
+ *   - Global variables used for recursion state (bx, by, moving_country, level)
+ *   - Caller must ensure ax, ay, gx, gy are within map bounds [0..MAPX), [0..MAPY)
+ */
 int
 land_reachp (int ax, int ay, int gx, int gy, int move_points, int movee)
 {
@@ -700,10 +744,54 @@ water_2reachp (int ax, int ay, int move_points)
 } /* water_2reachp() */
 #endif /* ADMIN */
 #ifdef XYZ	/* XYZ never is defined */
-/*
- *	water_reachp()
- */
 
+/*
+ * water_reachp - Determine if a naval unit can reach a destination within movement points
+ *
+ * Pathfinding wrapper function for naval units that determines whether a ship
+ * can travel from a starting water location (ax, ay) to a goal location (gx, gy)
+ * within the available movement points. Similar to land_reachp() but for naval
+ * movement with simplified water-only terrain constraints.
+ *
+ * This function initializes the pathfinding history array, validates movement
+ * point limits, and delegates to the recursive water_2reachp() algorithm for
+ * actual path exploration. The history array tracks visited sectors and remaining
+ * movement points to prevent redundant exploration.
+ *
+ * NOTE: This function is conditionally compiled but NEVER enabled (XYZ is never defined).
+ * It appears to be legacy/experimental code that was replaced or deprecated. The
+ * water_2reachp() implementation exists and is documented but this wrapper is unused.
+ *
+ * Parameters:
+ *   ax - Starting X coordinate on the map (must be water sector)
+ *   ay - Starting Y coordinate on the map (must be water sector)
+ *   gx - Goal X coordinate on the map
+ *   gy - Goal Y coordinate on the map
+ *   move_points - Available movement points for the naval unit (must be < MAX_MOVE_UNITS)
+ *   movee - Nation ID of the moving naval unit
+ *
+ * Returns:
+ *   1 if destination is reachable within movement points
+ *   0 if destination is unreachable (blocked, too far, not water)
+ *
+ * Side Effects:
+ *   - Modifies history_reachp array (assumes already allocated)
+ *   - Sets global variables: bx, by, moving_country
+ *   - Aborts program if move_points >= MAX_MOVE_UNITS
+ *
+ * Testing Notes:
+ *   Category: E - Skip testing (code never compiled/executed)
+ *   Approach: N/A - Disabled by preprocessor directive #ifdef XYZ
+ *   Dependencies: Would require water_2reachp(), initialized map, allocated history_reachp
+ *   Complexity: Medium - Naval pathfinding if ever enabled
+ *
+ * Notes:
+ *   - NEVER COMPILED: Guarded by #ifdef XYZ (XYZ is never defined)
+ *   - Legacy/experimental code - possibly replaced by different naval movement system
+ *   - Unlike land_reachp(), does NOT allocate history_reachp (assumes pre-allocated)
+ *   - May have been disabled due to bugs, incomplete implementation, or design change
+ *   - Consider removing in future cleanup or document why it's preserved
+ */
 int
 water_reachp (int ax, int ay, int gx, int gy, int move_points, int movee)
 {
@@ -728,9 +816,43 @@ water_reachp (int ax, int ay, int gx, int gy, int move_points, int movee)
 #endif /* 0 */
 
 /*
- *	solds_in_sector()
+ * solds_in_sector - Count total soldiers belonging to a nation in a specific sector
+ *
+ * Iterates through all armies of the specified nation and sums the total number
+ * of soldiers (sold) located at the given sector coordinates (x, y). This provides
+ * a quick count of military strength at a location for combat calculations,
+ * movement validation, and strategic analysis.
+ *
+ * The function scans all MAXARM army slots for the nation, checking each army's
+ * location (xloc, yloc) against the target coordinates. Armies with zero soldiers
+ * are skipped for efficiency. This is a read-only query function with no side effects.
+ *
+ * Parameters:
+ *   x - X coordinate of the sector to check
+ *   y - Y coordinate of the sector to check
+ *   nation - Nation ID to count soldiers for (index into ntn[] array)
+ *
+ * Returns:
+ *   Total number of soldiers belonging to the nation at sector (x, y)
+ *   Returns 0 if no soldiers present or nation has no armies at that location
+ *
+ * Side Effects:
+ *   None - Read-only query function
+ *
+ * Testing Notes:
+ *   Category: A - Unit testing - Depends on ntn[] state - Low complexity
+ *   Approach: Test empty sector, single army, multiple armies, boundary cases
+ *   Dependencies: Requires initialized ntn[] array with valid army data
+ *   Complexity: Low - Simple iteration and summation
+ *
+ * Notes:
+ *   - Available in both ADMIN and CONQUER modes (no conditional compilation)
+ *   - Does not validate input parameters (caller must ensure valid nation ID and coordinates)
+ *   - Efficient early termination for armies with zero soldiers
+ *   - Uses register storage class for optimization (legacy C optimization hint)
+ *   - Does not distinguish between different army types or statuses
+ *   - Companion function to units_in_sector() which counts civilians and other units
  */
-
 long
 solds_in_sector (int x, int y, int nation)
 {
@@ -749,6 +871,35 @@ solds_in_sector (int x, int y, int nation)
 	return( total );
 } /* solds_in_sector() */
 #ifdef ADMIN
+
+
+/* scores for weights per sector to be used by score	*/
+static struct wght {
+	int	sectors;
+	int	civilians;
+	int	soldiers;
+	int	gold;
+	int	jewels;
+	int	metal;
+	int	magics;
+	int	ships;
+} weights[] = {
+/*		Per 2  1000    1000      100K 100K   100K   Magic  10 */
+/*	Races   Sector People  Soldiers  Gold Jewels Iron   Power Ship */
+/* NPC */	{ 2,    1,     0,        0,    1,    1,     1,    0 },
+/* kingdom */	{ 2,    1,     2,        3,    0,    0,     0,    0 },
+/* empire */	{ 3,    0,     0,        1,    1,    0,     0,    0 },
+/* wizard */	{ 0,    2,     1,        0,    3,    5,     7,   0 },
+/* theocracy */	{ 2,    1,     0,        0,    3,    0,     3,    0 },
+/* pirate */	{ 0,    0,     5,        0,    10,   10,    1,    5 },
+/* trader */	{ 2,    1,     0,        0,    1,    1,     1,    8 },
+/* warlord */	{ 2,    1,     2,        0,    1,    1,     1,    0 },
+/* demon */	{ 2,    0,     1,        0,    1,    0,     5,   0 },
+/* dragon */	{ 0,    0,     0,        10,   20,   0,     0,    0 },
+/* shadow */	{ 2,    0,     0,        0,    0,    5,     0,    0 },
+/* miner */	{ 0,    0,     5,        0,    10,   10,   1,    5 },
+};
+
 
 /*
  * score_one - Calculate total score for a nation based on class-specific weighting
@@ -809,33 +960,6 @@ solds_in_sector (int x, int y, int nation)
  *   - Bonus calculations can be negative, affecting final score
  *   - Score scaling allows fair comparison between different nation classes
  */
-/* score_one()	*/
-static struct wght {
-	int	sectors;
-	int	civilians;
-	int	soldiers;
-	int	gold;
-	int	jewels;
-	int	metal;
-	int	magics;
-	int	ships;
-} weights[] = {
-/*		Per 2  1000    1000      100K 100K   100K   Magic  10 */
-/*	Races   Sector People  Soldiers  Gold Jewels Iron   Power Ship */
-/* NPC */	{ 2,    1,     0,        0,    1,    1,     1,    0 },
-/* kingdom */	{ 2,    1,     2,        3,    0,    0,     0,    0 },
-/* empire */	{ 3,    0,     0,        1,    1,    0,     0,    0 },
-/* wizard */	{ 0,    2,     1,        0,    3,    5,     7,   0 },
-/* theocracy */	{ 2,    1,     0,        0,    3,    0,     3,    0 },
-/* pirate */	{ 0,    0,     5,        0,    10,   10,    1,    5 },
-/* trader */	{ 2,    1,     0,        0,    1,    1,     1,    8 },
-/* warlord */	{ 2,    1,     2,        0,    1,    1,     1,    0 },
-/* demon */	{ 2,    0,     1,        0,    1,    0,     5,   0 },
-/* dragon */	{ 0,    0,     0,        10,   20,   0,     0,    0 },
-/* shadow */	{ 2,    0,     0,        0,    0,    5,     0,    0 },
-/* miner */	{ 0,    0,     5,        0,    10,   10,   1,    5 },
-};
-
 long
 score_one (int nation)
 {
@@ -892,14 +1016,78 @@ score_one (int nation)
 } /* score_one() */
 #endif /* ADMIN */
 /*
- *	print_accum()
+ *	TODO: print_accum()
  */
 
 	/* max number of print_accum() calls in one printf() */
 #define MAX_BUFFER	4
 #define BUFFER_SIZE	20
 
-/* is_habitable() - returns TRUE/FALSE if habitable */
+/*
+ * is_habitable - Determine if a map sector can support civilian population
+ *
+ * Checks whether a specific map sector has terrain conditions suitable for
+ * civilian habitation and population growth. This function performs a two-stage
+ * terrain analysis examining both altitude (topography) and vegetation (biome)
+ * characteristics to determine habitability.
+ *
+ * Habitability Criteria:
+ *
+ * UNINHABITABLE Conditions (immediate disqualification):
+ * - Altitude WATER: Oceanic sectors cannot support land-based populations
+ * - Altitude PEAK: Mountain peaks are too extreme for permanent settlement
+ *
+ * HABITABLE Vegetation Types (if altitude check passes):
+ * - BARREN: Marginal land (can support minimal population with food value checks)
+ * - LT_VEG: Light vegetation (grasslands, scrubland)
+ * - GOOD: Good vegetation (farmland, productive terrain)
+ * - WOOD: Wooded areas (sustainable resource base)
+ * - FOREST: Dense forest (rich ecosystem)
+ *
+ * UNINHABITABLE Vegetation Types:
+ * - DESERT: Arid wasteland (requires special racial/magical adaptations)
+ * - ICE: Frozen tundra (requires special racial/magical adaptations)
+ * - JUNGLE: Dense impenetrable vegetation (special handling elsewhere)
+ *
+ * Implementation Notes:
+ * - Uses temp variable to avoid repeated array lookups
+ * - Short-circuit evaluation: altitude check eliminates water/peaks immediately
+ * - Vegetation check only performed if altitude permits habitation
+ * - Does NOT account for race-specific adaptations (e.g., Dervish in DESERT)
+ * - Does NOT check food production capacity (use tofood() for that)
+ *
+ * Relationship to Other Systems:
+ * - Used by update routines to determine civilian growth eligibility
+ * - Complements tofood() which calculates actual food production
+ * - Race-specific exceptions handled in separate growth calculations
+ * - Does not consider magical enhancements (e.g., DERVISH/DESTROYER powers)
+ *
+ * Parameters:
+ *   x - X coordinate of sector (0 to MAPX-1)
+ *   y - Y coordinate of sector (0 to MAPY-1)
+ *
+ * Returns:
+ *   TRUE (1) if sector can support civilian population
+ *   FALSE (0) if sector is uninhabitable
+ *
+ * Side Effects:
+ *   None - Read-only terrain query
+ *
+ * Testing Notes:
+ *   Category: A (Unit) | Simple terrain classification logic
+ *   Approach: Unit tests with mock sector data covering all terrain combinations
+ *   Key Tests: Each altitude type, each vegetation type, boundary combinations
+ *   Dependencies: sct[][] global map array with altitude/vegetation fields
+ *   Mock Requirements: Mock sectors with all combinations of altitude/vegetation
+ *   Complexity: Low - Simple conditional logic with no side effects
+ *
+ * Notes:
+ *   - Critical for population growth and migration calculations
+ *   - Complements but does not replace food production calculations
+ *   - Race/magic adaptations handled in higher-level growth functions
+ *   - Does not validate coordinate bounds (caller responsibility)
+ *   - Conservative habitability model (special cases handled elsewhere)
+ */
 int
 is_habitable (int x, int y)
 {
@@ -1125,8 +1313,6 @@ num_powers (int nation, int type)
  *   - Food value 4 is considered the minimum for sustainable habitation
  *   - Special magical races can survive in otherwise uninhabitable terrain
  */
-/* returns food value of sector */
-/* 4 is limit of livable land */
 int
 tofood (struct s_sector *sptr, int cntry)
 {
@@ -1224,7 +1410,6 @@ tofood (struct s_sector *sptr, int cntry)
  *   - Same-category powers cost more due to 2x weighting (specialization penalty)
  *   - Cost calculation uses bit shifting for efficient doubling
  */
-/* returns cost of magic power - returns -1 if invalid */
 long
 getmgkcost (int type, int nation)
 {
@@ -1268,6 +1453,72 @@ getmgkcost (int type, int nation)
 	return(cost);
 }
 
+/*
+ * todigit - Convert ASCII character to numeric digit value with validation
+ *
+ * Converts an ASCII character representation of a digit ('0'-'9') to its
+ * corresponding integer value (0-9). This function provides safe character-to-
+ * integer conversion with explicit error indication for non-digit characters.
+ *
+ * Unlike standard library functions like atoi() or strtol() which process
+ * entire strings and may have complex error handling, this function focuses
+ * on single-character conversion with simple and explicit error signaling.
+ *
+ * Conversion Algorithm:
+ * 1. Validate character is in ASCII range '0' (48) to '9' (57)
+ * 2. If valid, subtract ASCII '0' offset to get numeric value
+ * 3. If invalid, return -1 error code
+ *
+ * Valid Input/Output Examples:
+ * - '0' → 0
+ * - '5' → 5
+ * - '9' → 9
+ *
+ * Invalid Input Examples (all return -1):
+ * - 'a' → -1 (alphabetic character)
+ * - ' ' → -1 (whitespace)
+ * - '-' → -1 (punctuation, even though ASCII 45 is near digits)
+ * - '\0' → -1 (null terminator)
+ *
+ * Use Cases:
+ * - Parsing single-digit numeric input in game commands
+ * - Validating user input characters before processing
+ * - Converting character arrays to numeric values with error checking
+ * - Safe alternative to unchecked character arithmetic
+ *
+ * Advantages Over Alternatives:
+ * - atoi(): This function validates single characters, not whole strings
+ * - isdigit(): This returns boolean; todigit() also converts the value
+ * - Direct arithmetic (c-'0'): This provides explicit error handling
+ *
+ * Parameters:
+ *   character - ASCII character to convert (typically from user input)
+ *               Uses register storage class for performance optimization
+ *
+ * Returns:
+ *   0-9 for valid digit characters ('0'-'9')
+ *   -1 for any non-digit character (error indication)
+ *
+ * Side Effects:
+ *   None - Pure function with no external state modification
+ *
+ * Testing Notes:
+ *   Category: A (Unit) | Pure conversion function with no dependencies
+ *   Approach: Unit tests covering all digit characters and common non-digits
+ *   Key Tests: Each digit '0'-'9', letters, punctuation, whitespace, control chars
+ *   Dependencies: None - self-contained with no external function calls
+ *   Mock Requirements: None - can test directly with character literals
+ *   Complexity: Trivial - Simple range check and arithmetic operation
+ *
+ * Notes:
+ *   - Uses legacy 'register' storage class hint (ignored by modern compilers)
+ *   - Error return value -1 is safely distinguishable from valid range 0-9
+ *   - Does not handle hexadecimal digits ('A'-'F', 'a'-'f')
+ *   - Does not handle negative numbers or multi-character strings
+ *   - Caller must check for -1 return to detect conversion errors
+ *   - ASCII-specific implementation (assumes ASCII character encoding)
+ *   - Thread-safe and reentrant (no shared state)
+ */
 int
 todigit (register int character)
 {
@@ -1280,8 +1531,7 @@ todigit (register int character)
  * if leader==true, only for leader sectors plus ntn.communicatins range
  * if leader==(-1), do not include ships on the sector search
  */
-void
-prep (int nation, int leader)
+void prep (int nation, int leader)
 {
 	short armynum,nvynum;
 	int save,i,j,x,y,start,end,com;
@@ -1491,7 +1741,106 @@ deplete (int nation)
 }
 
 
-/*routine to sack a nation's captiol */
+/*
+ * sackem - Process capital sacking and resource plunder mechanics
+ *
+ * Handles the complete sequence of events when a nation's capital sector is
+ * conquered by another nation. This function implements the critical "sacking"
+ * mechanic that represents the fall of a nation's seat of power, triggering
+ * resource plunder, political instability, and forced capital relocation.
+ *
+ * Sacking Sequence:
+ *
+ * 1. **Validation**:
+ *    - Verify capital sector is actually owned by a different nation
+ *    - Return immediately if nation owns its own capital (no sacking)
+ *    - Return immediately if capital sector is unowned (wilderness)
+ *
+ * 2. **Public Announcement**:
+ *    - Post sacking event to news file for all players to see
+ *    - Format: "Capitol of [victim] sacked by [conqueror]"
+ *
+ * 3. **Economic Disruption**:
+ *    - Remove victim's trade goods from trading board (fixtrade)
+ *    - Prevents continued economic activity during political collapse
+ *
+ * 4. **Resource Plunder** (transferred from victim to conqueror):
+ *    - All gold reserves (100% transfer)
+ *    - All jewel reserves (100% transfer)
+ *    - All metal reserves (100% transfer)
+ *    - 20% of food stockpiles (80% lost/destroyed)
+ *    - Victim's treasury completely emptied
+ *
+ * 5. **Sector Designation Changes**:
+ *    - If conqueror is active nation: Downgrade DCAPITOL → DCITY
+ *    - If conqueror is NPC: DEVASTATE sector and transfer ownership
+ *    - Prevents multiple sackings of same capital in one update cycle
+ *
+ * 6. **Capital Relocation** (victim nation):
+ *    Priority search for new temporary capital:
+ *    a) First DCITY designation found (most suitable replacement)
+ *    b) First DTOWN designation found (adequate fallback)
+ *    c) Any owned sector (last resort emergency headquarters)
+ *
+ * 7. **Player Notification**:
+ *    - Send mail message to victim player describing sacking
+ *    - If new capital found: Report temporary headquarters location
+ *    - If no sectors remain: Warning of imminent national destruction
+ *
+ * 8. **Context Restoration**:
+ *    - Restore original curntn pointer to prevent state corruption
+ *
+ * Game Balance Notes:
+ * - Food transfer limited to 20% (prevents complete starvation)
+ * - Capital relocation prevents permanent lock-out from game
+ * - News announcement creates strategic intelligence for all players
+ * - NPC conquerors cause devastation (different from player conquest)
+ * - Priority capital selection maintains governmental continuity
+ *
+ * Edge Cases:
+ * - Nation with only capital sector: Gets "imminent destruction" warning
+ * - Multiple cities: Automatically selects first city as new capital
+ * - Only towns remaining: Selects first town as emergency capital
+ * - NPC victim nations: Different handling (no mail notifications)
+ *
+ * Parameters:
+ *   cntry - Nation ID of the victim nation being sacked (0 to NTOTAL-1)
+ *           NOT the conqueror (conqueror determined by sector ownership)
+ *
+ * Returns:
+ *   void - No return value (side effects only)
+ *
+ * Side Effects:
+ *   - Modifies victim nation's resource totals (gold, jewels, metals, food)
+ *   - Modifies conqueror nation's resource totals (receives plunder)
+ *   - Changes sector designation at original capital location
+ *   - Updates victim nation's capital coordinates (capx, capy)
+ *   - Writes to news file (fnews global)
+ *   - Sends mail to victim player (if PC nation)
+ *   - Calls fixtrade() to update trade board
+ *   - May devastate sector (if NPC conqueror)
+ *   - May transfer sector ownership (if NPC conqueror)
+ *   - Modifies curntn global pointer temporarily (restored before return)
+ *
+ * Testing Notes:
+ *   Category: B (Integration) | Complex multi-system interaction function
+ *   Approach: Integration tests with mock nations, sectors, and I/O systems
+ *   Key Tests: Resource transfer math, capital selection logic, edge cases
+ *   Dependencies: ntn[] array, sct[][] array, curntn global, fixtrade(),
+ *                 mailopen(), mailclose(), fprintf(), fnews/fm globals
+ *   Mock Requirements: Mock nation data, sector ownership, mail system, news file
+ *   Complexity: High - Multiple system interactions with side effects
+ *
+ * Notes:
+ *   - ADMIN mode only (not compiled in CONQUER player mode)
+ *   - Called during update cycle when capital conquest detected
+ *   - Critical for implementing conquest victory conditions
+ *   - Prevents gaming through forced capital relocation mechanism
+ *   - Historical context: Implements classical "sack of Rome" concept
+ *   - Function name is legacy abbreviation of "sack them"
+ *   - Assumes caller has validated cntry parameter is valid nation ID
+ *   - Does not validate coordinate bounds (relies on nation data integrity)
+ */
 void
 sackem (int cntry)
 {
@@ -1582,7 +1931,122 @@ sackem (int cntry)
 }
 #endif /* ADMIN */
 
-/*destroy nation--special case if capitol not owned by other nation*/
+/*
+ * destroy - Complete nation destruction and territory redistribution
+ *
+ * Implements the complete destruction of a nation, handling military disbanding,
+ * resource transfer, diplomatic status updates, and territory redistribution
+ * based on conquest circumstances. This function represents the ultimate failure
+ * state for a nation in the game and implements multiple victory/defeat scenarios
+ * depending on whether the capital was conquered or divine destruction occurred.
+ *
+ * Destruction Sequence:
+ *
+ * 1. **Validation**:
+ *    - Return immediately if nation is already inactive (safety check)
+ *    - Prevents double-destruction and invalid state transitions
+ *
+ * 2. **Public Announcement** (non-monster nations only):
+ *    - Post destruction to news file for all players
+ *    - Identify conqueror if capital was captured
+ *    - Award +5% combat skill bonus to conqueror nation
+ *    - Different message if nation still owned its own capital (divine destruction)
+ *
+ * 3. **Nation Status Deactivation**:
+ *    - Set active status to INACTIVE
+ *    - Zero out nation score
+ *    - Delete mailbox file to prevent zombie messages
+ *
+ * 4. **Military Disbanding**:
+ *    - All armies: Soldiers return to population (if same race as sector owner)
+ *    - All navies: Ships destroyed (zeroed out)
+ *    - Prevents orphaned military units
+ *
+ * 5. **Diplomatic Status Reset**:
+ *    - PC nations: Set to UNMET (unknown status)
+ *    - NPC nations: Set to WAR (hostile by default)
+ *    - Bidirectional update for destroyed nation and all others
+ *
+ * 6. **Resource Transfer** (if capital conquered):
+ *    - All gold, jewels, metals, food transferred to conqueror
+ *    - Capital sector downgraded from DCAPITOL → DCITY
+ *    - Implements spoils of war mechanics
+ *
+ * 7. **Territory Redistribution** (three scenarios):
+ *
+ *    a) **Divine Destruction** (nation owns own capital):
+ *       - All sectors: Kill all population
+ *       - All sectors: Set owner to 0 (wilderness)
+ *       - All sectors: Remove designations (DNODESIG)
+ *       - Represents cataclysmic destruction
+ *
+ *    b) **Cross-Race Conquest** (conqueror different race):
+ *       - All sectors: Refugees flee to neighboring nations
+ *       - All sectors: Kill remaining population
+ *       - All sectors: Set owner to 0 (wilderness)
+ *       - Poor food sectors: Remove designations
+ *       - Livable sectors: Revert to base vegetation designation
+ *       - Represents ethnic cleansing/forced migration
+ *
+ *    c) **Same-Race Conquest** (conqueror same race):
+ *       - All sectors: Transfer ownership to conqueror
+ *       - Non-city sectors: Downgrade designation to DFARM or DNODESIG
+ *       - City sectors: Retain city status
+ *       - Represents peaceful annexation/assimilation
+ *
+ * Game Balance Implications:
+ * - Combat skill bonus (+5%) rewards successful conquest
+ * - Resource transfer prevents wealth destruction
+ * - Same-race conquest preserves developed territory
+ * - Cross-race conquest creates refugee crisis and wilderness
+ * - Divine destruction is most punishing (total annihilation)
+ *
+ * Edge Cases:
+ * - Monster nations: No news announcement (silent destruction)
+ * - Inactive nations: No-op to prevent corruption
+ * - Mail file deletion: Uses unlink() for cleanup
+ * - Refugee mechanics: flee() handles population migration
+ *
+ * Parameters:
+ *   cntry - Nation ID of the nation being destroyed (0 to NTOTAL-1)
+ *
+ * Returns:
+ *   void - No return value (side effects only)
+ *
+ * Side Effects:
+ *   - Sets nation active status to INACTIVE
+ *   - Zeros nation score
+ *   - Deletes mailbox file from filesystem
+ *   - Disbands all armies (soldiers may return to population)
+ *   - Destroys all navies (ships zeroed)
+ *   - Updates diplomatic status for all nations
+ *   - May transfer all resources to conqueror
+ *   - May modify sector ownership across entire map
+ *   - May kill civilian populations
+ *   - May call flee() to generate refugees
+ *   - May modify sector designations
+ *   - Awards combat bonus to conqueror
+ *   - Writes to news file (fnews global)
+ *
+ * Testing Notes:
+ *   Category: B (Integration) | Complex multi-system destruction logic
+ *   Approach: Integration tests with mock nations, sectors, and file system
+ *   Key Tests: Three destruction scenarios, resource transfers, diplomatic updates
+ *   Dependencies: ntn[] array, sct[][] array, fprintf(), flee(), tofood(),
+ *                 unlink(), isactive(), ismonst(), ISCITY() macro
+ *   Mock Requirements: Mock nations with territories, mock file system operations
+ *   Complexity: Very High - Multiple branching paths with global side effects
+ *
+ * Notes:
+ *   - Critical endgame function implementing victory/defeat conditions
+ *   - Three distinct destruction scenarios with different outcomes
+ *   - Race matching determines territory fate (assimilation vs. destruction)
+ *   - Food value threshold (DESFOOD) determines sector viability post-conquest
+ *   - Conqueror identity determined by capital sector ownership
+ *   - Does not validate cntry parameter (assumes valid nation ID)
+ *   - Uses fprintf() for news; assumes fnews file is open
+ *   - Combat skill bonus is permanent nation attribute improvement
+ */
 void
 destroy (int cntry)
 {
@@ -1916,7 +2380,72 @@ flightcost (int i, int j)
 }
 #endif /* CONQUER */
 #ifdef ADMIN
-/* determines whether or not a unit has the ability to fly */
+/*
+ * avian - Determine if a unit type has flight capability
+ *
+ * Checks whether a given unit type possesses the ability to fly, which grants
+ * access to special movement mechanics including aerial pathfinding, terrain-
+ * independent movement, and unique tactical advantages in combat and exploration.
+ *
+ * Flight Capable Units:
+ * - A_ROC: Giant mythical bird (aerial mount)
+ * - A_GRIFFON: Eagle-lion hybrid creature (aerial mount)
+ * - SPIRIT: Incorporeal entity (magical flight)
+ * - DJINNI: Air elemental being (elemental flight)
+ * - DEMON: Infernal creature (supernatural flight via wings)
+ * - DRAGON: Ultimate flying creature (natural wings + magical enhancement)
+ *
+ * Non-Flying Units:
+ * - All other unit types return FALSE (ground-based movement only)
+ * - Includes: standard armies, cavalry, siege weapons, naval units, most monsters
+ *
+ * Flight Capability Implications:
+ * - Movement: Uses flightcost() instead of standard movement cost calculations
+ * - Terrain: Can cross water, mountains, and other impassable terrain
+ * - Combat: May gain tactical advantages in certain battle scenarios
+ * - Pathfinding: Uses aerial pathfinding algorithms (see land_reachp variations)
+ * - Strategic: Enables rapid response and surprise attacks
+ *
+ * Game Balance:
+ * - Limited to 6 specific unit types (rare and powerful)
+ * - Reflects mythological and fantasy creature archetypes
+ * - Balances mobility advantage with unit rarity/cost
+ * - Creates strategic differentiation between unit types
+ *
+ * Design Philosophy:
+ * - Mythical creatures (Roc, Griffon, Dragon): Natural flight
+ * - Supernatural entities (Spirit, Djinni, Demon): Magical flight
+ * - Distinction from levitation or teleportation (different mechanics)
+ * - Clear boolean categorization (no partial flight capability)
+ *
+ * Parameters:
+ *   typ - Unit type identifier constant (from unit type enumeration)
+ *         Examples: A_ROC, A_GRIFFON, SPIRIT, DJINNI, DEMON, DRAGON
+ *
+ * Returns:
+ *   TRUE (1) if unit type can fly
+ *   FALSE (0) if unit type is ground-based
+ *
+ * Side Effects:
+ *   None - Pure query function with no state modification
+ *
+ * Testing Notes:
+ *   Category: A (Unit) | Simple classification logic with no dependencies
+ *   Approach: Unit tests covering all flying types and sample non-flying types
+ *   Key Tests: Each flying unit type returns TRUE, typical ground units return FALSE
+ *   Dependencies: Unit type constants (A_ROC, A_GRIFFON, SPIRIT, DJINNI, DEMON, DRAGON)
+ *   Mock Requirements: None - tests can use literal unit type constants
+ *   Complexity: Trivial - Simple switch statement with boolean result
+ *
+ * Notes:
+ *   - ADMIN mode only (not available in CONQUER player mode)
+ *   - Used by movement validation and pathfinding systems
+ *   - Complement to naval unit checks and terrain passability functions
+ *   - Does not account for temporary flight (magical spells, items)
+ *   - Hardcoded list requires code change to add new flying units
+ *   - Thread-safe and reentrant (no shared state)
+ *   - Consider using bitmask flags if unit type system expands
+ */
 int
 avian (int typ)
 {
@@ -2565,6 +3094,82 @@ reset_god (void)
 #endif /* CONQUER */
 
 #ifdef ADMIN
+/*
+ * getleader - Map nation class to appropriate leader unit type
+ *
+ * Determines the default leader unit type for a given nation class, reflecting
+ * the thematic and strategic character of each nation type. Leaders are special
+ * units with enhanced capabilities that serve as heroes, generals, or champions
+ * for their respective nations.
+ *
+ * Nation Class → Leader Type Mappings:
+ *
+ * Administrative/Political Classes:
+ * - C_NPC (Neutral NPCs): L_BARON (minor noble)
+ * - C_KING (Kingdoms): L_BARON (feudal lord)
+ * - C_EMPEROR (Empires): L_PRINCE (imperial heir)
+ * - C_TRADER (Merchant Republics): L_BARON (merchant prince)
+ *
+ * Religious/Magical Classes:
+ * - C_WIZARD (Wizard Kingdoms): L_MAGI (archmage)
+ * - C_PRIEST (Theocracies): L_BISHOP (high cleric)
+ *
+ * Military/Martial Classes:
+ * - C_WARLORD (Warlord States): L_LORD (war commander)
+ * - C_PIRATE (Pirate Confederacies): L_CAPTAIN (pirate lord)
+ *
+ * Supernatural/Monstrous Classes:
+ * - C_DEMON (Demon Lords): L_DEVIL (arch-demon)
+ * - C_DRAGON (Dragon Empires): L_WYRM (ancient dragon)
+ * - C_SHADOW (Shadow Realms): L_NAZGUL (wraith lord)
+ *
+ * Leader Unit Characteristics:
+ * - Enhanced combat statistics compared to standard units
+ * - Special abilities aligned with nation class theme
+ * - Critical for certain game mechanics and victory conditions
+ * - May have unique movement, magic, or command capabilities
+ *
+ * Thematic Design:
+ * - Political classes: Noble/aristocratic leaders (Baron, Prince)
+ * - Magical classes: Mystical/scholarly leaders (Magi, Bishop)
+ * - Military classes: Martial/tactical leaders (Lord, Captain)
+ * - Supernatural classes: Otherworldly leaders (Devil, Wyrm, Nazgul)
+ *
+ * Game Balance:
+ * - Leader type influences nation's strategic options
+ * - Each leader has strengths aligned with nation class goals
+ * - Creates asymmetric gameplay between different nation types
+ * - Multiple classes share L_BARON (balanced/flexible leader)
+ *
+ * Parameters:
+ *   class - Nation class identifier constant (C_NPC, C_KING, C_EMPEROR, etc.)
+ *
+ * Returns:
+ *   Leader type constant appropriate for the given nation class
+ *   Examples: L_BARON, L_PRINCE, L_MAGI, L_BISHOP, L_CAPTAIN, L_LORD,
+ *            L_DEVIL, L_WYRM, L_NAZGUL
+ *
+ * Side Effects:
+ *   - Calls printf() and exit(0) if undefined class is provided
+ *   - Program termination on error ensures data integrity
+ *
+ * Testing Notes:
+ *   Category: A (Unit) | Simple lookup/mapping function
+ *   Approach: Unit tests covering all valid nation classes
+ *   Key Tests: Each defined class maps to correct leader, error on invalid class
+ *   Dependencies: Nation class constants (C_NPC, C_KING, etc.)
+ *                Leader type constants (L_BARON, L_PRINCE, etc.)
+ *   Mock Requirements: Capture stdout/exit for error case testing
+ *   Complexity: Low - Simple switch statement with error handling
+ *
+ * Notes:
+ *   - ADMIN mode only (leader generation happens during admin/setup)
+ *   - Fatal error on undefined class ensures game state consistency
+ *   - Used during nation initialization and leader creation
+ *   - Hardcoded mappings require code changes to add new classes
+ *   - Consider data-driven approach if class system expands significantly
+ *   - L_BARON is most common (4 classes use it) - balanced default leader
+ */
 int
 getleader (int class)
 {
@@ -3036,11 +3641,10 @@ markok (
  *   - Monster powers scale appropriately with advanced > basic
  *   - Nomadic cultural adaptation provides mobility-focused army selection
  *   - Default infantry ensures all nations have viable military options
- */
-/*******************************************************************/
-/* DEFAULTUNIT() returns the default army type for a given country */
-/* this is mostly used by npc's to take advantage of their powers  */
-/*******************************************************************/
+ * *******************************************************************
+ * DEFAULTUNIT() returns the default army type for a given country   *
+ * this is mostly used by npc's to take advantage of their powers    *
+ *********************************************************************/
 long
 defaultunit (int nation)
 {
@@ -3057,6 +3661,80 @@ defaultunit (int nation)
 }
 
 #ifdef ADMIN
+/*
+ * getmetal - Randomly assign metal-based trade good and resource quantity to sector
+ *
+ * Generates and assigns a metal-based trade good to a sector during world
+ * generation, using weighted random selection to create realistic resource
+ * distribution across the game map. This function implements the economic
+ * foundation for metal-based trade goods, from common materials like copper
+ * to rare legendary metals like adamantine.
+ *
+ * The function uses a tiered probability system that reflects the relative
+ * rarity and value of different metals in a fantasy medieval setting:
+ *
+ * Resource Distribution (100-point scale):
+ * - Copper (20%): Common base metal, abundant and widely available
+ *   Quantity: 1-2 units (minimal value, easy to find)
+ *
+ * - Lead (10%): Heavy common metal, moderate availability
+ *   Quantity: 1-4 units (low value, multiple uses)
+ *
+ * - Tin (10%): Alloying metal, important for bronze production
+ *   Quantity: 2-5 units (moderate value, strategic importance)
+ *
+ * - Bronze (15%): Copper-tin alloy, standard military metal
+ *   Quantity: 2-5 units (good value, widespread military use)
+ *
+ * - Iron (25%): Primary industrial metal, core of medieval economy
+ *   Quantity: 2-8 units (significant value, essential for weapons/tools)
+ *
+ * - Steel (15%): Refined iron, superior quality and strength
+ *   Quantity: 3-10 units (high value, premium weapons/armor)
+ *
+ * - Mithral (4%): Magical lightweight metal, extremely rare
+ *   Quantity: 5-15 units (very high value, magical properties)
+ *
+ * - Adamantine (1%): Legendary indestructible metal, supremely rare
+ *   Quantity: 8-20 units (legendary value, ultimate material)
+ *
+ * The distribution creates a realistic economic landscape where common metals
+ * (copper, lead, tin, bronze, iron) appear frequently enough to support basic
+ * industry, while rare metals (steel, mithral, adamantine) create strategic
+ * objectives and economic inequality between nations.
+ *
+ * Parameters:
+ *   sptr - Pointer to sector structure to receive trade good assignment
+ *          Must be valid, non-NULL sector pointer
+ *
+ * Returns:
+ *   void (modifies sector structure in place)
+ *
+ * Side Effects:
+ *   - Sets sptr->tradegood to selected metal type (TG_* constant)
+ *   - Sets sptr->metal to random quantity appropriate for metal type
+ *   - Early return if sector already has trade good assigned
+ *   - Modifies persistent world state during map generation
+ *
+ * Testing Notes:
+ *   Category: A (Unit) | Weighted random selection with boundary checking
+ *   Approach: Statistical tests verifying distribution matches probabilities
+ *   Key Tests: Probability verification, quantity ranges, duplicate prevention
+ *   Dependencies: safe_rand_int(), safe_rand_uchar(), TG_* constants
+ *   Mock Requirements: Controllable random number generator for deterministic tests
+ *   Complexity: Simple - straightforward weighted random selection
+ *
+ * Notes:
+ *   - ADMIN mode only - used during world generation, not gameplay
+ *   - Respects existing trade good assignments (no overwriting)
+ *   - Probability weights create realistic scarcity hierarchy
+ *   - Quantity ranges scale with metal rarity and value
+ *   - Rare metals (mithral, adamantine) create major strategic advantages
+ *   - Iron and bronze abundance supports basic military economy
+ *   - Metal quantities represent extractable resource potential
+ *   - Distribution affects long-term game balance and nation development
+ *   - Uses safe random functions to prevent modulo bias
+ */
 void
 getmetal (struct s_sector *sptr)
 {
@@ -3090,6 +3768,88 @@ getmetal (struct s_sector *sptr)
 	}
 }
 
+/*
+ * getjewel - Randomly assign luxury/jewel-based trade good and resource quantity to sector
+ *
+ * Generates and assigns a luxury or jewel-based trade good to a sector during
+ * world generation, using weighted random selection to create realistic wealth
+ * distribution across the game map. This function implements the economic
+ * foundation for high-value trade goods, from common spices to legendary
+ * platinum deposits, creating opportunities for trade-based economies.
+ *
+ * The function uses a tiered probability system that reflects the relative
+ * rarity and value of different luxury goods in a fantasy medieval setting:
+ *
+ * Resource Distribution (100-point scale):
+ * - Spice (20%): Common luxury commodity, widespread trade good
+ *   Quantity: 1-2 units (moderate value, essential for trade routes)
+ *
+ * - Silver (20%): Precious metal for currency and luxury items
+ *   Quantity: 1-3 units (significant value, monetary system foundation)
+ *
+ * - Pearls (8%): Natural gemstones from water, moderate rarity
+ *   Quantity: 1-3 units (good value, prestige items)
+ *
+ * - Dye (8%): Valuable textile coloring agent, strategic commodity
+ *   Quantity: 1-5 units (moderate value, textile industry essential)
+ *
+ * - Silk (8%): Premium textile, luxury trade commodity
+ *   Quantity: 1-5 units (high value, elite market goods)
+ *
+ * - Gold (20%): Premier precious metal, currency and wealth standard
+ *   Quantity: 1-6 units (very high value, economic power foundation)
+ *
+ * - Rubies (7%): Precious gemstones, rare and valuable
+ *   Quantity: 1-6 units (very high value, royal treasures)
+ *
+ * - Ivory (5%): Exotic luxury material, limited availability
+ *   Quantity: 2-8 units (very high value, prestige crafting)
+ *
+ * - Diamonds (3%): Supreme gemstones, extremely rare and precious
+ *   Quantity: 2-12 units (legendary value, ultimate wealth symbol)
+ *
+ * - Platinum (1%): Rarest precious metal, supremely valuable
+ *   Quantity: 4-20 units (legendary value, ultimate economic power)
+ *
+ * The distribution creates economic diversity where common luxuries (spice,
+ * silver, gold) appear frequently enough to support basic trade economies,
+ * while rare treasures (diamonds, platinum) create major strategic objectives
+ * and concentrate wealth in specific geographic regions.
+ *
+ * Parameters:
+ *   sptr - Pointer to sector structure to receive trade good assignment
+ *          Must be valid, non-NULL sector pointer
+ *
+ * Returns:
+ *   void (modifies sector structure in place)
+ *
+ * Side Effects:
+ *   - Sets sptr->tradegood to selected luxury type (TG_* constant)
+ *   - Sets sptr->jewels to random quantity appropriate for luxury type
+ *   - Early return if sector already has trade good assigned
+ *   - Modifies persistent world state during map generation
+ *
+ * Testing Notes:
+ *   Category: A (Unit) | Weighted random selection with boundary checking
+ *   Approach: Statistical tests verifying distribution matches probabilities
+ *   Key Tests: Probability verification, quantity ranges, duplicate prevention
+ *   Dependencies: safe_rand_int(), safe_rand_uchar(), TG_* constants
+ *   Mock Requirements: Controllable random number generator for deterministic tests
+ *   Complexity: Simple - straightforward weighted random selection
+ *
+ * Notes:
+ *   - ADMIN mode only - used during world generation, not gameplay
+ *   - Respects existing trade good assignments (no overwriting)
+ *   - Probability weights create realistic luxury goods scarcity hierarchy
+ *   - Quantity ranges scale with luxury good rarity and value
+ *   - Rare treasures (diamonds, platinum) create major economic advantages
+ *   - Gold and silver abundance supports monetary system functionality
+ *   - Jewel quantities represent extractable resource potential
+ *   - Distribution affects trade route value and economic development
+ *   - Creates geographic wealth inequality that drives conflict and trade
+ *   - Complements getmetal() to provide diverse economic landscape
+ *   - Uses safe random functions to prevent modulo bias
+ */
 void
 getjewel (struct s_sector *sptr)
 {
@@ -3325,7 +4085,81 @@ fort_val (struct s_sector *sptr)
 	return(0);
 }
 
-/* routine to determine compass direction of x1,y1 from x0,y0 */
+/*
+ * compass - Determine compass direction from source to destination coordinates
+ *
+ * Calculates the primary compass direction between two map coordinates using
+ * a ratio-based quadrant system. This function provides directional guidance
+ * for movement, navigation displays, and strategic planning by converting
+ * coordinate displacements into user-friendly compass directions.
+ *
+ * The algorithm uses a 10:1 ratio threshold to determine whether diagonal or
+ * cardinal directions are appropriate, creating three zones:
+ *
+ * Direction Classification Logic:
+ *
+ * Cardinal Directions (10x dominance in one axis):
+ * - EAST: dx dominates, dx > 0, |10*dx| > |dy|
+ * - WEST: dx dominates, dx < 0, |10*dx| > |dy|
+ * - NORTH: dy dominates, dy < 0, |10*dy| > |dx|
+ * - SOUTH: dy dominates, dy > 0, |10*dy| > |dx|
+ *
+ * Diagonal Directions (balanced displacement):
+ * - NORTHEAST: dx > 0, dy < 0, |10*dx| <= |dy| AND |10*dy| > |dx|
+ * - SOUTHEAST: dx > 0, dy > 0, |10*dx| <= |dy| AND |10*dy| > |dx|
+ * - NORTHWEST: dx < 0, dy < 0, |10*dx| <= |dy| AND |10*dy| > |dx|
+ * - SOUTHWEST: dx < 0, dy > 0, |10*dx| <= |dy| AND |10*dy| > |dx|
+ *
+ * Special Case:
+ * - CENTERED: dy == 0 AND neither axis dominates (same location)
+ *
+ * The 10:1 ratio creates a 5.7-degree cone around each cardinal direction,
+ * meaning movement within about 6 degrees of pure horizontal/vertical is
+ * classified as cardinal, while everything else is diagonal. This prevents
+ * showing diagonal directions for nearly-straight movement.
+ *
+ * Coordinate System Conventions:
+ * - Increasing x: Movement eastward (positive dx → EAST component)
+ * - Decreasing x: Movement westward (negative dx → WEST component)
+ * - Increasing y: Movement southward (positive dy → SOUTH component)
+ * - Decreasing y: Movement northward (negative dy → NORTH component)
+ *
+ * Examples:
+ * - (10,10) to (20,10): dx=10, dy=0 → EAST (pure horizontal)
+ * - (10,10) to (20,5): dx=10, dy=-5 → NORTHEAST (diagonal)
+ * - (10,10) to (11,15): dx=1, dy=5 → SOUTH (vertical dominates)
+ * - (10,10) to (10,10): dx=0, dy=0 → CENTERED (same point)
+ *
+ * Parameters:
+ *   x0 - Source x-coordinate (starting position)
+ *   y0 - Source y-coordinate (starting position)
+ *   x1 - Destination x-coordinate (target position)
+ *   y1 - Destination y-coordinate (target position)
+ *
+ * Returns:
+ *   Compass direction constant (NORTH, NORTHEAST, EAST, SOUTHEAST, SOUTH,
+ *   SOUTHWEST, WEST, NORTHWEST, or CENTERED for identical coordinates)
+ *
+ * Side Effects:
+ *   None - pure calculation with no state modification
+ *
+ * Testing Notes:
+ *   Category: A (Unit) | Pure geometric calculation with quadrant logic
+ *   Approach: Exhaustive boundary testing for all direction transitions
+ *   Key Tests: Cardinal boundaries, diagonal zones, 10:1 ratio thresholds, centered case
+ *   Dependencies: Compass direction constants (NORTH, NORTHEAST, etc.)
+ *   Mock Requirements: None - self-contained pure function
+ *   Complexity: Simple - straightforward geometric quadrant determination
+ *
+ * Notes:
+ *   - Used for navigation displays, movement hints, and strategic planning
+ *   - The 10:1 ratio prevents "flickering" between cardinal and diagonal
+ *   - Algorithm handles wrap-around coordinates implicitly via displacement
+ *   - Returns meaningful results for any coordinate pair including negatives
+ *   - CENTERED result only occurs when both coordinates are identical
+ *   - Critical for user interface clarity in movement and targeting systems
+ *   - Geometric threshold (10:1 = 5.7°) balances precision vs usability
+ */
 int
 compass (int x0, int y0, int x1, int y1)
 {
