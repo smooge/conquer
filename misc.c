@@ -74,6 +74,7 @@
  *   - May fail on cross-filesystem moves (different inodes)
  *   - Error handling includes user feedback and delay
  *   - Only available when CONQUER is defined
+  * @last_documented: 2025-09-19
  */
 int move_file(char *from, char *to) {
 	if( unlink( to ) < 0 ) {
@@ -146,6 +147,7 @@ int move_file(char *from, char *to) {
  *   - Relies on curses library for all terminal I/O operations
  *   - Character 127 (\177) handles DEL key on some terminals
  *   - Real-time feedback provides immediate visual confirmation
+  * @last_documented: 2025-09-19
  */
 long
 get_number (void)
@@ -266,6 +268,7 @@ static int	level=0;
  *   - History tracking prevents exponential path explosion
  *   - Early termination optimizations for impossible distances
  *   - Recursion depth tracked via 'level' variable for debugging
+  * @last_documented: 2025-09-19
  */
 int
 land_2reachp (int ax, int ay, int move_points)
@@ -525,6 +528,7 @@ land_2reachp (int ax, int ay, int move_points)
  *   - Memory allocation failure not checked (relies on m2alloc() aborting on failure)
  *   - Global variables used for recursion state (bx, by, moving_country, level)
  *   - Caller must ensure ax, ay, gx, gy are within map bounds [0..MAPX), [0..MAPY)
+  * @last_documented: 2025-10-08
  */
 int
 land_reachp (int ax, int ay, int gx, int gy, int move_points, int movee)
@@ -647,6 +651,7 @@ land_reachp (int ax, int ay, int gx, int gy, int move_points, int movee)
  *   - Simplified cost model reduces computational complexity
  *   - Early termination optimizations for impossible paths
  *   - Direction prioritization reduces search space
+  * @last_documented: 2025-09-19
  */
 int
 water_2reachp (int ax, int ay, int move_points)
@@ -791,6 +796,7 @@ water_2reachp (int ax, int ay, int move_points)
  *   - Unlike land_reachp(), does NOT allocate history_reachp (assumes pre-allocated)
  *   - May have been disabled due to bugs, incomplete implementation, or design change
  *   - Consider removing in future cleanup or document why it's preserved
+  * @last_documented: 2025-10-08
  */
 int
 water_reachp (int ax, int ay, int gx, int gy, int move_points, int movee)
@@ -852,6 +858,7 @@ water_reachp (int ax, int ay, int gx, int gy, int move_points, int movee)
  *   - Uses register storage class for optimization (legacy C optimization hint)
  *   - Does not distinguish between different army types or statuses
  *   - Companion function to units_in_sector() which counts civilians and other units
+  * @last_documented: 2025-10-08
  */
 long
 solds_in_sector (int x, int y, int nation)
@@ -959,6 +966,7 @@ static struct wght {
  *   - Magic power calculation requires separate num_powers() calls
  *   - Bonus calculations can be negative, affecting final score
  *   - Score scaling allows fair comparison between different nation classes
+  * @last_documented: 2025-09-19
  */
 long
 score_one (int nation)
@@ -1087,6 +1095,7 @@ score_one (int nation)
  *   - Race/magic adaptations handled in higher-level growth functions
  *   - Does not validate coordinate bounds (caller responsibility)
  *   - Conservative habitability model (special cases handled elsewhere)
+  * @last_documented: 2025-10-08
  */
 int
 is_habitable (int x, int y)
@@ -1159,6 +1168,7 @@ is_habitable (int x, int y)
  *   - Uses player macros (P_*) that depend on curntn global state
  *   - Context switching ensures correct macro behavior for target nation
  *   - Essential for strategic planning and military organization
+  * @last_documented: 2025-09-19
  */
 int
 units_in_sector(int x,int y,int nation)
@@ -1231,6 +1241,7 @@ units_in_sector(int x,int y,int nation)
  *   - Fatal error on invalid type ensures data integrity
  *   - Powers bitmask allows efficient storage and testing of abilities
  *   - Category system enables balanced scoring across nation classes
+  * @last_documented: 2025-09-19
  */
 int
 num_powers (int nation, int type)
@@ -1312,6 +1323,7 @@ num_powers (int nation, int type)
  *   - Trade goods can significantly enhance marginal agricultural land
  *   - Food value 4 is considered the minimum for sustainable habitation
  *   - Special magical races can survive in otherwise uninhabitable terrain
+  * @last_documented: 2025-09-19
  */
 int
 tofood (struct s_sector *sptr, int cntry)
@@ -1409,6 +1421,7 @@ tofood (struct s_sector *sptr, int cntry)
  *   - Race differences create strategic choices in nation building
  *   - Same-category powers cost more due to 2x weighting (specialization penalty)
  *   - Cost calculation uses bit shifting for efficient doubling
+  * @last_documented: 2025-09-19
  */
 long
 getmgkcost (int type, int nation)
@@ -1518,6 +1531,7 @@ getmgkcost (int type, int nation)
  *   - Caller must check for -1 return to detect conversion errors
  *   - ASCII-specific implementation (assumes ASCII character encoding)
  *   - Thread-safe and reentrant (no shared state)
+  * @last_documented: 2025-10-08
  */
 int
 todigit (register int character)
@@ -1649,6 +1663,7 @@ void prep (int nation, int leader)
  *   - Critical event that can dramatically alter game balance
  *   - Player notification through detailed mail system integration
  *   - Some territorial features marked NOTDONE for future implementation
+  * @last_documented: 2025-09-19
  */
 void
 deplete (int nation)
@@ -1840,6 +1855,7 @@ deplete (int nation)
  *   - Function name is legacy abbreviation of "sack them"
  *   - Assumes caller has validated cntry parameter is valid nation ID
  *   - Does not validate coordinate bounds (relies on nation data integrity)
+  * @last_documented: 2025-10-08
  */
 void
 sackem (int cntry)
@@ -2046,6 +2062,7 @@ sackem (int cntry)
  *   - Does not validate cntry parameter (assumes valid nation ID)
  *   - Uses fprintf() for news; assumes fnews file is open
  *   - Combat skill bonus is permanent nation attribute improvement
+  * @last_documented: 2025-10-08
  */
 void
 destroy (int cntry)
@@ -2235,6 +2252,7 @@ destroy (int cntry)
  *   - ALPHA_SIZE (128) provides ASCII character indexing capability
  *   - Vegetation and elevation codes used as direct array indices
  *   - Special terrain constants (ICE, DESERT, WATER, DROAD) for comparisons
+  * @last_documented: 2025-09-19
  */
 void
 updmove (int race, int cntry)
@@ -2445,6 +2463,7 @@ flightcost (int i, int j)
  *   - Hardcoded list requires code change to add new flying units
  *   - Thread-safe and reentrant (no shared state)
  *   - Consider using bitmask flags if unit type system expands
+  * @last_documented: 2025-10-08
  */
 int
 avian (int typ)
@@ -2543,6 +2562,7 @@ avian (int typ)
  *   - Seasonal effects add strategic timing elements to food production
  *   - Tax rate allows player control over revenue vs. population happiness
  *   - Mill adjacency system encourages agricultural cluster development
+  * @last_documented: 2025-09-19
  */
 void
 spreadsheet (int nation)
@@ -2763,6 +2783,7 @@ spreadsheet (int nation)
  *   - Character 127 (\177) handles DEL key on some terminal types
  *   - Real-time feedback provides immediate visual confirmation to user
  *   - NAMELTH constant defines maximum string length for consistency
+  * @last_documented: 2025-09-19
  */
 void
 get_nname (char str[])
@@ -2874,6 +2895,7 @@ get_nname (char str[])
  *   - Numeric parsing allows leading zeros without issues
  *   - CONQUER build only (requires preprocessor flag)
  *   - Function combines user interface and data lookup functionality
+  * @last_documented: 2025-09-19
  */
 int
 get_country (void)
@@ -2996,6 +3018,7 @@ get_country (void)
  *   - Integrates with get_country() for consistent nation selection
  *   - Error recovery ensures clean state on all failure paths
  *   - Administrative privilege context clearly indicated in prompt
+  * @last_documented: 2025-09-19
  */
 int
 get_god (void)
@@ -3083,6 +3106,7 @@ get_god (void)
  *   - No error checking needed (god nation always exists)
  *   - Function comment notes readability improvement as design goal
  *   - Extremely simple but important for administrative state management
+  * @last_documented: 2025-09-19
  */
 void
 reset_god (void)
@@ -3169,6 +3193,7 @@ reset_god (void)
  *   - Hardcoded mappings require code changes to add new classes
  *   - Consider data-driven approach if class system expands significantly
  *   - L_BARON is most common (4 classes use it) - balanced default leader
+  * @last_documented: 2025-10-08
  */
 int
 getleader (int class)
@@ -3266,6 +3291,7 @@ char tmp_mail_name[LINELTH];
  *   - Error messages provide user guidance for conflict resolution
  *   - Must be paired with mailclose() for proper cleanup
  *   - File system dependencies require careful testing and error handling
+  * @last_documented: 2025-09-19
  */
 int
 mailopen(int to)
@@ -3644,6 +3670,7 @@ markok (
  * *******************************************************************
  * DEFAULTUNIT() returns the default army type for a given country   *
  * this is mostly used by npc's to take advantage of their powers    *
+  * @last_documented: 2025-09-19
  *********************************************************************/
 long
 defaultunit (int nation)
@@ -3734,6 +3761,7 @@ defaultunit (int nation)
  *   - Metal quantities represent extractable resource potential
  *   - Distribution affects long-term game balance and nation development
  *   - Uses safe random functions to prevent modulo bias
+  * @last_documented: 2025-10-08
  */
 void
 getmetal (struct s_sector *sptr)
@@ -3849,6 +3877,7 @@ getmetal (struct s_sector *sptr)
  *   - Creates geographic wealth inequality that drives conflict and trade
  *   - Complements getmetal() to provide diverse economic landscape
  *   - Uses safe random functions to prevent modulo bias
+  * @last_documented: 2025-10-08
  */
 void
 getjewel (struct s_sector *sptr)
@@ -4159,6 +4188,7 @@ fort_val (struct s_sector *sptr)
  *   - CENTERED result only occurs when both coordinates are identical
  *   - Critical for user interface clarity in movement and targeting systems
  *   - Geometric threshold (10:1 = 5.7°) balances precision vs usability
+  * @last_documented: 2025-10-08
  */
 int
 compass (int x0, int y0, int x1, int y1)
@@ -4272,6 +4302,7 @@ static off_t sys_mail_size=0;
  *   - Must be called periodically to maintain current mail status
  *   - File size tracking prevents repeated notifications for same messages
  *   - Graceful error handling ensures stability with missing mail files
+  * @last_documented: 2025-09-19
  */
 void
 check_mail (void)
