@@ -188,32 +188,38 @@
 
 **Rationale for Deferral**: Return value and parameter validation changes require significant architectural refactoring and caller updates. These are better addressed in Phase 10 (Deep Refactoring and Portability) where such changes are the primary focus.
 
-### Phase 8.6: Utility Function Extraction (🟢 LOW Priority) - ⏳ NOT STARTED
-**Duration**: 4-6 hours estimated | **Maintainability Impact**: Medium
-**Target**: Extract 15-20 common utility functions
-**Status**: NOT STARTED - Next recommended sub-phase
+### Phase 8.6: Outstanding Modernization Tasks (🟡 MEDIUM Priority) - ✅ COMPLETE
+**Duration**: 2 hours actual (6-8 hours estimated) | **Impact**: Code Clarity, Portability Research
+**Completion Date**: 2025-10-08
+**Status**: ✅ COMPLETE (TASK-001 done, TASK-002 deferred to Phase 10)
 
-**Objective**: Extract common code patterns into reusable utility functions to reduce duplication and improve maintainability.
+**Objective**: Resolve outstanding Phase 8 technical debt items identified during earlier phases.
 
-**Approach**:
-1. **Pattern Identification**: Scan codebase for duplicate code patterns
-2. **Utility Extraction**: Create reusable helper functions
-3. **Caller Updates**: Replace duplicated code with utility calls
-4. **Documentation**: Document new utility functions
-5. **Testing**: Add tests for extracted utilities
+**Sub-Phases Completed**:
+1. ✅ **Phase 8.6.0**: Planning and Analysis (Outstanding task verification)
+2. ✅ **Phase 8.6.1**: TASK-001 - Rename `safe_clamp_uchar` → `safe_clamp_nation_attr`
+3. ⚠️ **Phase 8.6.2**: TASK-002 - Deploy `safe_char_to_uchar` → **DEFERRED TO PHASE 10**
 
-**Target Areas**:
-- String manipulation helpers (10-12 functions)
-- Numeric conversion utilities (3-5 functions)
-- Validation helpers (2-3 functions)
+**Work Completed**:
+- ✅ Analyzed all outstanding Phase 8 tasks from PHASE_8_TASK_LIST.md
+- ✅ Verified completion status (bzero, lockf already done)
+- ✅ Renamed function across 5 files (55 occurrences)
+- ✅ Discovered critical char signedness issue (aarch64 vs x86_64)
+- ✅ Updated GitHub Issue #10 with platform research findings
+- ✅ Closed GitHub Issues #7, #8, #9
 
-**Success Metrics**:
-- 15-20 new utility functions extracted
-- Reduced code duplication (20-30% reduction in targeted areas)
-- Enhanced maintainability through centralized helpers
-- All utilities tested and documented
+**Critical Discovery**:
+- **Platform char signedness** varies: aarch64 (unsigned) vs x86_64 (signed)
+- **34 explicit casts** work on aarch64 but will fail on x86_64
+- **Architectural fix required**: Full char type audit needed (Phase 10)
 
-**Priority**: OPTIONAL - Can be deferred to Phase 10 if time constrained
+**Success Metrics ACHIEVED**:
+- ✅ Function renamed consistently (safe_clamp_uchar → safe_clamp_nation_attr)
+- ✅ Zero compilation warnings (Level 9)
+- ✅ All tests passing (105/105 in safe_convert suite)
+- ✅ No functionality regressions (pure refactoring)
+- ✅ GitHub issues resolved (3 closed, 1 updated)
+- ✅ Phase 10 planning enhanced with char type audit requirements
 
 ## Technical Implementation Strategy
 
