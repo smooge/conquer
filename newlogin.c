@@ -608,7 +608,53 @@ newmsg (char *str)
 	refresh();
 }
 
-/* message with wait for keystroke */
+/*
+ * newerror - Display error message and wait for user acknowledgment
+ *
+ * Presents an error message at the bottom of the screen with an audible beep
+ * and "PRESS ANY KEY" prompt, then waits for user input before clearing the
+ * message. This provides clear visual and audio feedback for error conditions
+ * during the registration process.
+ *
+ * Parameters:
+ *   str - Error message to display (null-terminated string, must not be NULL)
+ *
+ * Returns:
+ *   void
+ *
+ * Side Effects:
+ *   - Displays message at bottom line of screen (LINES-1)
+ *   - Shows "PRESS ANY KEY" prompt in right portion of screen (COLS-16)
+ *   - Emits audible beep for audio error notification
+ *   - Blocks execution until user presses any key via getch()
+ *   - Clears error message line after keystroke
+ *   - Updates screen display with refresh()
+ *
+ * Display Behavior:
+ *   1. Places error message at start of bottom line
+ *   2. Clears remainder of line (erases previous content)
+ *   3. Adds "PRESS ANY KEY" at right side of screen
+ *   4. Sounds beep for attention
+ *   5. Waits for single keystroke (blocking)
+ *   6. Clears entire bottom line
+ *
+ * Testing Notes:
+ *   Category: A (Unit) - UI function with clear input/output
+ *   Approach: Unit tests with mock ncurses functions or integration tests
+ *   Key Tests: [Message display, prompt positioning, beep call, getch blocking, line clearing]
+ *   Dependencies: [ncurses library, LINES/COLS constants, screen initialization]
+ *   Mock Requirements: [Mock ncurses functions (mvaddstr, clrtoeol, beep, getch, refresh)]
+ *   Complexity: Simple - straightforward UI interaction with blocking input
+ *
+ * Notes:
+ *   - Assumes ncurses screen is initialized (LINES and COLS defined)
+ *   - Uses global LINES and COLS for screen positioning
+ *   - Blocking function - execution pauses until user responds
+ *   - Critical for user feedback during registration errors
+ *   - Companion to newmsg() which displays non-blocking messages
+ *   - Always clears message after acknowledgment for clean UI state
+ * @last_documented: 2025-10-08
+ */
 void
 newerror (char *str)
 {
@@ -2169,8 +2215,82 @@ place (
  *   - Historical context: Core character creation mechanic affecting gameplay balance
  *   - User experience: Critical for player understanding of class capabilities and costs
  */
-/*get class routine*/
-/* return the number of points needed */
+/*
+ * getclass - Display class selection menu and get user choice
+ *
+ * Presents an interactive menu showing all nation classes available for the
+ * specified race, including class costs, magical powers, and race eligibility.
+ * Validates user input to ensure selected class is valid for the race, then
+ * applies the class configuration and returns the point cost.
+ *
+ * The menu displays a formatted table with class names, eligible races (who),
+ * magical power descriptions, and point costs. Special racial bonuses are
+ * reflected in adjusted costs (e.g., Human Warlords pay 2/3 normal cost).
+ *
+ * Parameters:
+ *   race - Race identifier (e.g., HUMAN, ELF, DWARF, ORC) used to filter
+ *          available classes and apply race-specific cost modifiers
+ *
+ * Returns:
+ *   int - Point cost for the selected class after race-specific modifiers
+ *         (e.g., Human Warlord returns Classcost[C_WARLORD]*2/3)
+ *
+ * Side Effects:
+ *   - Displays class selection menu on screen starting at line 4
+ *   - Prompts for user input and validates choice
+ *   - Sets curntn->class to selected class ID
+ *   - Calls doclass() which modifies nation powers and leader count
+ *   - Clears menu display after selection
+ *   - Calls newerror() for invalid choices
+ *   - Uses refresh() to update screen display
+ *
+ * Menu Display Format:
+ *   Line 1: "The List of Possible Nation Classes:"
+ *   Line 3: Column headers (class, who, magic, cost)
+ *   Line 4+: Class entries with formatted data and dotted padding
+ *   Bottom: Input prompt "Enter the number of your choice: "
+ *
+ * Class Filtering Logic:
+ *   - Iterates through all classes (1 to NUMCLASS-1)
+ *   - Uses in_str(race, Classwho[i]) to check race eligibility
+ *   - Only displays classes available to the specified race
+ *   - Validates user choice against same eligibility rules
+ *
+ * Input Validation:
+ *   - Repeats prompt until valid choice entered
+ *   - Checks: 1) Number in range [1, NUMCLASS], 2) Class valid for race
+ *   - Shows error "Invalid Choice" for out-of-range numbers
+ *   - Shows error "That Class is Invalid for your Race" for ineligible classes
+ *
+ * Special Cases:
+ *   - Human Warlord: Displays cost as Classcost[C_WARLORD]*2/3
+ *   - Magic power list: Right-padded with dots to 10 characters for alignment
+ *   - Class numbers start at 1 (skips index 0)
+ *
+ * Screen Management:
+ *   - Menu starts at line 4 (ypos=4)
+ *   - Clears menu area after selection (lines 4 to ypos)
+ *   - Uses clrtoeol() to clear individual lines
+ *   - Preserves screen content outside menu area
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires class data, UI system, and nation state
+ *   Approach: Integration testing with mock class configuration and UI
+ *   Key Tests: [Class filtering by race, cost calculation with modifiers, input validation, menu display, screen cleanup]
+ *   Dependencies: [Class arrays (Class[], Classwho[], CPowlist[], Classcost[]), ncurses, doclass(), in_str(), newerror()]
+ *   Mock Requirements: [Class configuration data, nation structure, ncurses functions, global constants]
+ *   Complexity: Moderate - complex UI with validation logic and special case handling
+ *
+ * Notes:
+ *   - Critical component of nation creation affecting game balance
+ *   - Class costs directly impact available starting resources
+ *   - Uses global curntn to store selected class
+ *   - Assumes screen is initialized and LINES/COLS defined
+ *   - Safe type conversions using safe_int_to_short(), safe_size_to_int(), safe_long_to_short()
+ *   - Depends on accurate Class configuration arrays for proper functionality
+ *   - Menu formatting uses printf-style formatting for column alignment
+ * @last_documented: 2025-10-08
+ */
 int
 getclass (int race)
 {
