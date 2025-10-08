@@ -110,6 +110,7 @@ FILE *fexe;
  *   - Handles both interactive and batch modes (print maps, scores)
  *   - Complex authentication with password encryption
  *   - Legacy K&R function definition style needs modernization
+  * @last_documented: 2025-09-17
  */
 int main(int argc, char **argv) {
 #ifdef  USERLOG
@@ -739,6 +740,7 @@ int main(int argc, char **argv) {
  *   - Assumes curses screen is properly initialized
  *   - Different display for god mode (country==0) vs normal nations
  *   - Conditional compilation for SYSMAIL feature
+  * @last_documented: 2025-09-17
  */
 void makebottom(void) {
 	standend();
@@ -820,6 +822,7 @@ void makebottom(void) {
  *   - Some commands restricted to god/admin users
  *   - Movement commands use vi-like keybindings
  *   - Legacy K&R function definition style
+  * @last_documented: 2025-09-17
  */
 int parse(int ch) {
 	char	name[LINELTH+1];
@@ -1269,6 +1272,7 @@ int parse(int ch) {
  *   - Not thread-safe (accesses global variables)
  *   - Provides detailed internal state visibility
  *   - Used for development and debugging purposes
+  * @last_documented: 2025-09-17
  */
 void sect_info() {
 	int i,j,acnt1=0,acnt2=0,ncnt1=0,ncnt2=0,x,y;
@@ -1365,6 +1369,7 @@ void sect_info() {
  *   - Handles unit paging for sectors with many units
  *   - Different display modes for different nation relationships
  *   - Magic effects influence information visibility
+  * @last_documented: 2025-09-17
  */
 void makeside(int alwayssee) {	/* see even if cant really see sector */
 	short	i;
@@ -1680,6 +1685,7 @@ void makeside(int alwayssee) {	/* see even if cant really see sector */
  *   - Lock files must be cleaned up on game exit
  *   - Used in conjunction with check_lock() function
  *   - Different behavior for god mode vs normal nations
+  * @last_documented: 2025-09-17
  */
 int aretheyon(void) {
 	/* return file descriptor for lock file */
@@ -1727,6 +1733,7 @@ int aretheyon(void) {
  *   - Conditional compilation for TIMELOG feature
  *   - Must be displayed to every player on every login
  *   - Part of legal compliance for GPL v3 licensing
+  * @last_documented: 2025-09-17
  */
 void copyscreen(void) {
 #ifdef TIMELOG
@@ -1799,6 +1806,7 @@ void copyscreen(void) {
  *   - Signal handlers should call this function
  *   - Does not return (calls exit())
  *   - Thread-safe cleanup sequence
+  * @last_documented: 2025-09-17
  */
 void bye(int dounlink) {	/* TRUE if want to do unlink */
 	if( dounlink ) if(strcmp(fison,"START")!=0) unlink(fison);
@@ -1849,6 +1857,7 @@ void bye(int dounlink) {	/* TRUE if want to do unlink */
  *   - Part of proper attribution for open source project
  *   - Non-interactive display (waits for single keypress)
  *   - Accessible from main game loop via 'v' command
+  * @last_documented: 2025-09-17
  */
 void credits(void) {
 	clear();
@@ -1917,6 +1926,7 @@ void credits(void) {
  *   - Useful for players to understand current game scope
  *   - Shows both world configuration and player-specific data
  *   - Accessible from main game loop via 'I' command
+  * @last_documented: 2025-09-17
  */
 void camp_info(void) {
 	int mercs=0,solds=0,armynum,nvynum,nontn=0;

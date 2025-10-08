@@ -229,6 +229,7 @@ static int spent[CH_NUMBER];
  *   - Relies on getmetal() and getjewel() functions for resource placement
  *   - Terrain modification is permanent and affects starting nation advantages
  *   - Critical for game balance as it determines starting resource availability
+  * @last_documented: 2025-09-20
  */
 void
 teraform (int x, int y, int range, int chance)
@@ -350,6 +351,7 @@ teraform (int x, int y, int range, int chance)
  *   - Nation 0 always receives messages regardless of PC status
  *   - Critical for multiplayer communication and event notification
  *   - Message delivery is best-effort (no delivery confirmation)
+  * @last_documented: 2025-09-20
  */
 void
 mailtopc (char *string)
@@ -418,6 +420,7 @@ mailtopc (char *string)
  *   - Critical for proper interactive interface functionality
  *   - Terminal size check prevents interface corruption on small displays
  *   - Required for secure password input handling in registration
+  * @last_documented: 2025-09-20
  */
 void
 newinit (void)
@@ -481,6 +484,7 @@ newinit (void)
  *   - Can be called multiple times safely (endwin() handles redundant calls)
  *   - Critical for proper shell prompt restoration after program exit
  *   - Used by newbye() for complete program termination sequence
+  * @last_documented: 2025-09-20
  */
 void
 newreset (void)
@@ -535,6 +539,7 @@ newreset (void)
  *   - Used throughout newlogin system for both normal and error exits
  *   - Prevents terminal corruption that could occur with abrupt termination
  *   - Critical for clean integration with shell environment
+  * @last_documented: 2025-09-20
  */
 void
 newbye (int status)
@@ -593,6 +598,7 @@ newbye (int status)
  *   - Essential for providing responsive user interface feedback
  *   - Complements blocking error display functions for complete UI messaging
  *   - Critical for user experience during interactive nation building
+  * @last_documented: 2025-09-20
  */
 void
 newmsg (char *str)
@@ -649,6 +655,7 @@ newerror (char *str)
  *   - Uses strlen() to determine search bounds
  *   - Essential for validating user menu choices and input characters
  *   - Could be optimized with strchr() but current implementation is clear
+  * @last_documented: 2025-09-20
  */
 int
 in_str (int ch, char *str)
@@ -696,6 +703,7 @@ in_str (int ch, char *str)
  *   - Creates professional-looking information display consistent with UI
  *   - Essential for user feedback during registration validation
  *   - Assumes VERSION and PATCHLEVEL are defined string constants
+  * @last_documented: 2025-09-20
  */
 void
 errorbar (char *str1, char *str2)
@@ -750,6 +758,7 @@ errorbar (char *str1, char *str2)
  *   - NLJEWELS/Mvalues[CH_RAWGOODS] ratio determines jewel conversion
  *   - NLMETAL/Mvalues[CH_RAWGOODS] ratio determines metal conversion
  *   - Essential for displaying resource allocation in registration interface
+  * @last_documented: 2025-09-20
  */
 void
 dispitem (int item, long amount)
@@ -810,6 +819,7 @@ dispitem (int item, long amount)
  *   - Conditional compilation (#if NLJEWELS==NLMETAL) handles display variants
  *   - Right-aligned formatting ensures consistent column alignment
  *   - Essential for displaying current allocation state during registration
+  * @last_documented: 2025-09-20
  */
 void
 showitem (int line, int item)
@@ -889,6 +899,7 @@ showitem (int line, int item)
  *   - CHGMGK macro likely updates magic-related nation statistics
  *   - Raw goods generate both food and derived jewel/metal resources
  *   - Critical function that finalizes nation creation from user choices
+  * @last_documented: 2025-09-20
  */
 void
 convert (void)
@@ -1067,6 +1078,7 @@ convert (void)
  *   - Complex control flow with multiple nested loops and state validation
  *   - Integration point for multiple game subsystems (magic, combat, economics)
  *   - Essential for maintaining game balance through controlled nation creation
+  * @last_documented: 2025-09-20
  */
 void
 newlogin (int realuser)
@@ -2383,6 +2395,7 @@ doclass (
  *   - Memory safety: Uses array bounds from CH_NUMBER constant
  *   - Historical context: Modern evolution of nation creation cost system
  *   - Design pattern: Data-driven calculation using configuration tables
+  * @last_documented: 2025-09-20
  */
 int nstartcst (void)	/* to be used for new method */
 {
@@ -2496,6 +2509,7 @@ int nstartcst (void)	/* to be used for new method */
  *   - Memory safety: Uses global nation structure, no array bounds issues
  *   - Historical context: Original nation creation cost system
  *   - Deprecation status: Legacy method, nstartcst() preferred for new code
+  * @last_documented: 2025-09-20
  */
 int
 startcost (void)	/* cant be used for npc nations yet!!! see below */

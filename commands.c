@@ -1747,6 +1747,7 @@ void rmessage (void) {
  *   - File safety: Proper locking and error handling for mail operations
  *   - Input handling: Comprehensive character processing for editing
  *   - Screen management: Complex screen state management for editing interface
+  * @last_documented: 2025-09-18
  */
 void wmessage (void) {
 	int x=0,y=0;
@@ -2189,6 +2190,7 @@ moveciv (void)
  *   - Army Management: Essential for efficient army navigation in game
  *   - Performance: Optimized for typical army counts in gameplay
  *   - User Experience: Provides smooth army cycling for player convenience
+  * @last_documented: 2025-09-18
  */
 int armygoto (void) {
 	short armynum=0,loop=0;
@@ -2329,6 +2331,7 @@ int armygoto (void) {
  *   - Navy Numbering: Uses MAXARM offset to distinguish from army units
  *   - Ship Types: Supports three distinct ship categories for tactical diversity
  *   - User Experience: Provides smooth fleet cycling for naval operations
+  * @last_documented: 2025-09-18
  */
 int navygoto (void) {
 	short nvynum=0,loop=0;

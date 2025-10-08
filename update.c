@@ -71,6 +71,7 @@ static long	**newpop;		/* storage for old population */
  *   - Consider replacing with direct casting in modern C implementations
  *   - String formatting approach may be less efficient than direct conversion
  *   - BIGLTH buffer size should be sufficient for largest double representations
+  * @last_documented: 2025-09-18
  */
 long
 dtol (double d)
@@ -145,6 +146,7 @@ dtol (double d)
  *   - File operations and system commands require careful error handling
  *   - News file management ensures player communication and game history
  *   - Integrity checks (check()) provide critical error detection throughout turn processing
+  * @last_documented: 2025-09-18
  */
 void
 update (void)
@@ -283,6 +285,7 @@ update (void)
  *   - Food scarcity calculation affects farm attractiveness dynamically
  *   - Devastated sectors always return 0 regardless of other factors
  *   - Negative movement costs indicate inaccessible terrain
+  * @last_documented: 2025-09-18
  */
 int
 attract(int x,int y,int race)
@@ -451,6 +454,7 @@ attract(int x,int y,int race)
  *   - Attractiveness is reduced after army visits to prevent clustering
  *   - Group leaders coordinate movement of all assigned units
  *   - Complex conditional logic for different army types and situations
+  * @last_documented: 2025-09-18
  */
 int
 armymove (int armynum)
@@ -668,6 +672,7 @@ armymove (int armynum)
  *   - Only processes active nations to avoid updating dead/inactive nations
  *   - Nation 0 is skipped (nations start at index 1)
  *   - Cumulative scoring allows tracking long-term nation performance
+  * @last_documented: 2025-09-18
  */
 void
 score (void)
@@ -731,6 +736,7 @@ score (void)
  *   - File access checks determine which nations are actively played
  *   - Score comparison ensures only struggling NPCs receive help
  *   - Diplomatic changes are probabilistic and gradual
+  * @last_documented: 2025-09-18
  */
 void
 cheat (void)
@@ -873,6 +879,7 @@ cheat (void)
  *   - Leadership system prevents nations from becoming unplayable
  *   - Nation disarray occurs when primary leader is killed
  *   - Civilian movement driven by sector attractiveness calculations
+  * @last_documented: 2025-09-18
  */
 void
 updexecs (void)

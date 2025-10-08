@@ -101,6 +101,7 @@
  *   - Handles complex army-navy coordination validation (ONBOARD status)
  *   - Enforces automatic WAR status for all NPC nations (active >= NPC_PEASANT)
  *   - Thread safety: Not thread-safe due to global data modification
+  * @last_documented: 2025-09-19
  */
 void verify_ntn(char __file__[], int __line__) {
 	register struct s_nation	*nptr;
@@ -242,6 +243,7 @@ void verify_ntn(char __file__[], int __line__) {
  *   - Critical for preventing impossible economic conditions
  *   - Handles population overflow and underflow with appropriate corrections
  *   - Thread safety: Not thread-safe due to global map data modification
+  * @last_documented: 2025-09-19
  */
 void verify_sct (char __file__[], int __line__) {
 	register struct s_sector	*sptr;
@@ -326,6 +328,7 @@ void verify_sct (char __file__[], int __line__) {
  *   - Should be called after data loading and before critical game operations
  *   - Part of defensive programming strategy for data integrity
  *   - Thread safety: Inherits thread safety characteristics of called functions
+  * @last_documented: 2025-09-19
  */
 void verifydata (char __file__[], int __line__) {
 	/* check for invalid values */
@@ -368,6 +371,7 @@ void verifydata (char __file__[], int __line__) {
  *   - Acts as a wrapper around verifydata() with added debug information
  *   - Parameter order differs from other functions (line, file vs file, line)
  *   - Thread safety: Inherits characteristics from verifydata() and fprintf()
+  * @last_documented: 2025-09-19
  */
 void checkout (char *file, int line) {
 	fprintf(stderr,"file %s line %d\n",file,line);
@@ -420,6 +424,7 @@ void checkout (char *file, int line) {
  *   - Handles stale lock cleanup automatically (TIME_DEAD*3 threshold)
  *   - Critical error conditions cause program termination (defensive programming)
  *   - Thread safety: Platform-dependent (filesystem operations)
+  * @last_documented: 2025-09-19
  */
 int check_lock (char *filename, int keeplock) {
 	int hold=FALSE;

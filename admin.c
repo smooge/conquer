@@ -260,6 +260,7 @@ FILE *fexe;
  *   Dependencies: File system, user accounts, data directory, game data files
  *   Mock Requirements: Mock filesystem, user database, permission system
  *   Complexity: Complex - Multi-user security, file operations, process coordination
+  * @last_documented: 2025-09-20
  */
 int main (int argc, char **argv) {
 	uid_t realuser;
@@ -665,6 +666,7 @@ int main (int argc, char **argv) {
  *   Dependencies: ntn[] array, magic() function, isntn() validation
  *   Mock Requirements: Mock magic system, mock nation data structures
  *   Complexity: Simple - Direct attribute assignment with conditional logic
+  * @last_documented: 2025-09-20
  */
 void att_setup (int cntry) {
 	int	nat;
@@ -782,6 +784,7 @@ void att_setup (int cntry) {
  *   Dependencies: Complete sector array, nation data, magic system, world state
  *   Mock Requirements: Full world map, complete nation setup, magic power system
  *   Complexity: Complex - Multi-system integration with extensive calculations
+  * @last_documented: 2025-09-20
  */
 void att_base (void) {
 	long	cityfolk,townfolk,scholars,foodpts,minepts,roads,clerics,ngrain;
@@ -1092,6 +1095,7 @@ void att_base (void) {
  *   Dependencies: Complete sector array, trade good tables, tg_ok() validation, nation data
  *   Mock Requirements: Mock world map with trade goods, mock trade good value tables
  *   Complexity: Moderate - Map processing with trade good validation and bonus application
+  * @last_documented: 2025-09-20
  */
 void att_bonus (void) {
 	short	x,y,nation,good;

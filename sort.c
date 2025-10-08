@@ -121,6 +121,7 @@ FILE *infile, *outfile;
  *   - Uses global variables for configuration (not thread-safe)
  *   - Memory allocated by build_node() is never freed (acceptable for utility)
  *   - Processes input incrementally to handle large files efficiently
+  * @last_documented: 2025-09-20
  */
 int
 main(int argc, char *argv[])

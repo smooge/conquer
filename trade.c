@@ -109,6 +109,7 @@ static char *buylist[NUMPRODUCTS] = { "Bid how much gold? ", "Bid how much food?
  *   - File operations may fail requiring error handling
  *   - Complex state management with trade reservations
  *   - Uses goto-style control flow with while loops and switch statements
+  * @last_documented: 2025-09-20
  */
 void trade(void) {
 	FILE *tfile;
@@ -588,6 +589,7 @@ void trade(void) {
  *   - Used by all trade functions for consistent error reporting
  *   - Hardcoded screen positions (lines 21-22) assume standard terminal size
  *   - Blocking function that pauses game until user acknowledgment
+  * @last_documented: 2025-09-20
  */
 void
 tradeerr (char *mesg)
@@ -646,6 +648,7 @@ tradeerr (char *mesg)
  *   - Core validation function for land trading system
  *   - Prevents exploitation of capital and city trading
  *   - Used by both buy and sell operations
+  * @last_documented: 2025-09-20
  */
 int
 checkland (int tradestat, int xspot, int yspot)
@@ -719,6 +722,7 @@ checkland (int tradestat, int xspot, int yspot)
  *   - Used for land trading to establish minimum food value requirements
  *   - Breaks out of nested loops using i=MAPX+1, j=MAPY+1 technique
  *   - Food value depends on both vegetation type and nation context
+  * @last_documented: 2025-09-20
  */
 int
 getland (int *count)
@@ -800,6 +804,7 @@ getland (int *count)
  *   - Used by multiple trading functions for consistent commodity selection
  *   - Case-insensitive input handling for user convenience
  *   - Returns -1 for any unrecognized input to signal error condition
+  * @last_documented: 2025-09-20
  */
 int
 gettrade (char *saletype, int *count)
@@ -890,6 +895,7 @@ gettrade (char *saletype, int *count)
  *   - Paired with takeback() to implement trade reservation system
  *   - isup flag creates conditional behavior for some commodity types
  *   - TRADED status prevents units from being used while reserved
+  * @last_documented: 2025-09-20
  */
 void
 setaside (int cntry, int item, long longval, int extint, int isup)
@@ -969,6 +975,7 @@ setaside (int cntry, int item, long longval, int extint, int isup)
  *   - Paired with setaside() to implement complete trade reservation system
  *   - Essential for trade cancellation and marketplace unselling operations
  *   - Units remain immobilized until next turn despite status restoration
+  * @last_documented: 2025-09-20
  */
 void
 takeback (int cntry, int item, long longval, int extint, int isup)
@@ -1055,6 +1062,7 @@ takeback (int cntry, int item, long longval, int extint, int isup)
  *   - ADMIN-only function for turn processing and administrative operations
  *   - Critical for maintaining game economy balance with trading costs
  *   - Handles complex unit roster management for military transfers
+  * @last_documented: 2025-09-20
  */
 long
 tradeit (int cntry1, int cntry2, int item, long longval, int extra)
@@ -1193,6 +1201,7 @@ tradeit (int cntry1, int cntry2, int item, long longval, int extra)
  *   - Essential for trade validation and bid comparison
  *   - Handles edge cases where units/land may not exist or be invalid
  *   - Used by both trade processing and marketplace bid evaluation
+  * @last_documented: 2025-09-20
  */
 long
 gettval(int cntry1,int cntry2,int type,long longval,int extint)
@@ -1280,6 +1289,7 @@ gettval(int cntry1,int cntry2,int type,long longval,int extint)
  *   - Provides audit trail for all completed trades
  *   - Critical for player communication and game transparency
  *   - Terminates program on file errors to prevent silent failures
+  * @last_documented: 2025-09-20
  */
 void
 trademail (int cntry1, int cntry2, int item1, int item2, long lvar1, long lvar2, long lvar3, long lvar4)
@@ -1382,6 +1392,7 @@ trademail (int cntry1, int cntry2, int item1, int item2, long lvar1, long lvar2,
  *   - Used by trading interface to validate unit availability
  *   - Prevents trading of regular troops to maintain game balance
  *   - Context switching ensures accurate unit status evaluation
+  * @last_documented: 2025-09-20
  */
 int
 tradable (int cntry, int armynum)
@@ -1444,6 +1455,7 @@ tradable (int cntry, int armynum)
  *   - Used for both bid validation and trade completion
  *   - Essential for establishing fair market prices for military units
  *   - Scaling factor prevents unrealistic unit values in trading
+  * @last_documented: 2025-09-20
  */
 long
 armyvalue (int cntry, int unit)
@@ -1505,6 +1517,7 @@ armyvalue (int cntry, int unit)
  *   - Called during player login to restore trade state
  *   - Essential for persistent trading across game sessions
  *   - Gracefully handles missing trade file (no operations active)
+  * @last_documented: 2025-09-20
  */
 void
 checktrade (void)
@@ -1606,6 +1619,7 @@ checktrade (void)
  *   - Central function for entire trading economy
  *   - Critical for maintaining game balance and fairness
  *   - Handles complex auction mechanics with multiple bidders
+  * @last_documented: 2025-09-20
  */
 void
 uptrade (void)
@@ -1767,6 +1781,7 @@ uptrade (void)
  *   - Essential for maintaining marketplace integrity
  *   - Used during nation elimination or administrative intervention
  *   - Prevents orphaned trade entries from inactive nations
+  * @last_documented: 2025-09-20
  */
 void
 fixtrade (int cntry)

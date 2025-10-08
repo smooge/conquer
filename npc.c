@@ -114,6 +114,7 @@ static	int Avg_tradegood;
  * Testing Notes:
  *   Category: D (Mock) - Debug-only function requiring specific compile flags
  *   Complexity: Simple - Straightforward debug output with conditional compilation
+  * @last_documented: 2025-09-18
  */
 void prtattr(void){
 #ifdef DEBUG
@@ -183,6 +184,7 @@ void prtattr(void){
  *   - Random elements make relationships unpredictable but balanced
  *   - Special rules for PC (player character) nations
  *   - Orc racial hostility hardcoded for gameplay balance
+  * @last_documented: 2025-09-18
  */
 void
 newdip (int ntn1, int ntn2)
@@ -268,6 +270,7 @@ newdip (int ntn1, int ntn2)
  *   - Critical for maintaining game challenge and preventing stagnation
  *   - Spawning formula maintains balance across different map sizes
  *   - Uses goto statements for army slot allocation (legacy pattern)
+  * @last_documented: 2025-09-18
  */
 void
 monster (void)
@@ -460,6 +463,7 @@ monster (void)
  *   - Devastation creates permanent map changes affecting late game
  *   - Movement failure protection prevents infinite loops
  *   - Uses P_A* macros for army data access (legacy convenience macros)
+  * @last_documented: 2025-09-18
  */
 void
 do_nomad (void)
@@ -569,6 +573,7 @@ do_nomad (void)
  *   - Devastation occurs regardless of successful territorial claim
  *   - Growth mechanic maintains savage threat throughout game
  *   - Uses P_A* macros for army data access (legacy convenience macros)
+  * @last_documented: 2025-09-18
  */
 void
 do_savage (void)
@@ -668,6 +673,7 @@ do_savage (void)
  *   - Base camp dependency creates strategic vulnerabilities for pirates
  *   - Uses P_N* macros for naval data access (legacy convenience macros)
  *   - Requires both MONSTER and MORE_MONST flags for full functionality
+  * @last_documented: 2025-09-18
  */
 void
 do_pirate (void)
@@ -862,6 +868,7 @@ void n_redes (int x, int y, int goldthresh, int metalthresh, int citythresh, dou
  *   - Integrates with magic system for cost modifications
  *   - Critical for NPC military competitiveness and strategic effectiveness
  *   - Extensive debug output available for military analysis
+  * @last_documented: 2025-09-19
  */
 void
 redomil (void)
@@ -1283,6 +1290,7 @@ redomil (void)
  *   - Integrates with mail system for player notification of major changes
  *   - Critical for creating dynamic political landscape and strategic challenges
  *   - Prevents diplomatic status changes for certain protected relationships
+  * @last_documented: 2025-09-19
  */
 void
 getdstatus (void)
@@ -1649,6 +1657,7 @@ find_avg_sector (void)
  *   - Magic Number Usage: Contains numerous hardcoded thresholds for AI decisions
  *   - Debug Support: Includes comprehensive debug output for AI behavior analysis
  *   - Error Handling: Multiple check() calls ensure data integrity throughout
+  * @last_documented: 2025-09-19
  */
 void
 nationrun (void)
@@ -2017,6 +2026,7 @@ nationrun (void)
  *   - Strategic balance: Capitol proximity rule prevents diplomatic deadlocks
  *   - Bilateral checking: Ensures both nations agree on diplomatic status
  *   - Integration: Called by defattr(), atkattr(), and pceattr() coordinators
+  * @last_documented: 2025-09-19
  */
 void
 n_trespass (void)
@@ -2114,6 +2124,7 @@ n_trespass (void)
  *   - Game balance: Limits NPC expansion range for manageable AI behavior
  *   - Implementation: Simple but globally comprehensive boundary enforcement
  *   - Integration: Called by all attractiveness coordinators (defattr, atkattr, pceattr)
+  * @last_documented: 2025-09-19
  */
 void
 n_toofar (void)
@@ -2225,6 +2236,7 @@ n_toofar (void)
  *   - Strategic design: Balances immediate territorial gains with resource value
  *   - Economic integration: Food production ensures sustainable expansion
  *   - Intelligence handling: Graceful degradation for unexplored territories
+  * @last_documented: 2025-09-19
  */
 void
 n_unowned (void)
@@ -2430,6 +2442,7 @@ n_defend (int natn)
  *   - Intelligence dependence: Effectiveness scales with reconnaissance quality
  *   - Tactical integration: Coordinates with other attractiveness functions for strategy
  *   - Combat doctrine: Implements combined-arms coordination with force concentration
+  * @last_documented: 2025-09-19
  */
 void
 n_attack (int nation)
@@ -2562,6 +2575,7 @@ n_attack (int nation)
  *   - Tactical efficiency: Minimizes military costs through intelligent target selection
  *   - Integration: Coordinates with other attractiveness functions for balanced strategy
  *   - Expansion doctrine: Implements efficient territorial acquisition through weakness targeting
+  * @last_documented: 2025-09-19
  */
 void
 n_undefended(int nation )
@@ -2783,6 +2797,7 @@ n_people (
  *   - Intelligence dependence: Effectiveness requires enemy capitol reconnaissance
  *   - Geometric approach: Simple rectangular corridor calculation
  *   - Tactical integration: Coordinates with other attractiveness functions for strategy
+  * @last_documented: 2025-09-19
  */
 void
 n_between(int nation)
@@ -2952,6 +2967,7 @@ n_survive (void)
  *   - Performance: O(nations^2 * sectors) due to multiple attractiveness function calls
  *   - Debug Output: Contains incorrect debug message (shows "atkattr" instead of "defattr")
  *   - Legacy Pattern: K&R function declaration needs modernization to ANSI C
+  * @last_documented: 2025-09-19
  */
 void
 defattr (void)

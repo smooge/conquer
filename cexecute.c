@@ -105,6 +105,7 @@
  *   - Critical for maintaining game state consistency
  *   - Handles edge cases for sector ownership conflicts
  *   - Debug output available for bribe operations
+  * @last_documented: 2025-09-20
  */
 int execute(int isupdate) {	/* 0 if not update, 1 if update */
 	FILE *fp;
@@ -414,6 +415,7 @@ int execute(int isupdate) {	/* 0 if not update, 1 if update */
  *   - Ensures proper cleanup of system resources
  *   - Maintains file locking integrity
  *   - Thread safety not required (single-threaded emergency handler)
+  * @last_documented: 2025-09-20
  */
 void hangup (int sig) {
 	(void)sig;  /* Signal number not used in this handler */

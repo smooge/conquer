@@ -175,6 +175,7 @@
  *   - Performance: O(1) with random selection from fixed power arrays
  *   - Critical for game balance: Enforces power acquisition rules and restrictions
  *   - Historical: Complex evolution of power system with accumulated restrictions
+  * @last_documented: 2025-09-19
  */
 
 long getmagic(int type) {
@@ -379,6 +380,7 @@ long getmagic(int type) {
  *   - Performance: Interactive - response time dependent on user input speed
  *   - User experience: Central magic system interface - critical for gameplay
  *   - Conditional compilation: Features vary based on compile-time options (OGOD, ORCTAKE)
+  * @last_documented: 2025-09-19
  */
 void domagic (void) {
 	int county, countx, done=FALSE, loop=0, i,type;
@@ -537,6 +539,7 @@ void domagic (void) {
  *   - Performance: O(n) worst case for random target search (n=nations)
  *   - Game balance: High-impact feature requiring careful probability tuning
  *   - Conditional: Only available when ORCTAKE compile option enabled
+  * @last_documented: 2025-09-19
  */
 int takeover (int percent, int target) {
 	int loop=1,y,save,isupdate=0;
@@ -638,6 +641,7 @@ int takeover (int percent, int target) {
  *   - Performance: O(n) for army iteration, O(1) for most stat changes
  *   - Game balance: Critical function affecting core game mechanics
  *   - Conditional compilation: Some effects depend on ADMIN flag for update vs player mode
+  * @last_documented: 2025-09-19
  */
 void exenewmgk (long newpower) {
 	short x,armynum;
@@ -840,6 +844,7 @@ void exenewmgk (long newpower) {
  *   - Performance: Interactive - dependent on user selection speed
  *   - Game balance: Resource costs prevent summoning abuse
  *   - Army management: Finds first available slot or reports "NO FREE ARMIES"
+  * @last_documented: 2025-09-19
  */
 void dosummon (void) {
 	int x,count,i,armynum;
@@ -977,6 +982,7 @@ void dosummon (void) {
  *   - Performance: Interactive - depends on user input and target validation speed
  *   - Game balance: High-cost, low-probability feature requiring strategic resource use
  *   - ORC-specific: Unique racial ability providing alternative conquest mechanism
+  * @last_documented: 2025-09-19
  */
 int orctake (int *count) {
 	int chance=0,done=TRUE,i,s_cost;
@@ -1092,6 +1098,7 @@ int orctake (int *count) {
  *   - Performance: O(1) - Single switch statement with constant-time power checks
  *   - Game balance: Critical function controlling unit availability and strategic options
  *   - Integration: Used by recruitment, summoning, and army management systems
+  * @last_documented: 2025-09-19
  */
 int unitvalid (int type) {
 	int valid=FALSE;
@@ -1227,6 +1234,7 @@ int unitvalid (int type) {
  *   - Game balance: Critical for maintaining consistent game state during power loss
  *   - Pairing requirement: Must exactly reverse effects applied by exenewmgk()
  *   - Administrative usage: Called during god-mode power manipulation and game events
+  * @last_documented: 2025-09-19
  */
 void removemgk (long oldpower) {
 	short x,y,armynum;
@@ -1396,6 +1404,7 @@ void removemgk (long oldpower) {
  *   - Administrative privilege: Only available in god mode (OGOD compilation)
  *   - Power management: Provides complete administrative control over magic systems
  *   - Game testing: Essential tool for game balance testing and debugging
+  * @last_documented: 2025-09-19
  */
 void god_magk (void) {
 	int county,countx,choice;
@@ -1554,6 +1563,7 @@ static int magiccost[NUMSPELLS]={0,100,300,300};
  *   - Game balance: Spell costs scale with army size to prevent overpowered small units
  *   - Integration: Works closely with army management and combat systems
  *   - Conditional compilation: Only available when CONQUER flag is enabled
+  * @last_documented: 2025-09-19
  */
 void wizardry (void) {
 	int i,xspt,yspt,choice,armynum,s_cost;

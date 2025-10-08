@@ -163,6 +163,7 @@
  *   - No return value checking needed as m2alloc() handles failures internally
  *   - Safe to call multiple times for reallocation scenarios
  *   - Critical for game initialization and scenario loading operations
+  * @last_documented: 2025-09-20
  */
 void
 getspace(void)
@@ -223,6 +224,7 @@ static char **mapseen;
  *   - Navy condition checks for any ship type (merchant, war, gunboat)
  *   - Performance scales with map size and number of military units
  *   - Critical for map printing functions and strategic game balance
+  * @last_documented: 2025-09-20
  */
 void mapprep (void) {
 	int armynum, nvynum;
@@ -318,6 +320,7 @@ void mapprep (void) {
  *   - Deity view (country==0) shows "World" instead of nation name
  *   - Map dimensions are fixed by compile-time MAPX/MAPY constants
  *   - Performance is O(MAPX*MAPY) with simple character output per sector
+  * @last_documented: 2025-09-20
  */
 void printele (void) {
 	register int X, Y;
@@ -383,6 +386,7 @@ void printele (void) {
  *   - Useful for territorial analysis and diplomatic intelligence
  *   - Output format matches other map printing functions for consistency
  *   - Performance is O(MAPX*MAPY) with simple character output logic
+  * @last_documented: 2025-09-20
  */
 void pr_ntns (void) {
 	register int X, Y;
@@ -455,6 +459,7 @@ void pr_ntns (void) {
  *   - NINJA enables offensive intelligence gathering capabilities
  *   - Undesignated sectors show natural terrain for reference
  *   - Information warfare balance between concealment and revelation
+  * @last_documented: 2025-09-20
  */
 void pr_desg (void) {
 	register int X, Y;
@@ -530,6 +535,7 @@ void pr_desg (void) {
  *   - Important for strategic planning and resource management
  *   - Simplest of the map printing functions in terms of visibility rules
  *   - Performance is O(MAPX*MAPY) with straightforward character output
+  * @last_documented: 2025-09-20
  */
 void printveg (void) {
 	register int X, Y;
@@ -603,6 +609,7 @@ void printveg (void) {
  *   - Uses creat() which creates file with specified permissions
  *   - Terminates on any error to prevent partial/corrupted saves
  *   - Essential counterpart to readdata() for complete persistence system
+  * @last_documented: 2025-09-20
  */
 void writedata (void) {
 	long	bytes;
@@ -689,6 +696,7 @@ void writedata (void) {
  *   - Comprehensive error reporting helps diagnose save file corruption or version issues
  *   - Critical for game initialization and session restoration functionality
  *   - File format must match writedata() output exactly for successful loading
+  * @last_documented: 2025-09-20
  */
 void readdata (void) {
 	int fd;
@@ -798,6 +806,7 @@ void readdata (void) {
  *   - Automatically triggers visibility updates after position changes
  *   - Essential for large world navigation where map exceeds screen size
  *   - Coordinates with display system for efficient partial redraws
+  * @last_documented: 2025-09-20
  */
 void offmap (void) {
 	/*set offset offsets can not be < 0*/
@@ -920,6 +929,7 @@ void offmap (void) {
  *   - Commonly used after jump commands or when context is needed
  *   - Provides immediate visual feedback for player orientation
  *   - Part of the XYZZY enhanced display system
+  * @last_documented: 2025-09-20
  */
 void centermap (void) {
 	int xx,yy;
@@ -994,6 +1004,7 @@ void centermap (void) {
  *   - Error handling provides clear feedback for boundary violations
  *   - Supports both automated (capitals) and manual (coordinates) navigation
  *   - Critical for game management and strategic oversight functionality
+  * @last_documented: 2025-09-20
  */
 void jump_to (int home) {
 	int i,j,done;
@@ -1124,6 +1135,7 @@ void jump_to (int home) {
  *   - Essential for diplomatic intelligence and strategic planning
  *   - Provides comprehensive overview of world power structure
  *   - Used by both players and administrators for game state assessment
+  * @last_documented: 2025-09-20
  */
 void printscore (void) {
 	int i;
@@ -1242,6 +1254,7 @@ void printscore (void) {
  *   - Integration with food system prevents impossible population concentrations
  *   - Essential for preventing unrealistic population invulnerability
  *   - Provides dramatic feedback for major military and economic disruptions
+  * @last_documented: 2025-09-20
  */
 void flee (int x, int y, int isupd, int slaver) {
 	int count=0;	/*count is number of acceptable sectors to go to */
@@ -1377,6 +1390,7 @@ void flee (int x, int y, int isupd, int slaver) {
  *   - Logging output assists in scenario debugging and verification
  *   - Critical for dynamic world generation and campaign management
  *   - Enables separation of game logic from world data configuration
+  * @last_documented: 2025-09-20
  */
 int readmap (void) {
 	FILE	*mapfile;
@@ -1489,6 +1503,7 @@ int readmap (void) {
  *   - Essential for multi-user game system authentication
  *   - Return value enables password length validation by callers
  *   - Proper string handling ensures safe integration with authentication systems
+  * @last_documented: 2025-09-20
  */
 int get_pass (char *str) {
 	char ch;

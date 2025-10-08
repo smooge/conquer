@@ -221,6 +221,7 @@ static char *hasseen;
  *   - Must be called before any screen rendering functions
  *   - Memory is not explicitly freed (program termination cleanup)
  *   - Critical function - program exits on allocation failure
+  * @last_documented: 2025-09-19
  */
 void init_hasseen(void) {
 	hasseen = (char *)malloc(safe_int_to_size(((COLS-10)/2) * (LINES-5)));
@@ -269,6 +270,7 @@ void init_hasseen(void) {
  *   - Performance depends on number of visible sectors and complexity of see()
  *   - Cursor positioning uses 2x horizontal scaling for dual-character display
  *   - Must be called after whatcansee() to ensure proper visibility state
+  * @last_documented: 2025-09-19
  */
 void makemap (void) {
 	register int x,y;
@@ -330,6 +332,7 @@ void makemap (void) {
  *   - Uses goto statements for code organization (changed_display, changed_highlight)
  *   - Army preparation required for army-based highlighting modes
  *   - Dual display mode signs control which display is active
+  * @last_documented: 2025-09-19
  */
 void get_display_mode (short *dmode, short *hmode, short *odmode, short *ohmode) {
 	short temp;
@@ -482,6 +485,7 @@ void get_display_mode (short *dmode, short *hmode, short *odmode, short *ohmode)
  *   - Delegates actual mode selection to get_display_mode()
  *   - Ensures screen consistency through makebottom() call
  *   - Part of the user command processing workflow
+  * @last_documented: 2025-09-19
  */
 void newdisplay (void) {
 	get_display_mode(&dismode,&hilmode,&otherdismode,&otherhilmode);
@@ -537,6 +541,7 @@ void newdisplay (void) {
  *   - Each display mode has unique calculation and representation logic
  *   - Defense mode performs complex terrain bonus calculations
  *   - Resource modes check accessibility and availability
+  * @last_documented: 2025-09-19
  */
 char get_display_for(int x,int y,short dmode)
 {
@@ -718,6 +723,7 @@ char get_display_for(int x,int y,short dmode)
  *   - Dual display mode renders second character when otherdismode > 0
  *   - Bounds checking prevents crashes when rendering near map boundaries
  *   - Performance critical - called frequently during map updates
+  * @last_documented: 2025-09-19
  */
 void see(int x,int y) {
 	char ch;
@@ -783,6 +789,7 @@ void see(int x,int y) {
  *   - Magic system (THE_VOID, NINJA) affects trade goods highlighting
  *   - Bounds checking prevents crashes at map edges
  *   - Performance impact when highlighting large areas with many armies
+  * @last_documented: 2025-09-19
  */
 void highlight(int x,int y,short hmode) {
 	int	armynum;
@@ -874,6 +881,7 @@ void highlight(int x,int y,short hmode) {
  *   - Different clearing strategies for FULL vs PART redraws optimize performance
  *   - Cursor positioning uses 2x horizontal scaling for dual-character display
  *   - Complete screen update cycle ensures all display elements stay synchronized
+  * @last_documented: 2025-09-19
  */
 void coffmap (void) {
 	if( xcurs<0 || (XREAL!=0 && xcurs==0) || (ycurs<0) ||
@@ -941,6 +949,7 @@ void coffmap (void) {
  *   - Coordinates are in map space, not screen space
  *   - Depends on proper initialization of hasseen array by whatcansee()
  *   - Performance optimized - minimal overhead for frequent visibility checks
+  * @last_documented: 2025-09-19
  */
 int canbeseen (int x, int y) {
 	if(!ONMAP(x,y)) return(FALSE);
@@ -996,6 +1005,7 @@ int canbeseen (int x, int y) {
  *   - Visibility constants (LANDSEE, ARMYSEE, NAVYSEE) control visibility ranges
  *   - Screen-relative calculations require careful coordinate translation
  *   - Must be called before map rendering to ensure accurate visibility state
+  * @last_documented: 2025-09-19
  */
 void whatcansee (void) {
 	register int x,y;

@@ -151,6 +151,7 @@ static int	count=0;                /* Total number of units in battle sector */
  * - Performance scales with map size and nation count
  * - Thread safety issues due to global variable usage
  * - Consider refactoring to use context structure
+  * @last_documented: 2025-09-18
  */
 void combat(void) {
 	register int i,j;
@@ -383,6 +384,7 @@ void combat(void) {
  * - Complex interaction between multiple game systems
  * - Performance critical for large battles
  * - Historical combat balance maintained for game compatibility
+  * @last_documented: 2025-09-18
  */
 void fight (void) {
 	int	roll,strength,fortdam=FALSE;
@@ -940,6 +942,7 @@ printf("I AM VERY CONFUSED - PLEASE HELP... combat.c\n");
  * - Historical balance values preserved for compatibility
  * - Consider caching results for performance in large battles
  * - Unit type arrays must be properly initialized
+  * @last_documented: 2025-09-18
  */
 int cbonus(int num) {
 	short	armynum;
@@ -1092,6 +1095,7 @@ int cbonus(int num) {
  *   - Retreat failure handling: Forces retreat to capital with 30-75% casualties
  *   - Diplomatic integration: Respects alliance/war status for safe passage
  *   - Town/city sectors block retreats (defensive advantage mechanic)
+  * @last_documented: 2025-09-18
  */
 void fdxyretreat (void) {	/* finds retreat location */
 	int	x,y,nation=(-1);
@@ -1184,6 +1188,7 @@ void fdxyretreat (void) {	/* finds retreat location */
  *   - Naval retreat limitation: Represents inability to retreat ships overland
  *   - Casualty asymmetry: Naval units suffer retreat losses, land units don't
  *   - Used for: Battle retreats, mercenary desertion, diplomatic withdrawals
+  * @last_documented: 2025-09-18
  */
 void retreat ( int unitnum ){	/* if -1 then normal, else retreat only unit ismerc */
 	int cnum;

@@ -68,6 +68,7 @@
  *   Dependencies: P_NWSHP global variable, N_MASK and N_BITSIZE constants
  *   Mock Requirements: Global fleet state setup
  *   Complexity: Moderate - Bit manipulation requires careful boundary testing
+  * @last_documented: 2025-09-20
  */
 int
 addwships(short nvynum, short shipsize, short nships)
@@ -140,6 +141,7 @@ addwships(short nvynum, short shipsize, short nships)
  *   Dependencies: P_NMSHP global variable, N_MASK and N_BITSIZE constants
  *   Mock Requirements: Global fleet state setup
  *   Complexity: Moderate - Bit manipulation requires careful boundary testing
+  * @last_documented: 2025-09-20
  */
 int
 addmships (int nvynum, int shipsize, int nships)
@@ -213,6 +215,7 @@ addmships (int nvynum, int shipsize, int nships)
  *   Dependencies: P_NGSHP global variable, N_MASK and N_BITSIZE constants
  *   Mock Requirements: Global fleet state setup
  *   Complexity: Moderate - Bit manipulation requires careful boundary testing
+  * @last_documented: 2025-09-20
  */
 int
 addgships (int nvynum, int shipsize, int nships)
@@ -286,6 +289,7 @@ addgships (int nvynum, int shipsize, int nships)
  *   Dependencies: P_NWSHP global variable, N_MASK and N_BITSIZE constants
  *   Mock Requirements: Global fleet state setup with existing ships
  *   Complexity: Moderate - Bit manipulation with underflow protection logic
+  * @last_documented: 2025-09-20
  */
 void
 subwships (int nvynum, int shipsize, int nships)
@@ -359,6 +363,7 @@ subwships (int nvynum, int shipsize, int nships)
  *   Dependencies: P_NMSHP global variable, N_MASK and N_BITSIZE constants
  *   Mock Requirements: Global fleet state setup with existing merchant ships
  *   Complexity: Moderate - Bit manipulation with underflow protection logic
+  * @last_documented: 2025-09-20
  */
 void
 submships (int nvynum, int shipsize, int nships)
@@ -431,6 +436,7 @@ submships (int nvynum, int shipsize, int nships)
  *   Dependencies: P_NGSHP global variable, N_MASK and N_BITSIZE constants
  *   Mock Requirements: Global fleet state setup with existing galley ships
  *   Complexity: Moderate - Bit manipulation with underflow protection logic
+  * @last_documented: 2025-09-20
  */
 void
 subgships (int nvynum, int shipsize, int nships)
@@ -502,6 +508,7 @@ subgships (int nvynum, int shipsize, int nships)
  *   Dependencies: P_NWAR/P_NMER/P_NGAL macros, curntn global variable
  *   Mock Requirements: Multi-nation setup with populated fleets
  *   Complexity: Simple - Mathematical accumulation with context management
+  * @last_documented: 2025-09-20
  */
 int
 fltships (short nation, int nvynum)
@@ -636,6 +643,7 @@ fltspeed (int nvynum)
  *   Dependencies: P_NWAR/P_NMER/P_NGAL macros, ship size constants
  *   Mock Requirements: Fleet setup with various ship types and sizes
  *   Complexity: Simple - Mathematical accumulation with size-based multipliers
+  * @last_documented: 2025-09-20
  */
 int
 flthold (int nvynum)
@@ -701,6 +709,7 @@ flthold (int nvynum)
  *   Dependencies: P_NWAR macro, ship size constants
  *   Mock Requirements: Fleet setup with various warship types and sizes
  *   Complexity: Simple - Mathematical accumulation with size-based multipliers
+  * @last_documented: 2025-09-20
  */
 int
 fltwhold (int nvynum)
@@ -763,6 +772,7 @@ fltwhold (int nvynum)
  *   Dependencies: P_NGAL macro, ship size constants
  *   Mock Requirements: Fleet setup with various galley types and sizes
  *   Complexity: Simple - Mathematical accumulation with size-based multipliers
+  * @last_documented: 2025-09-20
  */
 int
 fltghold (int nvynum)
@@ -824,6 +834,7 @@ fltghold (int nvynum)
  *   Dependencies: P_NMER macro, ship size constants
  *   Mock Requirements: Fleet setup with various merchant types and sizes
  *   Complexity: Simple - Mathematical accumulation with size-based multipliers
+  * @last_documented: 2025-09-20
  */
 int
 fltmhold (int nvynum)
@@ -949,6 +960,7 @@ get_cargo (char *str)
  *   Dependencies: Army status constants (TRADED, GENERAL, etc.)
  *   Mock Requirements: Army status constant definitions
  *   Complexity: Simple - Switch statement with boolean logic
+  * @last_documented: 2025-09-20
  */
 int
 loadstat (int status)
@@ -1048,6 +1060,7 @@ loadstat (int status)
  *   Dependencies: Global game state, sector system, army system, UI system
  *   Mock Requirements: Complete game state with fleets, armies, sectors, nations
  *   Complexity: Complex - Extensive branching logic with multiple subsystem interactions
+  * @last_documented: 2025-09-20
  */
 void
 loadfleet (void)
