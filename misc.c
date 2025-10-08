@@ -1545,6 +1545,93 @@ todigit (register int character)
  * if leader==true, only for leader sectors plus ntn.communicatins range
  * if leader==(-1), do not include ships on the sector search
  */
+/*
+ * prep - Prepare occupation map for leader influence or military presence
+ *
+ * Initializes and populates the global occupation (occ) map to track either:
+ * 1. Leader Communication Radius: Maps area of influence for a specific leader
+ *    based on their communication ability, used for leader-specific operations
+ * 2. Military Presence: Maps all nations' army and navy positions across the
+ *    entire world map, used for general occupation analysis and display
+ *
+ * The occupation map is a critical game state data structure that tracks which
+ * nation controls or influences each map sector. This information is used by
+ * various systems including display, combat, movement validation, and AI logic.
+ *
+ * Operating Modes:
+ *
+ * Leader Mode (leader == TRUE):
+ * - Processes only the specified nation's leaders
+ * - Sets occ[x][y] for all sectors within communication radius of each leader
+ * - Communication radius: Based on nation's communication technology level
+ * - Only processes actual leaders (MINLEADER <= type < MINMONSTER)
+ * - Only processes leaders with active units (soldiers > 0)
+ * - Used for: Leader command displays, tactical maps, communication range view
+ *
+ * Military Presence Mode (leader == FALSE):
+ * - Processes all active nations (start=0, end=NTOTAL)
+ * - Maps army positions: Sets occ[x][y] to nation number for non-scout armies
+ * - Maps navy positions: Sets occ[x][y] to nation number for active fleets
+ * - Contested sectors: If multiple nations present, sets occ[x][y] = NTOTAL
+ * - Scouts excluded: Reconnaissance units don't establish occupation presence
+ * - Used for: World map displays, strategic overviews, occupation analysis
+ *
+ * Occupation Map Values:
+ * - 0: Unoccupied/uncontrolled sector
+ * - 1 to NTOTAL-1: Sector occupied by specific nation number
+ * - NTOTAL: Contested sector (multiple nations present)
+ *
+ * Algorithm Details:
+ * 1. Initialize entire occ[][] array to 0 (clear previous state)
+ * 2. Determine iteration range (single nation vs all nations)
+ * 3. For each nation in range:
+ *    a. If leader mode: Process armies as leader communication areas
+ *    b. If military mode: Process armies as occupation points
+ *    c. If military mode: Process navies as occupation points
+ * 4. Handle contested sectors by marking with NTOTAL value
+ * 5. Restore original nation context (curntn pointer)
+ *
+ * Implementation Notes:
+ * - Temporarily modifies 'nation' loop variable (restored at end)
+ * - Updates global 'curntn' pointer during iteration (restored at end)
+ * - Uses safe type conversion for char-sized occ[][] array storage
+ * - Scouts (P_ASTAT == SCOUT) deliberately excluded from occupation marking
+ * - Navy processing only in military mode (leader mode focuses on land leaders)
+ *
+ * Parameters:
+ *   nation - Target nation number to process (in leader mode) or saved context
+ *            (in military mode); value is temporarily modified but restored
+ *   leader - Operating mode selector:
+ *            TRUE: Leader communication radius mode (single nation)
+ *            FALSE: Military presence mode (all nations)
+ *
+ * Returns:
+ *   void (side effect: modifies global occ[][] array)
+ *
+ * Side Effects:
+ *   - Overwrites entire global occ[MAPX][MAPY] array
+ *   - Temporarily modifies nation variable (restored before return)
+ *   - Temporarily modifies curntn global pointer (restored before return)
+ *   - Does NOT modify any nation, army, or navy data structures
+ *
+ * Testing Notes:
+ *   Category: B (Integration) | Requires full game state and multiple systems
+ *   Approach: Integration tests with mock nations, armies, and navies
+ *   Key Tests: Leader mode radius calculation, military mode occupation marking,
+ *              contested sector detection, scout exclusion, empty map handling
+ *   Dependencies: Global occ[][], ntn[], P_* macros, ONMAP macro, safe conversions
+ *   Mock Requirements: Mock nations with armies/navies, mock communication values
+ *   Complexity: Moderate-High - Multiple iteration modes, global state mutation
+ *
+ * Notes:
+ *   - Not thread-safe: Modifies global state without synchronization
+ *   - Performance: O(NTOTAL * MAXARM * communication_radius²) worst case
+ *   - Historical: Legacy function using global state for map display systems
+ *   - The name "prep" is cryptic but preserved for compatibility
+ *   - Consider refactoring to return occ array instead of global mutation
+ *
+ * @last_documented: 2025-10-08
+ */
 void prep (int nation, int leader)
 {
 	short armynum,nvynum;
@@ -2376,6 +2463,84 @@ updmove (int race, int cntry)
  *   - Cost tables are string-based with character arithmetic ('0' offset)
  */
 /* calculations for cost of movement during flight */
+/*
+ * flightcost - Calculate movement cost for flying units traversing a sector
+ *
+ * Computes the movement point cost for flying units (Rocs, Griffons, Dragons,
+ * Spirits, Djinni, Demons) to traverse a specific map sector. Unlike ground
+ * units that are blocked by terrain, flying units can cross any terrain but
+ * face variable movement costs based on altitude and vegetation characteristics.
+ *
+ * Flight movement cost calculation combines two independent terrain factors:
+ * 1. Altitude Cost: Higher elevations (mountains) require more effort to fly over
+ * 2. Vegetation Cost: Dense vegetation (forests) creates aerial obstacles
+ *
+ * The function uses lookup tables to map sector characteristics to cost values:
+ * - FElecost[]: Flight elevation cost array indexed by altitude type
+ * - FVegcost[]: Flight vegetation cost array indexed by vegetation type
+ * - ele[]: Altitude type characters (terrain elevation categories)
+ * - veg[]: Vegetation type characters (vegetation density categories)
+ *
+ * Cost Calculation Process:
+ * 1. Search ele[] array to find index matching sector's altitude character
+ * 2. Extract altitude cost from FElecost[] at matching index (convert char to int)
+ * 3. Search veg[] array to find index matching sector's vegetation character
+ * 4. Extract vegetation cost from FVegcost[] at matching index (convert char to int)
+ * 5. If either lookup fails (terrain not found): Return -1 (impassable/invalid)
+ * 6. If both succeed: Return sum of altitude cost + vegetation cost
+ *
+ * Movement Cost Interpretation:
+ * - Valid costs: 0 to N (movement points required to enter sector)
+ * - Return -1: Invalid/impassable terrain (lookup failure indicates data error)
+ * - Lower costs: Favorable flight conditions (flat terrain, sparse vegetation)
+ * - Higher costs: Difficult flight conditions (mountains, dense forests)
+ *
+ * Lookup Failure Conditions:
+ * - Sector altitude character not found in ele[] array (data corruption)
+ * - Sector vegetation character not found in veg[] array (data corruption)
+ * - Either FElecost[] or FVegcost[] contains invalid data
+ * - Should not occur in normal gameplay (indicates world generation error)
+ *
+ * Character-to-Integer Conversion:
+ * - FElecost[] and FVegcost[] store ASCII digit characters ('0'-'9')
+ * - Subtract '0' to convert ASCII character to numeric value
+ * - Limits costs to single-digit values (0-9 movement points)
+ *
+ * Game Balance Implications:
+ * - Flying units bypass terrain impassability but NOT movement costs
+ * - Mountains still cost more movement points to fly over
+ * - Forests create aerial obstacles (turbulence, limited landing zones)
+ * - Strategic tradeoff: Mobility vs movement efficiency
+ *
+ * Parameters:
+ *   i - X coordinate of target sector on world map
+ *   j - Y coordinate of target sector on world map
+ *
+ * Returns:
+ *   Movement point cost for flying unit to enter sector (0-9 typical range)
+ *   -1 if terrain characteristics cannot be found in lookup tables (error condition)
+ *
+ * Side Effects:
+ *   None - read-only calculation using global sector and terrain lookup arrays
+ *
+ * Testing Notes:
+ *   Category: A (Unit) | Pure calculation with lookup table logic
+ *   Approach: Unit tests with mock sectors and known terrain types
+ *   Key Tests: Valid terrain combinations, lookup failures, cost summation,
+ *              boundary cases (cost 0, max cost), all altitude/vegetation pairs
+ *   Dependencies: Global sct[][], ele[], veg[], FElecost[], FVegcost[] arrays
+ *   Mock Requirements: Mock sectors with various altitude/vegetation combinations
+ *   Complexity: Simple - Two table lookups and addition with error handling
+ *
+ * Notes:
+ *   - Used exclusively by flying unit movement calculations (see avian())
+ *   - Ground units use different cost calculation (not this function)
+ *   - Return value -1 should trigger error handling in caller
+ *   - Single-digit cost limitation may need revision for game balance
+ *   - Could be optimized with direct indexing if ele[]/veg[] use sequential values
+ *
+ * @last_documented: 2025-10-08
+ */
 int
 flightcost (int i, int j)
 {
@@ -3987,6 +4152,106 @@ getjewel (struct s_sector *sptr)
  *   - Technology trees create strategic choices in nation development
  */
 /* tg_ok returns true if a trade good can be seen by the owner of sector */
+/*
+ * tg_ok - Validate if a nation can effectively utilize a sector's trade good
+ *
+ * Determines whether a nation possesses sufficient technology and economic
+ * infrastructure to extract and benefit from a specific sector's trade good
+ * resource. This function enforces technology progression requirements and
+ * ensures sectors are only desirable to nations capable of exploiting them.
+ *
+ * The validation process checks two critical criteria:
+ * 1. Technology/Wealth Prerequisites: Nation must meet minimum requirements
+ *    to extract and process the trade good (mining tech or economic wealth)
+ * 2. Food Production Viability: Sector must produce sufficient food to support
+ *    a working population (>= DESFOOD threshold)
+ *
+ * Trade Good Technology Requirements:
+ *
+ * Mining Technology Required (mine_ability):
+ * - TG_lead: 8+ (basic metal extraction)
+ * - TG_tin: 11+ (improved smelting techniques)
+ * - TG_bronze: 15+ (alloy production capability)
+ * - TG_iron: 25+ (advanced metallurgy)
+ * - TG_steel: 30+ (high-temperature forging)
+ * - TG_mithral: 30+ (magical metal working)
+ * - TG_adamantine: 40+ (legendary craftsmanship)
+ *
+ * Economic Wealth Required (wealth):
+ * - TG_dye, TG_silk: 5+ (basic luxury good production)
+ * - TG_gold, TG_rubys: 8+ (precious commodity processing)
+ * - TG_ivory: 15+ (exotic material trade)
+ * - TG_diamonds: 20+ (gemstone cutting expertise)
+ * - TG_platinum: 25+ (ultimate precious metal refinement)
+ *
+ * No Requirements:
+ * - TG_spice, TG_silver, TG_pearls: Available to all nations regardless of tech
+ *
+ * Special Cases:
+ * - nation == 0: Barbarian/neutral nation (always returns TRUE)
+ * - nation >= NTOTAL: Invalid nation number (always returns TRUE, error case)
+ *
+ * Food Production Requirement:
+ * - Sector must yield >= DESFOOD when processed by the nation (see tofood())
+ * - Ensures sector can sustain a workforce to extract the trade good
+ * - Prevents assignment of barren sectors that cannot support population
+ * - Critical for AI nation planning and sector evaluation
+ *
+ * Return Value Interpretation:
+ * - TRUE (1): Nation can effectively utilize this sector's trade good
+ *   - Meets technology/wealth prerequisites for the trade good type
+ *   - Sector produces adequate food to support extraction operations
+ * - FALSE (0): Nation cannot effectively utilize this sector
+ *   - Lacks required technology/wealth for the trade good type
+ *   - OR sector produces insufficient food (< DESFOOD)
+ *
+ * Game Design Implications:
+ * - Progressive Technology: Advanced materials locked behind tech requirements
+ * - Economic Barriers: Luxury goods require wealthy infrastructure
+ * - Expansion Constraints: Limits which sectors are valuable to each nation
+ * - AI Guidance: Used by NPC nations to evaluate sector desirability
+ * - Strategic Planning: Players must develop technology before expanding to
+ *   certain resource-rich areas
+ *
+ * Usage Context:
+ * - AI nation sector evaluation (NPC expansion algorithms)
+ * - Sector desirability calculations for automated nation planning
+ * - Trade route and economic simulation validation
+ * - World generation validation (ensure viable starting positions)
+ *
+ * Parameters:
+ *   nation - Nation number to check technology/wealth requirements for
+ *            (0 = barbarian, 1 to NTOTAL-1 = player/NPC nations)
+ *   sptr - Pointer to sector structure containing trade good type and
+ *          characteristics for food production calculation
+ *
+ * Returns:
+ *   TRUE if nation can utilize the sector (meets tech + food requirements)
+ *   FALSE if nation lacks technology/wealth OR sector produces insufficient food
+ *   TRUE for special cases (nation 0 or nation >= NTOTAL)
+ *
+ * Side Effects:
+ *   None - read-only evaluation using nation and sector data
+ *
+ * Testing Notes:
+ *   Category: A (Unit) | Logic validation with nation/sector mock data
+ *   Approach: Unit tests with mock nations at various tech levels and mock sectors
+ *   Key Tests: Each trade good type, tech boundary cases, food threshold edge cases,
+ *              special nation values (0, NTOTAL), combinations of pass/fail conditions
+ *   Dependencies: ntn[] global array, tofood() function, DESFOOD constant, TG_* constants
+ *   Mock Requirements: Mock nations with varying mine_ability/wealth values, mock sectors
+ *   Complexity: Simple - Switch-case logic with threshold checks
+ *
+ * Notes:
+ *   - Used primarily by AI/NPC systems for automated decision-making
+ *   - Food requirement prevents "dead" sectors from being considered valuable
+ *   - Technology progression creates natural expansion phases for nations
+ *   - Wealth requirements separate from technology create economic dimension
+ *   - Consider extracting tech requirements to data tables for easier balance tuning
+ *   - Special case handling (nation 0, >= NTOTAL) may indicate defensive programming
+ *
+ * @last_documented: 2025-10-08
+ */
 int
 tg_ok (int nation, struct s_sector *sptr)
 {
@@ -4085,8 +4350,9 @@ tg_ok (int nation, struct s_sector *sptr)
  *   - Magic provides significant but not overwhelming defensive advantage
  *   - Fortress level investment creates meaningful strategic choices
  *   - Stockades provide fixed basic defense regardless of investment level
+ *
+ * @last_documented: 2025-10-08
  */
-/* this routine computes the fortification value of a sector */
 int
 fort_val (struct s_sector *sptr)
 {
