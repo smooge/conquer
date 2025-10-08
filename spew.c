@@ -251,6 +251,7 @@ static int compare_classes(const void *a, const void *b);
  *   Dependencies: Filesystem access, DEFAULTDIR/DEFFILE configuration, random generator
  *   Mock Requirements: Filesystem mocking, rules file fixtures, output stream capture
  *   Complexity: Moderate - File I/O and text processing with multiple error paths
+  * @last_documented: 2025-09-20
  */
 void makemess(int count, FILE *output)
 {
@@ -1654,9 +1655,43 @@ static void cleanup_memory(void)
 }
 
 #else
-/* If SPEW is not defined, provide stub implementation */
+/*
+ * makemess - Stub implementation when SPEW feature is disabled
+ *
+ * Provides empty stub implementation of makemess() for builds where
+ * SPEW feature is disabled. This allows the function to be called
+ * without compilation errors, but performs no operations. The real
+ * implementation (line 256) is available when SPEW is defined.
+ *
+ * Parameters:
+ *   count - Number of messages to generate (ignored in stub)
+ *   output - Output file stream (ignored in stub)
+ *
+ * Returns:
+ *   void
+ *
+ * Side Effects:
+ *   None (stub does nothing)
+ *
+ * Testing Notes:
+ *   Category: E (Skip Testing) - Stub implementation with no functionality
+ *   Approach: No testing needed - intentionally does nothing
+ *   Key Tests: N/A - no behavior to test
+ *   Dependencies: None
+ *   Mock Requirements: None
+ *   Complexity: Trivial - Empty stub
+ *
+ * Notes:
+ *   - Only compiled when SPEW is NOT defined
+ *   - Real implementation at line 256 (when SPEW is defined)
+ *   - Allows code to call makemess() regardless of SPEW setting
+ *   - Prevents link errors in non-SPEW builds
+ * @last_documented: 2025-10-08
+ */
 void makemess(int count, FILE *output)
 {
+    (void)count;   /* Suppress unused parameter warning */
+    (void)output;  /* Suppress unused parameter warning */
     /* Do nothing if SPEW is disabled */
 }
 #endif /* SPEW */

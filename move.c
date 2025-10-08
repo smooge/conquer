@@ -115,6 +115,7 @@ int armornvy=AORN;
  *   - Error handling: Comprehensive validation with user-friendly error messages
  *   - Display integration: Coordinates with curses library for terminal interface
  *   - Game balance: Movement costs affect tactical and strategic gameplay
+  * @last_documented: 2025-09-18
  */
 void mymove(void)
 {
@@ -771,11 +772,60 @@ void mymove(void)
  *   - Paging system: Handles more units than can display on screen
  *   - Selection granularity: selector/2 allows sub-unit selection precision
  */
-/************************************************************************/
-/*	GETSELUNIT()	returns id of selected unit (army or navy)	*/
-/*	if navy, number is MAXARM+nvynum.  set armornvy			*/
-/*	current selected unit is selector/2+4*pager			*/
-/************************************************************************/
+/*
+ * getselunit - Get selected army or navy unit ID based on cursor position
+ *
+ * Determines which military unit (army or navy) is currently selected based
+ * on the global selector and pager values. Searches the current sector for
+ * units belonging to the current player and returns an encoded ID that
+ * distinguishes between armies and navies. Sets the global armornvy flag
+ * to indicate whether the selected unit is an army or navy.
+ *
+ * ENCODING SCHEME:
+ * - Army IDs: 0 to MAXARM-1 (direct army index)
+ * - Navy IDs: MAXARM to MAXARM+MAXNAVY-1 (offset prevents collision)
+ * - Return -1: No unit found at current selector/pager position
+ *
+ * SELECTION ALGORITHM:
+ * 1. Calculate selected position: (SCRARM * pager) + (selector / 2)
+ * 2. Scan armies first, count valid armies in current sector
+ * 3. If position matches counted armies, return army ID
+ * 4. If no army found, scan navies and return navy ID if matched
+ * 5. Set armornvy global to ARMY or NAVY based on result
+ *
+ * Parameters:
+ *   None (uses global variables: selector, pager, XREAL, YREAL, country)
+ *
+ * Returns:
+ *   Army ID (0 to MAXARM-1) if army selected
+ *   Navy ID (MAXARM to MAXARM+MAXNAVY-1) if navy selected
+ *   -1 if no unit found at current position
+ *
+ * Side Effects:
+ *   - Modifies global variable armornvy (set to ARMY or NAVY)
+ *   - Reads global selector, pager, XREAL, YREAL, country
+ *   - Accesses player nation data (P_ASOLD, P_AXLOC, P_NWSHP, etc.)
+ *
+ * Testing Notes:
+ *   Category: A (Unit Testing) - Deterministic selection logic
+ *   Approach: Unit testing with mocked game state and selector values
+ *   Key Tests: Army selection, navy selection, paging behavior, no unit case,
+ *              boundary conditions (selector at edges), mixed army/navy sectors
+ *   Dependencies: Game state (ntn array), global position (XREAL, YREAL),
+ *                 selector/pager values, SCRARM constant
+ *   Mock Requirements: Mock sector with armies/navies, selector/pager values
+ *   Complexity: Moderate - Sequential search with encoding and paging logic
+ *
+ * Notes:
+ *   - selector is divided by 2 for unit selection (allows sub-unit precision)
+ *   - SCRARM defines number of units visible per screen (typically 4)
+ *   - Paging allows selection beyond first SCRARM units
+ *   - Armies are checked before navies (priority ordering)
+ *   - Only checks units in current sector (XREAL, YREAL)
+ *   - Only considers current player's units (country variable)
+ *   - Navy offset (MAXARM) prevents ID collision between armies and navies
+ * @last_documented: 2025-10-08
+ */
 int
 getselunit (void)
 {
