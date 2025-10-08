@@ -1211,6 +1211,9 @@ void retreat ( int unitnum ){	/* if -1 then normal, else retreat only unit ismer
 	}
 }
 
+#define QWAR 1
+#define QGAL 2
+#define QMER 3
 
 /*
  * navalcbt - Execute complete naval combat resolution for all fleets in sector
@@ -1290,15 +1293,8 @@ void retreat ( int unitnum ){	/* if -1 then normal, else retreat only unit ismer
  *   - Mail integration: Comprehensive battle reporting to all participants
  *   - Ship type balance: Each ship type has distinct tactical role
  *   - Combined arms: Army-navy cooperation through embarked forces
+ * @last_documented: 2025-10-08
  */
-
-/*SUBROUTINE TO RUN NAVAL COMBAT ON ALL SHIPS */
-/* quick define for easier reading */
-#define QWAR 1
-#define QGAL 2
-#define QMER 3
-/* just like fight, this takes array of owner,side,unit and calculates */
-/* a random battle based on the strengths of the combatants.           */
 void navalcbt (void) {
 	int acrew=0,dcrew=0;	/*a's and d's crew and soldier strength*/
 	int ahold=0,dhold=0;	/*a's and d's warship strength*/
@@ -1835,8 +1831,8 @@ void navalcbt (void) {
  *   - Error handling: Silent failure if no valid recipient found
  *   - Integration: Called from navalcbt() during combat resolution
  *   - Ship types: Supports all three naval vessel categories
+ * @last_documented: 2025-10-08
  */
-/* routine to distribute a captured ship */
 void capture (int type, int to, int shipsize, int holdcount) {
 	int i,nvynum;
 	struct s_nation *saventn=curntn;
@@ -1936,8 +1932,8 @@ void capture (int type, int to, int shipsize, int holdcount) {
  *   - Output optimization: Skips empty reports to avoid clutter
  *   - Formatting consistency: Standardized naval battle report format
  *   - User experience: Clear, readable battle outcome presentation
+ * @last_documented: 2025-10-08
  */
-/* routine to display combat results */
 void show_ships (char *who, char *what, int war, int gal, int mer) {
 	if (war+gal+mer>0) {
 		fprintf(fm,"%s ships %s: ",who,what);
