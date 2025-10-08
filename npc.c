@@ -732,6 +732,84 @@ do_pirate (void)
 #endif /* MONSTER */
 
 #ifdef NPC
+/*
+ * n_redes - NPC sector redesignation with economic and strategic optimization
+ *
+ * Implements intelligent sector designation decisions for NPC nations based on
+ * economic conditions, resource availability, population distribution, and hunger
+ * levels. Makes strategic choices to balance food production, resource extraction,
+ * urban development, and infrastructure needs while respecting game balance constraints.
+ *
+ * The function evaluates multiple designation scenarios in priority order:
+ * 1. City/Capitol preservation (never redesignates these)
+ * 2. Town creation when population and food conditions are favorable
+ * 3. Town to farm conversion when hunger threatens or city percentage is too high
+ * 4. Resource extraction (mines, lumberyards, etc.) based on trade goods
+ * 5. Blacksmith prioritization for low-metal situations
+ * 6. Farm designation as default for high-vegetation sectors
+ * 7. Stockade fallback for low-vegetation sectors
+ * 8. Specialized buildings (granary, church) for specific national needs
+ *
+ * Algorithm:
+ * 1. Skip capitol and city sectors (protected from redesignation)
+ * 2. Check town creation: population thresholds, hunger safety, city limits
+ * 3. Check town demolition: hunger crisis or excessive urbanization
+ * 4. For non-urban sectors: evaluate trade goods and resource availability
+ * 5. Apply resource thresholds to prioritize mines when resources are scarce
+ * 6. Special case: blacksmith for metal shortage situations
+ * 7. Consider special buildings when farms are well-fed and conditions met
+ * 8. Default to farm (high vegetation) or stockade (low vegetation)
+ *
+ * Parameters:
+ *   x - X coordinate of sector to evaluate
+ *   y - Y coordinate of sector to evaluate
+ *   goldthresh - Jewel scarcity threshold (lower = more scarce, prioritize gold mines)
+ *   metalthresh - Metal scarcity threshold (lower = more scarce, prioritize mines)
+ *   citythresh - Minimum vegetation for city operations (farm conversion threshold)
+ *   hunger - Nation food ratio (civilians/food production, higher = better fed)
+ *
+ * Returns:
+ *   void (modifies sector designation directly)
+ *
+ * Side Effects:
+ *   - Modifies sct[x][y].designation based on economic analysis
+ *   - Updates spread.incity and spread.infarm population counters
+ *   - Changes affect food production, resource extraction, and tax revenue
+ *
+ * Economic Thresholds:
+ *   - Town creation: population > civilians/CITYLIMIT, hunger > 1.5*P_EATRATE
+ *   - Town to farm: hunger < P_EATRATE or city% > civilians*CITYPERCENT/66
+ *   - Resource extraction: goldthresh+metalthresh > 8 triggers farm mode
+ *   - City percentage limit: incity+incap < civilians*CITYPERCENT/100
+ *   - Minimum sectors: spread.sectors > 10 for first town
+ *
+ * Special Designations:
+ *   - Blacksmith: Prioritized when mine_ability < 30
+ *   - Granary: Random selection for high spoilage (>15%) with small population
+ *   - Church: Random selection for low popularity (<50)
+ *   - Town upgrade: Large population (>1000) with good food situation
+ *
+ * Testing Notes:
+ *   Category: A - Unit tested with mock sector and nation data
+ *   Approach: Test each decision path with specific economic conditions
+ *   Key Tests: Town creation/demolition, resource prioritization, threshold logic,
+ *             city percentage limits, hunger-based decisions, random special buildings
+ *   Dependencies: Global spread structure, sct[][] array, curntn nation data,
+ *                tofood() function, tg_ok() function, tg_stype trade good mapping
+ *   Mock Requirements: Mock sector with various trade goods, vegetation, population;
+ *                     mock nation with varying economic conditions
+ *   Complexity: Moderate - Complex decision tree with multiple economic factors
+ *
+ * Notes:
+ *   - Thread safety: Not thread-safe due to global state modifications
+ *   - Random elements: Uses rand() for special building selection
+ *   - Protected sectors: Never modifies capitols or cities
+ *   - Trade goods: tg_stype array maps trade goods to optimal designations
+ *   - Balance logic: CITYPERCENT and CITYLIMIT prevent over-urbanization
+ *   - Hunger metric: Higher values = better fed = can support more cities
+ *
+ * @last_documented: 2025-10-08
+ */
 void n_redes (int x, int y, int goldthresh, int metalthresh, int citythresh, double hunger) {
 	register struct s_sector	*sptr = &sct[x][y];
 
@@ -2286,6 +2364,76 @@ n_unowned (void)
 	}
 }
 
+/*
+ * n_defend - Defensive territory attractiveness calculation for threat response
+ *
+ * Calculates defensive priority values for sectors based on enemy military presence,
+ * strategic importance, defensive terrain, and population distribution. This function
+ * modifies the global attractiveness map to guide NPC defensive deployment by
+ * identifying sectors requiring military protection against a specific enemy nation.
+ *
+ * The function applies defensive bonuses based on multiple strategic factors:
+ * 1. Enemy presence: Sectors containing enemy armies gain priority
+ * 2. Capitol proximity: 3x3 region around capitol gets +80 bonus
+ * 3. Defensive terrain: Higher movement costs increase attractiveness
+ * 4. Population centers: Cities and high-population sectors get protection priority
+ * 5. Territory ownership: Only friendly sectors receive defensive calculations
+ *
+ * Algorithm:
+ * 1. Identify enemy armies in friendly territory
+ *    - If COUNT_ARMIES available: Use actual soldier counts (1/10 of soldiers)
+ *    - Otherwise: Use average soldier estimate per sector with enemy presence
+ * 2. Apply capitol protection bonus (+80) to 3x3 region around capitol
+ * 3. Evaluate terrain defensiveness (movecost 1 = +50, 2-3 = +20, 4-5 = +10)
+ * 4. Prioritize cities (+50 bonus)
+ * 5. Weight by population distribution (3000 points spread proportionally)
+ *
+ * Parameters:
+ *   natn - Enemy nation ID to calculate defensive priorities against
+ *
+ * Returns:
+ *   void (modifies global attr[][] attractiveness array)
+ *
+ * Side Effects:
+ *   - Modifies attr[][] array with defensive priority bonuses
+ *   - Read-only access to army positions, sector data, nation information
+ *
+ * Defensive Bonuses:
+ *   - Enemy presence: +soldiers/10 (actual) or +Avg_soldiers[natn]/10 (estimated)
+ *   - Capitol region: +80 for 3x3 grid around capitol
+ *   - Defensive terrain: +50 (movecost=1), +20 (movecost 2-3), +10 (movecost 4-5)
+ *   - Cities: +50 bonus for urban centers
+ *   - Population: Up to 3000 points distributed by population percentage
+ *
+ * Strategic Design:
+ *   - Dual calculation mode: Supports both detailed army tracking (COUNT_ARMIES)
+ *     and average-based estimation for performance or limited intelligence
+ *   - Deduplication: Ensures multiple armies in same sector only count once
+ *   - Capitol protection: Prioritizes homeland defense around capital
+ *   - Terrain awareness: Values defensive positions (forests, mountains)
+ *   - Population weighting: Protects economic centers proportional to population
+ *
+ * Testing Notes:
+ *   Category: A - Unit tested with mock nation and sector data
+ *   Approach: Test each bonus calculation independently with various scenarios
+ *   Key Tests: Enemy army detection, capitol region bonus, terrain evaluation,
+ *             population weighting, deduplication logic, COUNT_ARMIES modes
+ *   Dependencies: Global attr[][], ntn[] armies, sct[][] sectors, movecost[][],
+ *                Avg_soldiers[], COUNT_ARMIES macro, curntn capitol location
+ *   Mock Requirements: Mock enemy armies in various positions, sectors with
+ *                     different terrain/population, capitol coordinates
+ *   Complexity: Moderate - Multiple defensive factors with conditional logic
+ *
+ * Notes:
+ *   - Thread safety: Not thread-safe due to global attr[][] modifications
+ *   - Performance: O(armies + operational_area) for sector evaluation
+ *   - Intelligence modes: Adapts calculation based on army visibility
+ *   - Deduplication: Prevents double-counting when multiple armies occupy same sector
+ *   - Capitol bug: Line 2404 uses capy instead of capx for X iteration (possible bug)
+ *   - Population spread: 3000 point budget ensures balanced protection distribution
+ *
+ * @last_documented: 2025-10-08
+ */
 void
 n_defend (int natn)
 {
@@ -2831,9 +2979,84 @@ n_between(int nation)
 	}
 }
 
-/* if in jeopardy, move to survive
- *	if within two of cap add 1/5th of men
- *	if on cap and war and 2x your garrison go jihad and + 1/2 men
+/*
+ * n_survive - Emergency capitol defense prioritization for survival situations
+ *
+ * Implements crisis response attractiveness calculations to defend the nation's
+ * capitol when under immediate military threat. This function dramatically increases
+ * defensive priorities for the capitol region when hostile armies are nearby or when
+ * the capitol has been captured, creating urgent defensive mobilization to protect
+ * the heart of the nation during existential threats.
+ *
+ * The function activates emergency defensive protocols based on threat proximity:
+ * 1. Capitol lost: Maximum priority (+1000) if capitol sector is enemy-owned
+ * 2. Capitol siege: Double priority (+2×soldiers) for enemies occupying capitol
+ * 3. Capitol region: Standard priority (+soldiers) for enemies within 5×5 region
+ * 4. War prerequisite: Only triggers against nations with WAR diplomatic status
+ * 5. Intelligence modes: Supports both detailed counts and average estimates
+ *
+ * Algorithm:
+ * 1. Check capitol ownership - apply maximum priority if lost (+1000)
+ * 2. Scan all active nations for hostile relations (WAR status)
+ * 3. For each hostile nation, identify armies threatening capitol region
+ * 4. If COUNT_ARMIES available: Use actual soldier counts for precise threat assessment
+ * 5. Otherwise: Use average soldier estimates with deduplication
+ * 6. Apply double priority to capitol sector itself (siege situation)
+ * 7. Apply standard priority to adjacent sectors within 2 sectors of capitol
+ *
+ * Parameters:
+ *   void (operates on global curntn, ntn[], attr[][] structures)
+ *
+ * Returns:
+ *   void (modifies global attr[][] attractiveness array)
+ *
+ * Side Effects:
+ *   - Modifies attr[][] with emergency defensive priorities
+ *   - Maximum urgency: +1000 for lost capitol
+ *   - Siege response: +2×soldiers for armies on capitol
+ *   - Regional defense: +soldiers for armies within 5×5 capitol region
+ *   - Read-only access to army positions, diplomatic status, capitol coordinates
+ *
+ * Threat Assessment Ranges:
+ *   - Capitol region: 5×5 grid centered on capitol (±2 in each direction)
+ *   - Capitol siege: Armies occupying exact capitol coordinates
+ *   - War threshold: Only responds to nations with diplomatic status >= WAR
+ *   - Lost capitol: Applies if capitol sector owner != country
+ *
+ * Intelligence Modes:
+ *   - COUNT_ARMIES(nation, country) = TRUE: Use exact soldier counts
+ *     - Priority = actual soldiers in armies (doubled on capitol)
+ *   - COUNT_ARMIES(nation, country) = FALSE: Use average estimates
+ *     - Priority = Avg_soldiers[nation] (doubled on capitol)
+ *     - Deduplication: Prevents multiple armies in same sector from stacking
+ *
+ * Crisis Scenarios:
+ *   - Capitol captured: Enemy owns capitol → +1000 to recapture
+ *   - Capitol besieged: Enemy army on capitol → +2×soldiers for emergency response
+ *   - Capitol threatened: Enemy within 2 sectors → +soldiers for regional defense
+ *   - Multiple threats: Aggregates priorities from all hostile nations
+ *
+ * Testing Notes:
+ *   Category: A - Unit tested with mock nation and army data
+ *   Approach: Test crisis scenarios with various threat configurations
+ *   Key Tests: Capitol ownership check, war status filtering, range calculations,
+ *             intelligence mode handling, deduplication logic, priority doubling
+ *   Dependencies: Global curntn (capitol location), ntn[] (armies, diplomatic status),
+ *                attr[][] (attractiveness map), Avg_soldiers[], COUNT_ARMIES macro
+ *   Mock Requirements: Mock nations with hostile relations, armies at various distances,
+ *                     capitol ownership scenarios, war diplomatic status
+ *   Complexity: Moderate - Multi-nation threat scanning with range calculations
+ *
+ * Notes:
+ *   - Thread safety: Not thread-safe due to global attr[][] modifications
+ *   - Performance: O(nations × armies) for comprehensive threat assessment
+ *   - Crisis focus: Designed for survival situations, not routine defense
+ *   - Intelligence adaptability: Functions with or without detailed army visibility
+ *   - Deduplication: Prevents overestimating threat from multiple armies in one sector
+ *   - Priority scaling: Double weight on capitol emphasizes critical importance
+ *   - Integration: Called by defattr() as part of comprehensive defensive strategy
+ *
+ * @last_documented: 2025-10-08
  */
 void
 n_survive (void)
@@ -3063,8 +3286,9 @@ defattr (void)
  *   - Performance: O(nations^2 * sectors) for WAR, higher for JIHAD due to repeated calls
  *   - Diplomatic Integration: Demonstrates sophisticated graduated response capability
  *   - Legacy Pattern: K&R function declaration needs modernization to ANSI C
+ *
+ * @last_documented: 2025-10-08
  */
-/*calculate attractiveness of attacking sectors*/
 void
 atkattr (void)
 {
@@ -3163,8 +3387,9 @@ atkattr (void)
  *   - Performance: O(sectors) with 3x expansion calculation overhead
  *   - Peaceful Design: Demonstrates clear separation between military and peaceful strategies
  *   - Legacy Pattern: K&R function declaration needs modernization to ANSI C
+ *
+ * @last_documented: 2025-10-08
  */
-/*calculate attractiveness when at peace*/
 void
 pceattr (void)
 {
