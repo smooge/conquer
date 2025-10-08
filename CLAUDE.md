@@ -227,10 +227,13 @@ cmake --build build --clean-first --target conqrun 2>&1 | grep "warning:"
  * Side Effects: [global state changes, memory allocation]
  * Testing Notes: Category A-E, approach, dependencies, complexity
  * Notes: [thread safety, performance, historical context]
+ * @last_documented: YYYY-MM-DD
  */
 ```
 
 **Testing Categories**: A) Unit B) Integration C) System D) Mock E) Skip
+
+**Documentation Tracking**: The `@last_documented:` field tracks when comprehensive documentation was added/reviewed, distinguishing Phase 8.5.4+ documentation from legacy comments.
 
 ### General Standards
 - Proper prototypes in headers
