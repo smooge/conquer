@@ -90,6 +90,7 @@ nmountains--; \
  *   - Critical for preventing leftover data from previous games
  *   - Initializes exactly NTOTAL nations as defined in game constants
  *   - Sets default DEFEND status for all armies
+  * @last_documented: 2025-09-20
  */
 void zeroworld(void) {
 	int i,armynum;
@@ -164,6 +165,7 @@ void zeroworld(void) {
  *   - Uses crypt() for password hashing with SALT
  *   - Supports conditional compilation with REMAKE and CHECKUSER flags
  *   - Creates god nation (index 0) with special powers and administrator access
+  * @last_documented: 2025-09-20
  */
 void makeworld ( int rflag ){		/* TRUE if you wish to read in a map from mapfiles */
 	char passwd[PASSLTH+1];
@@ -414,6 +416,7 @@ void makeworld ( int rflag ){		/* TRUE if you wish to read in a map from mapfile
  *   - Geographic constraints enforced (deserts not adjacent to water, etc.)
  *   - Memory-intensive operation requiring careful allocation/deallocation
  *   - Algorithm quality directly affects game playability and balance
+  * @last_documented: 2025-09-20
  */
 void createworld (void) {	/* create world */
 	int	i,j;
@@ -892,6 +895,7 @@ void createworld (void) {	/* create world */
  *   - Only habitable sectors receive resources (validated via is_habitable())
  *   - Resource distribution directly affects game economy and strategy
  *   - Includes humorous world generation narrative messages for user experience
+  * @last_documented: 2025-09-20
  */
 void
 rawmaterials (void) 		 /*PLACE EACH SECTOR'S RAW MATERIALS */
@@ -1042,8 +1046,8 @@ rawmaterials (void) 		 /*PLACE EACH SECTOR'S RAW MATERIALS */
  *   - World wrapping ensures seamless terrain at map boundaries
  *   - Edge generation happens before interior area filling
  *   - Critical for creating coherent large-scale terrain patterns
+ * @last_documented: 2025-09-19
  */
-/*fill: subroutine to fill in a square edges with land or sea*/
 void
 fill_edge(int AX,int AY)
 {
@@ -1157,8 +1161,8 @@ fill_edge(int AX,int AY)
  *   - Supports multiple conditional compilation flags (MONSTER, NPC, CHECKUSER)
  *   - Critical for establishing initial game state and strategic balance
  *   - Includes extensive validation and error handling for file operations
+ * @last_documented: 2025-09-19
  */
-/* ALLOCATE POPULATIONS OF THE WORLD*/
 void
 populate (void)
 {
