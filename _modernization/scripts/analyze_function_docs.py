@@ -87,13 +87,18 @@ def analyze_file(filepath):
     while i < len(lines):
         line = lines[i].rstrip()
 
-        # Look for function definitions
+        # Look for function definitions (skip declarations ending with ;)
         # Pattern 1: return type on separate line
         if re.match(r'^(void|int|char|short|long|unsigned|static|struct)\s*$', line):
             if i + 1 < len(lines):
                 next_line = lines[i + 1].strip()
                 func_match = re.match(r'^([a-zA-Z_][a-zA-Z0-9_]*)\s*\(([^)]*)\)', next_line)
                 if func_match:
+                    # Skip function declarations (prototypes ending with ;)
+                    if next_line.rstrip().endswith(';'):
+                        i += 1
+                        continue
+
                     func_name = func_match.group(1)
                     has_docs = has_documentation(lines, i)
 
@@ -107,6 +112,11 @@ def analyze_file(filepath):
         # Pattern 2: return type and function on same line
         func_match = re.match(r'^(void|int|char|short|long|unsigned|static|struct)\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\(([^)]*)\)', line)
         if func_match:
+            # Skip function declarations (prototypes ending with ;)
+            if line.rstrip().endswith(';'):
+                i += 1
+                continue
+
             func_name = func_match.group(2)
             has_docs = has_documentation(lines, i)
 
