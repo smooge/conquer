@@ -1337,7 +1337,7 @@ populate (void)
 			P_AYLOC=safe_int_to_uchar(y);
 			P_ASTAT=GARRISON;
 			P_ASOLD=750+100*(rand()%10);
-			P_ATYPE=safe_clamp_uchar(defaultunit(country));
+			P_ATYPE=safe_clamp_nation_attr(defaultunit(country));
 			armynum++;
 			lizarmy++;
 			P_AMOVE=8;
@@ -1345,7 +1345,7 @@ populate (void)
 			P_AYLOC=safe_int_to_uchar(y);
 			P_ASTAT=ATTACK;
 			P_ASOLD=750+100*(rand()%10);
-			P_ATYPE=safe_clamp_uchar(defaultunit(country));
+			P_ATYPE=safe_clamp_nation_attr(defaultunit(country));
 			lizarmy++;
 			break;
 		case NPC_PIRATE:
@@ -1383,7 +1383,7 @@ populate (void)
 			P_AYLOC=safe_int_to_uchar(y);
 			P_ASTAT=ATTACK;
 			P_ASOLD=150+100*(rand()%3);
-			P_ATYPE=safe_clamp_uchar(defaultunit(country));
+			P_ATYPE=safe_clamp_nation_attr(defaultunit(country));
 			pirarmy++;
 			P_NXLOC=safe_int_to_uchar(x);
 			P_NYLOC=safe_int_to_uchar(y);
@@ -1404,7 +1404,7 @@ populate (void)
 			P_AYLOC=safe_int_to_uchar(y);
 			P_ASTAT=ATTACK;
 			P_ASOLD=100+100*(rand()%8);
-			P_ATYPE=safe_clamp_uchar(defaultunit(country));
+			P_ATYPE=safe_clamp_nation_attr(defaultunit(country));
 			nomadarmy++;
 			break;
 		case NPC_SAVAGE:
@@ -1413,7 +1413,7 @@ populate (void)
 			P_AYLOC=safe_int_to_uchar(y);
 			P_ASTAT=ATTACK;
 			P_ASOLD=100+100*(rand()%4);
-			P_ATYPE=safe_clamp_uchar(defaultunit(country));
+			P_ATYPE=safe_clamp_nation_attr(defaultunit(country));
 			barbarmy++;
 			break;
 		}

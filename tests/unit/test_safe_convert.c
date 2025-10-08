@@ -57,31 +57,31 @@ void tearDown(void) {
  */
 
 /*
- * safe_clamp_uchar() Tests - Nation attribute clamping (0-MAXTGVAL)
+ * safe_clamp_nation_attr() Tests - Nation attribute clamping (0-MAXTGVAL)
  */
-void test_safe_clamp_uchar_normal_range(void) {
+void test_safe_clamp_nation_attr_normal_range(void) {
     /* Test values within normal game range [0-100] */
-    TEST_ASSERT_EQUAL_UINT8(0, safe_clamp_uchar(0));
-    TEST_ASSERT_EQUAL_UINT8(50, safe_clamp_uchar(50));
-    TEST_ASSERT_EQUAL_UINT8(75, safe_clamp_uchar(75));
-    TEST_ASSERT_EQUAL_UINT8(100, safe_clamp_uchar(100));
+    TEST_ASSERT_EQUAL_UINT8(0, safe_clamp_nation_attr(0));
+    TEST_ASSERT_EQUAL_UINT8(50, safe_clamp_nation_attr(50));
+    TEST_ASSERT_EQUAL_UINT8(75, safe_clamp_nation_attr(75));
+    TEST_ASSERT_EQUAL_UINT8(100, safe_clamp_nation_attr(100));
 }
 
-void test_safe_clamp_uchar_boundary_conditions(void) {
+void test_safe_clamp_nation_attr_boundary_conditions(void) {
     /* Test boundary values and clamping */
-    TEST_ASSERT_EQUAL_UINT8(0, safe_clamp_uchar(-1));
-    TEST_ASSERT_EQUAL_UINT8(0, safe_clamp_uchar(-100));
-    TEST_ASSERT_EQUAL_UINT8(100, safe_clamp_uchar(101));
-    TEST_ASSERT_EQUAL_UINT8(100, safe_clamp_uchar(150));
-    TEST_ASSERT_EQUAL_UINT8(100, safe_clamp_uchar(255));
+    TEST_ASSERT_EQUAL_UINT8(0, safe_clamp_nation_attr(-1));
+    TEST_ASSERT_EQUAL_UINT8(0, safe_clamp_nation_attr(-100));
+    TEST_ASSERT_EQUAL_UINT8(100, safe_clamp_nation_attr(101));
+    TEST_ASSERT_EQUAL_UINT8(100, safe_clamp_nation_attr(150));
+    TEST_ASSERT_EQUAL_UINT8(100, safe_clamp_nation_attr(255));
 }
 
-void test_safe_clamp_uchar_extreme_values(void) {
+void test_safe_clamp_nation_attr_extreme_values(void) {
     /* Test extreme overflow/underflow conditions */
-    TEST_ASSERT_EQUAL_UINT8(0, safe_clamp_uchar(LONG_MIN));
-    TEST_ASSERT_EQUAL_UINT8(100, safe_clamp_uchar(LONG_MAX));
-    TEST_ASSERT_EQUAL_UINT8(100, safe_clamp_uchar(999999));
-    TEST_ASSERT_EQUAL_UINT8(0, safe_clamp_uchar(-999999));
+    TEST_ASSERT_EQUAL_UINT8(0, safe_clamp_nation_attr(LONG_MIN));
+    TEST_ASSERT_EQUAL_UINT8(100, safe_clamp_nation_attr(LONG_MAX));
+    TEST_ASSERT_EQUAL_UINT8(100, safe_clamp_nation_attr(999999));
+    TEST_ASSERT_EQUAL_UINT8(0, safe_clamp_nation_attr(-999999));
 }
 
 /*
@@ -962,10 +962,10 @@ void test_safe_convert_performance(void) {
     clock_t start, end;
     double cpu_time_used;
 
-    /* Performance test for safe_clamp_uchar (most commonly used) */
+    /* Performance test for safe_clamp_nation_attr (most commonly used) */
     start = clock();
     for (int i = 0; i < iterations; i++) {
-        volatile unsigned char result = safe_clamp_uchar(i % 150);
+        volatile unsigned char result = safe_clamp_nation_attr(i % 150);
         (void)result; /* Suppress unused variable warning */
     }
     end = clock();
@@ -973,7 +973,7 @@ void test_safe_convert_performance(void) {
     cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
 
     /* Print performance result for manual verification */
-    printf("safe_clamp_uchar() performance: %f seconds for %d iterations\n",
+    printf("safe_clamp_nation_attr() performance: %f seconds for %d iterations\n",
            cpu_time_used, iterations);
 
     /* Performance should be very fast due to inlining - this is informational */
@@ -1055,9 +1055,9 @@ int main(void) {
     printf("\n");
 
     /* Core Conversion Function Tests (Original Phase 4.8 functions) */
-    RUN_TEST(test_safe_clamp_uchar_normal_range);
-    RUN_TEST(test_safe_clamp_uchar_boundary_conditions);
-    RUN_TEST(test_safe_clamp_uchar_extreme_values);
+    RUN_TEST(test_safe_clamp_nation_attr_normal_range);
+    RUN_TEST(test_safe_clamp_nation_attr_boundary_conditions);
+    RUN_TEST(test_safe_clamp_nation_attr_extreme_values);
 
     RUN_TEST(test_safe_uid_to_int_normal_range);
     RUN_TEST(test_safe_uid_to_int_boundary_conditions);

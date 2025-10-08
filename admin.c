@@ -874,7 +874,7 @@ void att_base (void) {
 		}
 
 		if( 30 <= 1+ngrain+ncities ) curntn->spoilrate=1;
-		else curntn->spoilrate = safe_clamp_uchar(30-ngrain-ncities);
+		else curntn->spoilrate = safe_clamp_nation_attr(30-ngrain-ncities);
 		if( curntn->tfood > curntn->tciv * 10 )
 			curntn->spoilrate = 30;
 
@@ -884,34 +884,34 @@ void att_base (void) {
 			if(P_ATYPE==A_MERCENARY) mercs+=P_ASOLD;
 		if(curntn->tmil>0 && curntn->tciv>0) temp=(1000*curntn->tmil)/curntn->tciv+(1000*mercs)/curntn->tmil;
 		else temp=0;
-		curntn->terror = safe_clamp_uchar(temp/5);
+		curntn->terror = safe_clamp_nation_attr(temp/5);
 
 		temp = (5*townfolk/2+5*cityfolk) + roads*5;
-		curntn->communications = safe_clamp_uchar(temp);
+		curntn->communications = safe_clamp_nation_attr(temp);
 
 		temp=1000*curntn->score/WORLDSCORE + 1000*curntn->tmil/WORLDMIL;
-		curntn->power = safe_clamp_uchar(temp/5);
+		curntn->power = safe_clamp_nation_attr(temp/5);
 
 		/* calculate national wealth */
 		temp = curntn->tgold;
 		if(temp<0) temp=0;
 		temp = safe_double_to_long(1000.0*(safe_long_to_double(temp)/safe_long_to_double(WORLDGOLD)) + 1000.0*(safe_long_to_double(curntn->jewels)/safe_long_to_double(WORLDJEWELS)) + 1000.0*(safe_long_to_double(curntn->metals)/safe_long_to_double(WORLDMETAL)) + safe_long_to_double(cityfolk)*(4.0/3.0) + safe_long_to_double(townfolk)*(5.0/6.0));
 		if (temp >= curntn->wealth) {
-			curntn->wealth = safe_clamp_uchar(temp/10);
+			curntn->wealth = safe_clamp_nation_attr(temp/10);
 		} else {
-			curntn->wealth -= safe_clamp_uchar((curntn->wealth - temp)/4);
+			curntn->wealth -= safe_clamp_nation_attr((curntn->wealth - temp)/4);
 		}
 
 		if( TURN!= 1) {
-		curntn->reputation += safe_clamp_uchar(rand()%8-3);
-		curntn->reputation = safe_clamp_uchar(curntn->reputation);
+		curntn->reputation += safe_clamp_nation_attr(rand()%8-3);
+		curntn->reputation = safe_clamp_nation_attr(curntn->reputation);
 
 		temp = (curntn->prestige + curntn->power + curntn->wealth) / 3;
-		curntn->prestige = safe_clamp_uchar(temp);
+		curntn->prestige = safe_clamp_nation_attr(temp);
 
 		if(curntn->tciv>0) temp = foodpts*10 / curntn->tciv;
 		else temp = 0;
-		curntn->farm_ability = safe_clamp_uchar(temp);
+		curntn->farm_ability = safe_clamp_nation_attr(temp);
 		}
 
 		/* calcualte mining ability */
@@ -921,18 +921,18 @@ void att_base (void) {
 		if( magic(country,STEEL) )
 			temp += 15;
 		if (temp >= curntn->mine_ability) {
-			curntn->mine_ability = safe_clamp_uchar(temp);
+			curntn->mine_ability = safe_clamp_nation_attr(temp);
 		} else {
-			curntn->mine_ability -= safe_clamp_uchar((curntn->mine_ability - temp)/4);
+			curntn->mine_ability -= safe_clamp_nation_attr((curntn->mine_ability - temp)/4);
 		}
 
 		/* calculate knowledge */
 		temp = cityfolk/2 + townfolk/6 + scholars/2;
-		curntn->knowledge = safe_clamp_uchar(temp);
+		curntn->knowledge = safe_clamp_nation_attr(temp);
 
 		/* find national popularity */
 		temp = safe_double_to_long((curntn->wealth + 10*P_EATRATE + safe_long_to_double(clerics) + curntn->popularity)/2);
-		curntn->popularity = safe_clamp_uchar(temp);
+		curntn->popularity = safe_clamp_nation_attr(temp);
 
 		if(magic(country,SLAVER))	curntn->terror+=PWR_NA;
 		if(magic(country,RELIGION))	curntn->popularity+=PWR_NA;
@@ -1120,32 +1120,32 @@ void att_bonus (void) {
 		||(( *(tg_stype+good)== DUNIVERSITY )&&(sptr->designation==DCAPITOL))
 		||( *(tg_stype+good)== 'x' )) {
 		if( good <= END_POPULARITY ) {
-			curntn->popularity += safe_clamp_uchar(*(tg_value+good) - '0');
-			curntn->popularity = safe_clamp_uchar(curntn->popularity);
+			curntn->popularity += safe_clamp_nation_attr(*(tg_value+good) - '0');
+			curntn->popularity = safe_clamp_nation_attr(curntn->popularity);
 		} else if( good <= END_COMMUNICATION ) {
 			if(curntn->communications + (*(tg_value+good) - '0')<2*MAXTGVAL)
-				curntn->communications += safe_clamp_uchar(*(tg_value+good) - '0');
+				curntn->communications += safe_clamp_nation_attr(*(tg_value+good) - '0');
 			else curntn->communications = 2*MAXTGVAL;
 		} else if( good <= END_EATRATE ) { /* eatrate scaled already */
 			/* no tradegoods for eatrate */
 			curntn->eatrate = min( MAXTGVAL, curntn->eatrate );
 		} else if( good <= END_SPOILRATE ) {
 			if(curntn->spoilrate > (*(tg_value+good) - '0'))
-				curntn->spoilrate -= safe_clamp_uchar(*(tg_value+good)-'0');
+				curntn->spoilrate -= safe_clamp_nation_attr(*(tg_value+good)-'0');
 			else curntn->spoilrate = 1;
 		} else if( good <= END_KNOWLEDGE ) {
 			if(curntn->knowledge + (*(tg_value+good)-'0') < MAXTGVAL)
-				curntn->knowledge += safe_clamp_uchar(*(tg_value+good) - '0');
+				curntn->knowledge += safe_clamp_nation_attr(*(tg_value+good) - '0');
 			else curntn->knowledge = MAXTGVAL;
 		} else if( good <= END_FARM ) {
 			if(curntn->farm_ability + (*(tg_value+good) - '0') < MAXTGVAL)
-				curntn->farm_ability += safe_clamp_uchar(*(tg_value+good)-'0');
+				curntn->farm_ability += safe_clamp_nation_attr(*(tg_value+good)-'0');
 			else curntn->farm_ability = MAXTGVAL;
 		} else if( good <= END_SPELL ) {
 			curntn->spellpts += (short)(sptr->people/1000 +1);
 		} else if( good <= END_TERROR ) {
 			if(curntn->terror + (*(tg_value+good)-'0')< MAXTGVAL)
-				curntn->terror += safe_clamp_uchar(*(tg_value+good)-'0');
+				curntn->terror += safe_clamp_nation_attr(*(tg_value+good)-'0');
 			else curntn->terror = MAXTGVAL;
 		}
 		}

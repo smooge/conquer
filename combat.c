@@ -1203,8 +1203,8 @@ void retreat ( int unitnum ){	/* if -1 then normal, else retreat only unit ismer
 				ntn[owner[cnum]].arm[unit[cnum]].sold *= 85;
 				ntn[owner[cnum]].arm[unit[cnum]].sold /= 100;
 			} else {
-				ntn[owner[cnum]].arm[unit[cnum]].xloc = safe_clamp_uchar(retreatx);
-				ntn[owner[cnum]].arm[unit[cnum]].yloc = safe_clamp_uchar(retreaty);
+				ntn[owner[cnum]].arm[unit[cnum]].xloc = safe_clamp_nation_attr(retreatx);
+				ntn[owner[cnum]].arm[unit[cnum]].yloc = safe_clamp_nation_attr(retreaty);
 			}
 		}
 		if( unitnum != (-1) ) return;
