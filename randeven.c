@@ -241,6 +241,7 @@ static char *randevents[] = {
  *   - NEUTRAL_6FREE status enables immediate diplomatic interaction
  *   - Function assumes nation array is properly initialized
  *   - No validation of nation state consistency after initialization
+  * @last_documented: 2025-09-20
  */
 int findnew(void){
 	int newntn=0,nationis;
@@ -301,6 +302,7 @@ int findnew(void){
  *   - Returns 'z' as fallback if system is completely saturated
  *   - Function assumes markok() provides accurate availability information
  *   - No validation of returned character's actual uniqueness
+  * @last_documented: 2025-09-20
  */
 char
 getnewmark (void)
@@ -617,6 +619,7 @@ disolve (
  *   - Name pool exhaustion returns failure without fallback generation
  *   - Function assumes names[] array is properly null-terminated
  *   - Does not handle duplicate names within the names[] array itself
+  * @last_documented: 2025-09-20
  */
 int
 getnewname (int new)
@@ -707,6 +710,7 @@ getnewname (int new)
  *   - Resource management events affect gold, jewels, metals, and food stores
  *   - Military events can paralyze armies or reduce soldier populations
  *   - Architectural events improve fortress defenses across all cities
+  * @last_documented: 2025-09-20
  */
 void
 randomevent (void)
@@ -1397,6 +1401,7 @@ printf("TEMP: %s chance of revolt is %d (tax=%d prest=%d)\n",
  *   - Function handles both localized events (with coordinates) and general events
  *   - Percentage reporting allows players to assess event severity/impact
  *   - Administrative console output aids in game monitoring and debugging
+  * @last_documented: 2025-09-20
  */
 void
 wdisaster (int cntry, int xloc, int yloc, int prcnt, char *event)
@@ -1505,6 +1510,7 @@ wdisaster (int cntry, int xloc, int yloc, int prcnt, char *event)
  *   - Capitol sectors are protected from peasant conversion
  *   - Only sectors with existing populations can generate militia forces
  *   - solds_in_sector() check prevents conversion of militarily defended areas
+  * @last_documented: 2025-09-20
  */
 void
 peasant_revolt(int *newnation)	/* peasant revolt */
@@ -1724,6 +1730,7 @@ other_revolt (	/* return reason and new nation number*/
  *   - Function designed for periodic calling from main event processing
  *   - Volcano selection algorithm has O(n) complexity where n = total map sectors
  *   - No validation of volcano sector validity before triggering eruption
+  * @last_documented: 2025-09-20
  */
 void
 erupt (void)
@@ -1825,6 +1832,7 @@ erupt (void)
  *   - Fortress destruction affects defensive capabilities permanently
  *   - Resource depletion impacts economic recovery for affected nations
  *   - No bounds checking on coordinates - assumes valid map positions
+  * @last_documented: 2025-09-20
  */
 void
 blowup (register int i, register int j)
@@ -1848,7 +1856,47 @@ blowup (register int i, register int j)
 	}
 }
 
-/** reduce will drop armies & and civilians in sector by percent **/
+/*
+ * reduce - Reduce population and military strength in a sector by percentage
+ *
+ * Applies catastrophic reduction to both civilian population and military
+ * units in the specified sector. Used by random events like natural disasters,
+ * plagues, or magical catastrophes to simulate devastating effects on a
+ * region. Affects all armies present in the sector regardless of nation
+ * ownership, but only reduces non-leader units.
+ *
+ * Parameters:
+ *   x - X coordinate of target sector (must be valid map coordinate)
+ *   y - Y coordinate of target sector (must be valid map coordinate)
+ *   percent - Percentage reduction (0-100, inverted internally for calculation)
+ *             E.g., percent=30 means reduce to 70% of original value
+ *
+ * Returns:
+ *   void
+ *
+ * Side Effects:
+ *   - Modifies sct[x][y].people (civilian population reduced)
+ *   - Modifies army soldier counts for all nations' armies in the sector
+ *   - Only affects non-leader units (unittyp < MINLEADER)
+ *   - Uses long arithmetic to avoid integer overflow during calculation
+ *
+ * Testing Notes:
+ *   Category: A (Unit Testing) - Pure calculation with global state changes
+ *   Approach: Unit testing with mocked sector and army data
+ *   Key Tests: Percentage calculation accuracy, overflow prevention,
+ *              multi-nation army handling, leader unit exclusion
+ *   Dependencies: Game state arrays (sct, ntn), NTOTAL, MAXARM constants
+ *   Mock Requirements: Sector data, army data, multiple nations
+ *   Complexity: Moderate - Nested loops with percentage calculations
+ *
+ * Notes:
+ *   - Percent is inverted (100-percent) for mathematical convenience
+ *   - Uses long temp variable to prevent integer overflow
+ *   - Scans all nations and armies, even if not present in sector
+ *   - Leader units are preserved (checked via unittyp < MINLEADER)
+ *   - Called by catastrophic event handlers (volcanos, earthquakes, etc.)
+ * @last_documented: 2025-10-08
+ */
 void
 reduce (int x, int y, int percent)
 {
@@ -1894,6 +1942,40 @@ rand_sector (void)
 	return(NULL);	/* stop lint from complaining */
 }
 
+/*
+ * weather - Weather system random event handler (stub implementation)
+ *
+ * Placeholder function for weather-based random events. Currently unimplemented
+ * (empty function body). Originally planned to handle weather effects like
+ * storms, droughts, floods, or seasonal changes that could affect movement,
+ * production, or combat effectiveness. The function exists to maintain API
+ * compatibility for future weather system implementation.
+ *
+ * Parameters:
+ *   None
+ *
+ * Returns:
+ *   void
+ *
+ * Side Effects:
+ *   None (currently no implementation)
+ *
+ * Testing Notes:
+ *   Category: E (Skip Testing) - Empty stub function
+ *   Approach: No testing needed until implementation added
+ *   Key Tests: N/A - function has no behavior to test
+ *   Dependencies: None
+ *   Mock Requirements: None
+ *   Complexity: Trivial - Empty stub
+ *
+ * Notes:
+ *   - Function body is completely empty (no implementation)
+ *   - Only available when RANEVENT is defined
+ *   - Likely intended for future feature expansion
+ *   - May be called by random event dispatcher but does nothing
+ *   - Could be removed or implemented in future versions
+ * @last_documented: 2025-10-08
+ */
 void
 weather (void)
 {
