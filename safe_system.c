@@ -54,11 +54,21 @@ typedef struct sort_line {
  *   - Safe file operations with bounds checking
  *   - File locking prevents concurrent write corruption
  *
+ * Testing Notes:
+ *   Category: A (Unit) - Isolated file I/O function with clear behavior
+ *   Approach: Unit tests with temporary test files and mock check_lock()
+ *   Key Tests: [Normal append, create destination, empty source, NULL parameters, missing source, large files (8KB+)]
+ *   Test Coverage: tests/unit/test_safe_system.c (6 test functions)
+ *   Dependencies: [File system operations, check_lock() function]
+ *   Mock Requirements: [check_lock() returns FALSE for testing, temporary test directory]
+ *   Complexity: Simple - straightforward file I/O with proper error handling
+ *
  * Notes:
  *   - Replaces system("cat source >> destination") calls
  *   - Uses 8KB buffer for efficient I/O operations
  *   - Uses existing check_lock() infrastructure for cross-platform locking
  *   - Thread-safe with proper file locking
+ * @last_documented: 2025-10-08
  */
 int append_file_to_file(const char *source, const char *destination) {
     if (source == NULL || destination == NULL) {
@@ -131,10 +141,20 @@ int append_file_to_file(const char *source, const char *destination) {
  *   - Proper input validation and error handling
  *   - Safe file operations with bounds checking
  *
+ * Testing Notes:
+ *   Category: A (Unit) - Simple timestamp generation with file I/O
+ *   Approach: Unit tests verifying timestamp format and file operations
+ *   Key Tests: [Normal operation, overwrite existing, multiple calls (1s apart), NULL parameter, invalid path]
+ *   Test Coverage: tests/unit/test_safe_system.c (5 test functions)
+ *   Dependencies: [Standard C time functions (time(), ctime()), file system]
+ *   Mock Requirements: [Temporary test directory for file creation]
+ *   Complexity: Simple - standard library time formatting with basic file I/O
+ *
  * Notes:
  *   - Replaces system("date > filename") calls
- *   - Output format matches Unix date command
+ *   - Output format matches Unix date command (ctime() format)
  *   - Thread-safe (uses standard C time functions)
+ * @last_documented: 2025-10-08
  */
 int write_timestamp_to_file(const char *filename) {
     if (filename == NULL) {
@@ -190,11 +210,22 @@ int write_timestamp_to_file(const char *filename) {
  *   - Proper input validation and error handling
  *   - No interpretation of shell metacharacters
  *
+ * Testing Notes:
+ *   Category: A (Unit) - File deletion with pattern matching
+ *   Approach: Unit tests with temporary files and glob patterns, security injection tests
+ *   Key Tests: [Single file, multiple files, glob patterns (*.txt), mixed exact+glob, NULL parameters, missing files, no matches, shell injection attempts]
+ *   Test Coverage: tests/unit/test_safe_system.c (8 test functions including security validation)
+ *   Dependencies: [POSIX glob(), unlink(), file system operations]
+ *   Mock Requirements: [Temporary test directory with various file patterns]
+ *   Complexity: Moderate - glob expansion with error handling and security validation
+ *
  * Notes:
  *   - Replaces system("rm -f pattern*") calls
  *   - Uses GLOB_NOSORT for performance (order not important)
  *   - Thread-safe (no global state modifications)
  *   - Compatible with POSIX glob patterns
+ *   - Security tested against command injection ("; rm -rf /", "&& echo")
+ * @last_documented: 2025-10-08
  */
 int secure_file_delete(const char **patterns, int num_patterns) {
     if (patterns == NULL || num_patterns < 0) {
@@ -435,6 +466,15 @@ static int insert_sorted(SORT_LINE **head_ptr, const char *line, int compnum) {
  *   - Proper input validation and error handling
  *   - Safe memory operations with bounds checking
  *
+ * Testing Notes:
+ *   Category: A (Unit) - Sorting algorithm with file I/O
+ *   Approach: Comprehensive unit tests covering sorting correctness, edge cases, and error handling
+ *   Key Tests: [Basic unsorted, already sorted, reverse sorted, duplicates, short line skipping, variable compnum (2-3 chars), empty file, single line, NULL filename, invalid compnum (0/-1), missing file, large file (100 lines), content integrity with special chars]
+ *   Test Coverage: tests/unit/test_safe_system.c (13 test functions - most comprehensive)
+ *   Dependencies: [Linked list implementation, insertion sort, file locking via check_lock(), atomic file replacement]
+ *   Mock Requirements: [check_lock() returns FALSE, temporary test directory, various sorted/unsorted test files]
+ *   Complexity: Moderate - Insertion sort algorithm with linked list, file I/O, and atomic replacement
+ *
  * Notes:
  *   - Replaces system("conqsort filename filename") calls
  *   - Uses same insertion sort algorithm as conqsort utility
@@ -442,6 +482,8 @@ static int insert_sorted(SORT_LINE **head_ptr, const char *line, int compnum) {
  *   - Maximum line length is 200 characters (same as conqsort)
  *   - Case-sensitive comparison (same as default conqsort)
  *   - Lines shorter than compnum are skipped (same as conqsort)
+ *   - Algorithm verified with reverse-sorted input (worst case for insertion sort)
+ * @last_documented: 2025-10-08
  */
 int sort_file_in_place(const char *filename, int compnum) {
     if (filename == NULL || compnum <= 0) {
