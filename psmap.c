@@ -49,7 +49,8 @@
  *
  * This file is part of Conquer.
  * Originally Copyright (C) 1989 by Martin Forssen (MaF)
- * Copyright (C) 2025 Juan Manuel Méndez Rey (Vejeta) - Licensed under GPL v3 with permission from original author
+ * Copyright (C) 2025 Juan Manuel Méndez Rey (Vejeta) - Licensed under GPL v3 with permission
+ * from original author
  *
  * Original author: Martin Forssen <d8forma@dtek.chalmers.se> (historical)
  * Permission granted by: Martin Forssen <maf@recordedfuture.com>
@@ -86,14 +87,14 @@ static char title[81] = "", foot[81], fontname[81];
 static char progname[80];
 
 /* functions */
-int parsepagesize (char *buf);
-void setpagesize (int defpag);
-void get_pagesize (void);
-void psstring (FILE *fh, char *str);
-int isinstr (char *string, char *word);
-int getmaptype (char *string);
-void readmap (void);
-void buildps (void);
+int parsepagesize(char *buf);
+void setpagesize(int defpag);
+void get_pagesize(void);
+void psstring(FILE *fh, char *str);
+int isinstr(char *string, char *word);
+int getmaptype(char *string);
+void readmap(void);
+void buildps(void);
 
 /*
  * parsepagesize - Parse page size string into numeric identifier
@@ -134,15 +135,15 @@ void buildps (void);
  *   - Returns 0 for any unrecognized input (safe default)
  *   - Used by command-line option processing and environment variable parsing
  */
-int parsepagesize (char *buf){
+int parsepagesize(char *buf) {
     if (!strcmp(buf, "A4"))
-	return (1);
+        return (1);
     if (!strcmp(buf, "a4"))
-	return (1);
+        return (1);
     if (!strcmp(buf, "LETTER"))
-	return (2);
+        return (2);
     if (!strcmp(buf, "letter"))
-	return (2);
+        return (2);
     return (0);
 }
 
@@ -187,26 +188,26 @@ int parsepagesize (char *buf){
  *   - Default case handles custom/user-defined page sizes
  *   - Values sourced from psmap.h constant definitions
  */
-void setpagesize (int defpag) {
+void setpagesize(int defpag) {
     switch (defpag) {
-    case 1:
-	pagewidth = PAGEWIDTH_A4;
-	pageheight = PAGEHEIGHT_A4;
-	xoffset = XOFFSET_A4;
-	yoffset = YOFFSET_A4;
-	break;
-    case 2:
-	pagewidth = PAGEWIDTH_LETTER;
-	pageheight = PAGEHEIGHT_LETTER;
-	xoffset = XOFFSET_LETTER;
-	yoffset = YOFFSET_LETTER;
-	break;
-    default:
-	pagewidth = PAGEWIDTH_OTHER;
-	pageheight = PAGEHEIGHT_OTHER;
-	xoffset = XOFFSET_OTHER;
-	yoffset = YOFFSET_OTHER;
-	break;
+        case 1:
+            pagewidth = PAGEWIDTH_A4;
+            pageheight = PAGEHEIGHT_A4;
+            xoffset = XOFFSET_A4;
+            yoffset = YOFFSET_A4;
+            break;
+        case 2:
+            pagewidth = PAGEWIDTH_LETTER;
+            pageheight = PAGEHEIGHT_LETTER;
+            xoffset = XOFFSET_LETTER;
+            yoffset = YOFFSET_LETTER;
+            break;
+        default:
+            pagewidth = PAGEWIDTH_OTHER;
+            pageheight = PAGEHEIGHT_OTHER;
+            xoffset = XOFFSET_OTHER;
+            yoffset = YOFFSET_OTHER;
+            break;
     }
 }
 
@@ -251,13 +252,13 @@ void setpagesize (int defpag) {
  *   - Uses parsepagesize() for string-to-code conversion
  *   - Not thread-safe due to global state modifications
  */
-void get_pagesize (void) {
+void get_pagesize(void) {
     char *buf;
     int defpag = DEFAULTPAGE;
 
-    buf = (char *) getenv("CONQ_PSMAPDEFAULTPAGE");
+    buf = (char *)getenv("CONQ_PSMAPDEFAULTPAGE");
     if (buf != NULL)
-	defpag = parsepagesize(buf);
+        defpag = parsepagesize(buf);
     setpagesize(defpag);
 }
 
@@ -302,27 +303,27 @@ void get_pagesize (void) {
  *   - Essential for preventing PostScript syntax errors
  *   - Used for titles, footers, and text labels in map output
  */
-void psstring (FILE *output_fh, char *str) {
+void psstring(FILE *output_fh, char *str) {
     fprintf(output_fh, "(");
     while (*str != '\0') {
-	switch (*str) {
-	case ('('):
-	    fprintf(output_fh, "\\(");
-	    break;
-	case (')'):
-	    fprintf(output_fh, "\\)");
-	    break;
-	case ('\\'):
-	    fprintf(output_fh, "\\\\");
-	    break;
-	case ('\n'):
-	case ('\f'):
-	    break;
-	default:
-	    fputc(*str, output_fh);
-	    break;
-	}
-	str++;
+        switch (*str) {
+            case ('('):
+                fprintf(output_fh, "\\(");
+                break;
+            case (')'):
+                fprintf(output_fh, "\\)");
+                break;
+            case ('\\'):
+                fprintf(output_fh, "\\\\");
+                break;
+            case ('\n'):
+            case ('\f'):
+                break;
+            default:
+                fputc(*str, output_fh);
+                break;
+        }
+        str++;
     }
     fprintf(output_fh, ")");
 }
@@ -369,17 +370,20 @@ void psstring (FILE *output_fh, char *str) {
  *   - Used by getmaptype() for map format detection
  *   - Efficient for short patterns in header strings
  */
-int isinstr (char *string, char *word) {
-    size_t i,l1=strlen(string),l2=strlen(word);
+int isinstr(char *string, char *word) {
+    size_t i, l1 = strlen(string), l2 = strlen(word);
 
-    if (l1 < l2) return(FALSE);
-    for(i = 0; i < l1; i++ ) {
-	    if (l1-i<l2) break;
-	    if (string[i] == word[0]) {
-		    if (strncmp(string+i,word,l2)==0) return(TRUE);
-	    }
+    if (l1 < l2)
+        return (FALSE);
+    for (i = 0; i < l1; i++) {
+        if (l1 - i < l2)
+            break;
+        if (string[i] == word[0]) {
+            if (strncmp(string + i, word, l2) == 0)
+                return (TRUE);
+        }
     }
-    return(FALSE);
+    return (FALSE);
 }
 
 /*
@@ -430,15 +434,15 @@ int isinstr (char *string, char *word) {
  *   - Used during map file parsing to configure rendering pipeline
  *   - Falls back to SIMPLE type for unknown formats
  */
-int getmaptype (char *string) {
+int getmaptype(char *string) {
     if (isinstr(string, "Altitude"))
-	return (ALTITUDES);
+        return (ALTITUDES);
     if (isinstr(string, "Designation"))
-	return (DESIGNATIONS);
+        return (DESIGNATIONS);
     if (isinstr(string, "Nation"))
-	return (NATIONS);
+        return (NATIONS);
     if (isinstr(string, "Vegetation"))
-	return (VEGETATIONS);
+        return (VEGETATIONS);
     return (SIMPLE);
 }
 
@@ -498,7 +502,7 @@ int getmaptype (char *string) {
  *   - Critical function in the map processing pipeline
  *   - Handles variable-sized maps with automatic dimension detection
  */
-void readmap (void) {
+void readmap(void) {
     int x, none;
 
     /*
@@ -518,57 +522,56 @@ void readmap (void) {
     fprintf(outfile, "/Map [\n");
 
     while ((c = fgetc(infile)) != EOF) {
-	switch (c) {
-	case ('\n'):
-	    if (xsize == 0)
-		xsize = x;
-	    if (xsize != x) {
-		fprintf(stderr, "Error in map-file. Lines different length\n");
-		exit(1);
-	    }
-	    x = 0;
-	    if ((xmax > -1) && (ymin == -1))
-		ymin = ysize;
-	    ysize++;
-	    fprintf(outfile, ")\n");
-	    none = TRUE;
-	    break;
-	case (' '):
-	    x++;
-	    if (none) {
-		fprintf(outfile, "(");
-		none = FALSE;
-	    }
-	    fprintf(outfile, " ");
-	    break;
-	default:
-	    if (x < xmin)
-		xmin = x;
-	    if (x > xmax)
-		xmax = x;
-	    if (ysize > ymax)
-		ymax = ysize;
-	    x++;
-	    if (none) {
-		fprintf(outfile, "(");
-		none = FALSE;
-	    }
-	    fprintf(outfile, "%c", c);
-	    break;
-	}
+        switch (c) {
+            case ('\n'):
+                if (xsize == 0)
+                    xsize = x;
+                if (xsize != x) {
+                    fprintf(stderr, "Error in map-file. Lines different length\n");
+                    exit(1);
+                }
+                x = 0;
+                if ((xmax > -1) && (ymin == -1))
+                    ymin = ysize;
+                ysize++;
+                fprintf(outfile, ")\n");
+                none = TRUE;
+                break;
+            case (' '):
+                x++;
+                if (none) {
+                    fprintf(outfile, "(");
+                    none = FALSE;
+                }
+                fprintf(outfile, " ");
+                break;
+            default:
+                if (x < xmin)
+                    xmin = x;
+                if (x > xmax)
+                    xmax = x;
+                if (ysize > ymax)
+                    ymax = ysize;
+                x++;
+                if (none) {
+                    fprintf(outfile, "(");
+                    none = FALSE;
+                }
+                fprintf(outfile, "%c", c);
+                break;
+        }
     }
 
     fprintf(outfile, "] def\n\n");
 
     /* Did I get anything ? */
     if (xmax == -1) {
-	fprintf(stderr, "Empty input file\n");
-	exit(1);
+        fprintf(stderr, "Empty input file\n");
+        exit(1);
     }
     if (verbose) {
-	fprintf(stderr, "Map is %d * %d  squares\n", xsize, ysize);
-	fprintf(stderr, "You can see %d * %d  squares\n",
-		xmax - xmin + 1, ymax - ymin + 1);
+        fprintf(stderr, "Map is %d * %d  squares\n", xsize, ysize);
+        fprintf(stderr, "You can see %d * %d  squares\n", xmax - xmin + 1, ymax - ymin + 1);
     }
 }
 
@@ -624,7 +627,7 @@ void readmap (void) {
  *   - Handles both single-page and multi-page output modes
  *   - PostScript variables enable template customization
  */
-void buildps (void) {
+void buildps(void) {
     int xbeg, ybeg, xnumb, ynumb, x, y, xpages, ypages, xcorr, ycorr;
 
     /*
@@ -636,7 +639,7 @@ void buildps (void) {
     ypages = 1 + (ymax - ymin) * sqsize / (pageheight - YMARGINS);
 
     if (verbose)
-	fprintf(stderr, "The map will be %d * %d pages\n", xpages, ypages);
+        fprintf(stderr, "The map will be %d * %d pages\n", xpages, ypages);
 
     fprintf(outfile, "/xmin %d def\n", xmin);
     fprintf(outfile, "/ymin %d def\n", ymin);
@@ -662,57 +665,57 @@ void buildps (void) {
     fprintf(outfile, "/font /%s def\n", fontname);
     fprintf(outfile, "/grid ");
     if (grid) {
-	fprintf(outfile, "true def\n");
+        fprintf(outfile, "true def\n");
     } else
-	fprintf(outfile, "false def\n");
+        fprintf(outfile, "false def\n");
     fprintf(outfile, "/coords ");
     if (coords) {
-	fprintf(outfile, "true def\n");
+        fprintf(outfile, "true def\n");
     } else
-	fprintf(outfile, "false def\n");
+        fprintf(outfile, "false def\n");
     fprintf(outfile, "/noteq ");
     if (note) {
-	fprintf(outfile, "true def\n");
+        fprintf(outfile, "true def\n");
     } else
-	fprintf(outfile, "false def\n");
+        fprintf(outfile, "false def\n");
 
     fprintf(outfile, "\n\n");
 
     fh = fopen(PSFILE, "r");
 
     if (fh == NULL) {
-	perror(progname);
-	exit(-10);
+        perror(progname);
+        exit(-10);
     }
     while ((c = fgetc(fh)) != EOF)
-	fputc(c, outfile);
+        fputc(c, outfile);
 
     fclose(fh);
 
     fprintf(outfile, "\n %% Here we start the magic\n");
 
-    xnumb = (int) ((pagewidth - XMARGINS) / sqsize);
-    ynumb = (int) ((pageheight - YMARGINS) / sqsize);
+    xnumb = (int)((pagewidth - XMARGINS) / sqsize);
+    ynumb = (int)((pageheight - YMARGINS) / sqsize);
 
     if (center) {
-	xcorr = (int) ((xpages * xnumb - (xmax - xmin)) / 2);
-	ycorr = (int) ((ypages * ynumb - (ymax - ymin)) / 2);
+        xcorr = (int)((xpages * xnumb - (xmax - xmin)) / 2);
+        ycorr = (int)((ypages * ynumb - (ymax - ymin)) / 2);
     } else {
-	xcorr = 0;
-	ycorr = 0;
+        xcorr = 0;
+        ycorr = 0;
     }
 
     if (onepage) {
-	fprintf(outfile, "%d %d %d %d %d %d DoPage\n",
-		1, 1, centx - xnumb / 2, xnumb, centy - ynumb / 2, ynumb);
+        fprintf(outfile, "%d %d %d %d %d %d DoPage\n", 1, 1, centx - xnumb / 2, xnumb,
+                centy - ynumb / 2, ynumb);
     } else
-	for (x = 0; x < xpages; x++)
-	    for (y = 0; y < ypages; y++) {
-		xbeg = x * xnumb + x + xmin - xcorr;
-		ybeg = y * ynumb + y + ymin - ycorr;
-		fprintf(outfile, "%d %d %d %d %d %d DoPage\n",
-			x + 1, y + 1, xbeg, xnumb, ybeg, ynumb);
-	    }
+        for (x = 0; x < xpages; x++)
+            for (y = 0; y < ypages; y++) {
+                xbeg = x * xnumb + x + xmin - xcorr;
+                ybeg = y * ynumb + y + ymin - ycorr;
+                fprintf(outfile, "%d %d %d %d %d %d DoPage\n", x + 1, y + 1, xbeg, xnumb, ybeg,
+                        ynumb);
+            }
 }
 
 /*
@@ -792,202 +795,202 @@ int main(int argc, char *argv[]) {
     progname[sizeof(progname) - 1] = '\0';
     infile = stdin;
     outfile = stdout;
-    buf = (char *) getenv("CONQ_PSFONT");
+    buf = (char *)getenv("CONQ_PSFONT");
     if (buf != NULL) {
-	strncpy(fontname, buf, 80);
-	fontname[79] = '\0';
+        strncpy(fontname, buf, 80);
+        fontname[79] = '\0';
     } else {
-	strncpy(fontname, "Times-Roman", sizeof(fontname) - 1);
-	fontname[sizeof(fontname) - 1] = '\0';
+        strncpy(fontname, "Times-Roman", sizeof(fontname) - 1);
+        fontname[sizeof(fontname) - 1] = '\0';
     }
     get_pagesize();
 
     while ((c = getopt(argc, argv, "nuf:gs:t:vcho:p:lW:L:X:Y:")) != -1)
-	switch (c) {
-	case 'h':
-	    fprintf(stderr, "%s version %s\n", progname, VERSION);
-	    fprintf(stderr, "Default pagesize is ");
-	    switch (DEFAULTPAGE) {
-	    case 1:
-		fprintf(stderr, "A4\n");
-		break;
-	    case 2:
-		fprintf(stderr, "LETTER\n");
-		break;
-	    default:
-		fprintf(stderr, "OTHER\n");
-		break;
-	    }
-	    fprintf(stderr, USAGE, progname);
-	    fprintf(stderr, "\t-c  Turn off coordinates\n");
-	    fprintf(stderr, "\t-f  Set the font\n");
-	    fprintf(stderr, "\t-g  Turn off grid\n");
-	    fprintf(stderr, "\t-h  Show this text\n");
-	    fprintf(stderr, "\t-l  Print large maps\n");
-	    fprintf(stderr, "\t-L  Set the pagelength\n");
-	    fprintf(stderr, "\t-n  Turn off map centering\n");
-	    fprintf(stderr, "\t-o  Show one page centered around x,y\n");
-	    fprintf(stderr, "\t-p  Set pagesize (A4,LETTER or OTHER)\n");
-	    fprintf(stderr, "\t-s  Set size of square (default: %d)\n", sqsize);
-	    fprintf(stderr, "\t-t  Set the title of the map\n");
-	    fprintf(stderr, "\t-u  Force simple map output (just letters)\n");
-	    fprintf(stderr, "\t-v  Verbose mode\n");
-	    fprintf(stderr, "\t-W  Set the pagewidth\n");
-	    fprintf(stderr, "\t-X  Set the X-offset\n");
-	    fprintf(stderr, "\t-Y  Set the Y-offset\n");
-	    exit(1);
-	case 'u':
-	    maptype = FORCED;
-	    break;
-	case 'o':
-	    onepage = TRUE;	/* Mode one of onepage */
-	    if (2 != sscanf(optarg, "%d,%d", &centx, &centy)) {
-		fprintf(stderr, "Error in coordinates to o-option\n");
-		exit(1);
-	    }
-	    break;
-	case 'l':
-	    note = TRUE;
-	    break;
-	case 'p':
-	    setpagesize(parsepagesize(optarg));
-	    break;
-	case 'n':
-	    center = FALSE;
-	    break;
-	case 'g':
-	    grid = FALSE;
-	    break;
-	case 's':
-	    if (sscanf(optarg, "%d", &sqsize) != 1) {
-		fprintf(stderr, "Error: Invalid square size for -s option\n");
-		exit(1);
-	    }
-	    break;
-	case 'f':
-	    strncpy(fontname, optarg, 80);
-	    fontname[79] = '\0';
-	    break;
-	case 't':
-	    strncpy(title, optarg, 80);
-	    title[79] = '\0';
-	    break;
-	case 'v':
-	    verbose = TRUE;
-	    break;
-	case 'c':
-	    coords = FALSE;
-	    break;
-	case 'W':
-	    if (sscanf(optarg, "%d", &pagewidth) != 1) {
-		fprintf(stderr, "Error: Invalid page width for -W option\n");
-		exit(1);
-	    }
-	    break;
-	case 'L':
-	    if (sscanf(optarg, "%d", &pageheight) != 1) {
-		fprintf(stderr, "Error: Invalid page height for -L option\n");
-		exit(1);
-	    }
-	    break;
-	case 'X':
-	    if (sscanf(optarg, "%d", &xoffset) != 1) {
-		fprintf(stderr, "Error: Invalid X offset for -X option\n");
-		exit(1);
-	    }
-	    break;
-	case 'Y':
-	    if (sscanf(optarg, "%d", &yoffset) != 1) {
-		fprintf(stderr, "Error: Invalid Y offset for -Y option\n");
-		exit(1);
-	    }
-	    break;
-	default:
-	    fprintf(stderr, USAGE, argv[0]);
-	    exit(1);
-	}
+        switch (c) {
+            case 'h':
+                fprintf(stderr, "%s version %s\n", progname, VERSION);
+                fprintf(stderr, "Default pagesize is ");
+                switch (DEFAULTPAGE) {
+                    case 1:
+                        fprintf(stderr, "A4\n");
+                        break;
+                    case 2:
+                        fprintf(stderr, "LETTER\n");
+                        break;
+                    default:
+                        fprintf(stderr, "OTHER\n");
+                        break;
+                }
+                fprintf(stderr, USAGE, progname);
+                fprintf(stderr, "\t-c  Turn off coordinates\n");
+                fprintf(stderr, "\t-f  Set the font\n");
+                fprintf(stderr, "\t-g  Turn off grid\n");
+                fprintf(stderr, "\t-h  Show this text\n");
+                fprintf(stderr, "\t-l  Print large maps\n");
+                fprintf(stderr, "\t-L  Set the pagelength\n");
+                fprintf(stderr, "\t-n  Turn off map centering\n");
+                fprintf(stderr, "\t-o  Show one page centered around x,y\n");
+                fprintf(stderr, "\t-p  Set pagesize (A4,LETTER or OTHER)\n");
+                fprintf(stderr, "\t-s  Set size of square (default: %d)\n", sqsize);
+                fprintf(stderr, "\t-t  Set the title of the map\n");
+                fprintf(stderr, "\t-u  Force simple map output (just letters)\n");
+                fprintf(stderr, "\t-v  Verbose mode\n");
+                fprintf(stderr, "\t-W  Set the pagewidth\n");
+                fprintf(stderr, "\t-X  Set the X-offset\n");
+                fprintf(stderr, "\t-Y  Set the Y-offset\n");
+                exit(1);
+            case 'u':
+                maptype = FORCED;
+                break;
+            case 'o':
+                onepage = TRUE; /* Mode one of onepage */
+                if (2 != sscanf(optarg, "%d,%d", &centx, &centy)) {
+                    fprintf(stderr, "Error in coordinates to o-option\n");
+                    exit(1);
+                }
+                break;
+            case 'l':
+                note = TRUE;
+                break;
+            case 'p':
+                setpagesize(parsepagesize(optarg));
+                break;
+            case 'n':
+                center = FALSE;
+                break;
+            case 'g':
+                grid = FALSE;
+                break;
+            case 's':
+                if (sscanf(optarg, "%d", &sqsize) != 1) {
+                    fprintf(stderr, "Error: Invalid square size for -s option\n");
+                    exit(1);
+                }
+                break;
+            case 'f':
+                strncpy(fontname, optarg, 80);
+                fontname[79] = '\0';
+                break;
+            case 't':
+                strncpy(title, optarg, 80);
+                title[79] = '\0';
+                break;
+            case 'v':
+                verbose = TRUE;
+                break;
+            case 'c':
+                coords = FALSE;
+                break;
+            case 'W':
+                if (sscanf(optarg, "%d", &pagewidth) != 1) {
+                    fprintf(stderr, "Error: Invalid page width for -W option\n");
+                    exit(1);
+                }
+                break;
+            case 'L':
+                if (sscanf(optarg, "%d", &pageheight) != 1) {
+                    fprintf(stderr, "Error: Invalid page height for -L option\n");
+                    exit(1);
+                }
+                break;
+            case 'X':
+                if (sscanf(optarg, "%d", &xoffset) != 1) {
+                    fprintf(stderr, "Error: Invalid X offset for -X option\n");
+                    exit(1);
+                }
+                break;
+            case 'Y':
+                if (sscanf(optarg, "%d", &yoffset) != 1) {
+                    fprintf(stderr, "Error: Invalid Y offset for -Y option\n");
+                    exit(1);
+                }
+                break;
+            default:
+                fprintf(stderr, USAGE, argv[0]);
+                exit(1);
+        }
     if (optind < argc)
-	infile = fopen(argv[optind], "r");
+        infile = fopen(argv[optind], "r");
 
     if (infile == NULL) {
-	perror(progname);
-	exit(-10);
+        perror(progname);
+        exit(-10);
     }
     if (++optind < argc)
-	outfile = fopen(argv[optind], "w");
+        outfile = fopen(argv[optind], "w");
 
     if (outfile == NULL) {
-	perror(progname);
-	exit(-10);
+        perror(progname);
+        exit(-10);
     }
-    setbuf(outfile, buffer);	/* They recomended this on the net today */
+    setbuf(outfile, buffer); /* They recomended this on the net today */
 
     if (++optind < argc) {
-	fprintf(stderr, USAGE, argv[0]);
-	exit(1);
+        fprintf(stderr, USAGE, argv[0]);
+        exit(1);
     }
     /* If verbose identify program */
 
     if (verbose)
-	fprintf(stderr, "Psmap version %s\n", VERSION);
+        fprintf(stderr, "Psmap version %s\n", VERSION);
 
 
     /* First we check if the infile is a valid conquer map file */
 
     if (NULL == fgets(firstline, 80, infile)) {
-	fprintf(stderr, "Empty input file\n");
-	exit(1);
+        fprintf(stderr, "Empty input file\n");
+        exit(1);
     }
     if (0 != strncmp(firstline, MATCHSTRING, strlen(MATCHSTRING))) {
-	fprintf(stderr, "Not a Conquer Map file\n");
-	exit(1);
+        fprintf(stderr, "Not a Conquer Map file\n");
+        exit(1);
     }
     for (c = 0; c < (int)strlen(firstline); c++) {
-	if (firstline[c] == ':')
-	    break;
+        if (firstline[c] == ':')
+            break;
     }
 
     strncpy(foot, firstline, safe_int_to_size(c));
     foot[c] = '\0';
     if (title[0] == '\0') {
-	strncpy(title, &firstline[c + 1], 80);
-	title[79] = '\0';
+        strncpy(title, &firstline[c + 1], 80);
+        title[79] = '\0';
     }
     /* Find out which type of map it is */
 
     if (maptype != FORCED) {
-	maptype = getmaptype(&firstline[c + 1]);
+        maptype = getmaptype(&firstline[c + 1]);
     } else
-	maptype = SIMPLE;
+        maptype = SIMPLE;
 
     if (verbose) {
-	fprintf(stderr, "Maptype is ");
-	switch (maptype) {
-	case (SIMPLE):
-	    fprintf(stderr, "simple\n");
-	    break;
-	case (ALTITUDES):
-	    fprintf(stderr, "altitudes\n");
-	    break;
-	case (DESIGNATIONS):
-	    fprintf(stderr, "designations\n");
-	    break;
-	case (NATIONS):
-	    fprintf(stderr, "nations\n");
-	    break;
-	case (VEGETATIONS):
-	    fprintf(stderr, "vegetations\n");
-	    break;
-	default:
-	    break;
-	}
+        fprintf(stderr, "Maptype is ");
+        switch (maptype) {
+            case (SIMPLE):
+                fprintf(stderr, "simple\n");
+                break;
+            case (ALTITUDES):
+                fprintf(stderr, "altitudes\n");
+                break;
+            case (DESIGNATIONS):
+                fprintf(stderr, "designations\n");
+                break;
+            case (NATIONS):
+                fprintf(stderr, "nations\n");
+                break;
+            case (VEGETATIONS):
+                fprintf(stderr, "vegetations\n");
+                break;
+            default:
+                break;
+        }
     }
     /* Send the first part of the postscript file to outfile */
 
     fprintf(outfile, "%%!\n");
     fprintf(outfile, "%% Created by conqps version %s\n\n", VERSION);
     if (note)
-	fprintf(outfile, "\nnote\n\n");
+        fprintf(outfile, "\nnote\n\n");
     fprintf(outfile, "%% Here comes the map data:\n");
 
     /* Parse the map */
@@ -1001,9 +1004,9 @@ int main(int argc, char *argv[]) {
     /* Phu that was it.  */
 
     if (infile != NULL)
-	fclose(infile);
+        fclose(infile);
     if (outfile != NULL)
-	fclose(outfile);
+        fclose(outfile);
 
     return (0);
 }
