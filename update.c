@@ -1633,20 +1633,20 @@ void updsectors(void) {
                 curntn->poverty = 95;
             } else if (curntn->tciv < 100L) {
                 /* give some check on civilians */
-                curntn->poverty = (unsigned char)20;
+                curntn->poverty = safe_clamp_nation_attr(20);
             } else if (curntn->tgold / curntn->tciv < 30L) {
-                curntn->poverty = (unsigned char)(95L - curntn->tgold / curntn->tciv);
+                curntn->poverty = safe_clamp_nation_attr(95L - curntn->tgold / curntn->tciv);
             } else if (curntn->tgold / curntn->tciv < 80L) {
                 curntn->poverty =
-                    (unsigned char)(65L - (curntn->tgold / curntn->tciv - 30L) / 2L);
+                    safe_clamp_nation_attr(65L - (curntn->tgold / curntn->tciv - 30L) / 2L);
             } else if (curntn->tgold / curntn->tciv < 120L) {
                 curntn->poverty =
-                    (unsigned char)(40L - (curntn->tgold / curntn->tciv - 80L) / 4L);
+                    safe_clamp_nation_attr(40L - (curntn->tgold / curntn->tciv - 80L) / 4L);
             } else if (curntn->tgold / curntn->tciv < 200L) {
                 curntn->poverty =
-                    (unsigned char)(30L - (curntn->tgold / curntn->tciv - 120L) / 8L);
+                    safe_clamp_nation_attr(30L - (curntn->tgold / curntn->tciv - 120L) / 8L);
             } else {
-                curntn->poverty = (unsigned char)20;
+                curntn->poverty = safe_clamp_nation_attr(20);
             }
 
             /* charity increase to popularity */
