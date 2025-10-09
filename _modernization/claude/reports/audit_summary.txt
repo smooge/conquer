@@ -1,0 +1,42 @@
+=== PHASE 10.1 CHAR AUDIT SUMMARY ===
+Date: 2025-10-09
+Purpose: Comprehensive audit of char type usage for x86_64 portability
+
+FINDINGS:
+1. Plain char declarations: 347 total
+   - Variable declarations: 12
+   - Pointer declarations: 207
+   - Array declarations: 111
+   - Function parameters: 17
+
+2. Unsigned char casts: 49 occurrences
+   (Higher than estimated ~34 from GitHub Issue #10)
+
+3. ctype.h function usage: 23 calls
+   - is* functions: 20
+   - to* functions: 3
+
+CRITICAL CONTEXT:
+- aarch64: char is UNSIGNED (CHAR_MIN = 0)
+- x86_64: char is SIGNED (CHAR_MIN = -128)
+- 347 plain char declarations are platform-dependent!
+
+HIGH RISK PRIORITIES (from GitHub Issue #10):
+1. misc.c - Array indexing (lines 1805-1838)
+2. spew.c - ctype.h usage (line 1207)
+3. update.c - Calculations (lines 1628-1638)
+4. forms.c - User input (lines 837, 894-896)
+5. commands.c - Navy calculations (lines 778, 944, 958)
+6. reports.c - Navy calculations (lines 1210-1212)
+
+NEXT STEPS:
+1. Create char_classification.md spreadsheet
+2. Classify each char by category (A-E)
+3. Assign risk levels (HIGH/MEDIUM/LOW)
+4. Begin HIGH RISK fixes (misc.c, spew.c)
+
+AUDIT FILES CREATED:
+- char_audit_raw.txt (detailed line-by-line audit)
+- unsigned_char_casts.txt (all explicit casts)
+- ctype_usage.txt (ctype.h function calls)
+- audit_summary.txt (this file)

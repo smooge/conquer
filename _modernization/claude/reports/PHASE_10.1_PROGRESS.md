@@ -1,8 +1,8 @@
 # Phase 10.1 Progress Tracker
 
-**Last Updated**: 2025-10-09 14:10:00
-**Phase Status**: IN_PROGRESS (Infrastructure Complete)
-**Completion**: 15% (Infrastructure and baseline testing done)
+**Last Updated**: 2025-10-09 14:45:00
+**Phase Status**: IN_PROGRESS (Audit Complete, Ready for HIGH RISK Fixes)
+**Completion**: 30% (Infrastructure + Audit done, ready for fixes)
 
 ---
 
@@ -28,7 +28,20 @@
 | Progress Tracker | ✅ COMPLETE | _modernization/claude/reports/PHASE_10.1_PROGRESS.md | This file |
 | CMake Integration | ⏳ PENDING | CMakeLists.txt | Add test-char-signed target |
 
-**Infrastructure Complete**: Ready to begin audit (Task 2)
+**Infrastructure Complete**: ✅ **Tier 1 COMPLETE**
+
+## Audit Status (Tasks 2-3)
+
+| Component | Status | Location | Notes |
+|-----------|--------|----------|-------|
+| audit_char_declarations.sh | ✅ COMPLETE | _modernization/scripts/audit_char_declarations.sh | Finds all plain char declarations |
+| char_audit_raw.txt | ✅ COMPLETE | _modernization/claude/reports/char_audit_raw.txt | 347 plain char declarations found |
+| unsigned_char_casts.txt | ✅ COMPLETE | _modernization/claude/reports/unsigned_char_casts.txt | 49 casts found (not ~34!) |
+| ctype_usage.txt | ✅ COMPLETE | _modernization/claude/reports/ctype_usage.txt | 23 ctype.h function calls |
+| audit_summary.txt | ✅ COMPLETE | _modernization/claude/reports/audit_summary.txt | Summary of all findings |
+| char_classification.md | ✅ COMPLETE | _modernization/claude/reports/char_classification.md | HIGH RISK files classified |
+
+**Audit Complete**: ✅ **Tier 2 COMPLETE** - Ready for HIGH RISK fixes (Tier 3)
 
 ---
 
@@ -37,40 +50,56 @@
 | Metric | Count | Source | Notes |
 |--------|-------|--------|-------|
 | Total sign conversion warnings | 167 | CHAR_SIGNED_TEST_BASELINE.txt | With -fsigned-char -Wsign-conversion |
-| `(unsigned char)` casts | ~34 | GitHub Issue #10 estimate | Need to count with grep |
-| HIGH RISK files identified | 6 | PHASE_10.1_TODO.md | misc.c, spew.c, update.c, forms.c, commands.c, reports.c |
-| MEDIUM RISK files | TBD | Audit Task 2-3 | To be determined during audit |
-| LOW RISK files | TBD | Audit Task 2-3 | To be determined during audit |
+| `(unsigned char)` casts | **49** | unsigned_char_casts.txt | **Higher than estimated ~34!** |
+| Plain char declarations | **347** | char_audit_raw.txt | Vars:12, Ptrs:207, Arrays:111, Params:17 |
+| ctype.h function calls | **23** | ctype_usage.txt | is*:20, to*:3 |
+| HIGH RISK files identified | **6** | char_classification.md | misc.c, spew.c, update.c, forms.c, commands.c, reports.c |
+| HIGH RISK casts | **24** | char_classification.md | 49% of all casts (24 of 49) |
+| MEDIUM RISK casts | **25** | char_classification.md | Remaining casts in other files |
 | Test pass rate | 10/10 | Existing tests | Baseline before changes |
 
 ---
 
-## High-Risk Files (Priority 1) - From GitHub Issue #10
+## High-Risk Files (Priority 1) - From Audit
 
-| File | Status | Risk Category | Lines Affected | Warnings Before | Warnings After | Casts Before | Casts After | Commit | Session |
-|------|--------|---------------|----------------|-----------------|----------------|--------------|-------------|--------|---------|
-| misc.c | ⏳ PENDING | Array Indexing | 1805-1838 | TBD | - | TBD | - | - | - |
-| spew.c | ⏳ PENDING | ctype.h Usage | 1207 | TBD | - | TBD | - | - | - |
+| File | Status | Risk Category | Lines Affected | Casts Before | Casts After | Estimated Removed | Commit | Session |
+|------|--------|---------------|----------------|--------------|-------------|-------------------|--------|---------|
+| misc.c | ⏳ PENDING | Array Indexing (E) | 2407-2440 | 8 | - | 8 (100%) | - | - |
+| spew.c | ⏳ PENDING | ctype.h Usage (D) | 1244 | 1 | - | 1 (100%) | - | - |
+
+**Total HIGH RISK (Critical)**: 2 files, 9 casts, estimated 9 removed (100%)
 
 **Notes**:
-- misc.c: Array indexing with veg[], ele[] (negative index → undefined behavior)
-- spew.c: ctype.h functions with char (negative → undefined behavior per C standard)
+- misc.c: Array indexing with veg[], ele[] (lines 2407-2440, not 1805-1838!)
+  - Fix veg[] and ele[] declarations to unsigned char
+  - Remove 8 (unsigned char) casts
+- spew.c: ctype.h with isspace (line 1244, not 1207!)
+  - Fix end pointer or use temp variable
+  - Remove 1 (unsigned char) cast
 
 ---
 
-## Medium-Risk Files (Priority 2) - From GitHub Issue #10
+## Medium-Risk Files (Priority 2) - From Audit
 
-| File | Status | Risk Category | Lines Affected | Warnings Before | Warnings After | Casts Before | Casts After | Commit | Session |
-|------|--------|---------------|----------------|-----------------|----------------|--------------|-------------|--------|---------|
-| update.c | ⏳ PENDING | Calculations | 1628-1638 | TBD | - | TBD | - | - | - |
-| forms.c | ⏳ PENDING | User Input | 837, 894-896 | TBD | - | TBD | - | - | - |
-| commands.c | ⏳ PENDING | Navy Calculations | 778, 944, 958 | TBD | - | TBD | - | - | - |
-| reports.c | ⏳ PENDING | Navy Calculations | 1210-1212 | TBD | - | TBD | - | - | - |
+| File | Status | Risk Category | Lines Affected | Casts Before | Casts After | Estimated Removed | Commit | Session |
+|------|--------|---------------|----------------|--------------|-------------|-------------------|--------|---------|
+| update.c | ⏳ PENDING | Calculations (B) | 1636-1649 | 6 | - | 0-2 (~25%) | - | - |
+| forms.c | ⏳ PENDING | User Input (B) | 1005, 1063-1065 | 4 | - | 0-2 (~25%) | - | - |
+| commands.c | ⏳ PENDING | Navy Calc (B) | 856, 1037, 1057 | 3 | - | 0-1 (~15%) | - | - |
+| reports.c | ⏳ PENDING | Navy Calc (B) | 1255, 1257 | 2 | - | 0 (0%) | - | - |
+
+**Total MEDIUM RISK**: 4 files, 15 casts, estimated 0-5 removed (~20%)
 
 **Notes**:
-- update.c: Poverty calculation (95L - gold/civ) can go negative
-- forms.c: User input assignments may produce negative values
-- commands.c, reports.c: Navy crew calculations may go negative
+- update.c: Poverty calculations (95L - gold/civ) can go negative
+  - Add explicit bounds checking (clamp to 0-255)
+  - May keep casts with bounds check
+- forms.c: User input assignments (tax_rate, terror, popularity, reputation)
+  - Add input validation
+  - May keep casts for validated input
+- commands.c, reports.c: Navy crew calculations
+  - Add bounds checking for division results
+  - May keep casts with bounds check
 
 ---
 
@@ -79,12 +108,16 @@
 | Metric | Baseline | Current | Target | Status | % Complete |
 |--------|----------|---------|--------|--------|------------|
 | Sign conversion warnings | 167 | 167 | <20 | ⏳ PENDING | 0% |
-| `(unsigned char)` casts | ~34 | ~34 | <10 | ⏳ PENDING | 0% |
-| HIGH RISK files fixed | 0 | 0 | 2 | ⏳ PENDING | 0% |
+| `(unsigned char)` casts | 49 | 49 | <10 | ⏳ PENDING | 0% |
+| Plain char declarations audited | 0 | 347 | 347 | ✅ COMPLETE | 100% |
+| HIGH RISK files fixed | 0 | 0 | 2 | ⏳ NEXT | 0% |
 | MEDIUM RISK files fixed | 0 | 0 | 4 | ⏳ PENDING | 0% |
-| LOW RISK files documented | 0 | 0 | TBD | ⏳ PENDING | 0% |
+| HIGH RISK casts addressed | 0 | 0 | 9 | ⏳ NEXT | 0% |
+| MEDIUM RISK casts addressed | 0 | 0 | 15 | ⏳ PENDING | 0% |
 | Test pass rate | 10/10 | 10/10 | 10/10 | ✅ MAINTAINED | 100% |
-| Infrastructure complete | 0% | 100% | 100% | ✅ COMPLETE | 100% |
+| Tier 1: Infrastructure | 0% | 100% | 100% | ✅ COMPLETE | 100% |
+| Tier 2: Audit | 0% | 100% | 100% | ✅ COMPLETE | 100% |
+| Tier 3: HIGH RISK Fixes | 0% | 0% | 100% | ⏳ NEXT | 0% |
 
 ---
 
@@ -93,57 +126,52 @@
 | Session | Date | Time | Duration | Tasks Completed | Files Modified | Status | Context Used |
 |---------|------|------|----------|-----------------|----------------|--------|--------------|
 | INFRASTRUCTURE | 2025-10-09 | 14:00-14:15 | ~15 min | Created test_char_signed.sh, ran baseline | test_char_signed.sh (new) | ✅ COMPLETE | ~5% |
+| AUDIT | 2025-10-09 | 14:15-14:45 | ~30 min | Created audit scripts, classified HIGH RISK | 6 audit files created | ✅ COMPLETE | ~3% |
 
-**Total Time Invested**: ~15 minutes (infrastructure)
-**Remaining Estimate**: 6-7.5 hours (audit + fixes + validation + documentation)
+**Total Time Invested**: ~45 minutes (infrastructure + audit)
+**Remaining Estimate**: 5.25-7 hours (fixes + validation + documentation)
 
 ---
 
-## Next Steps (Task 2: Comprehensive Audit)
+## Next Steps (Tier 3: HIGH RISK Fixes) ⏳ **READY TO START**
 
 ### Immediate Actions
 
-1. **Task 2.1**: Create audit scripts
-   - Create `_modernization/scripts/audit_char_declarations.sh`
-   - Run audit to find all plain `char` declarations
-   - Save to `char_audit_raw.txt`
+**Task 4.1: Fix misc.c - Array Indexing** (Estimated: 45-60 minutes)
+1. Read misc.c lines 2407-2440 (veg[], ele[] array indexing)
+2. Find veg[] and ele[] declarations in data.h
+3. Change declarations from `char` to `unsigned char`
+4. Remove 8 `(unsigned char)` casts from misc.c
+5. Add documentation explaining char type choice
+6. Compile with `test_char_signed.sh misc.c`
+7. Run test suite (cmake + ctest)
+8. Git commit: "[PHASE-10.1] Fix misc.c char signedness (array indexing)"
 
-2. **Task 2.2**: Find existing `(unsigned char)` casts
-   - `grep -n "(unsigned char)" *.c > unsigned_char_casts.txt`
-   - Count total casts (verify ~34 from Issue #10)
-   - Identify files with highest cast density
+**Task 4.2: Fix spew.c - ctype.h Usage** (Estimated: 30 minutes)
+1. Read spew.c line 1244 (isspace with char)
+2. Analyze end pointer usage
+3. **Option A**: Change `char *end` to `unsigned char *end` (if only for ctype.h)
+4. **Option B**: Create temp `unsigned char ch = *end; isspace(ch);`
+5. Remove `(unsigned char)` cast
+6. Compile with `test_char_signed.sh spew.c`
+7. Run test suite
+8. Git commit: "[PHASE-10.1] Fix spew.c char signedness (ctype.h safety)"
 
-3. **Task 2.3**: Find ctype.h usage
-   - Find all `isspace`, `isdigit`, `isalpha`, etc. calls
-   - Cross-reference with char variables
-   - Flag HIGH RISK: ctype.h with plain char
-
-4. **Task 2.4**: Find array indexing with char
-   - Pattern: `array[char_variable]`
-   - Cross-reference with char declarations
-   - Flag HIGH RISK: array indexing with plain char
-
-5. **Task 3.1**: Create classification spreadsheet
-   - `_modernization/claude/reports/char_classification.md`
-   - Classify each char by category (A-E)
-   - Assign risk levels (HIGH/MEDIUM/LOW)
-   - Prioritize fixes
-
-**Estimated Time for Tasks 2-3**: 1-1.5 hours
+**Estimated Time for Tier 3 (HIGH RISK)**: 1.25-1.5 hours
 
 ---
 
 ## File Priority Tiers
 
-**Current Tier**: Tier 1 (Infrastructure) ✅ COMPLETE
+**Current Tier**: Tier 2 (Audit) ✅ COMPLETE
 
-**Next Tier**: Tier 2 (Audit)
+**Next Tier**: Tier 3 (HIGH RISK Fixes) ⏳ READY
 
 | Tier | Description | Tasks | Estimated Time | Status |
 |------|-------------|-------|----------------|--------|
-| 1 | Infrastructure | 1.1-1.3 | 1-1.5 hours | ✅ COMPLETE |
-| 2 | Audit | 2.1-2.4, 3.1 | 1-1.5 hours | ⏳ NEXT |
-| 3 | HIGH RISK Fixes | 4.1-4.2 | 2-2.5 hours | ⏳ PENDING |
+| 1 | Infrastructure | 1.1-1.3 | ~15 min | ✅ COMPLETE |
+| 2 | Audit | 2.1-2.4, 3.1 | ~30 min | ✅ COMPLETE |
+| 3 | HIGH RISK Fixes | 4.1-4.2 | 1.25-1.5 hours | ⏳ NEXT |
 | 4 | MEDIUM RISK Fixes | 5.1-5.4 | 2-2.5 hours | ⏳ PENDING |
 | 5 | LOW RISK Documentation | Deferred | TBD | ⏳ PENDING |
 | 6 | Validation | 6.1-6.2 | 30-45 min | ⏳ PENDING |
@@ -279,7 +307,7 @@ Phase 10.1 is complete when:
 
 ---
 
-**Last Updated**: 2025-10-09 14:10:00
-**Next Update**: After completing Tier 2 (Audit)
-**Current Focus**: Create audit scripts and classification spreadsheet
-**Session**: INFRASTRUCTURE ✅ COMPLETE
+**Last Updated**: 2025-10-09 14:45:00
+**Next Update**: After completing Tier 3 (HIGH RISK Fixes)
+**Current Focus**: Begin HIGH RISK fixes (misc.c, spew.c)
+**Session**: AUDIT ✅ COMPLETE → Tier 3 (HIGH RISK) ⏳ READY
