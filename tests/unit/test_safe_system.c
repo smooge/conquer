@@ -29,6 +29,9 @@
  * Copyright (C) 2025 Juan Manuel Méndez Rey (Vejeta) - Licensed under GPL v3
  */
 
+/* Feature test macro for nftw() - POSIX.1-2008 */
+#define _XOPEN_SOURCE 700
+
 #include "unity.h"
 #include "safe_system.h"
 #include <stdio.h>
@@ -39,6 +42,7 @@
 #include <time.h>
 #include <glob.h>
 #include <errno.h>
+#include <ftw.h>
 
 /* Mock implementation of check_lock() for unit testing */
 int check_lock(const char *name, int acquire) {
@@ -64,9 +68,38 @@ void setUp(void) {
     mkdir(TEST_DIR, 0755);
 }
 
+/*
+ * remove_callback - Helper for nftw() to remove files and directories
+ *
+ * Called by nftw() for each file system entry during tree walk.
+ * Removes the entry (file or directory) using the remove() function.
+ *
+ * Parameters:
+ *   fpath - Full path to the file/directory
+ *   sb - Stat buffer (unused)
+ *   typeflag - Type of entry (unused)
+ *   ftwbuf - FTW buffer (unused)
+ *
+ * Returns:
+ *   0 on success, result of remove() on failure
+ */
+static int remove_callback(const char *fpath, const struct stat *sb,
+                          int typeflag, struct FTW *ftwbuf) {
+    (void)sb;       /* Suppress unused parameter warning */
+    (void)typeflag; /* Suppress unused parameter warning */
+    (void)ftwbuf;   /* Suppress unused parameter warning */
+    return remove(fpath);
+}
+
 void tearDown(void) {
-    /* Clean up test files and directory */
-    system("rm -rf " TEST_DIR);
+    /*
+     * Clean up test directory using POSIX nftw() for recursive removal.
+     * This replaces system("rm -rf " TEST_DIR) with safe native C code.
+     *
+     * FTW_DEPTH: Process directory contents before the directory itself
+     * FTW_PHYS: Don't follow symbolic links (security consideration)
+     */
+    nftw(TEST_DIR, remove_callback, 64, FTW_DEPTH | FTW_PHYS);
 }
 
 /*
@@ -807,7 +840,7 @@ int main(void) {
 
     printf("\n=== Safe System Test Summary ===\n");
     printf("Functions Tested: 4 (append_file_to_file, write_timestamp_to_file, secure_file_delete, sort_file_in_place)\n");
-    printf("Total Test Cases Run: %d\n", Unity.NumberOfTests);
+    printf("Total Test Cases Run: %lu\n", Unity.NumberOfTests);
     printf("Security Features: Command injection prevention, safe file operations\n");
     printf("Coverage: Normal operations, error conditions, security validation, sorting algorithms\n");
 

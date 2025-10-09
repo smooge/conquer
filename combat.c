@@ -36,7 +36,6 @@
 /* ================= EXTERNAL DEPENDENCIES ================= */
 
 extern	FILE	*fpmsg;		/* Message file for game communications */
-extern	short	country;	/* Current nation context for operations */
 
 /* ================= GLOBAL COMBAT STATE VARIABLES ================= */
 /*
@@ -152,6 +151,7 @@ static int	count=0;                /* Total number of units in battle sector */
  * - Performance scales with map size and nation count
  * - Thread safety issues due to global variable usage
  * - Consider refactoring to use context structure
+  * @last_documented: 2025-09-18
  */
 void combat(void) {
 	register int i,j;
@@ -384,6 +384,7 @@ void combat(void) {
  * - Complex interaction between multiple game systems
  * - Performance critical for large battles
  * - Historical combat balance maintained for game compatibility
+  * @last_documented: 2025-09-18
  */
 void fight (void) {
 	int	roll,strength,fortdam=FALSE;
@@ -941,6 +942,7 @@ printf("I AM VERY CONFUSED - PLEASE HELP... combat.c\n");
  * - Historical balance values preserved for compatibility
  * - Consider caching results for performance in large battles
  * - Unit type arrays must be properly initialized
+  * @last_documented: 2025-09-18
  */
 int cbonus(int num) {
 	short	armynum;
@@ -1093,6 +1095,7 @@ int cbonus(int num) {
  *   - Retreat failure handling: Forces retreat to capital with 30-75% casualties
  *   - Diplomatic integration: Respects alliance/war status for safe passage
  *   - Town/city sectors block retreats (defensive advantage mechanic)
+  * @last_documented: 2025-09-18
  */
 void fdxyretreat (void) {	/* finds retreat location */
 	int	x,y,nation=(-1);
@@ -1185,6 +1188,7 @@ void fdxyretreat (void) {	/* finds retreat location */
  *   - Naval retreat limitation: Represents inability to retreat ships overland
  *   - Casualty asymmetry: Naval units suffer retreat losses, land units don't
  *   - Used for: Battle retreats, mercenary desertion, diplomatic withdrawals
+  * @last_documented: 2025-09-18
  */
 void retreat ( int unitnum ){	/* if -1 then normal, else retreat only unit ismerc */
 	int cnum;
@@ -1199,14 +1203,17 @@ void retreat ( int unitnum ){	/* if -1 then normal, else retreat only unit ismer
 				ntn[owner[cnum]].arm[unit[cnum]].sold *= 85;
 				ntn[owner[cnum]].arm[unit[cnum]].sold /= 100;
 			} else {
-				ntn[owner[cnum]].arm[unit[cnum]].xloc = safe_clamp_uchar(retreatx);
-				ntn[owner[cnum]].arm[unit[cnum]].yloc = safe_clamp_uchar(retreaty);
+				ntn[owner[cnum]].arm[unit[cnum]].xloc = safe_clamp_nation_attr(retreatx);
+				ntn[owner[cnum]].arm[unit[cnum]].yloc = safe_clamp_nation_attr(retreaty);
 			}
 		}
 		if( unitnum != (-1) ) return;
 	}
 }
 
+#define QWAR 1
+#define QGAL 2
+#define QMER 3
 
 /*
  * navalcbt - Execute complete naval combat resolution for all fleets in sector
@@ -1286,15 +1293,8 @@ void retreat ( int unitnum ){	/* if -1 then normal, else retreat only unit ismer
  *   - Mail integration: Comprehensive battle reporting to all participants
  *   - Ship type balance: Each ship type has distinct tactical role
  *   - Combined arms: Army-navy cooperation through embarked forces
+ * @last_documented: 2025-10-08
  */
-
-/*SUBROUTINE TO RUN NAVAL COMBAT ON ALL SHIPS */
-/* quick define for easier reading */
-#define QWAR 1
-#define QGAL 2
-#define QMER 3
-/* just like fight, this takes array of owner,side,unit and calculates */
-/* a random battle based on the strengths of the combatants.           */
 void navalcbt (void) {
 	int acrew=0,dcrew=0;	/*a's and d's crew and soldier strength*/
 	int ahold=0,dhold=0;	/*a's and d's warship strength*/
@@ -1831,8 +1831,8 @@ void navalcbt (void) {
  *   - Error handling: Silent failure if no valid recipient found
  *   - Integration: Called from navalcbt() during combat resolution
  *   - Ship types: Supports all three naval vessel categories
+ * @last_documented: 2025-10-08
  */
-/* routine to distribute a captured ship */
 void capture (int type, int to, int shipsize, int holdcount) {
 	int i,nvynum;
 	struct s_nation *saventn=curntn;
@@ -1932,8 +1932,8 @@ void capture (int type, int to, int shipsize, int holdcount) {
  *   - Output optimization: Skips empty reports to avoid clutter
  *   - Formatting consistency: Standardized naval battle report format
  *   - User experience: Clear, readable battle outcome presentation
+ * @last_documented: 2025-10-08
  */
-/* routine to display combat results */
 void show_ships (char *who, char *what, int war, int gal, int mer) {
 	if (war+gal+mer>0) {
 		fprintf(fm,"%s ships %s: ",who,what);

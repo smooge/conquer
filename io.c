@@ -123,9 +123,6 @@
 #include "patchlevel.h"
 #include "safe_convert.h"
 
-extern short redraw; 		/*redraw map in this turn if redraw is a 1*/
-extern short hilmode,dismode;			/*display state*/
-
 /*
  * getspace - Allocate memory for core game data structures
  *
@@ -166,6 +163,7 @@ extern short hilmode,dismode;			/*display state*/
  *   - No return value checking needed as m2alloc() handles failures internally
  *   - Safe to call multiple times for reallocation scenarios
  *   - Critical for game initialization and scenario loading operations
+  * @last_documented: 2025-09-20
  */
 void
 getspace(void)
@@ -226,6 +224,7 @@ static char **mapseen;
  *   - Navy condition checks for any ship type (merchant, war, gunboat)
  *   - Performance scales with map size and number of military units
  *   - Critical for map printing functions and strategic game balance
+  * @last_documented: 2025-09-20
  */
 void mapprep (void) {
 	int armynum, nvynum;
@@ -321,6 +320,7 @@ void mapprep (void) {
  *   - Deity view (country==0) shows "World" instead of nation name
  *   - Map dimensions are fixed by compile-time MAPX/MAPY constants
  *   - Performance is O(MAPX*MAPY) with simple character output per sector
+  * @last_documented: 2025-09-20
  */
 void printele (void) {
 	register int X, Y;
@@ -386,6 +386,7 @@ void printele (void) {
  *   - Useful for territorial analysis and diplomatic intelligence
  *   - Output format matches other map printing functions for consistency
  *   - Performance is O(MAPX*MAPY) with simple character output logic
+  * @last_documented: 2025-09-20
  */
 void pr_ntns (void) {
 	register int X, Y;
@@ -458,6 +459,7 @@ void pr_ntns (void) {
  *   - NINJA enables offensive intelligence gathering capabilities
  *   - Undesignated sectors show natural terrain for reference
  *   - Information warfare balance between concealment and revelation
+  * @last_documented: 2025-09-20
  */
 void pr_desg (void) {
 	register int X, Y;
@@ -533,6 +535,7 @@ void pr_desg (void) {
  *   - Important for strategic planning and resource management
  *   - Simplest of the map printing functions in terms of visibility rules
  *   - Performance is O(MAPX*MAPY) with straightforward character output
+  * @last_documented: 2025-09-20
  */
 void printveg (void) {
 	register int X, Y;
@@ -606,6 +609,7 @@ void printveg (void) {
  *   - Uses creat() which creates file with specified permissions
  *   - Terminates on any error to prevent partial/corrupted saves
  *   - Essential counterpart to readdata() for complete persistence system
+  * @last_documented: 2025-09-20
  */
 void writedata (void) {
 	long	bytes;
@@ -692,6 +696,7 @@ void writedata (void) {
  *   - Comprehensive error reporting helps diagnose save file corruption or version issues
  *   - Critical for game initialization and session restoration functionality
  *   - File format must match writedata() output exactly for successful loading
+  * @last_documented: 2025-09-20
  */
 void readdata (void) {
 	int fd;
@@ -801,6 +806,7 @@ void readdata (void) {
  *   - Automatically triggers visibility updates after position changes
  *   - Essential for large world navigation where map exceeds screen size
  *   - Coordinates with display system for efficient partial redraws
+  * @last_documented: 2025-09-20
  */
 void offmap (void) {
 	/*set offset offsets can not be < 0*/
@@ -923,6 +929,7 @@ void offmap (void) {
  *   - Commonly used after jump commands or when context is needed
  *   - Provides immediate visual feedback for player orientation
  *   - Part of the XYZZY enhanced display system
+  * @last_documented: 2025-09-20
  */
 void centermap (void) {
 	int xx,yy;
@@ -997,6 +1004,7 @@ void centermap (void) {
  *   - Error handling provides clear feedback for boundary violations
  *   - Supports both automated (capitals) and manual (coordinates) navigation
  *   - Critical for game management and strategic oversight functionality
+  * @last_documented: 2025-09-20
  */
 void jump_to (int home) {
 	int i,j,done;
@@ -1127,6 +1135,7 @@ void jump_to (int home) {
  *   - Essential for diplomatic intelligence and strategic planning
  *   - Provides comprehensive overview of world power structure
  *   - Used by both players and administrators for game state assessment
+  * @last_documented: 2025-09-20
  */
 void printscore (void) {
 	int i;
@@ -1245,6 +1254,7 @@ void printscore (void) {
  *   - Integration with food system prevents impossible population concentrations
  *   - Essential for preventing unrealistic population invulnerability
  *   - Provides dramatic feedback for major military and economic disruptions
+  * @last_documented: 2025-09-20
  */
 void flee (int x, int y, int isupd, int slaver) {
 	int count=0;	/*count is number of acceptable sectors to go to */
@@ -1380,6 +1390,7 @@ void flee (int x, int y, int isupd, int slaver) {
  *   - Logging output assists in scenario debugging and verification
  *   - Critical for dynamic world generation and campaign management
  *   - Enables separation of game logic from world data configuration
+  * @last_documented: 2025-09-20
  */
 int readmap (void) {
 	FILE	*mapfile;
@@ -1387,8 +1398,9 @@ int readmap (void) {
 	register int x,y;
 
 	/* read in ele.map */
-	strcpy(line,scenario);
-	strcat(line,".ele");
+	strncpy(line, scenario, sizeof(line));
+	line[sizeof(line) - 1] = '\0';
+	strncat(line, ".ele", sizeof(line) - strlen(line) - 1);
 	if ((mapfile=fopen(line,"r"))==NULL) {
 		fprintf(stderr,"error on read of %s file\n",line);
 		return(TRUE);
@@ -1405,8 +1417,9 @@ int readmap (void) {
 	fclose(mapfile);
 
 	/* read in veg.map */
-	strcpy(line,scenario);
-	strcat(line,".veg");
+	strncpy(line, scenario, sizeof(line));
+	line[sizeof(line) - 1] = '\0';
+	strncat(line, ".veg", sizeof(line) - strlen(line) - 1);
 	if ((mapfile=fopen(line,"r"))==NULL) {
 		fprintf(stderr,"error on read of %s file\n",line);
 		return(TRUE);
@@ -1426,95 +1439,9 @@ int readmap (void) {
 #endif /* ADMIN */
 
 /*
- * m2alloc - Two-dimensional array memory allocator utility
- *
- * Provides a convenient interface for allocating contiguous two-dimensional
- * arrays in C, overcoming the language's limitations in dynamic multi-dimensional
- * array allocation. This function creates properly aligned arrays that can be
- * accessed using standard array notation (array[row][col]) while ensuring
- * memory efficiency through contiguous allocation patterns.
- *
- * Allocation Strategy:
- * 1. Single malloc() call for all required memory (pointers + data)
- * 2. Pointer array construction for row indexing
- * 3. Contiguous data layout for cache efficiency
- * 4. Proper alignment for all data types through entrysize parameter
- * 5. Error handling with program termination on allocation failure
- *
- * Memory Layout:
- * - First section: Array of row pointers (nrows * sizeof(char*))
- * - Second section: Actual data storage (nrows * ncols * entrysize)
- * - Row pointers calculated to point into data section
- * - Enables standard array[i][j] syntax for access
- *
- * The function includes comprehensive error reporting and terminates the
- * program if memory allocation fails, ensuring that allocation failures
- * are immediately detected rather than causing silent corruption later.
- * This aggressive error handling is appropriate for game systems where
- * memory allocation failure indicates a fundamental system problem.
- *
- * Parameters:
- *   nrows - Number of rows in the two-dimensional array
- *   ncols - Number of columns in each row
- *   entrysize - Size in bytes of each individual array element
- *
- * Returns:
- *   char** - Pointer to allocated array (can be cast to appropriate type)
- *
- * Side Effects:
- *   - Allocates memory using malloc() that must be freed by caller
- *   - Terminates program via abrt() if allocation fails
- *   - Writes error message to stdout on allocation failure
- *   - Modifies allocated memory to construct pointer array structure
- *
- * Testing Notes:
- *   Category: A (Unit) - Self-contained memory allocation utility
- *   Approach: Unit tests with various array sizes and element types
- *   Key Tests: Allocation success, pointer arithmetic, error handling, memory layout
- *   Dependencies: Standard library malloc(), program termination functions
- *   Mock Requirements: Memory allocation mocking, error condition simulation
- *   Complexity: Simple - Straightforward allocation with pointer arithmetic
- *
- * Notes:
- *   - Essential utility for dynamic game world arrays (sct, occ, movecost)
- *   - Contiguous allocation improves cache performance for large arrays
- *   - Single allocation/free cycle simplifies memory management
- *   - Generic interface supports any data type through entrysize parameter
- *   - Error handling prevents silent allocation failures
- *   - Widely used throughout game system for dynamic data structures
- *   - Critical infrastructure for scalable world sizes
- *   - Enables efficient two-dimensional array access patterns
+ * NOTE: m2alloc() and m2alloc_safe() functions have been moved to m2alloc.c
+ * for better testability and modularity. See m2alloc.c for implementation.
  */
-char ** m2alloc (
-    int nrows,		/* row dimension */
-    int ncols,		/* column dimension */
-    int entrysize	/* # bytes in items to be stored */
-) {
-	char	**baseaddr;
-	int	j;
-	size_t row_data_size = (size_t)ncols * (size_t)entrysize;  /* Total data per row */
-	size_t total_size = (size_t)nrows * sizeof(char *) + (size_t)nrows * row_data_size;
-
-	/* Suppress analyzer warning for intentional pointer+data allocation pattern */
-	#pragma GCC diagnostic push
-	#pragma GCC diagnostic ignored "-Wanalyzer-allocation-size"
-	baseaddr = (char **) malloc(total_size);
-	#pragma GCC diagnostic pop
-
-	if( baseaddr == (char **) NULL ) {
-		printf("OOPS - cannot allocate %d by %d blocks of %d bytes\n",nrows,ncols,entrysize);
-		abrt()
-	}
-
-	/* Update entrysize for the rest of the function (backward compatibility) */
-	entrysize = (int)row_data_size;
-	if(nrows>0){
-		*baseaddr = (char *) (baseaddr + nrows);
-		for(j=1; j<nrows; j++)
-			baseaddr[j] = baseaddr[j-1] + entrysize;
-	}
-	return(baseaddr);
-}
 
 /*
  * get_pass - Secure password input with character masking
@@ -1576,6 +1503,7 @@ char ** m2alloc (
  *   - Essential for multi-user game system authentication
  *   - Return value enables password length validation by callers
  *   - Proper string handling ensures safe integration with authentication systems
+  * @last_documented: 2025-09-20
  */
 int get_pass (char *str) {
 	char ch;

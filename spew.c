@@ -118,6 +118,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <sysexits.h>
+#include <stdint.h>
 #include "header.h"
 #include "data.h"
 #include "safe_convert.h"
@@ -249,6 +251,7 @@ static int compare_classes(const void *a, const void *b);
  *   Dependencies: Filesystem access, DEFAULTDIR/DEFFILE configuration, random generator
  *   Mock Requirements: Filesystem mocking, rules file fixtures, output stream capture
  *   Complexity: Moderate - File I/O and text processing with multiple error paths
+  * @last_documented: 2025-09-20
  */
 void makemess(int count, FILE *output)
 {
@@ -270,7 +273,8 @@ void makemess(int count, FILE *output)
     }
 
     /* Generate the requested number of messages */
-    strcpy(main_class, "MAIN/ ");
+    strncpy(main_class, "MAIN/ ", sizeof(main_class));
+    main_class[sizeof(main_class) - 1] = '\0';
     for (i = 0; i < count; i++) {
         generate_text(main_class, ' ', output);
         if (i < count - 1) {
@@ -321,7 +325,8 @@ void makemess(int count, FILE *output)
  * ERROR HANDLING STRATEGY:
  * ======================
  * - File access failures return -1 with errno preserved
- * - Memory allocation failures cleanup partial data and return -1
+ * - Overflow detection prevents allocation and returns -1 with error message
+ * - Memory allocation failures cleanup partial data and return -1 with error message
  * - Invalid format detection produces stderr messages and exits gracefully
  * - Partial success is not allowed - either complete success or total failure
  *
@@ -360,6 +365,14 @@ void makemess(int count, FILE *output)
  *   - Modifies global classes array with sorted class data
  *   - May output error messages to stderr on parsing failures
  *
+ * Memory Management:
+ *   - Allocates global classes array using calloc() (MAX_CLASSES * sizeof(struct text_class))
+ *   - Allocates definition structures for each message template via parse_definition()
+ *   - Allocates string copies for class names and variant lists via duplicate_string()
+ *   - **Memory freed by cleanup_memory()** when message system is deinitialized
+ *   - Returns -1 on failure (partial allocations are cleaned up before return)
+ *   - Total allocation: ~300 classes + definitions + strings (varies by rules file)
+ *
  * Testing Notes:
  *   Category: B (Integration) - Requires filesystem access and file fixtures
  *   Approach: Integration testing with various rules file formats and error conditions
@@ -375,9 +388,17 @@ static int load_rules_file(const char *filename)
         return -1;
     }
 
-    /* Allocate memory for classes */
+    /* Allocate memory for classes - check for overflow first */
+    if (MAX_CLASSES > SIZE_MAX / sizeof(struct text_class)) {
+        fprintf(stderr, "load_rules_file: Array allocation size overflow\n");
+        fclose(rules_file);
+        return -1;
+    }
+
     classes = calloc(MAX_CLASSES, sizeof(struct text_class));
     if (!classes) {
+        fprintf(stderr, "load_rules_file: calloc(%d, %zu) failed\n",
+                MAX_CLASSES, sizeof(struct text_class));
         fclose(rules_file);
         return -1;
     }
@@ -616,16 +637,10 @@ static int parse_class_header(const char *line, struct text_class *cls)
  * - Text length limited by MAX_DEF_LEN for memory safety
  * - Input text copied with escape processing applied
  *
- * MEMORY ALLOCATION:
- * ================
- * - Definition structure allocated dynamically
- * - Processed text string allocated via duplicate_string()
- * - Memory allocation failures return NULL
- * - Caller responsible for linking into class definition list
- *
  * ERROR HANDLING STRATEGY:
  * ======================
- * - Memory allocation failures return NULL (graceful degradation)
+ * - NULL parameter validation: exits with EX_SOFTWARE (parameter error)
+ * - Memory allocation failures exit with EX_SOFTWARE (critical failure)
  * - Invalid weight syntax defaults to weight 1
  * - Text overflow truncated at MAX_DEF_LEN boundary
  * - Malformed escape sequences processed as literal text
@@ -634,40 +649,59 @@ static int parse_class_header(const char *line, struct text_class *cls)
  * ==================
  * - Called by load_rules_file() for each definition line
  * - Returns structure for linking into class definition chain
- * - NULL return indicates memory allocation failure or empty line
+ * - Always returns valid structure or exits program on failure
  * - Weight used for cumulative probability calculation by caller
  *
  * Parameters:
  *   line - Definition line text to parse (must not be NULL)
  *
  * Returns:
- *   Pointer to allocated definition structure on success, NULL on failure
+ *   Pointer to allocated definition structure on success (never returns on failure)
  *
  * Side Effects:
  *   - Allocates memory for definition structure and text content
+ *   - May exit program with EX_SOFTWARE on allocation failure
+ *   - Outputs error messages to stderr on failure conditions
  *   - Processes escape sequences in static buffer
  *   - No global state modification
- *   - No error messages output (graceful failure handling)
+ *
+ * Memory Management:
+ *   - Allocates definition structure using malloc() (sizeof(struct definition))
+ *   - Allocates processed text string via duplicate_string()
+ *   - **Caller responsible for linking into class definition list**
+ *   - Memory freed by cleanup_memory() during system deinitialization
+ *   - Exits program with EX_SOFTWARE on allocation failure (never returns NULL)
+ *   - Total allocation per definition: ~32 bytes + message text length
  *
  * Testing Notes:
  *   Category: A (Unit) - Isolated parsing with clear input/output
  *   Approach: Unit tests with various definition formats and edge cases
- *   Key Tests: Weight parsing, escape sequences, memory allocation, text limits
+ *   Key Tests: NULL parameter, weight parsing, escape sequences, memory allocation, text limits
  *   Dependencies: duplicate_string() function, malloc availability
- *   Mock Requirements: malloc failure injection, MAX_DEF_LEN boundary testing
+ *   Mock Requirements: malloc failure injection, MAX_DEF_LEN boundary testing, NULL parameter handling
  *   Complexity: Moderate - Text processing with multiple parsing states
  */
 static struct definition *parse_definition(const char *line)
 {
     struct definition *def;
-    const char *p = line;
+    const char *p;
     int weight = 1; /* default weight */
     static char processed_text[MAX_DEF_LEN];
     char *out = processed_text;
 
+    /* Validate parameter */
+    if (!line) {
+        fprintf(stderr, "parse_definition: NULL parameter\n");
+        exit(EX_SOFTWARE);
+    }
+
+    p = line;
+
     def = malloc(sizeof(struct definition));
     if (!def) {
-        return NULL;
+        fprintf(stderr, "parse_definition: malloc(%zu) failed\n",
+                sizeof(struct definition));
+        exit(EX_SOFTWARE);
     }
 
     /* Check for weight specification */
@@ -1186,7 +1220,8 @@ static int read_line(void)
 
     do {
         if (!fgets(input_line, MAX_LINE_LEN, rules_file)) {
-            strcpy(input_line, "%%"); /* EOF marker */
+            strncpy(input_line, "%%", MAX_LINE_LEN); /* EOF marker */
+            input_line[MAX_LINE_LEN - 1] = '\0';
             return 0;
         }
 
@@ -1342,23 +1377,25 @@ static int compare_classes(const void *a, const void *b)
  * - Exact sizing: Allocates precisely strlen(str) + 1 bytes
  * - Null termination: Ensures proper string termination in allocated memory
  * - Ownership transfer: Caller assumes responsibility for freeing allocated memory
- * - Failure handling: Returns NULL on allocation failure (graceful degradation)
+ * - Failure handling: Exits program with EX_SOFTWARE on allocation failure
  *
  * STRING PROCESSING ALGORITHM:
  * ==========================
- * 1. Input validation: Check for NULL input pointer
- * 2. Length calculation: Determine string length using strlen()
- * 3. Memory allocation: Allocate buffer for content plus null terminator
- * 4. Content copying: Transfer string content using strcpy()
- * 5. Return management: Provide allocated pointer or NULL on failure
+ * 1. Input validation: Check for NULL input pointer (exits on NULL)
+ * 2. Length validation: Ensure string length does not exceed MAX_DEF_LEN
+ * 3. Overflow prevention: Verify allocation size does not overflow size_t
+ * 4. Memory allocation: Allocate buffer for content plus null terminator
+ * 5. Allocation check: Verify malloc() success (exits on failure)
+ * 6. Content copying: Transfer string content using memcpy()
  *
  * ERROR HANDLING APPROACH:
  * ======================
- * - Null input handling: Returns NULL immediately for NULL input
- * - Allocation failure: Returns NULL when malloc() fails
- * - No error messages: Silent failure allows caller to handle gracefully
- * - Memory safety: No partial allocation or corruption on failure
- * - Consistent behavior: Always returns valid pointer or NULL
+ * - Null input handling: Exits with EX_SOFTWARE for NULL input
+ * - Length limit enforcement: Exits if string exceeds MAX_DEF_LEN
+ * - Overflow prevention: Exits if allocation size would overflow
+ * - Allocation failure: Exits with EX_SOFTWARE when malloc() fails
+ * - Error messages: All error conditions report to stderr before exit
+ * - Fail-fast strategy: Critical allocation failures terminate program immediately
  *
  * INTEGRATION CONTEXT:
  * ==================
@@ -1409,16 +1446,25 @@ static int compare_classes(const void *a, const void *b)
  * - Memory ownership: Caller must free returned pointers
  *
  * Parameters:
- *   str - Source string to duplicate (NULL input returns NULL)
+ *   str - Source string to duplicate (must not be NULL, must not exceed MAX_DEF_LEN)
  *
  * Returns:
- *   Pointer to allocated string copy on success, NULL on failure or NULL input
+ *   Pointer to allocated string copy on success (never returns on failure)
  *
  * Side Effects:
  *   - Allocates memory via malloc() that caller must free
+ *   - May exit program with EX_SOFTWARE on validation or allocation failure
+ *   - Outputs error messages to stderr on failure conditions
  *   - No modification of input string or global state
- *   - No error message output (silent operation)
  *   - Memory allocation affects heap state
+ *
+ * Memory Management:
+ *   - Allocates string copy using malloc() (strlen(str) + 1 bytes)
+ *   - **Caller owns allocated memory** until freed by cleanup_memory()
+ *   - Validates string length (max MAX_DEF_LEN = 1000 bytes)
+ *   - Prevents allocation overflow (checks SIZE_MAX before allocation)
+ *   - Exits program with EX_SOFTWARE on allocation failure (never returns NULL)
+ *   - Memory freed during system deinitialization by cleanup_memory()
  *
  * Testing Notes:
  *   Category: A (Unit) - Simple utility function with clear behavior
@@ -1430,13 +1476,34 @@ static int compare_classes(const void *a, const void *b)
  */
 static char *duplicate_string(const char *str)
 {
-    if (!str) return NULL;
-
-    int len = safe_size_to_int(strlen(str));
-    char *copy = malloc(safe_int_to_size(len + 1));
-    if (copy) {
-        strcpy(copy, str);
+    if (!str) {
+        fprintf(stderr, "duplicate_string: NULL parameter\n");
+        exit(EX_SOFTWARE);
     }
+
+    /* Validate string length is within reasonable bounds */
+    size_t str_len = strlen(str);
+    if (str_len > MAX_DEF_LEN) {
+        fprintf(stderr, "duplicate_string: String too long (%zu > %d)\n",
+                str_len, MAX_DEF_LEN);
+        exit(EX_SOFTWARE);
+    }
+
+    /* Check for allocation size overflow (len + 1 must fit in size_t) */
+    if (str_len >= SIZE_MAX) {
+        fprintf(stderr, "duplicate_string: String length overflow\n");
+        exit(EX_SOFTWARE);
+    }
+
+    int len = safe_size_to_int(str_len);
+    char *copy = malloc(safe_int_to_size(len + 1));
+    if (!copy) {
+        fprintf(stderr, "duplicate_string: malloc(%zu) failed\n",
+                safe_int_to_size(len + 1));
+        exit(EX_SOFTWARE);
+    }
+
+    memcpy(copy, str, safe_int_to_size(len + 1));
     return copy;
 }
 
@@ -1588,9 +1655,43 @@ static void cleanup_memory(void)
 }
 
 #else
-/* If SPEW is not defined, provide stub implementation */
+/*
+ * makemess - Stub implementation when SPEW feature is disabled
+ *
+ * Provides empty stub implementation of makemess() for builds where
+ * SPEW feature is disabled. This allows the function to be called
+ * without compilation errors, but performs no operations. The real
+ * implementation (line 256) is available when SPEW is defined.
+ *
+ * Parameters:
+ *   count - Number of messages to generate (ignored in stub)
+ *   output - Output file stream (ignored in stub)
+ *
+ * Returns:
+ *   void
+ *
+ * Side Effects:
+ *   None (stub does nothing)
+ *
+ * Testing Notes:
+ *   Category: E (Skip Testing) - Stub implementation with no functionality
+ *   Approach: No testing needed - intentionally does nothing
+ *   Key Tests: N/A - no behavior to test
+ *   Dependencies: None
+ *   Mock Requirements: None
+ *   Complexity: Trivial - Empty stub
+ *
+ * Notes:
+ *   - Only compiled when SPEW is NOT defined
+ *   - Real implementation at line 256 (when SPEW is defined)
+ *   - Allows code to call makemess() regardless of SPEW setting
+ *   - Prevents link errors in non-SPEW builds
+ * @last_documented: 2025-10-08
+ */
 void makemess(int count, FILE *output)
 {
+    (void)count;   /* Suppress unused parameter warning */
+    (void)output;  /* Suppress unused parameter warning */
     /* Do nothing if SPEW is disabled */
 }
 #endif /* SPEW */

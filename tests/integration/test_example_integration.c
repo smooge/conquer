@@ -33,7 +33,8 @@ void test_file_operations_integration(void) {
     char buffer[256];
 
     /* Simulate writing to a buffer (instead of file) */
-    strcpy(buffer, test_data);
+    strncpy(buffer, test_data, sizeof(buffer) - 1);
+    buffer[sizeof(buffer) - 1] = '\0';
 
     /* Verify the "file operation" worked */
     TEST_ASSERT_EQUAL_STRING(test_data, buffer);

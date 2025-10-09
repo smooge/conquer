@@ -113,8 +113,6 @@
 #include "data.h"
 #include "safe_convert.h"
 
-extern short redraw;
-
 #define RPT_LINES 11
 #define RPT_COLS 10
 #define BUF_LINES 10
@@ -201,6 +199,7 @@ extern short redraw;
  *   - Complex state machine for interactive command processing
  *   - Critical for empire management and military strategy
  *   - Integration point for multiple game systems (economy, military, trade)
+  * @last_documented: 2025-09-20
  */
 void
 armyrpt(int repnum)
@@ -593,6 +592,7 @@ armyrpt(int repnum)
  *   - Integration hub connecting economic, military, and policy systems
  *   - Red highlighting warns of potential food shortages
  *   - Supports both player and administrative (god mode) perspectives
+  * @last_documented: 2025-09-20
  */
 void
 budget (void)
@@ -782,6 +782,7 @@ budget (void)
  *   - Debug file creation aids in production calculation verification
  *   - Critical for preventing empire collapse due to resource shortages
  *   - Integration hub connecting production, military, and economic systems
+  * @last_documented: 2025-09-20
  */
 void
 produce (void)
@@ -1003,6 +1004,7 @@ static char *fltstr[]= {"Light", "Medium", "Heavy"};
  *   - Complex validation ensures game balance and logical constraints
  *   - Integration point for naval, military, and economic systems
  *   - Extensive use of packed data structures for efficient ship storage
+  * @last_documented: 2025-09-20
  */
 void
 fleetrpt (void)

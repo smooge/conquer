@@ -35,6 +35,12 @@ include(CompilerWarnings)
 # Phase 5.2: Dual compilation system implementation
 include(DualCompilation)
 
+# Phase 8.4: Static analysis tools integration
+include(StaticAnalysis)
+
+# Code formatting tools integration
+include(CodeFormatting)
+
 # Basic compiler and build type setup
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type" FORCE)
@@ -453,7 +459,7 @@ add_custom_command(TARGET docs POST_BUILD
 # Define file sets for archive creation
 set(SOURCE_FILES
     admin.c cexecute.c check.c combat.c commands.c data.c display.c
-    extcmds.c forms.c io.c magic.c main.c makeworl.c misc.c move.c
+    extcmds.c forms.c io.c m2alloc.c magic.c main.c makeworl.c misc.c move.c
     navy.c newhelp.c newlogin.c npc.c psmap.c randeven.c reports.c
     safe_system.c sort.c spew.c trade.c update.c
 )

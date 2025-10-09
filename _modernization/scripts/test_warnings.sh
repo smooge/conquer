@@ -9,13 +9,10 @@ SUB=4
 NAME=WEXTRA
 TYPE=BASELINE
 STD="c99"
-WARN_LEVEL=2
+WARN_LEVEL=8
 SINGLE_FILE=""
 VERBOSE=0
-
-# TODO: Make this a flag
-# CC=gcc
-CC=clang
+CC=gcc
 
 # Usage function
 usage() {
@@ -25,7 +22,7 @@ Usage: $0 [OPTIONS] [FILENAME]
 Enhanced compilation testing with flexible warning levels and standards.
 
 OPTIONS:
-    -w LEVEL    Warning level (0-10, default: 2)
+    -w LEVEL    Warning level (0-11, default: 8)
                 0: No warnings
                 1: -Wall
                 2: -Wall -Wextra
@@ -34,11 +31,14 @@ OPTIONS:
                 5: Level 4 + -Wconversion
                 6: Level 5 + -Wsign-conversion
                 7: Level 6 + -Wimplicit-fallthrough
-                8: Level 7 + -Wstrict-prototypes
+                8: Level 7 + -Wstrict-prototypes -Wstringop-truncation
                 9: Level 8 + -Wshadow -Wmissing-prototypes -Wcast-qual
-                10: Level 9 + -fanalyzer -fsanitize=address,undefined (intensive analysis)
+                10: Level 9 + -fanalyzer (gcc) or extra warnings (clang)
+                11: Level 10 + -Weverything (clang only)
 
-    -x STD    C standard (c89, c99, c11, c17, c2x, default: c99)
+    -c COMPILER Compiler to use (gcc or clang, default: gcc)
+
+    -x STD      C standard (c89, c99, c11, c17, c2x, default: c99)
 
     -p PHASE    Phase number for output file naming (default: 4)
     -s SUB      Subphase number for output file naming (default: 4)
@@ -53,22 +53,34 @@ FILENAME:
     Example: $0 -w 10 -x c2x main.c
 
 Examples:
-    $0                           # Test all files with default settings
-    $0 -w 1 -x c99            # Test all files with -Wall and C99
-    $0 -w 10 update.c           # Intensive analysis on update.c only
-    $0 -w 2 -x c2x main.c     # Test main.c with -Wextra and C2x
+    $0                             # Test all files with default settings (gcc)
+    $0 -c clang -w 1 -x c99       # Test all files with clang, -Wall and C99
+    $0 -w 10 update.c             # Intensive analysis on update.c with gcc
+    $0 -c clang -w 11 main.c      # Test main.c with clang -Weverything
+    $0 -c clang -w 2 -x c2x       # Test all files with clang, -Wextra and C2x
 EOF
 }
 
 # Parse command line arguments
-while getopts "w:x:p:s:n:t:vh" opt; do
+while getopts "w:c:x:p:s:n:t:vh" opt; do
     case $opt in
         w)
             WARN_LEVEL=$OPTARG
-            if [[ ! "$WARN_LEVEL" =~ ^[0-9]|10$ ]]; then
-                echo "Error: Warning level must be 0-10" >&2
+            if [[ ! "$WARN_LEVEL" =~ ^([0-9]|1[01])$ ]]; then
+                echo "Error: Warning level must be 0-11" >&2
                 exit 1
             fi
+            ;;
+        c)
+            case $OPTARG in
+                gcc|clang)
+                    CC=$OPTARG
+                    ;;
+                *)
+                    echo "Error: Invalid compiler. Use: gcc, clang" >&2
+                    exit 1
+                    ;;
+            esac
             ;;
         x)
             case $OPTARG in
@@ -106,28 +118,64 @@ elif [[ $# -gt 1 ]]; then
     exit 1
 fi
 
-# Build warning flags based on level
-case $WARN_LEVEL in
-    0) WARN="" ;;
-    1) WARN="-Wall" ;;
-    2) WARN="-Wall -Wextra" ;;
-    3) WARN="-Wall -Wextra -Wpedantic" ;;
-    4) WARN="-Wall -Wextra -Wpedantic -Wformat=2" ;;
-    5) WARN="-Wall -Wextra -Wpedantic -Wformat=2 -Wconversion" ;;
-    6) WARN="-Wall -Wextra -Wpedantic -Wformat=2 -Wconversion -Wsign-conversion" ;;
-    7) WARN="-Wall -Wextra -Wpedantic -Wformat=2 -Wconversion -Wsign-conversion -Wimplicit-fallthrough" ;;
-    8) WARN="-Wall -Wextra -Wpedantic -Wformat=2 -Wconversion -Wsign-conversion -Wimplicit-fallthrough -Wstrict-prototypes" ;;
-    9) WARN="-Wall -Wextra -Wpedantic -Wformat=2 -Wconversion -Wsign-conversion -Wimplicit-fallthrough -Wstrict-prototypes -Wshadow -Wmissing-prototypes -Wcast-qual" ;;
-    10) WARN="-Wall -Wextra -Wpedantic -Wformat=2 -Wconversion -Wsign-conversion -Wimplicit-fallthrough -Wstrict-prototypes -Wshadow -Wmissing-prototypes -Wcast-qual -fanalyzer -fsanitize=address,undefined" ;;
-    11) WARN="-Weverything"
-esac
+# Build warning flags based on level and compiler
+build_warning_flags() {
+    case $WARN_LEVEL in
+        0) WARN="" ;;
+        1) WARN="-Wall" ;;
+        2) WARN="-Wall -Wextra" ;;
+        3) WARN="-Wall -Wextra -Wpedantic" ;;
+        4) WARN="-Wall -Wextra -Wpedantic -Wformat=2" ;;
+        5) WARN="-Wall -Wextra -Wpedantic -Wformat=2 -Wconversion" ;;
+        6) WARN="-Wall -Wextra -Wpedantic -Wformat=2 -Wconversion -Wsign-conversion" ;;
+        7) WARN="-Wall -Wextra -Wpedantic -Wformat=2 -Wconversion -Wsign-conversion -Wimplicit-fallthrough" ;;
+        8)
+            WARN="-Wall -Wextra -Wpedantic -Wformat=2 -Wconversion -Wsign-conversion -Wimplicit-fallthrough"
+            if [[ "$CC" == "gcc" ]]; then
+                WARN="$WARN -Wstrict-prototypes -Wstringop-truncation"
+            else
+                WARN="$WARN -Wstrict-prototypes"
+            fi
+            ;;
+        9)
+            WARN="-Wall -Wextra -Wpedantic -Wformat=2 -Wconversion -Wsign-conversion -Wimplicit-fallthrough -Wshadow -Wmissing-prototypes -Wcast-qual"
+            if [[ "$CC" == "gcc" ]]; then
+                WARN="$WARN -Wstrict-prototypes -Wstringop-truncation"
+            else
+                WARN="$WARN -Wstrict-prototypes"
+            fi
+            ;;
+        10)
+            WARN="-Wall -Wextra -Wpedantic -Wformat=2 -Wconversion -Wsign-conversion -Wimplicit-fallthrough -Wshadow -Wmissing-prototypes -Wcast-qual"
+            if [[ "$CC" == "gcc" ]]; then
+                WARN="$WARN -Wstrict-prototypes -Wstringop-truncation -fanalyzer -fsanitize=address,undefined"
+            else
+                WARN="$WARN -Wstrict-prototypes -Wunused-parameter -Wunused-variable -Warray-bounds"
+            fi
+            ;;
+        11)
+            if [[ "$CC" == "clang" ]]; then
+                WARN="-Weverything"
+            else
+                echo "Error: Warning level 11 (-Weverything) is only available with clang" >&2
+                exit 1
+            fi
+            ;;
+    esac
+}
+
+# Build the warning flags
+build_warning_flags
 
 # Update output file name components based on settings
 if [[ -n "$SINGLE_FILE" ]]; then
     # For single files, create descriptive name
     BASENAME=$(basename "$SINGLE_FILE" .c)
-    NAME="${BASENAME}_W${WARN_LEVEL}_${STD}"
+    NAME="${BASENAME}_${CC}_W${WARN_LEVEL}_${STD}"
     TYPE="SINGLE"
+else
+    # For comprehensive tests, include compiler in name
+    NAME="${NAME}_${CC}_W${WARN_LEVEL}"
 fi
 
 OUTFILE=_modernization/claude/scratch/PHASE_${PHASE}.${SUB}_${NAME}_${TYPE}.txt
@@ -226,6 +274,7 @@ test_single_file() {
 # Create header for output file
 if [[ -n "$SINGLE_FILE" ]]; then
     echo "=== SINGLE FILE TEST: $SINGLE_FILE ===" > ${OUTFILE}
+    echo "Compiler: $CC" >> ${OUTFILE}
     echo "Warning Level: $WARN_LEVEL ($WARN)" >> ${OUTFILE}
     echo "C Standard: $STD" >> ${OUTFILE}
     echo "Date: $(date)" >> ${OUTFILE}
@@ -238,6 +287,7 @@ if [[ -n "$SINGLE_FILE" ]]; then
     echo "Report: $OUTFILE" >> ${OUTFILE}
 else
     echo "=== COMPREHENSIVE COMPILATION TEST ===" > ${OUTFILE}
+    echo "Compiler: $CC" >> ${OUTFILE}
     echo "Warning Level: $WARN_LEVEL ($WARN)" >> ${OUTFILE}
     echo "C Standard: $STD" >> ${OUTFILE}
     echo "Date: $(date)" >> ${OUTFILE}

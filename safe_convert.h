@@ -55,27 +55,33 @@
 #endif
 
 /*
- * safe_clamp_uchar - Safely clamp long value to unsigned char range for nation attributes
+ * safe_clamp_nation_attr - Safely clamp long value to nation attribute range
  *
  * Clamps a long integer value to the valid range for nation attributes (0-MAXTGVAL).
  * Used throughout nation attribute calculations where computed values may exceed
  * the target field size. MAXTGVAL is defined as 100 in data.h.
  *
- * This function replaces unsafe min() macro usage and direct casting that
- * generates conversion warnings. It ensures values remain within game logic
- * constraints while providing compiler warning elimination.
+ * This function provides semantic clarity that it's specifically for game nation
+ * attributes, not general unsigned char conversion. It replaces unsafe min() macro
+ * usage and direct casting that generates conversion warnings. It ensures values
+ * remain within game logic constraints while providing compiler warning elimination.
  *
  * Parameters:
  *   value - Long integer value to clamp (may be negative or exceed range)
  *
  * Returns:
- *   Clamped value in range 0-MAXTGVAL as unsigned char
+ *   Clamped value in range 0-MAXTGVAL (100) as unsigned char
  *
  * Example Usage:
- *   curntn->terror = safe_clamp_uchar(temp/5);
- *   curntn->wealth = safe_clamp_uchar(calculated_wealth);
+ *   curntn->terror = safe_clamp_nation_attr(temp/5);
+ *   curntn->wealth = safe_clamp_nation_attr(calculated_wealth);
+ *
+ * Note:
+ *   Name changed from safe_clamp_uchar (Phase 8.6.1) for semantic clarity.
+ *   Previous name suggested general unsigned char range (0-255) but function
+ *   actually clamps to game-specific MAXTGVAL (100).
  */
-static inline unsigned char safe_clamp_uchar(long value) {
+static inline unsigned char safe_clamp_nation_attr(long value) {
     if (value < 0) return 0;
     if (value > MAXTGVAL) return MAXTGVAL;
     return (unsigned char)value;

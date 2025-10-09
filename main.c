@@ -110,6 +110,7 @@ FILE *fexe;
  *   - Handles both interactive and batch modes (print maps, scores)
  *   - Complex authentication with password encryption
  *   - Legacy K&R function definition style needs modernization
+  * @last_documented: 2025-09-17
  */
 int main(int argc, char **argv) {
 #ifdef  USERLOG
@@ -127,7 +128,7 @@ int main(int argc, char **argv) {
 #endif
 	void init_hasseen(void),mapprep(void);
 	char passwd[PASSLTH+1];
-	extern char *optarg, conqmail[];
+	extern char conqmail[];
 #ifdef SYSMAIL
 	extern char sysmail[];
 #endif /* SYSMAIL */
@@ -139,9 +140,9 @@ int main(int argc, char **argv) {
 
 	owneruid=getuid();
 	srand((unsigned) time((long *) 0));
-	strcpy(name,"");
-	strcpy(defaultdir,"");
-	strcpy(cq_opts,"");
+	name[0] = '\0';
+	defaultdir[0] = '\0';
+	cq_opts[0] = '\0';
 
 	/* check conquer options */
 	if (getenv(ENVIRON_OPTS)!=NULL) {
@@ -225,10 +226,16 @@ int main(int argc, char **argv) {
 
 	/* set the default data directory */
 	if (defaultdir[0] == '\0') {
-		strcpy(defaultdir, DEFAULTDIR);
+		strncpy(defaultdir, DEFAULTDIR, sizeof(defaultdir) - 1);
+		defaultdir[sizeof(defaultdir) - 1] = '\0';
 	}
 	if (defaultdir[0] != '/') {
-		strcpy(cq_opts, defaultdir);
+		size_t len = strlen(defaultdir);
+		if (len >= sizeof(cq_opts)) {
+			len = sizeof(cq_opts) - 1;
+		}
+		memcpy(cq_opts, defaultdir, len);
+		cq_opts[len] = '\0';
 		snprintf(defaultdir, sizeof(defaultdir), "%s/%.200s", DEFAULTDIR, cq_opts);
 	}
 
@@ -258,13 +265,15 @@ int main(int argc, char **argv) {
 		break;
 	case 'd':
 		if(optarg[0]!='/') {
-			sprintf(defaultdir, "%s/%s", DEFAULTDIR, optarg);
+			snprintf(defaultdir, sizeof(defaultdir), "%s/%s", DEFAULTDIR, optarg);
 		} else {
-			strcpy(defaultdir, optarg);
+			strncpy(defaultdir, optarg, sizeof(defaultdir) - 1);
+			defaultdir[sizeof(defaultdir) - 1] = '\0';
 		}
 		break;
 	case 'n':
-		strcpy(name, optarg);
+		strncpy(name, optarg, sizeof(name) - 1);
+		name[sizeof(name) - 1] = '\0';
 		break;
 #ifdef CHECKUSER
 	case 'l':
@@ -331,7 +340,7 @@ int main(int argc, char **argv) {
     fprintf(stderr,"GPL v3 licensed version (c) 2025 - original authors' permission granted\n");
 
 	/* check for update in progress */
-	sprintf(filename,"%sup",isonfile);
+	snprintf(filename, sizeof(filename), "%sup", isonfile);
 	if(check_lock(filename,FALSE)==TRUE) {
 		fprintf(stderr,"Conquer is updating\n");
 		fprintf(stderr,"Please try again later.\n");
@@ -369,11 +378,15 @@ int main(int argc, char **argv) {
 			fprintf(stderr,"\n");
 			exit(FAIL);
 		}
-		strcpy(name,"unowned");
+		strncpy(name, "unowned", sizeof(name) - 1);
+		name[sizeof(name) - 1] = '\0';
 		hilmode = HI_NONE;
 	}
 #else
-	if(strcmp(name,"god")==0) strcpy(name,"unowned");
+	if(strcmp(name,"god")==0) {
+		strncpy(name, "unowned", sizeof(name) - 1);
+		name[sizeof(name) - 1] = '\0';
+	}
 #endif /* OGOD */
 
 #ifdef CHECKUSER
@@ -419,7 +432,7 @@ int main(int argc, char **argv) {
 		fprintf(stderr,".\n");
 		return EXIT_FAILURE;
 	} else if(country==0 && !pflag) {
-		sprintf(filename,"%sadd",isonfile);
+		snprintf(filename, sizeof(filename), "%sadd", isonfile);
 		if(check_lock(filename,FALSE)==TRUE) {
 			fprintf(stderr,"A new player is being added.\n");
 			fprintf(stderr,"Continue anyway? [y or n]");
@@ -463,7 +476,13 @@ int main(int argc, char **argv) {
 		fprintf(stderr,"\t\t3) nations\n");
 		fprintf(stderr,"\t\t4) designations\n\n");
 		fprintf(stderr,"\tWhat type of map? ");
-		scanf("%hd", &dismode);
+		if (scanf("%hd", &dismode) != 1) {
+			/* Input error - clear buffer and exit */
+			int c;
+			while ((c = getchar()) != '\n' && c != EOF);
+			fprintf(stderr,"Invalid input\n");
+			exit(FAIL);
+		}
 		fprintf(stderr,"\n");
 		switch(dismode) {
 		case 1:
@@ -567,7 +586,8 @@ int main(int argc, char **argv) {
 	init_hasseen();		/* now we know how big the screen is,
 					we can init that array!	*/
 
-	strcpy(fison,"START");	/* just in case you abort early */
+	strncpy(fison, "START", sizeof(fison) - 1);	/* just in case you abort early */
+	fison[sizeof(fison) - 1] = '\0';
 	crmode();		/* cbreak mode */
 
 	/* check if user is super-user nation[0] */
@@ -622,7 +642,7 @@ int main(int argc, char **argv) {
 	updmove(curntn->race,country);
 
 	/* open output for future printing*/
-	sprintf(filename,"%s%d",exefile,country);
+	snprintf(filename, sizeof(filename), "%s%d", exefile, country);
 	if ((fexe=fopen(filename,"a"))==NULL) {
 		beep();
 		mvprintw(LINES-2,0,"error opening %s",filename);
@@ -642,12 +662,16 @@ int main(int argc, char **argv) {
 	whatcansee();			/* what can they see */
 
 	/* initialize mail files */
-	(void) sprintf(conqmail,"%s%d",msgfile,country);
+	(void) snprintf(conqmail, FILELTH, "%s%d", msgfile, country);
 #ifdef SYSMAIL
 	if (getenv("MAIL")==0) {
-		(void) sprintf(sysmail,"%s/%s",SPOOLDIR,getenv("USER"));
+		(void) snprintf(sysmail, FILELTH, "%s/%s", SPOOLDIR, getenv("USER"));
 	} else {
-		(void) strcpy(sysmail,getenv("MAIL"));
+		const char* mail_env = getenv("MAIL");
+		if (mail_env != NULL) {
+			strncpy(sysmail, mail_env, FILELTH - 1);
+			sysmail[FILELTH - 1] = '\0';
+		}
 	}
 #endif /* SYSMAIL */
 	mvaddstr(LINES-1, COLS-20, "PRESS ANY KEY");
@@ -716,6 +740,7 @@ int main(int argc, char **argv) {
  *   - Assumes curses screen is properly initialized
  *   - Different display for god mode (country==0) vs normal nations
  *   - Conditional compilation for SYSMAIL feature
+  * @last_documented: 2025-09-17
  */
 void makebottom(void) {
 	standend();
@@ -797,6 +822,7 @@ void makebottom(void) {
  *   - Some commands restricted to god/admin users
  *   - Movement commands use vi-like keybindings
  *   - Legacy K&R function definition style
+  * @last_documented: 2025-09-17
  */
 int parse(int ch) {
 	char	name[LINELTH+1];
@@ -1136,7 +1162,11 @@ int parse(int ch) {
 		mvaddstr(LINES-4,0,"What is your Nation's Password: ");
 		refresh();
 		(void) get_pass(passwd);
-		strcpy(name,crypt(passwd,SALT));
+		const char* encrypted = crypt(passwd, SALT);
+		if (encrypted != NULL) {
+			strncpy(name, encrypted, sizeof(name) - 1);
+			name[sizeof(name) - 1] = '\0';
+		}
 
 		if((strncmp(name,ntn[country].passwd,PASSLTH)!=0)
 		&&(strncmp(name,ntn[0].passwd,PASSLTH)!=0)){
@@ -1153,13 +1183,13 @@ int parse(int ch) {
 		}
 
 		/* remove old lock file -- new one already made */
-		sprintf(fison,"%s%d",isonfile,ocountry);
+		snprintf(fison, sizeof(fison), "%s%d", isonfile, ocountry);
 		unlink(fison);
 
 		fclose(fexe);
 		/* open output for future printing*/
-		sprintf(fison,"%s%d",isonfile,country);
-	 	sprintf(name,"%s%d",exefile,country);
+		snprintf(fison, sizeof(fison), "%s%d", isonfile, country);
+	 	snprintf(name, sizeof(name), "%s%d", exefile, country);
 	 	if ((fexe=fopen(name,"a"))==NULL) {
 			beep();
 			fprintf(stderr,"error opening %s\n",name);
@@ -1175,7 +1205,7 @@ int parse(int ch) {
 		readdata();
 		execute(FALSE);
 
-		(void) sprintf(conqmail,"%s%d",msgfile,country);
+		(void) snprintf(conqmail, FILELTH, "%s%d", msgfile, country);
 		updmove(curntn->race,country);
 		/*go to that nations capitol*/
 		if((country==0)||(!isntn(ntn[country].active))) {
@@ -1242,6 +1272,7 @@ int parse(int ch) {
  *   - Not thread-safe (accesses global variables)
  *   - Provides detailed internal state visibility
  *   - Used for development and debugging purposes
+  * @last_documented: 2025-09-17
  */
 void sect_info() {
 	int i,j,acnt1=0,acnt2=0,ncnt1=0,ncnt2=0,x,y;
@@ -1338,6 +1369,7 @@ void sect_info() {
  *   - Handles unit paging for sectors with many units
  *   - Different display modes for different nation relationships
  *   - Magic effects influence information visibility
+  * @last_documented: 2025-09-17
  */
 void makeside(int alwayssee) {	/* see even if cant really see sector */
 	short	i;
@@ -1587,7 +1619,7 @@ void makeside(int alwayssee) {	/* see even if cant really see sector */
 		if(sptr->vegetation==*(veg+i))
 		mvprintw(LINES-11,COLS-10,"%s",*(vegname+i));
 
-	if(((i=tofood(sptr,country)) != 0)
+	if(((i=safe_int_to_short(tofood(sptr,country))) != 0)
 	&&((magic(sptr->owner,THE_VOID)!=TRUE)
 	||(sptr->owner==country))){
 		if(i>6) standout();
@@ -1653,10 +1685,11 @@ void makeside(int alwayssee) {	/* see even if cant really see sector */
  *   - Lock files must be cleaned up on game exit
  *   - Used in conjunction with check_lock() function
  *   - Different behavior for god mode vs normal nations
+  * @last_documented: 2025-09-17
  */
 int aretheyon(void) {
 	/* return file descriptor for lock file */
-	sprintf(fison,"%s%d",isonfile,country);
+	snprintf(fison, sizeof(fison), "%s%d", isonfile, country);
 	return(check_lock(fison,TRUE));
 }
 
@@ -1700,6 +1733,7 @@ int aretheyon(void) {
  *   - Conditional compilation for TIMELOG feature
  *   - Must be displayed to every player on every login
  *   - Part of legal compliance for GPL v3 licensing
+  * @last_documented: 2025-09-17
  */
 void copyscreen(void) {
 #ifdef TIMELOG
@@ -1772,6 +1806,7 @@ void copyscreen(void) {
  *   - Signal handlers should call this function
  *   - Does not return (calls exit())
  *   - Thread-safe cleanup sequence
+  * @last_documented: 2025-09-17
  */
 void bye(int dounlink) {	/* TRUE if want to do unlink */
 	if( dounlink ) if(strcmp(fison,"START")!=0) unlink(fison);
@@ -1822,6 +1857,7 @@ void bye(int dounlink) {	/* TRUE if want to do unlink */
  *   - Part of proper attribution for open source project
  *   - Non-interactive display (waits for single keypress)
  *   - Accessible from main game loop via 'v' command
+  * @last_documented: 2025-09-17
  */
 void credits(void) {
 	clear();
@@ -1890,6 +1926,7 @@ void credits(void) {
  *   - Useful for players to understand current game scope
  *   - Shows both world configuration and player-specific data
  *   - Accessible from main game loop via 'I' command
+  * @last_documented: 2025-09-17
  */
 void camp_info(void) {
 	int mercs=0,solds=0,armynum,nvynum,nontn=0;

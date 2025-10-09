@@ -1,6 +1,6 @@
 #!/usr/bin/env -S uv run --script
 # /// script
-# dependencies = ["pathlib", "subprocess", "re", "argparse", "sys"]
+# dependencies = []
 # ///
 
 """
@@ -372,6 +372,9 @@ class SecurityValidator:
             (r'\bstrcat\s*\(', 'strcat() - no bounds checking'),
             (r'\bsprintf\s*\(', 'sprintf() - no bounds checking'),
             (r'\bgets\s*\(', 'gets() - extremely unsafe'),
+            (r'\bscanf\s*\([^)]*%s', 'scanf() with %s - no field width limit'),
+            (r'\bsscanf\s*\([^)]*%s', 'sscanf() with %s - no field width limit'),
+            (r'\bfscanf\s*\([^)]*%s', 'fscanf() with %s - no field width limit'),
         ]
 
         # Safer alternatives
@@ -380,6 +383,9 @@ class SecurityValidator:
             (r'\bstrncat\s*\(', 'strncat() - bounds checking'),
             (r'\bsnprintf\s*\(', 'snprintf() - bounds checking'),
             (r'\bfgets\s*\(', 'fgets() - safer input'),
+            (r'\bscanf\s*\([^)]*%[0-9]+s', 'scanf() with field width - bounds checking'),
+            (r'\bsscanf\s*\([^)]*%[0-9]+s', 'sscanf() with field width - bounds checking'),
+            (r'\bfscanf\s*\([^)]*%[0-9]+s', 'fscanf() with field width - bounds checking'),
         ]
 
         source_files = self.find_source_files()
@@ -394,25 +400,27 @@ class SecurityValidator:
                 for line_num, line in enumerate(lines, 1):
                     line_stripped = line.strip()
 
-                    # Check for unsafe patterns
-                    for pattern, description in unsafe_patterns:
-                        if re.search(pattern, line_stripped):
-                            unsafe_operations.append({
-                                'file': str(file_path.relative_to(self.base_path)),
-                                'line': line_num,
-                                'content': line_stripped,
-                                'issue': description
-                            })
+                    # Skip if in comment
+                    if not self._is_in_comment(line_stripped):
+                        # Check for unsafe patterns
+                        for pattern, description in unsafe_patterns:
+                            if re.search(pattern, line_stripped):
+                                unsafe_operations.append({
+                                    'file': str(file_path.relative_to(self.base_path)),
+                                    'line': line_num,
+                                    'content': line_stripped,
+                                    'issue': description
+                                })
 
-                    # Check for safe patterns
-                    for pattern, description in safe_patterns:
-                        if re.search(pattern, line_stripped):
-                            safe_operations.append({
-                                'file': str(file_path.relative_to(self.base_path)),
-                                'line': line_num,
-                                'content': line_stripped,
-                                'safety': description
-                            })
+                        # Check for safe patterns
+                        for pattern, description in safe_patterns:
+                            if re.search(pattern, line_stripped):
+                                safe_operations.append({
+                                    'file': str(file_path.relative_to(self.base_path)),
+                                    'line': line_num,
+                                    'content': line_stripped,
+                                    'safety': description
+                                })
 
             except (IOError, OSError) as e:
                 results['findings'].append(f"⚠️  File access error {file_path}: {e}")

@@ -1,10 +1,10 @@
 /*
  * sort.c - Data sorting utilities
- * 
+ *
  * This file is part of Conquer.
  * Originally Copyright (C) 1988-1989 by Edward M. Barlow and Adam Bryant
  * Copyright (C) 2025 Juan Manuel Méndez Rey (Vejeta) - Licensed under GPL v3 with permission from original authors
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -121,6 +121,7 @@ FILE *infile, *outfile;
  *   - Uses global variables for configuration (not thread-safe)
  *   - Memory allocated by build_node() is never freed (acceptable for utility)
  *   - Processes input incrementally to handle large files efficiently
+  * @last_documented: 2025-09-20
  */
 int
 main(int argc, char *argv[])
@@ -295,8 +296,7 @@ main(int argc, char *argv[])
  *   - Input validation prevents buffer overflows in downstream processing
  *   - Essential preprocessing step for reliable sorting operations
  */
-static int
-get_line(char data[])
+static int get_line(char data[])
 {
 	int in,ch;
 
@@ -480,39 +480,78 @@ comp_line(char *a, char *b)
  * with comprehensive error checking. Sets up proper linkage for insertion
  * into the sorted linked list.
  *
+ * Validates input parameters and enforces maximum string length limits to
+ * prevent buffer overflows and integer overflow vulnerabilities.
+ *
  * Parameters:
- *   data - String data to store in the new node (null-terminated)
+ *   data - String data to store in the new node (must not be NULL, max MAX_STR bytes)
  *   nptr - Pointer to the next node in the linked list (may be NULL)
  *
  * Returns:
  *   Pointer to newly allocated and initialized L_DATA node
- *   Program exits with EX_SOFTWARE if memory allocation fails
+ *   Program exits with EX_SOFTWARE if validation or allocation fails
  *
  * Side Effects:
+ *   - Validates data parameter is not NULL
+ *   - Checks string length against MAX_STR limit
+ *   - Prevents integer overflow in allocation size calculation
  *   - Allocates memory for L_DATA structure using malloc()
  *   - Allocates memory for string copy using malloc()
  *   - Copies input string data to allocated memory
  *   - Sets next pointer to provided nptr value
- *   - Exits program on allocation failure with error message
+ *   - Exits program on validation or allocation failure with error message
+ *
+ * Validation Checks:
+ *   - Rejects NULL data parameter
+ *   - Enforces maximum string length (MAX_STR = 200 bytes)
+ *   - Prevents integer overflow in allocation size calculation
+ *
+ * Memory Management:
+ *   - Allocates L_DATA structure using malloc() (sizeof(L_DATA) bytes)
+ *   - Allocates string storage using malloc() (strlen(data) + 1 bytes)
+ *   - **Memory is never freed** - acceptable for short-lived utility program
+ *   - Program exits on allocation failure (no memory leak possible)
+ *   - Total allocation per node: ~16 bytes + string length
  *
  * Testing Notes:
  *   Category: A (Unit) - Testable with controlled inputs and mock allocation
- *   Approach: Unit tests with various string lengths and mock malloc
- *   Key Tests: Normal allocation, allocation failures, string copying, linkage
- *   Dependencies: malloc(), strcpy(), strlen(), exit()
+ *   Approach: Unit tests with various string lengths, NULL checks, and mock malloc
+ *   Key Tests: Normal allocation, NULL parameter, oversized strings, allocation failures
+ *   Dependencies: malloc(), strlen(), memcpy(), exit()
  *   Mock Requirements: Memory allocation functions, error handling
- *   Complexity: Simple - Straightforward allocation with error checking
+ *   Complexity: Simple - Straightforward allocation with validation and error checking
  *
  * Notes:
  *   - Memory allocated is never freed (acceptable for short-lived utility)
- *   - Uses exit() on allocation failure rather than returning error code
+ *   - Uses exit() on validation or allocation failure rather than returning error code
  *   - Essential memory management component for linked list construction
  *   - Copies string data to prevent external modification issues
+ *   - Bounds checking added in Phase 8.4.3.2 to prevent overflow vulnerabilities
  */
 static L_PTR
 build_node(char data[], L_PTR nptr)
 {
 	L_PTR temp;
+
+	/* Validate input parameter */
+	if (data == NULL) {
+		fprintf(stderr, "build_node: NULL data parameter\n");
+		exit(EX_SOFTWARE);
+	}
+
+	/* Check string length and bounds */
+	size_t data_len = strlen(data);
+	if (data_len > MAX_STR) {
+		fprintf(stderr, "build_node: String too long (%zu > %d)\n",
+		        data_len, MAX_STR);
+		exit(EX_SOFTWARE);
+	}
+
+	/* Check for overflow in allocation size calculation */
+	if (data_len >= SIZE_MAX - 1) {
+		fprintf(stderr, "build_node: String length overflow\n");
+		exit(EX_SOFTWARE);
+	}
 
 	/* build the memory space */
 	if((temp=(L_PTR)malloc(sizeof(L_DATA)))==(L_PTR)NULL) {
@@ -525,7 +564,8 @@ build_node(char data[], L_PTR nptr)
 	}
 
 	/* assign the values */
-	(void) strcpy(temp->line,data);
+	memcpy(temp->line, data, data_len);
+	temp->line[data_len] = '\0';
 	temp->next = nptr;
 	return(temp);
 }

@@ -104,6 +104,7 @@
  *   - Supports fortress-specific commands (siege, sortie, rule)
  *   - Validates army capabilities before allowing operations
  *   - Uses curses for interactive display and input
+  * @last_documented: 2025-09-20
  */
 void ext_cmd(int armie) {
 	int stat=0,armynum,army2,men;
@@ -197,6 +198,7 @@ void ext_cmd(int armie) {
  *   - Prevents exploitation of special statuses
  *   - TRADE compilation flag affects TRADED status handling
  *   - Pure function suitable for optimization
+  * @last_documented: 2025-09-20
  */
 int nocomb_stat (int astat) {
 	int hold;
@@ -256,6 +258,7 @@ int nocomb_stat (int astat) {
  *   - Movement calculation uses minimum to prevent exploitation
  *   - Handles complex group leadership scenarios
  *   - Critical for army management efficiency
+  * @last_documented: 2025-09-20
  */
 void combinearmies (int armynum, int army2) {
 
@@ -337,6 +340,7 @@ void combinearmies (int armynum, int army2) {
  *   - Location-dependent statuses require specific sector conditions
  *   - Movement penalty system prevents status change exploitation
  *   - Critical for maintaining game balance and realism
+  * @last_documented: 2025-09-20
  */
 void change_status (int armynum, int new_stat) {
 	int	i;
@@ -466,6 +470,7 @@ void change_status (int armynum, int new_stat) {
  *   - Source army must retain at least 25 soldiers after split
  *   - New army gets same movement points as source army
  *   - Critical for tactical army management and positioning
+  * @last_documented: 2025-09-20
  */
 void reducearmy (int armynum, int men) {
 	int army2;
@@ -556,6 +561,7 @@ void reducearmy (int armynum, int men) {
  *   - Handles input validation by checking for non-positive values
  *   - User can cancel operation by entering zero or negative value
  *   - Delegates actual splitting logic to reducearmy function
+  * @last_documented: 2025-09-20
  */
 void splitarmy(int armynum) {
 	int men;
@@ -604,6 +610,7 @@ void splitarmy(int armynum) {
  *   - Audible feedback ensures user notices error condition
  *   - Blocking input ensures user acknowledges error before continuing
  *   - Critical for user experience and error communication
+  * @last_documented: 2025-09-20
  */
 void errormsg(char *str) {
 	mvaddstr(LINES-1, 0, str);
@@ -645,6 +652,7 @@ void errormsg(char *str) {
  *   - Default parameter handling (0 becomes 4) for convenience
  *   - Used extensively throughout extended command system
  *   - Simple but critical for user experience
+  * @last_documented: 2025-09-20
  */
 void clear_bottom(int i) {
 	if(i==0) i=4;
@@ -690,6 +698,7 @@ void clear_bottom(int i) {
  *   - Movement rate coordination ensures group moves together
  *   - Leader becomes GENERAL when first army joins group
  *   - Essential for advanced tactical gameplay and army coordination
+  * @last_documented: 2025-09-20
  */
 void addgroup(int armynum) {
 	int	moverate,group;

@@ -229,6 +229,7 @@ static int spent[CH_NUMBER];
  *   - Relies on getmetal() and getjewel() functions for resource placement
  *   - Terrain modification is permanent and affects starting nation advantages
  *   - Critical for game balance as it determines starting resource availability
+  * @last_documented: 2025-09-20
  */
 void
 teraform (int x, int y, int range, int chance)
@@ -350,6 +351,7 @@ teraform (int x, int y, int range, int chance)
  *   - Nation 0 always receives messages regardless of PC status
  *   - Critical for multiplayer communication and event notification
  *   - Message delivery is best-effort (no delivery confirmation)
+  * @last_documented: 2025-09-20
  */
 void
 mailtopc (char *string)
@@ -418,6 +420,7 @@ mailtopc (char *string)
  *   - Critical for proper interactive interface functionality
  *   - Terminal size check prevents interface corruption on small displays
  *   - Required for secure password input handling in registration
+  * @last_documented: 2025-09-20
  */
 void
 newinit (void)
@@ -481,6 +484,7 @@ newinit (void)
  *   - Can be called multiple times safely (endwin() handles redundant calls)
  *   - Critical for proper shell prompt restoration after program exit
  *   - Used by newbye() for complete program termination sequence
+  * @last_documented: 2025-09-20
  */
 void
 newreset (void)
@@ -535,6 +539,7 @@ newreset (void)
  *   - Used throughout newlogin system for both normal and error exits
  *   - Prevents terminal corruption that could occur with abrupt termination
  *   - Critical for clean integration with shell environment
+  * @last_documented: 2025-09-20
  */
 void
 newbye (int status)
@@ -593,6 +598,7 @@ newbye (int status)
  *   - Essential for providing responsive user interface feedback
  *   - Complements blocking error display functions for complete UI messaging
  *   - Critical for user experience during interactive nation building
+  * @last_documented: 2025-09-20
  */
 void
 newmsg (char *str)
@@ -602,7 +608,53 @@ newmsg (char *str)
 	refresh();
 }
 
-/* message with wait for keystroke */
+/*
+ * newerror - Display error message and wait for user acknowledgment
+ *
+ * Presents an error message at the bottom of the screen with an audible beep
+ * and "PRESS ANY KEY" prompt, then waits for user input before clearing the
+ * message. This provides clear visual and audio feedback for error conditions
+ * during the registration process.
+ *
+ * Parameters:
+ *   str - Error message to display (null-terminated string, must not be NULL)
+ *
+ * Returns:
+ *   void
+ *
+ * Side Effects:
+ *   - Displays message at bottom line of screen (LINES-1)
+ *   - Shows "PRESS ANY KEY" prompt in right portion of screen (COLS-16)
+ *   - Emits audible beep for audio error notification
+ *   - Blocks execution until user presses any key via getch()
+ *   - Clears error message line after keystroke
+ *   - Updates screen display with refresh()
+ *
+ * Display Behavior:
+ *   1. Places error message at start of bottom line
+ *   2. Clears remainder of line (erases previous content)
+ *   3. Adds "PRESS ANY KEY" at right side of screen
+ *   4. Sounds beep for attention
+ *   5. Waits for single keystroke (blocking)
+ *   6. Clears entire bottom line
+ *
+ * Testing Notes:
+ *   Category: A (Unit) - UI function with clear input/output
+ *   Approach: Unit tests with mock ncurses functions or integration tests
+ *   Key Tests: [Message display, prompt positioning, beep call, getch blocking, line clearing]
+ *   Dependencies: [ncurses library, LINES/COLS constants, screen initialization]
+ *   Mock Requirements: [Mock ncurses functions (mvaddstr, clrtoeol, beep, getch, refresh)]
+ *   Complexity: Simple - straightforward UI interaction with blocking input
+ *
+ * Notes:
+ *   - Assumes ncurses screen is initialized (LINES and COLS defined)
+ *   - Uses global LINES and COLS for screen positioning
+ *   - Blocking function - execution pauses until user responds
+ *   - Critical for user feedback during registration errors
+ *   - Companion to newmsg() which displays non-blocking messages
+ *   - Always clears message after acknowledgment for clean UI state
+ * @last_documented: 2025-10-08
+ */
 void
 newerror (char *str)
 {
@@ -649,6 +701,7 @@ newerror (char *str)
  *   - Uses strlen() to determine search bounds
  *   - Essential for validating user menu choices and input characters
  *   - Could be optimized with strchr() but current implementation is clear
+  * @last_documented: 2025-09-20
  */
 int
 in_str (int ch, char *str)
@@ -696,6 +749,7 @@ in_str (int ch, char *str)
  *   - Creates professional-looking information display consistent with UI
  *   - Essential for user feedback during registration validation
  *   - Assumes VERSION and PATCHLEVEL are defined string constants
+  * @last_documented: 2025-09-20
  */
 void
 errorbar (char *str1, char *str2)
@@ -750,6 +804,7 @@ errorbar (char *str1, char *str2)
  *   - NLJEWELS/Mvalues[CH_RAWGOODS] ratio determines jewel conversion
  *   - NLMETAL/Mvalues[CH_RAWGOODS] ratio determines metal conversion
  *   - Essential for displaying resource allocation in registration interface
+  * @last_documented: 2025-09-20
  */
 void
 dispitem (int item, long amount)
@@ -810,7 +865,7 @@ dispitem (int item, long amount)
  *   - Conditional compilation (#if NLJEWELS==NLMETAL) handles display variants
  *   - Right-aligned formatting ensures consistent column alignment
  *   - Essential for displaying current allocation state during registration
- *   - Note: nsprintf on line 851 appears to be typo for sprintf
+  * @last_documented: 2025-09-20
  */
 void
 showitem (int line, int item)
@@ -819,10 +874,10 @@ showitem (int line, int item)
 
 	move(line,15);
 	if (item == CH_LOCATE) {
-		sprintf(tempc,"%s %s", LType[spent[item]], Mitems[item]);
+		snprintf(tempc, sizeof(tempc), "%s %s", LType[spent[item]], Mitems[item]);
 		printw("%23s",tempc);
 	} else {
-		sprintf(tempc,"%ld %s", spent[item]*Mvalues[item], Mitems[item]);
+		snprintf(tempc, sizeof(tempc), "%ld %s", spent[item]*Mvalues[item], Mitems[item]);
 		printw("%23s",tempc);
 	}
 
@@ -831,16 +886,16 @@ showitem (int line, int item)
 
 	/* now show the extras for the Raw Materials */
 #if NLJEWELS==NLMETAL
-	sprintf(tempc,"%ld jewels & metal",
+	snprintf(tempc, sizeof(tempc), "%ld jewels & metal",
 		   spent[CH_RAWGOODS]*NLJEWELS);
 	mvprintw(line,0,"%38s",tempc);
 	mvprintw(line,COLS/2+13,"%ld jewels & metal",NLJEWELS);
 #else
-	sprintf(tempc,"%ld jewels",
+	snprintf(tempc, sizeof(tempc), "%ld jewels",
 		   spent[CH_RAWGOODS]*NLJEWELS);
 	mvprintw(line,0,"%38s",tempc);
 	mvprintw(line++,COLS/2+10,"%ld jewels",NLJEWELS);
-	nsprintf(tempc,"%ld metal",
+	snprintf(tempc, sizeof(tempc), "%ld metal",
 		    spent[CH_RAWGOODS]*NLMETAL);
 	mvprintw(line,0,"%38s",tempc);
 	mvprintw(line,COLS/2+13,"%ld metals",NLMETAL);
@@ -890,6 +945,7 @@ showitem (int line, int item)
  *   - CHGMGK macro likely updates magic-related nation statistics
  *   - Raw goods generate both food and derived jewel/metal resources
  *   - Critical function that finalizes nation creation from user choices
+  * @last_documented: 2025-09-20
  */
 void
 convert (void)
@@ -1068,6 +1124,7 @@ convert (void)
  *   - Complex control flow with multiple nested loops and state validation
  *   - Integration point for multiple game subsystems (magic, combat, economics)
  *   - Essential for maintaining game balance through controlled nation creation
+  * @last_documented: 2025-09-20
  */
 void
 newlogin (int realuser)
@@ -1117,7 +1174,7 @@ newlogin (int realuser)
 	while(more==TRUE) {
 		clear();
 
-		sprintf(tempc,"Country #%d", country);
+		snprintf(tempc, sizeof(tempc), "Country #%d", country);
 		errorbar("Nation Builder",tempc);
 		if((country==0)||(pccount+1>=NTOTAL-REVSPACE)) {
 			newerror("No more nations available");
@@ -1127,7 +1184,7 @@ newlogin (int realuser)
 
 		/* open output for future printing*/
 		mvprintw(0,0,"Building Country Number %d",country);
-		sprintf(tempc,"%s%d",exefile,i);
+		snprintf(tempc, sizeof(tempc), "%s%d", exefile, i);
 		if ((fexe=fopen(tempc,"w"))==NULL) {
 			char errmsg[LINELTH*2];
 			snprintf(errmsg,sizeof(errmsg),"Error opening <%s>",tempc);
@@ -1169,7 +1226,12 @@ newlogin (int realuser)
 				valid=FALSE;
 			}
 		}
-		strcpy(curntn->name,tempc);
+		size_t len = strlen(tempc);
+		if (len >= NAMELTH) {
+			len = NAMELTH - 1;
+		}
+		memcpy(curntn->name, tempc, len);
+		curntn->name[len] = '\0';
 		move(0,0);
 		clrtoeol();
 		move(1,0);
@@ -1217,7 +1279,10 @@ newlogin (int realuser)
 				newerror("Invalid Name Length");
 				valid=FALSE;
 			}
-			else strcpy(curntn->leader,tempc);
+			else {
+				strncpy(curntn->leader, tempc, LEADERLTH);
+				curntn->leader[LEADERLTH] = '\0';
+			}
 		}
 
 		mvprintw(2,0,"Leader Name: %s", curntn->leader);
@@ -1473,7 +1538,7 @@ newlogin (int realuser)
 					spent[CH_PEOPLE] += temp;
 					showitem(ypos+CH_PEOPLE,CH_PEOPLE);
 					points = 0;
-					sprintf(tempc,"Buying %ld more civilians", x);
+					snprintf(tempc, sizeof(tempc), "Buying %ld more civilians", x);
 					newerror(tempc);
 				}
 				newmsg("Is the modification complete? (y or n)");
@@ -1564,7 +1629,7 @@ newlogin (int realuser)
 				} else temp = Munits[choice];
 				if (direct == ADDITION) {
 					if (Mcost[choice] > points) {
-						sprintf(tempc, "You do not have %d points to spend",
+						snprintf(tempc, sizeof(tempc), "You do not have %d points to spend",
 							Mcost[choice]);
 						newerror(tempc);
 					} else if ((choice == CH_REPRO)&&(curntn->race==ORC)
@@ -1616,7 +1681,7 @@ newlogin (int realuser)
 #endif
 			fclose(fexe);
 			pccount++;
-			sprintf(tempc,"NOTICE: Nation %s added to world on turn %d\n",curntn->name,TURN);
+			snprintf(tempc, sizeof(tempc), "NOTICE: Nation %s added to world on turn %d\n", curntn->name, TURN);
 			mailtopc(tempc);
 			/* cannot clear until after placement and initializing */
 			curntn->powers=0;
@@ -2060,7 +2125,7 @@ place (
 			curntn->location=OOPS;
 			place(-1,-1);
 		} else if(curntn->location==FAIR) {
-			sprintf(tempo,"Fair Place Failed, trying again - Adding %ld people to nation",Munits[CH_PEOPLE]*Mvalues[CH_PEOPLE]/Mcost[CH_PEOPLE]);
+			snprintf(tempo, sizeof(tempo), "Fair Place Failed, trying again - Adding %ld people to nation", Munits[CH_PEOPLE]*Mvalues[CH_PEOPLE]/Mcost[CH_PEOPLE]);
 			newerror(tempo);
 			/*give back one point -> NLPOP people*/
 			curntn->tciv += Munits[CH_PEOPLE] * Mvalues[CH_PEOPLE]
@@ -2068,7 +2133,7 @@ place (
 			curntn->location=RANDOM;
 			place(-1,-1);
 		} else if(curntn->location==GREAT) {
-			sprintf(tempo,"Great Place Failed, trying again - Adding %ld people to nation",Munits[CH_PEOPLE]*Mvalues[CH_PEOPLE]/Mcost[CH_PEOPLE]);
+			snprintf(tempo, sizeof(tempo), "Great Place Failed, trying again - Adding %ld people to nation", Munits[CH_PEOPLE]*Mvalues[CH_PEOPLE]/Mcost[CH_PEOPLE]);
 			newerror(tempo);
 			/*give back one point -> NLPOP people*/
 			curntn->tciv+= Munits[CH_PEOPLE] * Mvalues[CH_PEOPLE]
@@ -2150,8 +2215,82 @@ place (
  *   - Historical context: Core character creation mechanic affecting gameplay balance
  *   - User experience: Critical for player understanding of class capabilities and costs
  */
-/*get class routine*/
-/* return the number of points needed */
+/*
+ * getclass - Display class selection menu and get user choice
+ *
+ * Presents an interactive menu showing all nation classes available for the
+ * specified race, including class costs, magical powers, and race eligibility.
+ * Validates user input to ensure selected class is valid for the race, then
+ * applies the class configuration and returns the point cost.
+ *
+ * The menu displays a formatted table with class names, eligible races (who),
+ * magical power descriptions, and point costs. Special racial bonuses are
+ * reflected in adjusted costs (e.g., Human Warlords pay 2/3 normal cost).
+ *
+ * Parameters:
+ *   race - Race identifier (e.g., HUMAN, ELF, DWARF, ORC) used to filter
+ *          available classes and apply race-specific cost modifiers
+ *
+ * Returns:
+ *   int - Point cost for the selected class after race-specific modifiers
+ *         (e.g., Human Warlord returns Classcost[C_WARLORD]*2/3)
+ *
+ * Side Effects:
+ *   - Displays class selection menu on screen starting at line 4
+ *   - Prompts for user input and validates choice
+ *   - Sets curntn->class to selected class ID
+ *   - Calls doclass() which modifies nation powers and leader count
+ *   - Clears menu display after selection
+ *   - Calls newerror() for invalid choices
+ *   - Uses refresh() to update screen display
+ *
+ * Menu Display Format:
+ *   Line 1: "The List of Possible Nation Classes:"
+ *   Line 3: Column headers (class, who, magic, cost)
+ *   Line 4+: Class entries with formatted data and dotted padding
+ *   Bottom: Input prompt "Enter the number of your choice: "
+ *
+ * Class Filtering Logic:
+ *   - Iterates through all classes (1 to NUMCLASS-1)
+ *   - Uses in_str(race, Classwho[i]) to check race eligibility
+ *   - Only displays classes available to the specified race
+ *   - Validates user choice against same eligibility rules
+ *
+ * Input Validation:
+ *   - Repeats prompt until valid choice entered
+ *   - Checks: 1) Number in range [1, NUMCLASS], 2) Class valid for race
+ *   - Shows error "Invalid Choice" for out-of-range numbers
+ *   - Shows error "That Class is Invalid for your Race" for ineligible classes
+ *
+ * Special Cases:
+ *   - Human Warlord: Displays cost as Classcost[C_WARLORD]*2/3
+ *   - Magic power list: Right-padded with dots to 10 characters for alignment
+ *   - Class numbers start at 1 (skips index 0)
+ *
+ * Screen Management:
+ *   - Menu starts at line 4 (ypos=4)
+ *   - Clears menu area after selection (lines 4 to ypos)
+ *   - Uses clrtoeol() to clear individual lines
+ *   - Preserves screen content outside menu area
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Requires class data, UI system, and nation state
+ *   Approach: Integration testing with mock class configuration and UI
+ *   Key Tests: [Class filtering by race, cost calculation with modifiers, input validation, menu display, screen cleanup]
+ *   Dependencies: [Class arrays (Class[], Classwho[], CPowlist[], Classcost[]), ncurses, doclass(), in_str(), newerror()]
+ *   Mock Requirements: [Class configuration data, nation structure, ncurses functions, global constants]
+ *   Complexity: Moderate - complex UI with validation logic and special case handling
+ *
+ * Notes:
+ *   - Critical component of nation creation affecting game balance
+ *   - Class costs directly impact available starting resources
+ *   - Uses global curntn to store selected class
+ *   - Assumes screen is initialized and LINES/COLS defined
+ *   - Safe type conversions using safe_int_to_short(), safe_size_to_int(), safe_long_to_short()
+ *   - Depends on accurate Class configuration arrays for proper functionality
+ *   - Menu formatting uses printf-style formatting for column alignment
+ * @last_documented: 2025-10-08
+ */
 int
 getclass (int race)
 {
@@ -2376,6 +2515,7 @@ doclass (
  *   - Memory safety: Uses array bounds from CH_NUMBER constant
  *   - Historical context: Modern evolution of nation creation cost system
  *   - Design pattern: Data-driven calculation using configuration tables
+  * @last_documented: 2025-09-20
  */
 int nstartcst (void)	/* to be used for new method */
 {
@@ -2393,7 +2533,7 @@ int nstartcst (void)	/* to be used for new method */
 	tmpx = safe_int_to_float(TURN-1) / LATESTART;
 	points -= tmpx;
 	if( tmpx > 0.0f ) {
-		sprintf(temp,"%.1f points added for starting late", tmpx);
+		snprintf(temp, sizeof(temp), "%.1f points added for starting late", tmpx);
 		newerror(temp);
 	}
 	points += 1.0f;	/* round up */
@@ -2489,6 +2629,7 @@ int nstartcst (void)	/* to be used for new method */
  *   - Memory safety: Uses global nation structure, no array bounds issues
  *   - Historical context: Original nation creation cost system
  *   - Deprecation status: Legacy method, nstartcst() preferred for new code
+  * @last_documented: 2025-09-20
  */
 int
 startcost (void)	/* cant be used for npc nations yet!!! see below */

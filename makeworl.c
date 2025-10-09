@@ -90,6 +90,7 @@ nmountains--; \
  *   - Critical for preventing leftover data from previous games
  *   - Initializes exactly NTOTAL nations as defined in game constants
  *   - Sets default DEFEND status for all armies
+  * @last_documented: 2025-09-20
  */
 void zeroworld(void) {
 	int i,armynum;
@@ -164,6 +165,7 @@ void zeroworld(void) {
  *   - Uses crypt() for password hashing with SALT
  *   - Supports conditional compilation with REMAKE and CHECKUSER flags
  *   - Creates god nation (index 0) with special powers and administrator access
+  * @last_documented: 2025-09-20
  */
 void makeworld ( int rflag ){		/* TRUE if you wish to read in a map from mapfiles */
 	char passwd[PASSLTH+1];
@@ -172,7 +174,7 @@ void makeworld ( int rflag ){		/* TRUE if you wish to read in a map from mapfile
 
 	/* conquer makeworld information */
 	newinit();
-	sprintf(newstring, "Datadir: %s", datadir);
+	snprintf(newstring, sizeof(newstring), "Datadir: %s", datadir);
 	errorbar("World Generator", newstring);
 
 	mvaddstr(0,COLS/2-9,"WELCOME TO CONQUER");
@@ -229,19 +231,23 @@ void makeworld ( int rflag ){		/* TRUE if you wish to read in a map from mapfile
 		} else valid=TRUE;
 	}
 	strncpy(ntn[0].passwd,crypt(passwd,SALT),PASSLTH);
+	ntn[0].passwd[PASSLTH] = '\0';
 
 	/* finally ask for the secondary administrator */
 	mvaddstr(7,0,"You may designate an other user as an alternate \"god\" for this world.");
 	mvaddstr(8,0,"Enter a System Login or \"god\" to have none.  [Return for default]");
 #ifdef REMAKE
 	if (remake==FALSE) {
-		(void) strcpy(ntn[0].leader,"god");
+		strncpy(ntn[0].leader, "god", sizeof(ntn[0].leader) - 1);
+		ntn[0].leader[sizeof(ntn[0].leader) - 1] = '\0';
 	} else if (getpwnam(ntn[0].leader)==NULL) {
-		(void) strcpy(ntn[0].leader,"god");
+		strncpy(ntn[0].leader, "god", sizeof(ntn[0].leader) - 1);
+		ntn[0].leader[sizeof(ntn[0].leader) - 1] = '\0';
 		remake=FALSE;
 	}
 #else
-	(void) strcpy(ntn[0].leader,"god");
+	strncpy(ntn[0].leader, "god", sizeof(ntn[0].leader) - 1);
+	ntn[0].leader[sizeof(ntn[0].leader) - 1] = '\0';
 #endif /* REMAKE */
 	while(TRUE) {
 		mvprintw(9,0,"What demi-god shall co-rule this world? [%s]: ",ntn[0].leader);
@@ -253,7 +259,8 @@ void makeworld ( int rflag ){		/* TRUE if you wish to read in a map from mapfile
 		||(strcmp(newstring,"god")==0)) {
 			newmsg("God will personally rule this world!!!");
 			sleep(1);
-			(void) strcpy(ntn[0].leader,LOGIN);
+			strncpy(ntn[0].leader, LOGIN, sizeof(ntn[0].leader) - 1);
+			ntn[0].leader[sizeof(ntn[0].leader) - 1] = '\0';
 			mvaddstr(7,0,"Demi-God: [none]");
 			clrtoeol();
 			break;
@@ -264,13 +271,14 @@ void makeworld ( int rflag ){		/* TRUE if you wish to read in a map from mapfile
 #endif /*REMAKE*/
 				newmsg("God will personally rule this world!!!");
 				sleep(1);
-				(void) strcpy(ntn[0].leader,LOGIN);
+				strncpy(ntn[0].leader, LOGIN, sizeof(ntn[0].leader) - 1);
+				ntn[0].leader[sizeof(ntn[0].leader) - 1] = '\0';
 				mvaddstr(7,0,"Demi-God: [none]");
 				clrtoeol();
 				break;
 #ifdef REMAKE
 			} else {
-				(void) sprintf(tempc,"The demi-god %s will continue to reign.",ntn[0].leader);
+				snprintf(tempc, sizeof(tempc), "The demi-god %s will continue to reign.", ntn[0].leader);
 				newmsg(tempc);
 				sleep(1);
 				mvprintw(7,0,"Demi-God: [%s]",ntn[0].leader);
@@ -352,7 +360,7 @@ void makeworld ( int rflag ){		/* TRUE if you wish to read in a map from mapfile
 	writedata();
 
 	/* initialize news file */
-	sprintf(newstring,"%s0",newsfile);
+	snprintf(newstring, sizeof(newstring), "%s0", newsfile);
 	if( (fm=fopen(newstring,"w"))!=(FILE *)NULL ) {
 		fprintf(fm,"1\tIMPORTANT WORLD NEWS\n");
 		fprintf(fm,"5\tGLOBAL ANNOUNCEMENTS\n");
@@ -408,6 +416,7 @@ void makeworld ( int rflag ){		/* TRUE if you wish to read in a map from mapfile
  *   - Geographic constraints enforced (deserts not adjacent to water, etc.)
  *   - Memory-intensive operation requiring careful allocation/deallocation
  *   - Algorithm quality directly affects game playability and balance
+  * @last_documented: 2025-09-20
  */
 void createworld (void) {	/* create world */
 	int	i,j;
@@ -886,6 +895,7 @@ void createworld (void) {	/* create world */
  *   - Only habitable sectors receive resources (validated via is_habitable())
  *   - Resource distribution directly affects game economy and strategy
  *   - Includes humorous world generation narrative messages for user experience
+  * @last_documented: 2025-09-20
  */
 void
 rawmaterials (void) 		 /*PLACE EACH SECTOR'S RAW MATERIALS */
@@ -982,19 +992,19 @@ rawmaterials (void) 		 /*PLACE EACH SECTOR'S RAW MATERIALS */
 	sleep(1);
 	newmsg("Day 7... God rested (to get rid of that stupid hangover)");
 	sleep(1);
-	sprintf(newstring," ...Log in via 'conquer -n god");
+	snprintf(newstring, sizeof(newstring), " ...Log in via 'conquer -n god");
 	if (strcmp(datadir,"[default]")!=0) {
-		strcat(newstring," -d ");
-		strcat(newstring,datadir);
+		strncat(newstring," -d ", sizeof(newstring) - strlen(newstring) - 1);
+		strncat(newstring,datadir, sizeof(newstring) - strlen(newstring) - 1);
 	}
-	strcat(newstring,"'");
+	strncat(newstring,"'", sizeof(newstring) - strlen(newstring) - 1);
 	newerror(newstring);
-	sprintf(newstring," ...Players may be added via 'conqrun -a");
+	snprintf(newstring, sizeof(newstring), " ...Players may be added via 'conqrun -a");
 	if (strcmp(datadir,"[default]")!=0) {
-		strcat(newstring," -d ");
-		strcat(newstring,datadir);
+		strncat(newstring," -d ", sizeof(newstring) - strlen(newstring) - 1);
+		strncat(newstring,datadir, sizeof(newstring) - strlen(newstring) - 1);
 	}
-	strcat(newstring,"'");
+	strncat(newstring,"'", sizeof(newstring) - strlen(newstring) - 1);
 	newerror(newstring);
 }
 
@@ -1036,8 +1046,8 @@ rawmaterials (void) 		 /*PLACE EACH SECTOR'S RAW MATERIALS */
  *   - World wrapping ensures seamless terrain at map boundaries
  *   - Edge generation happens before interior area filling
  *   - Critical for creating coherent large-scale terrain patterns
+ * @last_documented: 2025-09-19
  */
-/*fill: subroutine to fill in a square edges with land or sea*/
 void
 fill_edge(int AX,int AY)
 {
@@ -1151,8 +1161,8 @@ fill_edge(int AX,int AY)
  *   - Supports multiple conditional compilation flags (MONSTER, NPC, CHECKUSER)
  *   - Critical for establishing initial game state and strategic balance
  *   - Includes extensive validation and error handling for file operations
+ * @last_documented: 2025-09-19
  */
-/* ALLOCATE POPULATIONS OF THE WORLD*/
 void
 populate (void)
 {
@@ -1172,7 +1182,8 @@ populate (void)
 
 	/*set up god but dont place -- do not change leader name*/
 	curntn = &ntn[0];
-	strcpy(curntn->name,"unowned");
+	strncpy(curntn->name,"unowned", sizeof(curntn->name) - 1);
+	curntn->name[sizeof(curntn->name) - 1] = '\0';
 	curntn->race=GOD;
 	curntn->location=GOD;
 	curntn->powers=KNOWALL;	/* so god can see the map */
@@ -1185,7 +1196,7 @@ populate (void)
 			newerror("THIS SHOULDNT HAPPEN");
 			continue;
 		}
-		strcpy(curntn->passwd,ntn[0].passwd);
+		snprintf(curntn->passwd, PASSLTH+1, "%s", ntn[0].passwd);
 		curntn->powers=0;
 		curntn->repro=0;
 		curntn->active=INACTIVE;
@@ -1205,22 +1216,30 @@ populate (void)
 		curntn = &ntn[country];
 		if( country==NTOTAL-1 ) {
 			strncpy(curntn->name,"lizard",10);
+			curntn->name[9] = '\0';
 			strncpy(curntn->leader,"dragon",10);
+			curntn->leader[9] = '\0';
 			curntn->active=NPC_LIZARD;
 			curntn->race=LIZARD;
 		} else if( country==NTOTAL-2 ) {
-			strcpy(curntn->name,"savages");
-			strcpy(curntn->leader,"shaman");
+			strncpy(curntn->name,"savages", sizeof(curntn->name) - 1);
+			curntn->name[sizeof(curntn->name) - 1] = '\0';
+			strncpy(curntn->leader,"shaman", sizeof(curntn->leader) - 1);
+			curntn->leader[sizeof(curntn->leader) - 1] = '\0';
 			curntn->active=NPC_SAVAGE;
 			curntn->race=SAVAGE;
 		} else if( country==NTOTAL-3 ) {
-			strcpy(curntn->name,"nomad");
-			strcpy(curntn->leader,"khan");
+			strncpy(curntn->name,"nomad", sizeof(curntn->name) - 1);
+			curntn->name[sizeof(curntn->name) - 1] = '\0';
+			strncpy(curntn->leader,"khan", sizeof(curntn->leader) - 1);
+			curntn->leader[sizeof(curntn->leader) - 1] = '\0';
 			curntn->active=NPC_NOMAD;
 			curntn->race=NOMAD;
 		} else if( country==NTOTAL-4 ) {
-			strcpy(curntn->name,"pirate");
-			strcpy(curntn->leader,"captain");
+			strncpy(curntn->name,"pirate", sizeof(curntn->name) - 1);
+			curntn->name[sizeof(curntn->name) - 1] = '\0';
+			strncpy(curntn->leader,"captain", sizeof(curntn->leader) - 1);
+			curntn->leader[sizeof(curntn->leader) - 1] = '\0';
 			curntn->active=NPC_PIRATE;
 			curntn->race=PIRATE;
 		}
@@ -1318,7 +1337,7 @@ populate (void)
 			P_AYLOC=safe_int_to_uchar(y);
 			P_ASTAT=GARRISON;
 			P_ASOLD=750+100*(rand()%10);
-			P_ATYPE=safe_clamp_uchar(defaultunit(country));
+			P_ATYPE=safe_clamp_nation_attr(defaultunit(country));
 			armynum++;
 			lizarmy++;
 			P_AMOVE=8;
@@ -1326,7 +1345,7 @@ populate (void)
 			P_AYLOC=safe_int_to_uchar(y);
 			P_ASTAT=ATTACK;
 			P_ASOLD=750+100*(rand()%10);
-			P_ATYPE=safe_clamp_uchar(defaultunit(country));
+			P_ATYPE=safe_clamp_nation_attr(defaultunit(country));
 			lizarmy++;
 			break;
 		case NPC_PIRATE:
@@ -1364,7 +1383,7 @@ populate (void)
 			P_AYLOC=safe_int_to_uchar(y);
 			P_ASTAT=ATTACK;
 			P_ASOLD=150+100*(rand()%3);
-			P_ATYPE=safe_clamp_uchar(defaultunit(country));
+			P_ATYPE=safe_clamp_nation_attr(defaultunit(country));
 			pirarmy++;
 			P_NXLOC=safe_int_to_uchar(x);
 			P_NYLOC=safe_int_to_uchar(y);
@@ -1375,7 +1394,7 @@ populate (void)
 			shipsize = N_MEDIUM;
 			(void) NADD_WAR( safe_int_to_short(rand()%3+1) )
 			shipsize = N_HEAVY;
-			(void) NADD_WAR( rand()%2 )
+			(void) NADD_WAR( safe_int_to_short(rand()%2) )
 			P_NCREW=SHIPCREW;
 			nvynum++;
 			break;
@@ -1385,7 +1404,7 @@ populate (void)
 			P_AYLOC=safe_int_to_uchar(y);
 			P_ASTAT=ATTACK;
 			P_ASOLD=100+100*(rand()%8);
-			P_ATYPE=safe_clamp_uchar(defaultunit(country));
+			P_ATYPE=safe_clamp_nation_attr(defaultunit(country));
 			nomadarmy++;
 			break;
 		case NPC_SAVAGE:
@@ -1394,7 +1413,7 @@ populate (void)
 			P_AYLOC=safe_int_to_uchar(y);
 			P_ASTAT=ATTACK;
 			P_ASOLD=100+100*(rand()%4);
-			P_ATYPE=safe_clamp_uchar(defaultunit(country));
+			P_ATYPE=safe_clamp_nation_attr(defaultunit(country));
 			barbarmy++;
 			break;
 		}
@@ -1428,10 +1447,10 @@ populate (void)
 #endif /* MONSTER */
 
 	for (i=0;i<MAXHELP;i++) {
-		sprintf(fname,"%s/%s%d",DEFAULTDIR,helpfile,i);
+		snprintf(fname, sizeof(fname), "%s/%s%d", DEFAULTDIR, helpfile, i);
 		if ((fp=fopen(fname,"r"))==NULL) {
 			char tempc[BIGLTH];
-			sprintf(tempc,"cannot find helpfile <%s>.",fname);
+			snprintf(tempc, sizeof(tempc), "cannot find helpfile <%s>.", fname);
 			newerror(tempc);
 		}
 	}
@@ -1452,7 +1471,7 @@ populate (void)
 		refresh();
 		while( ((i=getchar()) != 'y')&&(i != 'n') ) ;
 		if( i=='y'){
-			sprintf(line,"%s/%s",DEFAULTDIR,npcsfile);
+			snprintf(line, sizeof(line), "%s/%s", DEFAULTDIR, npcsfile);
 			if ((fp=fopen(line,"r"))==NULL) {
 				newerror("Cannot read nation file... no NPCs added");
 				return;
@@ -1474,17 +1493,23 @@ populate (void)
 		/*read and parse a new line*/
 		if(line[0]!='#') {
 			xloc = yloc = -1;
-			sscanf(line,"%s %s %c %c %c %hd %hd %hd %ld %ld %d %hd %c %d %d %hd",
+			int result = sscanf(line,"%9s %9s %c %c %c %hd %hd %hd %ld %ld %d %hd %c %d %d %hd",
 			ntn[cnum].name,ntn[cnum].leader,&ntn[cnum].race,
 			&ntn[cnum].mark,&ntn[cnum].location,&ntn[cnum].aplus,
 			&ntn[cnum].dplus,&short1,&ntn[cnum].tgold,
 			&ntn[cnum].tmil,&points,&short2,&allign,&xloc,&yloc,
 			&class);
+			if (result != 16) {
+				/* Parse error - skip malformed nation data line */
+				ntn[cnum].name[0] = '\0';
+				ntn[cnum].leader[0] = '\0';
+				continue;
+			}
 
 			country=safe_int_to_short(cnum);
 			curntn = &ntn[country];
 			curntn->class = (short)class;
-			sprintf(line," %s (%s)",curntn->name,*(Class+curntn->class));
+			snprintf(line, sizeof(line), " %s (%s)", curntn->name, *(Class+curntn->class));
 			mvaddstr(ypos,xpos,line);
 			xpos += safe_size_to_int(strlen(line));
 			if (xpos > COLS-20) {
@@ -1493,12 +1518,12 @@ populate (void)
 			}
 			refresh();
 			if( cnum > MAPX*MAPY/NPC*(100-pwater)/100 ) {
-				sprintf(line,"World too small to add npc nation %d %s",cnum,curntn->name);
+				snprintf(line, sizeof(line), "World too small to add npc nation %d %s", cnum, curntn->name);
 				newerror(line);
 				continue;
 			}
 			if( isactive(ntn[cnum].active) ) {
-				sprintf(line,"Not enough available nations to add npc nation %d %s",cnum,curntn->name);
+				snprintf(line, sizeof(line), "Not enough available nations to add npc nation %d %s", cnum, curntn->name);
 				newerror(line);
 				continue;
 			}
@@ -1519,12 +1544,12 @@ populate (void)
 			else if( allign == 'i' )
 				curntn->active = ISOLATIONIST;
 			else {
-				sprintf(line,"invalid nation alignment (%c)",allign);
+				snprintf(line, sizeof(line), "invalid nation alignment (%c)", allign);
 				newerror(line);
 				newreset();
 				abrt()
 			}
-			strcpy(curntn->passwd,ntn[0].passwd);
+			snprintf(curntn->passwd, PASSLTH+1, "%s", ntn[0].passwd);
 
 			points -= doclass( class, FALSE );
 			points -= startcost();

@@ -71,14 +71,18 @@ static long	**newpop;		/* storage for old population */
  *   - Consider replacing with direct casting in modern C implementations
  *   - String formatting approach may be less efficient than direct conversion
  *   - BIGLTH buffer size should be sufficient for largest double representations
+  * @last_documented: 2025-09-18
  */
 long
 dtol (double d)
 {
 	char tempstr[BIGLTH];
-	long l;
-	sprintf(tempstr,"%-60.0lf",d);
-	sscanf(tempstr,"%ld",&l);
+	long l = 0;
+	snprintf(tempstr, sizeof(tempstr), "%-60.0lf", d);
+	if (sscanf(tempstr,"%ld",&l) != 1) {
+		/* Parse error - return 0 as fallback */
+		return 0;
+	}
 	return(l);
 }
 
@@ -142,13 +146,14 @@ dtol (double d)
  *   - File operations and system commands require careful error handling
  *   - News file management ensures player communication and game history
  *   - Integrity checks (check()) provide critical error detection throughout turn processing
+  * @last_documented: 2025-09-18
  */
 void
 update (void)
 {
 	char filename[FILELTH];
 
-	sprintf(filename,"%s%d",newsfile,TURN);
+	snprintf(filename, sizeof(filename), "%s%d", newsfile, TURN);
 	if ((fnews=fopen(filename,"w"))==NULL) {
 		printf("error opening news file\n");
 		exit(FAIL);
@@ -209,7 +214,7 @@ update (void)
 	}
 	/* Use secure file deletion instead of system() call */
 	char pattern[BIGLTH];
-	sprintf(pattern, "%s*", exefile);
+	snprintf(pattern, sizeof(pattern), "%s*", exefile);
 	const char *patterns[] = { pattern };
 	int deleted = secure_file_delete(patterns, 1);
 	printf("Removed %d files matching %s*\n", deleted, exefile);
@@ -220,7 +225,7 @@ update (void)
 
 	/* remove old news files */
 	if (TURN>MAXNEWS) {
-		sprintf(filename,"%s%d",newsfile,TURN-MAXNEWS);
+		snprintf(filename, sizeof(filename), "%s%d", newsfile, TURN-MAXNEWS);
 		unlink(filename);
 	}
 
@@ -280,6 +285,7 @@ update (void)
  *   - Food scarcity calculation affects farm attractiveness dynamically
  *   - Devastated sectors always return 0 regardless of other factors
  *   - Negative movement costs indicate inaccessible terrain
+  * @last_documented: 2025-09-18
  */
 int
 attract(int x,int y,int race)
@@ -448,6 +454,7 @@ attract(int x,int y,int race)
  *   - Attractiveness is reduced after army visits to prevent clustering
  *   - Group leaders coordinate movement of all assigned units
  *   - Complex conditional logic for different army types and situations
+  * @last_documented: 2025-09-18
  */
 int
 armymove (int armynum)
@@ -665,6 +672,7 @@ armymove (int armynum)
  *   - Only processes active nations to avoid updating dead/inactive nations
  *   - Nation 0 is skipped (nations start at index 1)
  *   - Cumulative scoring allows tracking long-term nation performance
+  * @last_documented: 2025-09-18
  */
 void
 score (void)
@@ -728,6 +736,7 @@ score (void)
  *   - File access checks determine which nations are actively played
  *   - Score comparison ensures only struggling NPCs receive help
  *   - Diplomatic changes are probabilistic and gradual
+  * @last_documented: 2025-09-18
  */
 void
 cheat (void)
@@ -738,7 +747,7 @@ cheat (void)
 
 	/* take inventory of countries */
 	for(x=1;x<NTOTAL;x++) {
-		sprintf(tempc,"%s%d", exefile, x);
+		snprintf(tempc, sizeof(tempc), "%s%d", exefile, x);
 		if (isnpc(ntn[x].active) && access(tempc,00)==0) {
 			realnpc[x]=TRUE;
 		} else {
@@ -870,6 +879,7 @@ cheat (void)
  *   - Leadership system prevents nations from becoming unplayable
  *   - Nation disarray occurs when primary leader is killed
  *   - Civilian movement driven by sector attractiveness calculations
+  * @last_documented: 2025-09-18
  */
 void
 updexecs (void)
@@ -1109,12 +1119,8 @@ printf("checking for leader in nation %s: armynum=%d\n",curntn->name,armynum);
  *   - Population growth gives lizards significant long-term advantage
  *   - Army coordination provides tactical military benefits
  *   - Thread safety: Not thread-safe due to global variable dependencies
+  * @last_documented: 2025-09-18
  */
-
-/****************************************************************/
-/*	DO_LIZARD() 						*/
-/* update lizards	 					*/
-/****************************************************************/
 void
 do_lizard (void)
 {
@@ -1248,12 +1254,8 @@ do_lizard (void)
  *   - Capital capture triggers catastrophic nation destruction
  *   - Scout mechanics encourage careful intelligence operations
  *   - Thread safety: Not thread-safe due to global variable dependencies
+  * @last_documented: 2025-09-18
  */
-
-/****************************************************************/
-/*	UPDCAPTURE() 						*/
-/* capture unoccupied sectors					*/
-/****************************************************************/
 void
 updcapture (void)
 {
@@ -1452,12 +1454,8 @@ updcapture (void)
  *   - Implements sophisticated economic modeling for strategy game
  *   - Creates pressure for territorial expansion and resource control
  *   - Thread safety: Not thread-safe due to extensive global variable usage
+  * @last_documented: 2025-09-18
  */
-
-/**************************************************************/
-/*	UPDSECTORS() 						*/
-/* update sectors one at a time				*/
-/**************************************************************/
 void
 updsectors (void)
 {
@@ -1638,6 +1636,7 @@ updsectors (void)
 	}
 }
 
+#define MAXSIEGE (NTOTAL)
 /*
  * updmil - Comprehensive military system update and movement calculation
  *
@@ -1748,13 +1747,8 @@ updsectors (void)
  *   - Integrates leadership, magic, and economic systems
  *   - Creates meaningful strategic choices between unit types
  *   - Thread safety: Not thread-safe due to extensive global variable usage
+  * @last_documented: 2025-09-18
  */
-
-/****************************************************************/
-/*	UPDMIL() 						*/
-/* reset military stuff 					*/
-/****************************************************************/
-#define MAXSIEGE (NTOTAL)
 void
 updmil (void)
 {
@@ -2139,12 +2133,8 @@ updmil (void)
  *   - Creates meaningful resource management decisions
  *   - Famine system adds realistic consequences to poor planning
  *   - Thread safety: Not thread-safe due to global variable dependencies
+  * @last_documented: 2025-09-18
  */
-
-/****************************************************************/
-/*	UPDCOMODITIES()						*/
-/* update commodities						*/
-/****************************************************************/
 void
 updcomodities (void)
 {
@@ -2337,12 +2327,9 @@ updcomodities (void)
  *   - Provides both mundane and supernatural leadership sources
  *   - Creates strategic value for capital protection
  *   - Thread safety: Not thread-safe due to global variable dependencies
+  * @last_documented: 2025-09-18
  */
 
-/****************************************************************/
-/* Conquer: Copyright (c) 1988 by Edward M Barlow              */
-/*	UPDLEADER()						*/
-/****************************************************************/
 void
 updleader (void)
 {
@@ -2528,9 +2515,8 @@ updleader (void)
  *   - Essential for realistic economic modeling and strategic depth
  *   - Mathematical precision ensures stable long-term demographic patterns
  *   - Thread safety: Not thread-safe due to global buffer and sector modifications
- */
-
-/* MOVE CIVILIANS based on the ratio of attractivenesses
+ *
+ * MOVE CIVILIANS based on the ratio of attractivenesses
  *
  * EQUILIBRIUM(1) = A1 / (A1 + A2) * (P1 + P2)
  * EQUILIBRIUM(2) = A2 / (A1 + A2) * (P1 + P2)
@@ -2538,6 +2524,7 @@ updleader (void)
  * DELTA(1) = (EQUILIBRIUM(1) - P1) / 5 =(A1P2 - P1A2) / 5(A1 + A2)
  * DELTA(2) = (EQUILIBRIUM(2) - P2) / 5 =(A2P1 - P2A1) / 5(A1 + A2) = -DELTA(1)
  * (i, j) is refered to as 1, (x, y) as 2
+  * @last_documented: 2025-09-18
  */
 void
 move_people (void)
@@ -2562,10 +2549,13 @@ move_people (void)
 			sptr = &sct[x][y];
 			if ((sptr->owner == country) && (sptr->people != 0)) {
 
-				for (t_attr = 0, i = x - 2; i < x + 3; i++)
-				for (j = y - 2; j < y + 3; j++)
-				if (ONMAP(i, j))
-					t_attr += attr[i][j];
+				for (t_attr = 0, i = x - 2; i < x + 3; i++){
+					for (j = y - 2; j < y + 3; j++){
+						if (ONMAP(i, j)) {
+							t_attr += attr[i][j];
+						}
+					}
+				}
 
 				if (t_attr > 0) {
 					t_attr *= 5;

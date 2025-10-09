@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #include <sysexits.h>
 #include "unity.h"
 
@@ -23,9 +24,32 @@ typedef struct holder {
     struct holder *next;
 } L_DATA, *L_PTR;
 
-/* Copy build_node implementation from sort.c for testing */
+/* Copy constant from sort.c */
+#define MAX_STR 200
+
+/* Copy build_node implementation from sort.c for testing (Phase 8.4.3.2 - with validation) */
 static L_PTR build_node(char data[], L_PTR nptr) {
     L_PTR temp;
+
+    /* Validate input parameter */
+    if (data == NULL) {
+        fprintf(stderr, "build_node: NULL data parameter\n");
+        exit(EX_SOFTWARE);
+    }
+
+    /* Check string length and bounds */
+    size_t data_len = strlen(data);
+    if (data_len > MAX_STR) {
+        fprintf(stderr, "build_node: String too long (%zu > %d)\n",
+                data_len, MAX_STR);
+        exit(EX_SOFTWARE);
+    }
+
+    /* Check for overflow in allocation size calculation */
+    if (data_len >= SIZE_MAX - 1) {
+        fprintf(stderr, "build_node: String length overflow\n");
+        exit(EX_SOFTWARE);
+    }
 
     /* build the memory space */
     if((temp=(L_PTR)malloc(sizeof(L_DATA)))==(L_PTR)NULL) {
@@ -38,7 +62,8 @@ static L_PTR build_node(char data[], L_PTR nptr) {
     }
 
     /* assign the values */
-    (void) strcpy(temp->line,data);
+    memcpy(temp->line, data, data_len);
+    temp->line[data_len] = '\0';
     temp->next = nptr;
     return(temp);
 }
@@ -74,7 +99,8 @@ void test_build_node_basic_string_null_next(void) {
     TEST_ASSERT_NULL(result->next);
 
     /* Verify memory independence */
-    strcpy(test_data, "changed");
+    strncpy(test_data, "changed", sizeof(test_data) - 1);
+    test_data[sizeof(test_data) - 1] = '\0';
     TEST_ASSERT_EQUAL_STRING("test string", result->line);
 
     free_node(result);
@@ -202,13 +228,16 @@ void test_build_node_memory_independence(void) {
     TEST_ASSERT_EQUAL_STRING("original data", result->line);
 
     /* Modify original buffer */
-    strcpy(original, "modified data");
+    strncpy(original, "modified data", sizeof(original) - 1);
+    original[sizeof(original) - 1] = '\0';
 
     /* Node should be unchanged */
     TEST_ASSERT_EQUAL_STRING("original data", result->line);
 
     /* Modify node data */
-    strcpy(result->line, "node modified");
+    /* Note: result->line is dynamically allocated with exact size needed */
+    strncpy(result->line, "node modified", strlen(result->line));
+    result->line[strlen("node modified")] = '\0';
 
     /* Original buffer should be unchanged */
     TEST_ASSERT_EQUAL_STRING("modified data", original);

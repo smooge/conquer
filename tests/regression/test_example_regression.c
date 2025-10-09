@@ -37,7 +37,8 @@ void test_data_structure_regression(void) {
 
     /* String handling */
     char game_name[32];
-    strcpy(game_name, "Conquer");
+    strncpy(game_name, "Conquer", sizeof(game_name) - 1);
+    game_name[sizeof(game_name) - 1] = '\0';
     TEST_ASSERT_EQUAL_STRING("Conquer", game_name);
     TEST_ASSERT_EQUAL(7, (int)strlen(game_name));
 }
@@ -106,7 +107,7 @@ void test_standard_behavior_regression(void) {
 
     /* String functions */
     char buffer[64];
-    sprintf(buffer, "Test %d", 42);
+    snprintf(buffer, sizeof(buffer), "Test %d", 42);
     TEST_ASSERT_EQUAL_STRING("Test 42", buffer);
 
     /* Memory functions */

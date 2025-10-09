@@ -105,6 +105,7 @@
  *   - Critical for maintaining game state consistency
  *   - Handles edge cases for sector ownership conflicts
  *   - Debug output available for bribe operations
+  * @last_documented: 2025-09-20
  */
 int execute(int isupdate) {	/* 0 if not update, 1 if update */
 	FILE *fp;
@@ -134,7 +135,7 @@ int execute(int isupdate) {	/* 0 if not update, 1 if update */
 				sct[x][y].i_people = -1;
 
 	/*open exefile file*/
-	sprintf(line,"%s%d",exefile,country);
+	snprintf(line, sizeof(line), "%s%d", exefile, country);
 	if ((fp=fopen(line,"r"))==NULL) {
 		/*THIS MEANS THAT THE NATION HAS NOT MOVED YET*/
 		return(0);
@@ -147,11 +148,25 @@ int execute(int isupdate) {	/* 0 if not update, 1 if update */
 		/*read and parse a new line*/
 		/*CODE IF YOU USE LONG VAR IS L_*/
 		if( line[0] == 'L' && line[1] == '_' ) {
-			sscanf(line,"%s %d %hd %ld %ld %hd %s",
+			int result = sscanf(line,"%79s %d %hd %ld %ld %hd %79s",
 				temp,&cmd,&country,&longvar,&long2var,&y,comment);
+			if (result != 7) {
+				/* Parse error - skip malformed command line */
+				temp[0] = '\0';
+				comment[0] = '\0';
+				if(fgets(line,80,fp)==NULL) done=TRUE;
+				continue;
+			}
 		} else {
-			sscanf(line,"%s %d %hd %d %hd %hd %s",
+			int result = sscanf(line,"%79s %d %hd %d %hd %hd %79s",
 				temp,&cmd,&country,&armynum,&x,&y,comment);
+			if (result != 7) {
+				/* Parse error - skip malformed command line */
+				temp[0] = '\0';
+				comment[0] = '\0';
+				if(fgets(line,80,fp)==NULL) done=TRUE;
+				continue;
+			}
 		}
 		curntn = &ntn[country];
 
@@ -227,7 +242,7 @@ int execute(int isupdate) {	/* 0 if not update, 1 if update */
 			curntn->nvy[armynum].armynum=(unsigned char)x;
 			break;
 		case XECNAME:	/*Nadjname*/
-			strcpy(curntn->name,comment);
+			snprintf(curntn->name, sizeof(curntn->name), "%.*s", (int)(sizeof(curntn->name) - 1), comment);
 			break;
 		case XECPAS:	/*Nadjpas*/
 			snprintf(curntn->passwd, PASSLTH+1, "%.*s", PASSLTH, comment);
@@ -400,6 +415,7 @@ int execute(int isupdate) {	/* 0 if not update, 1 if update */
  *   - Ensures proper cleanup of system resources
  *   - Maintains file locking integrity
  *   - Thread safety not required (single-threaded emergency handler)
+  * @last_documented: 2025-09-20
  */
 void hangup (int sig) {
 	(void)sig;  /* Signal number not used in this handler */
@@ -425,7 +441,7 @@ void hangup (int sig) {
 
 	/* remove the lock file */
 	unlink(fison);
-	sprintf(line,"%s%hd.tmp",msgfile,country);
+	snprintf(line, sizeof(line), "%s%hd.tmp", msgfile, country);
 	unlink(line);
 
 	/*send a message to God*/

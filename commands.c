@@ -112,7 +112,56 @@ int roads_this_turn = 0;
  *   - Error UX: Provides helpful error messages explaining restrictions
  *   - Extensibility: Clear structure allows easy addition of new rules
  */
-/* routine to determine if the given designation is ok; TRUE for ok */
+/*
+ * desg_ok - Validate sector designation change with comprehensive rule checking
+ *
+ * Determines if a given sector designation is permissible based on multiple
+ * constraints including vegetation requirements, current designation, population
+ * thresholds, trade good compatibility, and resource availability. Functions in
+ * dual mode: validation mode (prtflag=TRUE) provides error messages, while query
+ * mode (prtflag=FALSE) supports UI filtering of valid designation options.
+ *
+ * Validation Rules:
+ * - Vegetation: Most designations require minimum DESFOOD vegetation (except roads/forts)
+ * - No duplicate: Cannot redesignate to same type
+ * - Cities/Capitols: Must be ruins before changing to other types
+ * - Population: Towns/Cities/Capitols require minimum 500 people
+ * - Trade goods: Universities/Lumberyards must match sector trade good
+ * - Mines: Require metal (mines) or jewels (gold mines) and trade good compatibility
+ * - Special: Requires SUMMON magic power and stone trade goods
+ * - Ruins: Only valid from cities or capitols
+ * - City/Capitol progression: Must upgrade through town → city → capitol chain
+ * - Pirate coves: Reserved for god mode (players cannot create)
+ *
+ * Parameters:
+ *   prtflag - TRUE: validation mode with error messages, FALSE: query mode for UI
+ *   desg - Designation character to validate (DCITY, DTOWN, DMINE, etc.)
+ *   sptr - Pointer to sector being evaluated (must not be NULL)
+ *
+ * Returns:
+ *   TRUE if designation change is valid and permitted
+ *   FALSE if designation violates constraints or is incompatible
+ *
+ * Side Effects:
+ *   - Displays error messages via errormsg() when prtflag is TRUE
+ *   - No modifications to game state (pure validation function)
+ *
+ * Testing Notes:
+ *   Category: A - Unit tested
+ *   Approach: Test each validation rule independently (vegetation, population,
+ *            trade goods, resource requirements) with valid/invalid inputs
+ *   Dependencies: Requires tofood(), magic(), tg_ok() helpers and designation constants
+ *   Complexity: Moderate - 12 distinct validation rules with state dependencies
+ *
+ * Notes:
+ *   - Dual mode design: prtflag controls both error output and filtering behavior
+ *   - Query mode (prtflag=FALSE) hides invalid options from UI designation menus
+ *   - Special handling for DNODESIG and DSPECIAL in query mode
+ *   - Uses global 'country' variable to check magic powers and ownership
+ *   - tg_stype array maps trade goods to required sector types
+ *
+ * @last_documented: 2025-10-08
+ */
 int desg_ok(int prtflag, char desg, struct s_sector *sptr) {
 	/* check vegetation */
 	if((desg!=DNODESIG)&&(desg!=DROAD)&&(desg!=DFORT)
@@ -133,7 +182,7 @@ int desg_ok(int prtflag, char desg, struct s_sector *sptr) {
 	||sptr->designation==DCAPITOL)) {
 		if(prtflag) {
 			char buf[LINELTH+1];
-			sprintf(buf,"Must first burn down city/capitol (designate as '%c')",DRUIN);
+			snprintf(buf, sizeof(buf), "Must first burn down city/capitol (designate as '%c')", DRUIN);
 			errormsg(buf);
 		}
 		return(FALSE);
@@ -280,8 +329,9 @@ int desg_ok(int prtflag, char desg, struct s_sector *sptr) {
  *   - God mode provides world editing capabilities for game administration
  *   - Capitol relocation automatically demotes previous capitol to city
  *   - SADJDES macro updates influence on adjacent sectors after changes
+ *
+ * @last_documented: 2025-10-08
  */
-/*change current hex designation*/
 void redesignate (void) {
 	char	newdes;
 	char	tgtype[NAMELTH+1];
@@ -632,8 +682,9 @@ void redesignate (void) {
  *   - Harbor Detection: Adjacent water tile scanning for ship construction
  *   - Debt Management: Fortification allows controlled debt up to jewel limit
  *   - Heavy Ship Restriction: Towns cannot construct heavy class ships
+ *
+ * @last_documented: 2025-10-08
  */
-/*build fort or ship-type */
 void construct (void) {
 	int	tmpvar,tmpvar2,onboard;
 	long	cost;
@@ -1097,8 +1148,9 @@ void construct (void) {
  *   - Population Tracking: Complex draft limit calculation based on turn start
  *   - Map Integration: Updates display to show new army positions
  *   - Resource Management: Careful validation prevents over-recruitment
+ *
+ * @last_documented: 2025-10-08
  */
-/*DRAFT IF IN A CITY*/
 void draft (void) {
 	short	armynum,x,y,i;
 	long	men=0,mercs;
@@ -1505,9 +1557,9 @@ void draft (void) {
  *   - File integrity: Atomic operations ensure no message loss during reading
  *   - Performance: Pagination prevents memory issues with large messages
  *   - User experience: Clear prompts and immediate feedback for message management
+ *
+ * @last_documented: 2025-10-08
  */
-/*go through msgfile not rewriting to temp messages you discard*/
-/* then move temp to msgfile*/
 void rmessage (void) {
 	FILE *mesgfp;
 	FILE *fptemp;
@@ -1581,7 +1633,12 @@ void rmessage (void) {
 		standout();
 		/*print to end of message*/
 		while(contd==FALSE) {
-			if(msglen<LINELTH) strcpy(save[msglen],line);
+			if(msglen<LINELTH) {
+				size_t len = strlen(line);
+				if (len >= LINELTH) len = LINELTH - 1;
+				memcpy(save[msglen], line, len);
+				save[msglen][len] = '\0';
+			}
 			if(count==LINES-3) {
 				standout();
 				mvaddstr(LINES-3,(COLS/2)-8,"--- more ---");
@@ -1606,7 +1663,8 @@ void rmessage (void) {
 		inpch=safe_int_to_char(getch());
 		if((inpch!='\n' && inpch!='\r')) {
 			for(i=0;i<msglen;i++) fputs(save[i],fptemp);
-			strcpy(line,"END\n");
+			strncpy(line, "END\n", LINELTH);
+			line[LINELTH] = '\0';
 			fputs(line,fptemp);
 		}
 		if(fgets(line,LINELTH,mesgfp)==NULL) done=TRUE;
@@ -1741,6 +1799,7 @@ void rmessage (void) {
  *   - File safety: Proper locking and error handling for mail operations
  *   - Input handling: Comprehensive character processing for editing
  *   - Screen management: Complex screen state management for editing interface
+  * @last_documented: 2025-09-18
  */
 void wmessage (void) {
 	int x=0,y=0;
@@ -1759,7 +1818,8 @@ void wmessage (void) {
 	temp=get_country();
 
 	if( temp == NEWSMAIL ) {
-		strcpy(name,"news");
+		strncpy(name, "news", NAMELTH);
+		name[NAMELTH] = '\0';
 	} else {
 		/* quick return on bad input */
 		if(temp==(-1) || temp>=NTOTAL
@@ -1767,7 +1827,10 @@ void wmessage (void) {
 			makebottom();
 			return;
 		}
-		strcpy(name,ntn[temp].name);	/* find nation name */
+		size_t len = strlen(ntn[temp].name);
+		if (len >= NAMELTH) len = NAMELTH - 1;
+		memcpy(name, ntn[temp].name, len);
+		name[len] = '\0';
 	}
 
 	if(mailopen( temp )==(-1)) {
@@ -1781,7 +1844,7 @@ void wmessage (void) {
 		fprintf(fm,"Message to %s from GOD (%s of year %d)\n\n",name,PSEASON(TURN),YEAR(TURN));
 		else	fprintf(fm,"Message to %s from %s (%s of year %d)\n\n",name,curntn->name,PSEASON(TURN),YEAR(TURN));
 	} else fprintf(fm,"5.----------\n");
-	strcpy(line,"");
+	line[0] = '\0';
 
 	while(done==FALSE) {
 		if (dotitles==TRUE) {
@@ -2005,8 +2068,9 @@ void wmessage (void) {
  *   - One-time Use: Comment suggests this may be limited use per turn
  *   - Distance Logic: Uses absolute difference checking for movement limits
  *   - God Mode: Conditional ownership bypass for administrative functions
+ *
+ * @last_documented: 2025-10-08
  */
-/*strategic move of civilians...once only*/
 void
 moveciv (void)
 {
@@ -2179,6 +2243,7 @@ moveciv (void)
  *   - Army Management: Essential for efficient army navigation in game
  *   - Performance: Optimized for typical army counts in gameplay
  *   - User Experience: Provides smooth army cycling for player convenience
+  * @last_documented: 2025-09-18
  */
 int armygoto (void) {
 	short armynum=0,loop=0;
@@ -2319,6 +2384,7 @@ int armygoto (void) {
  *   - Navy Numbering: Uses MAXARM offset to distinguish from army units
  *   - Ship Types: Supports three distinct ship categories for tactical diversity
  *   - User Experience: Provides smooth fleet cycling for naval operations
+  * @last_documented: 2025-09-18
  */
 int navygoto (void) {
 	short nvynum=0,loop=0;

@@ -260,6 +260,7 @@ FILE *fexe;
  *   Dependencies: File system, user accounts, data directory, game data files
  *   Mock Requirements: Mock filesystem, user database, permission system
  *   Complexity: Complex - Multi-user security, file operations, process coordination
+  * @last_documented: 2025-09-20
  */
 int main (int argc, char **argv) {
 	uid_t realuser;
@@ -275,15 +276,16 @@ int main (int argc, char **argv) {
 	/* rflag = make world from read in files */
 	int mflag, aflag, xflag, rflag;
 	char string[FILELTH];
-	extern char *optarg;
 	char defaultdir[BIGLTH],cq_opts[BIGLTH];
 	struct passwd *pwent;
 
 	umask (MASK);
 	mflag = aflag = xflag = rflag = 0;
 	srand((unsigned) time((long *) 0));
-	strcpy(datadir,"");
-	strcpy(cq_opts,"");
+	strncpy(datadir, "", sizeof(datadir) - 1);
+	datadir[sizeof(datadir) - 1] = '\0';
+	strncpy(cq_opts, "", sizeof(cq_opts) - 1);
+	cq_opts[sizeof(cq_opts) - 1] = '\0';
 	name = string;
 	*name = 0;
 
@@ -362,10 +364,12 @@ int main (int argc, char **argv) {
 			fprintf(stderr,"ERROR: MAPFILE STEM LONGER THAN %d\n",NAMELTH);
 			exit(FAIL);
 		}
-		strcpy(scenario, optarg);
+		strncpy(scenario, optarg, NAMELTH);
+		scenario[NAMELTH] = '\0';
 		break;
 	case 'd':
-		strcpy(datadir, optarg);
+		strncpy(datadir, optarg, sizeof(datadir) - 1);
+		datadir[sizeof(datadir) - 1] = '\0';
 		break;
 	case '?': /*  print out command line arguments */
 		printf("Command line format: %s [-max -dDIR -rSCENARIO]\n",argv[0]);
@@ -384,13 +388,18 @@ int main (int argc, char **argv) {
 	/* set proper defaultdir */
 	if (datadir[0] != '/') {
 		if (strlen(datadir) > 0) {
-			sprintf(defaultdir, "%s/%s", DEFAULTDIR, datadir);
+			snprintf(defaultdir, sizeof(defaultdir), "%s/%s", DEFAULTDIR, datadir);
 		} else {
-			strcpy(defaultdir,DEFAULTDIR);
-			strcpy(datadir,"[default]");
+			strncpy(defaultdir, DEFAULTDIR, sizeof(defaultdir) - 1);
+			defaultdir[sizeof(defaultdir) - 1] = '\0';
+			strncpy(datadir, "[default]", sizeof(datadir) - 1);
+			datadir[sizeof(datadir) - 1] = '\0';
 		}
 	} else {
-		strcpy(defaultdir,datadir);
+		/* Copy absolute path from datadir
+		 * Use FILELTH (datadir size) to prevent buffer over-read of source buffer */
+		strncpy(defaultdir, datadir, FILELTH - 1);
+		defaultdir[FILELTH - 1] = '\0';
 	}
 
 	/* now that we have parsed the args, we can got to the
@@ -431,13 +440,19 @@ int main (int argc, char **argv) {
 			printf("    There is already a game in progress.\n\n");
 			printf("*********************************************\n\n");
 			printf("Do you wish to destroy the current game? ");
-			scanf("%s",string);
+			if (scanf("%79s", string) != 1) {
+				/* Input error - default to "no" for safety */
+				string[0] = '\0';
+			}
 			if (strcmp(string,"yes")!=0 && strcmp(string,"y")!=0) {
 				printf("Okay... the world is left intact\n");
 				exit(FAIL);
 			}
 			printf("Are you absolutely certain? ");
-			scanf("%s",string);
+			if (scanf("%79s", string) != 1) {
+				/* Input error - default to "no" for safety */
+				string[0] = '\0';
+			}
 			if (strcmp(string,"yes")!=0 && strcmp(string,"y")!=0) {
 				printf("Okay... the world is left intact\n");
 				exit(FAIL);
@@ -468,7 +483,7 @@ int main (int argc, char **argv) {
 #endif /* REMAKE */
 
 		makeworld(rflag);
-		sprintf(string,"%sup",isonfile);
+		snprintf(string, sizeof(string), "%sup", isonfile);
 		unlink(string);
 		exit(SUCCESS);
 	}
@@ -478,14 +493,14 @@ int main (int argc, char **argv) {
 	verifydata( __FILE__, __LINE__ );
 
 	if (aflag) { /* a new player */
-		sprintf(string,"%sup",isonfile);
+		snprintf(string, sizeof(string), "%sup", isonfile);
 		if(check_lock(string,FALSE)==TRUE) {
 			printf("Conquer is updating\n");
 			printf("Please try again later.\n");
 			exit(FAIL);
 		}
 
-		sprintf(string,"%s0",isonfile);
+		snprintf(string, sizeof(string), "%s0", isonfile);
 		if(check_lock(string,FALSE)==TRUE) {
 			printf("God is currently logged in.\n");
 			printf("Please try again later.\n");
@@ -505,7 +520,7 @@ int main (int argc, char **argv) {
 			}
 		}
 		/* prevent more than one addition */
-		sprintf(string,"%sadd",isonfile);
+		snprintf(string, sizeof(string), "%sadd", isonfile);
 		if(check_lock(string,TRUE)==TRUE) {
 			printf("Someone else is adding\n");
 			printf("Please try again later.\n");
@@ -563,7 +578,7 @@ int main (int argc, char **argv) {
 #ifdef RUNSTOP
 		/* check if any players are on */
 		for (i=0;i<NTOTAL;i++) {
-			sprintf(string,"%s%zu",isonfile,i);
+			snprintf(string, sizeof(string), "%s%zu", isonfile, i);
 			if(check_lock(string,FALSE)==TRUE) {
 				printf("Nation %zu is still in the game.\n",i);
 				printf("Update aborted.\n");
@@ -571,7 +586,7 @@ int main (int argc, char **argv) {
 			}
 		}
 #endif /* RUNSTOP */
-		sprintf(string,"%sup",isonfile);
+		snprintf(string, sizeof(string), "%sup", isonfile);
 		if(check_lock(string,TRUE)==TRUE) {
 			printf("Another update is still executing.\n");
 			printf("Update aborted.\n");
@@ -651,6 +666,7 @@ int main (int argc, char **argv) {
  *   Dependencies: ntn[] array, magic() function, isntn() validation
  *   Mock Requirements: Mock magic system, mock nation data structures
  *   Complexity: Simple - Direct attribute assignment with conditional logic
+  * @last_documented: 2025-09-20
  */
 void att_setup (int cntry) {
 	int	nat;
@@ -768,6 +784,7 @@ void att_setup (int cntry) {
  *   Dependencies: Complete sector array, nation data, magic system, world state
  *   Mock Requirements: Full world map, complete nation setup, magic power system
  *   Complexity: Complex - Multi-system integration with extensive calculations
+  * @last_documented: 2025-09-20
  */
 void att_base (void) {
 	long	cityfolk,townfolk,scholars,foodpts,minepts,roads,clerics,ngrain;
@@ -857,7 +874,7 @@ void att_base (void) {
 		}
 
 		if( 30 <= 1+ngrain+ncities ) curntn->spoilrate=1;
-		else curntn->spoilrate = safe_clamp_uchar(30-ngrain-ncities);
+		else curntn->spoilrate = safe_clamp_nation_attr(30-ngrain-ncities);
 		if( curntn->tfood > curntn->tciv * 10 )
 			curntn->spoilrate = 30;
 
@@ -867,34 +884,34 @@ void att_base (void) {
 			if(P_ATYPE==A_MERCENARY) mercs+=P_ASOLD;
 		if(curntn->tmil>0 && curntn->tciv>0) temp=(1000*curntn->tmil)/curntn->tciv+(1000*mercs)/curntn->tmil;
 		else temp=0;
-		curntn->terror = safe_clamp_uchar(temp/5);
+		curntn->terror = safe_clamp_nation_attr(temp/5);
 
 		temp = (5*townfolk/2+5*cityfolk) + roads*5;
-		curntn->communications = safe_clamp_uchar(temp);
+		curntn->communications = safe_clamp_nation_attr(temp);
 
 		temp=1000*curntn->score/WORLDSCORE + 1000*curntn->tmil/WORLDMIL;
-		curntn->power = safe_clamp_uchar(temp/5);
+		curntn->power = safe_clamp_nation_attr(temp/5);
 
 		/* calculate national wealth */
 		temp = curntn->tgold;
 		if(temp<0) temp=0;
 		temp = safe_double_to_long(1000.0*(safe_long_to_double(temp)/safe_long_to_double(WORLDGOLD)) + 1000.0*(safe_long_to_double(curntn->jewels)/safe_long_to_double(WORLDJEWELS)) + 1000.0*(safe_long_to_double(curntn->metals)/safe_long_to_double(WORLDMETAL)) + safe_long_to_double(cityfolk)*(4.0/3.0) + safe_long_to_double(townfolk)*(5.0/6.0));
 		if (temp >= curntn->wealth) {
-			curntn->wealth = safe_clamp_uchar(temp/10);
+			curntn->wealth = safe_clamp_nation_attr(temp/10);
 		} else {
-			curntn->wealth -= safe_clamp_uchar((curntn->wealth - temp)/4);
+			curntn->wealth -= safe_clamp_nation_attr((curntn->wealth - temp)/4);
 		}
 
 		if( TURN!= 1) {
-		curntn->reputation += safe_clamp_uchar(rand()%8-3);
-		curntn->reputation = safe_clamp_uchar(curntn->reputation);
+		curntn->reputation += safe_clamp_nation_attr(rand()%8-3);
+		curntn->reputation = safe_clamp_nation_attr(curntn->reputation);
 
 		temp = (curntn->prestige + curntn->power + curntn->wealth) / 3;
-		curntn->prestige = safe_clamp_uchar(temp);
+		curntn->prestige = safe_clamp_nation_attr(temp);
 
 		if(curntn->tciv>0) temp = foodpts*10 / curntn->tciv;
 		else temp = 0;
-		curntn->farm_ability = safe_clamp_uchar(temp);
+		curntn->farm_ability = safe_clamp_nation_attr(temp);
 		}
 
 		/* calcualte mining ability */
@@ -904,18 +921,18 @@ void att_base (void) {
 		if( magic(country,STEEL) )
 			temp += 15;
 		if (temp >= curntn->mine_ability) {
-			curntn->mine_ability = safe_clamp_uchar(temp);
+			curntn->mine_ability = safe_clamp_nation_attr(temp);
 		} else {
-			curntn->mine_ability -= safe_clamp_uchar((curntn->mine_ability - temp)/4);
+			curntn->mine_ability -= safe_clamp_nation_attr((curntn->mine_ability - temp)/4);
 		}
 
 		/* calculate knowledge */
 		temp = cityfolk/2 + townfolk/6 + scholars/2;
-		curntn->knowledge = safe_clamp_uchar(temp);
+		curntn->knowledge = safe_clamp_nation_attr(temp);
 
 		/* find national popularity */
 		temp = safe_double_to_long((curntn->wealth + 10*P_EATRATE + safe_long_to_double(clerics) + curntn->popularity)/2);
-		curntn->popularity = safe_clamp_uchar(temp);
+		curntn->popularity = safe_clamp_nation_attr(temp);
 
 		if(magic(country,SLAVER))	curntn->terror+=PWR_NA;
 		if(magic(country,RELIGION))	curntn->popularity+=PWR_NA;
@@ -1078,6 +1095,7 @@ void att_base (void) {
  *   Dependencies: Complete sector array, trade good tables, tg_ok() validation, nation data
  *   Mock Requirements: Mock world map with trade goods, mock trade good value tables
  *   Complexity: Moderate - Map processing with trade good validation and bonus application
+  * @last_documented: 2025-09-20
  */
 void att_bonus (void) {
 	short	x,y,nation,good;
@@ -1102,32 +1120,32 @@ void att_bonus (void) {
 		||(( *(tg_stype+good)== DUNIVERSITY )&&(sptr->designation==DCAPITOL))
 		||( *(tg_stype+good)== 'x' )) {
 		if( good <= END_POPULARITY ) {
-			curntn->popularity += safe_clamp_uchar(*(tg_value+good) - '0');
-			curntn->popularity = safe_clamp_uchar(curntn->popularity);
+			curntn->popularity += safe_clamp_nation_attr(*(tg_value+good) - '0');
+			curntn->popularity = safe_clamp_nation_attr(curntn->popularity);
 		} else if( good <= END_COMMUNICATION ) {
 			if(curntn->communications + (*(tg_value+good) - '0')<2*MAXTGVAL)
-				curntn->communications += safe_clamp_uchar(*(tg_value+good) - '0');
+				curntn->communications += safe_clamp_nation_attr(*(tg_value+good) - '0');
 			else curntn->communications = 2*MAXTGVAL;
 		} else if( good <= END_EATRATE ) { /* eatrate scaled already */
 			/* no tradegoods for eatrate */
 			curntn->eatrate = min( MAXTGVAL, curntn->eatrate );
 		} else if( good <= END_SPOILRATE ) {
 			if(curntn->spoilrate > (*(tg_value+good) - '0'))
-				curntn->spoilrate -= safe_clamp_uchar(*(tg_value+good)-'0');
+				curntn->spoilrate -= safe_clamp_nation_attr(*(tg_value+good)-'0');
 			else curntn->spoilrate = 1;
 		} else if( good <= END_KNOWLEDGE ) {
 			if(curntn->knowledge + (*(tg_value+good)-'0') < MAXTGVAL)
-				curntn->knowledge += safe_clamp_uchar(*(tg_value+good) - '0');
+				curntn->knowledge += safe_clamp_nation_attr(*(tg_value+good) - '0');
 			else curntn->knowledge = MAXTGVAL;
 		} else if( good <= END_FARM ) {
 			if(curntn->farm_ability + (*(tg_value+good) - '0') < MAXTGVAL)
-				curntn->farm_ability += safe_clamp_uchar(*(tg_value+good)-'0');
+				curntn->farm_ability += safe_clamp_nation_attr(*(tg_value+good)-'0');
 			else curntn->farm_ability = MAXTGVAL;
 		} else if( good <= END_SPELL ) {
 			curntn->spellpts += (short)(sptr->people/1000 +1);
 		} else if( good <= END_TERROR ) {
 			if(curntn->terror + (*(tg_value+good)-'0')< MAXTGVAL)
-				curntn->terror += safe_clamp_uchar(*(tg_value+good)-'0');
+				curntn->terror += safe_clamp_nation_attr(*(tg_value+good)-'0');
 			else curntn->terror = MAXTGVAL;
 		}
 		}

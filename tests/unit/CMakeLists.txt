@@ -55,6 +55,50 @@ set_tests_properties(test_safe_system PROPERTIES
     WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
 )
 
+# Phase 8.4.3: Memory Allocation Bounds Checking Tests
+add_executable(test_m2alloc test_m2alloc.c ../../m2alloc.c)
+target_link_libraries(test_m2alloc PRIVATE unity)
+target_compile_features(test_m2alloc PRIVATE c_std_23)
+target_compile_definitions(test_m2alloc PRIVATE
+    _POSIX_C_SOURCE=200809L
+    PATCHLEVEL="${CONQUER_PATCHLEVEL}"
+)
+target_include_directories(test_m2alloc PRIVATE
+    "${CMAKE_SOURCE_DIR}"
+    "${CMAKE_BINARY_DIR}"  # For config.h
+)
+if(COMMAND enable_project_warnings)
+    enable_project_warnings(test_m2alloc)
+endif()
+add_test(NAME test_m2alloc COMMAND test_m2alloc)
+set_tests_properties(test_m2alloc PROPERTIES
+    LABELS "unit;m2alloc;phase8;memory;bounds_checking"
+    TIMEOUT 60  # Allow time for allocation tests
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+)
+
+# Phase 8.4.5: Memory Management Integration Tests
+add_executable(test_memory_integration test_memory_integration.c ../../m2alloc.c)
+target_link_libraries(test_memory_integration PRIVATE unity)
+target_compile_features(test_memory_integration PRIVATE c_std_23)
+target_compile_definitions(test_memory_integration PRIVATE
+    _POSIX_C_SOURCE=200809L
+    PATCHLEVEL="${CONQUER_PATCHLEVEL}"
+)
+target_include_directories(test_memory_integration PRIVATE
+    "${CMAKE_SOURCE_DIR}"
+    "${CMAKE_BINARY_DIR}"  # For config.h
+)
+if(COMMAND enable_project_warnings)
+    enable_project_warnings(test_memory_integration)
+endif()
+add_test(NAME test_memory_integration COMMAND test_memory_integration)
+set_tests_properties(test_memory_integration PROPERTIES
+    LABELS "unit;memory_integration;phase8;memory;stress_testing"
+    TIMEOUT 90  # Allow time for stress tests and multiple allocations
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+)
+
 # Add additional unit tests here as they are created
 # Example:
 # add_conquer_test(test_string_utils test_string_utils.c ../src/string_utils.c)

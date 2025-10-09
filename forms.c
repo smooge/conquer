@@ -187,6 +187,7 @@ static char helplist[MAXHELP][20]={"Commands", "General Info",
  *   Dependencies: Nation data, curses library, display constants, active status
  *   Mock Requirements: Mock nation database, mock screen dimensions, mock user input
  *   Complexity: Moderate - Multi-column layout with responsive design and pagination
+  * @last_documented: 2025-09-20
  */
 void showscore(void) {
 	int i;
@@ -402,6 +403,7 @@ void showscore(void) {
  *   Dependencies: Nation data, diplomatic arrays, mail system, file operations, gold
  *   Mock Requirements: Mock diplomatic state, mock mail system, mock file operations
  *   Complexity: Complex - Multi-system integration with financial transactions and cascading effects
+  * @last_documented: 2025-09-20
  */
 void diploscrn (void) {
 	int i,j;
@@ -513,7 +515,7 @@ void diploscrn (void) {
 			}
 			curntn->tgold-=bribecost;
 
-			sprintf(name,"%s%d",exefile,nation);
+			snprintf(name, sizeof(name), "%s%d", exefile, nation);
 			if ((fm=fopen(name,"a+"))==NULL) {
 				printf("error opening news file\n");
 				exit(FAIL);
@@ -640,7 +642,119 @@ void diploscrn (void) {
 
 int terror_adj=0;
 
-/* TODO: Document */
+/*
+ * change - Interactive nation statistics viewer and configuration interface
+ *
+ * Provides comprehensive menu-driven interface for viewing and modifying
+ * nation statistics, economic parameters, and game settings. Displays
+ * real-time nation status including population, economy, military strength,
+ * and allows authorized modifications through numbered menu options.
+ *
+ * INTERFACE FEATURES:
+ * ===================
+ * - Full-screen display of current nation statistics
+ * - Real-time calculated values (revolt risks, combat bonuses)
+ * - Interactive menu with single-keystroke commands
+ * - Continuous loop until user chooses to exit
+ * - Color highlighting for critical values (food shortages, etc.)
+ * - Special administrative options for god/admin users
+ *
+ * MENU OPTIONS (Players):
+ * =======================
+ * 1) Change nation name - Validates uniqueness, updates after next turn
+ * 2) Change password - Requires current password, validates new password
+ * 3) Adjust tax rate - Limited 0-20%, affects revolt risk
+ * 4) Adjust charity - 0-25%, affects popularity (±2% per 1% charity)
+ * 5) Adjust terror - +1-5% per turn, reduces popularity/reputation
+ * 6) Combat bonuses - Spend metal to increase attack/defense (race-dependent cost)
+ * 7) Toggle PC/NPC - Switch between player and NPC mode (disables mail)
+ * B) Budget screen - Jump to budget display (via budget() function)
+ * P) Production screen - Jump to production display (via produce() function)
+ *
+ * MENU OPTIONS (God/Admin Only):
+ * ===============================
+ * 8) Destroy nation - Permanently removes nation from game
+ * 9) Adjust commodities - Directly set gold, jewels, metal, food levels
+ * 0) Change demi-god - Promote user to super-user status
+ * 6) Direct combat bonus edit - Set exact attack/defense values
+ *
+ * DISPLAYED STATISTICS:
+ * =====================
+ * Left Column:
+ * - Nation name, alignment, class, race, mark
+ * - Tax rate, inflation, revolt risks (peasant and other)
+ * - Capitol location, leader name, score
+ * - Active status (PC/NPC/MON indicator)
+ *
+ * Center Column:
+ * - Terror, popularity, prestige, knowledge
+ * - Eat rate, wealth, charity percentage
+ * - Communication range, reputation, spoil rate
+ * - Farm/mine ability, poverty rate, power
+ *
+ * Right Column:
+ * - Attack/defense bonuses (or merc bonuses for god)
+ * - Maximum move rate, reproduction rate
+ * - Gold, jewels, metals, food (highlighted if low)
+ * - Total soldiers, civilians, ships, sectors
+ * - Spell points
+ *
+ * VALIDATION AND CONSTRAINTS:
+ * ===========================
+ * - Tax rate: 0-10% for new nations, 0-20% for established (score>20)
+ * - Charity: 0-25% maximum, popularity limited to 100
+ * - Terror: +5% max per turn, once per turn, prevents underflow
+ * - Combat bonus: Cost increases quadratically, 3x for Orcs
+ * - Password: 2-char minimum for players, 4-char for god
+ * - Name: 1-NAMELTH characters, must be unique
+ *
+ * SECURITY FEATURES:
+ * ==================
+ * - Password verification required for password changes
+ * - God password required for administrative operations
+ * - Password encryption using crypt() with SALT
+ * - Prevents unauthorized nation modification
+ *
+ * Parameters:
+ *   None (uses global variables: country, curntn, ntn, world)
+ *
+ * Returns:
+ *   void (returns when user exits to main game)
+ *
+ * Side Effects:
+ *   - Modifies nation statistics (curntn structure fields)
+ *   - Updates game state change flags (NADJNTN, ECHGNAME, etc.)
+ *   - May write to execution log files (OGOD mode)
+ *   - Clears and redraws entire screen repeatedly
+ *   - May destroy nations (god option 8)
+ *   - May change demi-god user (god option 0)
+ *   - Modifies global terror_adj counter (limits terror changes)
+ *   - Calls produce() or budget() functions (may not return directly)
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - Complex UI with game state integration
+ *   Approach: Integration testing with mocked curses and game state
+ *   Key Tests: Menu navigation, stat display accuracy, validation rules,
+ *              god vs player permission checking, password authentication,
+ *              combat bonus cost calculation, revolt risk calculation
+ *   Dependencies: Curses library, game state (ntn, curntn), password system,
+ *                 budget/produce functions, file system (god mode)
+ *   Mock Requirements: Curses functions, user input, game state, file I/O
+ *   Complexity: High - Large function (~427 lines) with many interactive paths
+ *
+ * Notes:
+ *   - Function is very large and could benefit from refactoring
+ *   - Continuous loop until explicit exit (no timeout)
+ *   - Combat bonus cost formula: METALORE * men * (bonus/10)^2
+ *   - Terror adjustment limited to once per turn via global terror_adj
+ *   - PC/NPC toggle affects mail delivery (NPC gets no mail)
+ *   - Some options only available with OGOD compile flag
+ *   - Food shortage highlighted when tfood < 2*tciv
+ *   - Nation destruction writes to last turn's news file
+ *   - Password changes take effect after next update
+ *   - Not thread-safe (heavy use of global variables)
+ * @last_documented: 2025-10-08
+ */
 void change (void) {
 	float temp;
 	char string[LINELTH], command[BIGLTH];
@@ -777,7 +891,10 @@ void change (void) {
 		    }
 		}
 		errormsg("New name can be used following next update");
-		strcpy(curntn->name,string);
+		size_t len = strlen(string);
+		if (len >= NAMELTH) len = NAMELTH - 1;
+		memcpy(curntn->name, string, len);
+		curntn->name[len] = '\0';
 		ECHGNAME;
 		break;
 	case '2': /*change password */
@@ -972,7 +1089,7 @@ void change (void) {
 
 			if(getch()=='y') {
 				/* save to last turns news file */
-				sprintf(filename,"%s%d",newsfile,TURN-1);
+				snprintf(filename, sizeof(filename), "%s%d", newsfile, TURN-1);
 				if ((fnews=fopen(filename,"a+"))==NULL) {
 					printf("error opening news file\n");
 					exit(FAIL);
@@ -988,7 +1105,7 @@ void change (void) {
 	case '9':
 		if (isgod==TRUE) {
 			/* open the target country's files */
-			sprintf(filename,"%s%d",exefile,country);
+			snprintf(filename, sizeof(filename), "%s%d", exefile, country);
 			if ((ftmp=fopen(filename,"a"))==NULL) {
 				beep();
 				errormsg("error opening country's file");
@@ -1039,7 +1156,8 @@ void change (void) {
 			mvaddstr(LINES-2,0,"ENTER CONQUER SUPER-USER PASSWORD:");
 			refresh();
 			(void) get_pass(string);
-			strcpy(passwd,crypt(string,SALT));
+			strncpy(passwd, crypt(string, SALT), PASSLTH);
+			passwd[PASSLTH] = '\0';
 			if(strncmp(passwd,ntn[0].passwd,PASSLTH)!=0) break;
 			mvaddstr(LINES-1,0,"PROMOTE WHAT USER TO DEMI-GOD? ");
 			refresh();
@@ -1066,7 +1184,93 @@ void change (void) {
 	} /* end of continuous loop */
 }
 
-/* TODO: DOCUMENT */
+/*
+ * help - Interactive help system with topic selection and paged display
+ *
+ * Provides in-game help documentation through an interactive menu-driven
+ * interface. Displays list of available help topics, reads external help
+ * files from the game directory, and presents help text one screen at a
+ * time with user-controlled paging.
+ *
+ * INTERFACE FLOW:
+ * ===============
+ * 1. Display menu of available help topics (0-MAXHELP)
+ * 2. Wait for user to select topic by number
+ * 3. Open corresponding help file from DEFAULTDIR
+ * 4. Read and display help screens one at a time
+ * 5. User pages through screens or exits with space key
+ * 6. Clean up and return to main game
+ *
+ * HELP FILE FORMAT:
+ * =================
+ * - Files located at: DEFAULTDIR/helpfileN (N = topic number)
+ * - Screen delimiter: "END" marker (starts new screen)
+ * - File terminator: "DONE" marker (end of help file)
+ * - First line of each screen: Highlighted topic header
+ * - Maximum lines per screen: LINES-3
+ * - Line length: 80 characters maximum
+ *
+ * DISPLAY FEATURES:
+ * =================
+ * - Topic menu displayed at bottom of screen (2 rows, 3 columns)
+ * - First line of each help screen shown in standout mode (highlighted)
+ * - Leading spaces preserved for centering
+ * - Automatic screen overflow handling (truncates at LINES-3)
+ * - "HIT ANY KEY TO CONTINUE" prompt between screens
+ * - "TO END HELP HIT SPACE KEY" exit instruction
+ * - Clear screen between help pages
+ *
+ * NAVIGATION:
+ * ===========
+ * - Number keys (0-MAXHELP): Select help topic from menu
+ * - Any key (except space): Continue to next help screen
+ * - Space bar: Exit help system and return to game
+ * - Invalid topic number: Exit immediately
+ *
+ * ERROR HANDLING:
+ * ===============
+ * - Invalid topic selection: Silent exit, redraw game screen
+ * - Missing help file: Display error message, wait for keypress, exit
+ * - File read errors: Handled by fgets() failure (NULL return)
+ * - Overflow protection: Truncates screens exceeding LINES-3
+ *
+ * Parameters:
+ *   None (uses global variables: helplist, helpfile, DEFAULTDIR, MAXHELP)
+ *
+ * Returns:
+ *   void
+ *
+ * Side Effects:
+ *   - Clears entire screen repeatedly (once per help screen)
+ *   - Opens and reads help files from filesystem
+ *   - Sets global redraw=DONE on invalid topic selection
+ *   - Calls makebottom() on error exit
+ *   - Waits for user input (blocking calls to getch())
+ *   - Displays text with curses standout formatting
+ *
+ * Testing Notes:
+ *   Category: B (Integration) - File I/O and UI integration
+ *   Approach: Integration testing with mock help files and curses
+ *   Key Tests: Topic menu display, file reading, screen pagination,
+ *              navigation keys, error handling (missing files),
+ *              screen overflow handling, highlighting logic
+ *   Dependencies: Filesystem (help files), curses library, helplist array,
+ *                 DEFAULTDIR configuration, makebottom() function
+ *   Mock Requirements: Mock filesystem, help file fixtures, curses functions
+ *   Complexity: Moderate - File I/O with screen-based pagination
+ *
+ * Notes:
+ *   - Help files must exist in DEFAULTDIR with naming: helpfileN
+ *   - Topic numbering: 0 to MAXHELP (inclusive)
+ *   - Screen format: 80 columns, LINES-3 rows maximum
+ *   - First line highlighting: Strips leading spaces, applies standout
+ *   - "END" marker: Triggers screen break and pagination
+ *   - "DONE" marker: Exits help file reading loop
+ *   - Space character detection: ASCII 0x20 for exit condition
+ *   - fgets() reads up to 80 chars per line (hardcoded buffer)
+ *   - File handle properly closed on all exit paths
+ * @last_documented: 2025-10-08
+ */
 void help (void) {
 	int lineno;
 	FILE *fp;
@@ -1098,7 +1302,7 @@ void help (void) {
 	}
 
 	/*open help file*/
-	sprintf(fname,"%s/%s%d",DEFAULTDIR,helpfile,i);
+	snprintf(fname, sizeof(fname), "%s/%s%d", DEFAULTDIR, helpfile, i);
 	if ((fp=fopen(fname,"r"))==NULL) {
 		mvprintw(0,0,"\nerror on read of %s\n",fname);
 		refresh();
@@ -1125,7 +1329,7 @@ void help (void) {
 					standend();
 				} else mvaddstr(lineno,0,line);
 				lineno++;
-				if(lineno>LINES-3) strcpy(line,"END");
+				if(lineno>LINES-3) strncpy(line, "END", sizeof(line) - 1);
 				else fgets(line,80,fp);
 			}
 			standout();
@@ -1200,6 +1404,7 @@ void help (void) {
  *   - Hyphen boundary checking prevents false positive highlighting
  *   - Performance optimized for real-time news and text display
  *   - Maintains display formatting consistency with game interface
+  * @last_documented: 2025-09-20
  */
 void mvaddstrnahil(int li,int col,char *p)
 {
@@ -1300,6 +1505,7 @@ void mvaddstrnahil(int li,int col,char *p)
  *   - Optimized for 80-column display format compatibility
  *   - Robust error handling for missing or corrupted news files
  *   - Performance considerations for large news archives
+  * @last_documented: 2025-09-20
  */
 void newspaper (void) {
 	int lineno=0;
@@ -1329,7 +1535,7 @@ void newspaper (void) {
 
 	/* check for all newspapers up until the current turn */
 	for (i=TURN-1;i>=0 && i>=TURN-MAXNEWS;i--) {
-		sprintf(line,"   %d) %s of Year %d",TURN-i,
+		snprintf(line, sizeof(line), "   %d) %s of Year %d", TURN-i,
 			PSEASON(i), YEAR(i));
 		/* align all strings */
 		mvprintw(ydist,xdist,"%s",line);
@@ -1356,7 +1562,7 @@ void newspaper (void) {
 	/* select page to read */
 	pagenum=1;
 	backpage:    /* label for reading previous pages. pagenum set to page */
-	sprintf(name,"%s%d",newsfile,TURN-choice);
+	snprintf(name, sizeof(name), "%s%d", newsfile, TURN-choice);
 	if ((fp=fopen(name,"r"))==NULL) {
 		clear_bottom(0);
 		snprintf(line, sizeof(line), "unable to open news file <%.50s>", name);
@@ -1373,7 +1579,7 @@ void newspaper (void) {
 	subpage=1;
 	newpage=FALSE;
 	line[0]='\0';
-	strcpy(name,"");
+	name[0] = '\0';
 	/* reading to correct page */
 	i=0;
 	done=FALSE;
@@ -1407,7 +1613,8 @@ void newspaper (void) {
 		} else if(fgets(line,80,fp)==NULL) done=TRUE;
 		else {
 			if(line[1]!='.'  && line[1]!=':') {
-				strcpy(name,line);
+				strncpy(name, line, FILELTH - 1);
+				name[FILELTH - 1] = '\0';
 				newpage=FALSE;
 				pagenum=safe_int_to_short(todigit(line[0]));
 				subpage=1;
