@@ -43,6 +43,297 @@
 
 ---
 
+## Session Management Protocol (🔴 CRITICAL - READ FIRST)
+
+### Why Session Management is Critical
+
+Phase 10.1 involves modifying **41+ files** over **6-8 hours** of work. Context limitations require systematic checkpointing to prevent progress loss.
+
+### Session Checkpoint Strategy
+
+**Work in Small, Testable Chunks**:
+- **Maximum 2-3 files per session chunk** before checkpoint
+- **Compile and test after each chunk**
+- **Save session memory before context gets low**
+- **Never make more than 3 file changes without testing**
+
+### Session Chunk Protocol
+
+**FOR EACH WORK CHUNK** (2-3 files or 1-1.5 hours max):
+
+1. **Select Files** (highest risk first)
+   - Choose 2-3 files from current priority tier (HIGH → MEDIUM → LOW)
+   - Document files selected in session memory
+
+2. **Make Changes**
+   - Fix char declarations in selected files
+   - Remove unnecessary casts
+   - Add documentation
+   - One git commit per file
+
+3. **Compile Test** ✅ **MANDATORY**
+   ```bash
+   # Test with signed char simulation
+   _modernization/scripts/test_char_signed.sh -w 9 -x c2x [filename.c]
+
+   # Verify no new warnings/errors
+   # If compilation fails, fix immediately before proceeding
+   ```
+
+4. **Run Test Suite** ✅ **MANDATORY**
+   ```bash
+   cd /projects/conquer-4.x
+   cmake --build build --clean-first
+   ctest --test-dir build --output-on-failure
+
+   # All tests must pass (10/10)
+   # If tests fail, fix immediately before proceeding
+   ```
+
+5. **Update Progress Tracker** (see below)
+   - Mark files as complete in `PHASE_10.1_PROGRESS.md`
+   - Update metrics (casts removed, warnings eliminated)
+
+6. **Session Decision Point** 🤔
+   - **Continue?** If context >20% remaining and <3 hours elapsed → Next chunk
+   - **Save?** If context <20% or >3 hours elapsed → Save session memory
+
+### Session Memory File Naming
+
+**Format**: `SESSION_MEMORY_PHASE_10.1_[TIER]_[DATE]_[TIME].md`
+
+**Examples**:
+- `SESSION_MEMORY_PHASE_10.1_INFRASTRUCTURE_2025-10-09_143000.md` (Task 1: test_char_signed.sh)
+- `SESSION_MEMORY_PHASE_10.1_AUDIT_2025-10-09_160000.md` (Task 2-3: Audit complete)
+- `SESSION_MEMORY_PHASE_10.1_HIGH_RISK_1_2025-10-09_173000.md` (Task 4: misc.c, spew.c)
+- `SESSION_MEMORY_PHASE_10.1_HIGH_RISK_2_2025-10-10_100000.md` (Task 4 continued)
+- `SESSION_MEMORY_PHASE_10.1_MEDIUM_RISK_1_2025-10-10_140000.md` (Task 5: update.c, forms.c)
+- `SESSION_MEMORY_PHASE_10.1_COMPLETE_2025-10-10_170000.md` (All tasks done)
+
+### Session Memory Template
+
+**Each session memory file MUST include**:
+
+```markdown
+# Session Memory: Phase 10.1 - [Tier/Stage]
+
+**Date**: YYYY-MM-DD
+**Time**: HH:MM:SS
+**Session Duration**: X hours
+**Context Remaining**: XX%
+**Status**: IN_PROGRESS / COMPLETE
+
+## Session Reference Documents
+
+**CRITICAL**: Load these files at session start:
+- `_modernization/claude/reports/PHASE_10.1_TODO.md` - Master task list
+- `_modernization/claude/reports/PHASE_10.1_PROGRESS.md` - Progress tracker
+- `_modernization/claude/reports/char_classification.md` - Classification spreadsheet (if exists)
+- This session memory file
+
+## Work Completed This Session
+
+### Files Modified
+1. **filename.c** (lines XX-YY)
+   - Changed: char → unsigned char for [specific variables]
+   - Removed: N (unsigned char) casts
+   - Commit: [commit_hash] - [commit_message]
+   - Compiled: ✅ PASS / ❌ FAIL (details)
+   - Tests: ✅ 10/10 PASS / ❌ FAIL (details)
+
+2. **filename2.c** (lines XX-YY)
+   - [Same format]
+
+### Metrics Updated
+- (unsigned char) casts removed: N (total: XX → YY)
+- Char warnings eliminated: N (total: XX → YY)
+- Files completed: N of 6 HIGH RISK files
+- Tests passing: 10/10
+
+### Git Activity
+- Commit 1: [hash] - [message]
+- Commit 2: [hash] - [message]
+
+## Issues Encountered
+
+### Blockers
+- [Any issues preventing progress]
+
+### Discoveries
+- [Unexpected char declarations found]
+- [Complex refactoring needed]
+
+## Next Session Tasks
+
+### Immediate Next Steps
+1. Load reference documents (see above)
+2. Review progress tracker: `PHASE_10.1_PROGRESS.md`
+3. Continue with: [specific file or task]
+
+### Remaining Work
+- [ ] Task X.Y - [description]
+- [ ] Task X.Z - [description]
+
+### Estimated Completion
+- Hours remaining: X-Y hours
+- Sessions remaining: N sessions
+- Expected completion: YYYY-MM-DD
+
+## Important Context for Continuation
+
+### High-Risk Files Status
+- misc.c: ✅ COMPLETE / 🔄 IN_PROGRESS / ⏳ PENDING
+- spew.c: [status]
+- update.c: [status]
+- forms.c: [status]
+- commands.c: [status]
+- reports.c: [status]
+
+### Key Decisions Made
+- [Important architectural choices]
+- [Patterns established for similar cases]
+
+### Patterns to Follow
+- [Consistent approach for similar declarations]
+- [Standard documentation format used]
+
+---
+**Session End Status**: SAVED for continuation
+**Resume With**: Load this file + reference documents above
+**Next Session Start**: [specific task number from TODO]
+```
+
+### Progress Tracker File
+
+**Create**: `_modernization/claude/reports/PHASE_10.1_PROGRESS.md`
+
+**Update after each chunk**:
+
+```markdown
+# Phase 10.1 Progress Tracker
+
+**Last Updated**: YYYY-MM-DD HH:MM:SS
+**Phase Status**: IN_PROGRESS
+**Completion**: XX% (based on file count and tasks)
+
+## High-Risk Files (Priority 1)
+
+| File | Status | Casts Before | Casts After | Warnings Before | Warnings After | Commit | Session |
+|------|--------|--------------|-------------|-----------------|----------------|--------|---------|
+| misc.c | ✅ COMPLETE | 12 | 0 | 8 | 0 | abc123 | 2025-10-09_1730 |
+| spew.c | 🔄 IN_PROGRESS | 3 | - | 2 | - | - | - |
+| - | - | - | - | - | - | - | - |
+
+## Medium-Risk Files (Priority 2)
+
+| File | Status | Casts Before | Casts After | Warnings Before | Warnings After | Commit | Session |
+|------|--------|--------------|-------------|-----------------|----------------|--------|---------|
+| update.c | ⏳ PENDING | 5 | - | 3 | - | - | - |
+| forms.c | ⏳ PENDING | 3 | - | 1 | - | - | - |
+| commands.c | ⏳ PENDING | 4 | - | 2 | - | - | - |
+| reports.c | ⏳ PENDING | 3 | - | 1 | - | - | - |
+
+## Overall Metrics
+
+| Metric | Baseline | Current | Target | Status |
+|--------|----------|---------|--------|--------|
+| (unsigned char) casts | 34 | 22 | <10 | 🔄 35% reduced |
+| Char warnings | 15 | 10 | 0 | 🔄 33% reduced |
+| HIGH RISK files complete | 0 | 1 | 2 | 🔄 50% |
+| MEDIUM RISK files complete | 0 | 0 | 4 | ⏳ 0% |
+| Test pass rate | 10/10 | 10/10 | 10/10 | ✅ 100% |
+
+## Session History
+
+| Session | Date | Duration | Files Completed | Status |
+|---------|------|----------|-----------------|--------|
+| INFRASTRUCTURE | 2025-10-09 | 1.5h | test_char_signed.sh created | ✅ COMPLETE |
+| AUDIT | 2025-10-09 | 1.0h | Audit complete, 45 char declarations found | ✅ COMPLETE |
+| HIGH_RISK_1 | 2025-10-09 | 1.5h | misc.c, spew.c | 🔄 IN_PROGRESS |
+
+## Legend
+- ✅ COMPLETE - File done, tested, committed
+- 🔄 IN_PROGRESS - Currently working on
+- ⏳ PENDING - Not started yet
+- ❌ BLOCKED - Issue preventing progress
+```
+
+### Session Start Checklist
+
+**EVERY session must begin with**:
+1. ✅ Load `SESSION_MEMORY_PHASE_10.1_[LATEST].md`
+2. ✅ Load `_modernization/claude/reports/PHASE_10.1_TODO.md`
+3. ✅ Load `_modernization/claude/reports/PHASE_10.1_PROGRESS.md`
+4. ✅ Review last session's "Next Session Tasks"
+5. ✅ Check git status for uncommitted work
+6. ✅ Verify tests are passing (baseline check)
+
+### Session End Checklist
+
+**EVERY session must end with**:
+1. ✅ All changes compiled successfully
+2. ✅ All tests passing (10/10)
+3. ✅ All changes committed to git
+4. ✅ Progress tracker updated
+5. ✅ Session memory file saved
+6. ✅ "Next Session Tasks" clearly documented
+
+### Context Warning Thresholds
+
+**Monitor context usage during session**:
+- **>50% remaining**: Continue working normally
+- **20-50% remaining**: Complete current file, then save session
+- **<20% remaining**: STOP IMMEDIATELY, save session memory
+- **<10% remaining**: EMERGENCY save, may lose detail
+
+### File Priority Tiers
+
+**Work in this order** (highest risk first):
+
+**Tier 1: Infrastructure** (Task 1)
+- Create test_char_signed.sh
+- Baseline testing
+- CMake integration
+
+**Tier 2: Audit** (Tasks 2-3)
+- Run audit scripts
+- Create classification spreadsheet
+- Identify all char declarations
+
+**Tier 3: HIGH RISK** (Task 4)
+- misc.c (array indexing) 🔴 CRITICAL
+- spew.c (ctype.h usage) 🔴 CRITICAL
+
+**Tier 4: MEDIUM RISK** (Task 5)
+- update.c (calculations)
+- forms.c (user input)
+- commands.c (calculations)
+- reports.c (calculations)
+
+**Tier 5: LOW RISK** (If time permits)
+- Document remaining char declarations
+- Defer complex cases to future phase
+
+**Tier 6: Validation** (Task 6)
+- Final testing
+- Before/after metrics
+
+**Tier 7: Documentation** (Task 7)
+- Char type guidelines
+- Update CLAUDE.md
+- Update Issue #10
+
+### Emergency Recovery Protocol
+
+**If context is lost mid-session**:
+1. Load latest `SESSION_MEMORY_PHASE_10.1_*.md`
+2. Check `git log` for last commits
+3. Load `PHASE_10.1_PROGRESS.md` for status
+4. Review uncommitted changes: `git status && git diff`
+5. Resume from "Next Session Tasks" in session memory
+
+---
+
 ## Success Criteria
 
 Phase 10.1 is complete when:
