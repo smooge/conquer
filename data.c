@@ -32,7 +32,8 @@
  *
  * This file is part of Conquer.
  * Originally Copyright (C) 1988-1989 by Edward M. Barlow and Adam Bryant
- * Copyright (C) 2025 Juan Manuel Méndez Rey (Vejeta) - Licensed under GPL v3 with permission from original authors
+ * Copyright (C) 2025 Juan Manuel Méndez Rey (Vejeta) - Licensed under GPL v3 with permission
+ * from original authors
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -79,11 +80,11 @@ char *ele = "~#^%-0";
  * Values 0-9 represent movement cost multipliers, '/' indicates impassable terrain
  * Higher numbers = more movement points required to traverse
  */
-char *HElecost = "//521/";  /* Human movement costs */
-char *OElecost = "//222/";  /* Orc movement costs */
-char *EElecost = "//631/";  /* Elf movement costs */
-char *DElecost = "//311/";  /* Dwarf movement costs */
-char *FElecost = "16211/";  /* Flight movement costs - can cross water */
+char *HElecost = "//521/"; /* Human movement costs */
+char *OElecost = "//222/"; /* Orc movement costs */
+char *EElecost = "//631/"; /* Elf movement costs */
+char *DElecost = "//311/"; /* Dwarf movement costs */
+char *FElecost = "16211/"; /* Flight movement costs - can cross water */
 
 /*
  * Vegetation System Configuration
@@ -104,11 +105,11 @@ char *veg = "vdtblgwfjsi~0";
  * Each position corresponds to vegetation types in 'veg' array
  * Values 0-9 = movement cost, '/' = impassable terrain
  */
-char *HVegcost = "63210001332//";  /* Human vegetation movement costs */
-char *OVegcost = "43100022527//";  /* Orc vegetation movement costs */
-char *EVegcost = "86221000027//";  /* Elf vegetation movement costs */
-char *DVegcost = "47100013577//";  /* Dwarf vegetation movement costs */
-char *FVegcost = "410000001000/";  /* Flight vegetation movement costs */
+char *HVegcost = "63210001332//"; /* Human vegetation movement costs */
+char *OVegcost = "43100022527//"; /* Orc vegetation movement costs */
+char *EVegcost = "86221000027//"; /* Elf vegetation movement costs */
+char *DVegcost = "47100013577//"; /* Dwarf vegetation movement costs */
+char *FVegcost = "410000001000/"; /* Flight vegetation movement costs */
 
 /*
  * vegfood - Food production by vegetation type
@@ -153,8 +154,8 @@ char *elename[] = {"WATER", "PEAK", "MOUNTAIN", "HILL", "FLAT", "ERROR"};
  * Index: 0=VOLCANO, 1=DESERT, 2=TUNDRA, 3=BARREN, 4=LT_VEG, 5=GOOD,
  *        6=WOOD, 7=FOREST, 8=JUNGLE, 9=SWAMP, 10=ICE, 11=NONE
  */
-char *vegname[] = {"VOLCANO", "DESERT", "TUNDRA", "BARREN", "LT VEG",
-                   "GOOD", "WOOD", "FOREST", "JUNGLE", "SWAMP", "ICE", "NONE"};
+char *vegname[] = {"VOLCANO", "DESERT", "TUNDRA", "BARREN", "LT VEG", "GOOD",
+                   "WOOD",    "FOREST", "JUNGLE", "SWAMP",  "ICE",    "NONE"};
 
 /*
  * desname - Sector designation descriptive names
@@ -165,10 +166,10 @@ char *vegname[] = {"VOLCANO", "DESERT", "TUNDRA", "BARREN", "LT VEG",
  *        12=BLACKSMITH, 13=ROAD, 14=MILL, 15=GRANARY, 16=CHURCH,
  *        17=UNIVERSITY, 18=NODESIG, 19=BASE_CAMP, 20=ERROR
  */
-char *desname[] = {"TOWN", "CITY", "MINE", "FARM", "DEVASTATED", "GOLDMINE",
-                   "FORT", "RUIN", "STOCKADE", "CAPITOL", "SPECIAL", "LUMBERYD",
-                   "BLKSMITH", "ROAD", "MILL", "GRANARY", "CHURCH", "UNIVERSITY",
-                   "NODESIG", "BASE CAMP", "ERROR"};
+char *desname[] = {"TOWN",     "CITY",      "MINE",     "FARM",    "DEVASTATED", "GOLDMINE",
+                   "FORT",     "RUIN",      "STOCKADE", "CAPITOL", "SPECIAL",    "LUMBERYD",
+                   "BLKSMITH", "ROAD",      "MILL",     "GRANARY", "CHURCH",     "UNIVERSITY",
+                   "NODESIG",  "BASE CAMP", "ERROR"};
 
 /*
  * races - Player race/nation type names
@@ -177,7 +178,7 @@ char *desname[] = {"TOWN", "CITY", "MINE", "FARM", "DEVASTATED", "GOLDMINE",
  *        6=PIRATE, 7=SAVAGE, 8=NOMAD, 9=UNKNOWN
  * Used for diplomatic displays and player identification
  */
-char *races[] = {"GOD", "ORC", "ELF", "DWARF", "LIZARD",
+char *races[] = {"GOD",   "ORC",    "ELF",    "DWARF", "LIZARD",
                  "HUMAN", "PIRATE", "SAVAGE", "NOMAD", "UNKNOWN"};
 
 /*
@@ -187,8 +188,8 @@ char *races[] = {"GOD", "ORC", "ELF", "DWARF", "LIZARD",
  *        5=HOSTILE, 6=WAR, 7=JIHAD
  * Used by diplomatic system and player interface
  */
-char *diploname[] = {"UNMET", "TREATY", "ALLIED", "FRIENDLY",
-                     "NEUTRAL", "HOSTILE", "WAR", "JIHAD"};
+char *diploname[] = {"UNMET",   "TREATY",  "ALLIED", "FRIENDLY",
+                     "NEUTRAL", "HOSTILE", "WAR",    "JIHAD"};
 
 /*
  * soldname - Military unit status names
@@ -198,9 +199,9 @@ char *diploname[] = {"UNMET", "TREATY", "ALLIED", "FRIENDLY",
  *        12=SORTIE, 13=SIEGE, 14=BESIEGED, 15=ON_BOARD, 16=RULE
  * Used for displaying unit orders and status to players
  */
-char *soldname[] = {"?", "MARCH", "SCOUT", "GARRISON", "TRADED", "MILITIA",
-                    "FLYING", "DEFEND", "MAG_DEF", "ATTACK", "MAG_ATT", "GENERAL",
-                    "SORTIE", "SIEGE", "BESIEGED", "ON_BOARD", "RULE"};
+char *soldname[] = {"?",      "MARCH",  "SCOUT",    "GARRISON", "TRADED",  "MILITIA",
+                    "FLYING", "DEFEND", "MAG_DEF",  "ATTACK",   "MAG_ATT", "GENERAL",
+                    "SORTIE", "SIEGE",  "BESIEGED", "ON_BOARD", "RULE"};
 #endif /* CONQUER */
 
 /*
@@ -210,8 +211,8 @@ char *soldname[] = {"?", "MARCH", "SCOUT", "GARRISON", "TRADED", "MILITIA",
  *        5=south, 6=southwest, 7=west, 8=northwest
  * Used for movement commands and directional references
  */
-char *directions[] = {"here", "north", "northeast", "east", "southeast",
-                      "south", "southwest", "west", "northwest"};
+char *directions[] = {"here",  "north",     "northeast", "east",     "southeast",
+                      "south", "southwest", "west",      "northwest"};
 
 /*
  * Class - Leader character class names
@@ -220,8 +221,8 @@ char *directions[] = {"here", "north", "northeast", "east", "southeast",
  *        6=trader, 7=warlord, 8=demon, 9=dragon, 10=shadow
  * Used for character generation and display
  */
-char *Class[] = {"monster", "king", "emperor", "wizard", "priest", "pirate",
-                 "trader", "warlord", "demon", "dragon", "shadow"};
+char *Class[] = {"monster", "king",    "emperor", "wizard", "priest", "pirate",
+                 "trader",  "warlord", "demon",   "dragon", "shadow"};
 
 /*
  * alignment - Character alignment system
@@ -269,23 +270,21 @@ char *alignment[] = {"Other", "Good", "Neutral", "Evil", "Other"};
  */
 char *unittype[] = {
     /* Basic Military Units (0-25) */
-    "Militia", "Goblins", "Orcs", "Infantry", "Sailors", "Marines", "Archers",
-    "Uruk-Hai", "Ninjas", "Phalanx", "Olog-Hai", "Legionaries", "Dragoons", "Mercenaries",
-    "Trolls", "Elite", "Lt_Cavalry", "Hv_Cavalry", "Catapults", "Siege", "Rocs",
-    "Knights", "Gryfins", "Elephants", "Zombies", "Spy", "Scout",
+    "Militia", "Goblins", "Orcs", "Infantry", "Sailors", "Marines", "Archers", "Uruk-Hai",
+    "Ninjas", "Phalanx", "Olog-Hai", "Legionaries", "Dragoons", "Mercenaries", "Trolls",
+    "Elite", "Lt_Cavalry", "Hv_Cavalry", "Catapults", "Siege", "Rocs", "Knights", "Gryfins",
+    "Elephants", "Zombies", "Spy", "Scout",
 
     /* Leaders and Nobles (26-37) */
-    "King", "Baron", "Emperor", "Prince", "Wizard", "Mage",
-    "Pope", "Bishop", "Admiral", "Captain", "Warlord", "Lord",
+    "King", "Baron", "Emperor", "Prince", "Wizard", "Mage", "Pope", "Bishop", "Admiral",
+    "Captain", "Warlord", "Lord",
 
     /* Demons and Magical Creatures (38-49) */
     "Demon", "Devil", "Dragyn", "Wyrm", "Shadow", "Nazgul",
 
     /* Summoned and Elemental Creatures (50-54) */
-    "Spirit", "Assasin", "Efreet", "Gargoyl", "Wraith",
-    "Hero", "Centaur", "Giant", "Suphero", "Mummy",
-    "Elmentl", "Mintaur", "Daemon", "Balrog", "Dragon"
-};
+    "Spirit", "Assasin", "Efreet", "Gargoyl", "Wraith", "Hero", "Centaur", "Giant", "Suphero",
+    "Mummy", "Elmentl", "Mintaur", "Daemon", "Balrog", "Dragon"};
 
 #ifdef CONQUER
 /*
@@ -296,23 +295,20 @@ char *unittype[] = {
  */
 char *shunittype[] = {
     /* Basic Military Units (0-25) */
-    "mlta", "Gob", "Orc", "Inf", "Sail", "XMar", "Arch",
-    "Uruk", "Ninj", "Phax", "olog", "Legn", "Drag", "Merc",
-    "Trol", "Elt", "lCav", "hCav", "cat", "sge", "Roc",
-    "Kni", "grif", "ele", "zom", "Spy", "Scout",
+    "mlta", "Gob", "Orc", "Inf", "Sail", "XMar", "Arch", "Uruk", "Ninj", "Phax", "olog", "Legn",
+    "Drag", "Merc", "Trol", "Elt", "lCav", "hCav", "cat", "sge", "Roc", "Kni", "grif", "ele",
+    "zom", "Spy", "Scout",
 
     /* Leaders and Nobles (26-37) */
-    "King", "Bar", "Emp", "Prin", "Wizd", "Magi",
-    "Apos", "Bish", "Admi", "Capt", "Warl", "Lord",
+    "King", "Bar", "Emp", "Prin", "Wizd", "Magi", "Apos", "Bish", "Admi", "Capt", "Warl",
+    "Lord",
 
     /* Demons and Magical Creatures (38-49) */
     "Demn", "Devl", "Drag", "Wyrm", "Shad", "Nazg",
 
     /* Summoned and Elemental Creatures (50-54) */
-    "spir", "Assn", "efr", "Garg", "Wra",
-    "Hero", "Cent", "gt", "Shro", "Mumm",
-    "Elem", "mino", "daem", "Bal", "Drgn"
-};
+    "spir", "Assn", "efr", "Garg", "Wra", "Hero", "Cent", "gt", "Shro", "Mumm", "Elem", "mino",
+    "daem", "Bal", "Drgn"};
 #endif /* CONQUER */
 
 /*
@@ -329,22 +325,22 @@ char *shunittype[] = {
  */
 int unitminsth[] = {
     /* Basic Military Units (0-25): All have strength 1 */
-    1, 1, 1, 1, 1, 1, 1,    /* Militia through Archers */
-    1, 1, 1, 1, 1, 1, 1,    /* Uruk-Hai through Mercenaries */
-    1, 1, 1, 1, 1, 1, 1,    /* Trolls through Rocs */
-    1, 1, 1, 1, 1, 1,       /* Knights through Scout */
+    1, 1, 1, 1, 1, 1, 1, /* Militia through Archers */
+    1, 1, 1, 1, 1, 1, 1, /* Uruk-Hai through Mercenaries */
+    1, 1, 1, 1, 1, 1, 1, /* Trolls through Rocs */
+    1, 1, 1, 1, 1, 1, /* Knights through Scout */
 
     /* Leaders and Nobles (26-37): Varying leadership strength */
-    100, 50, 100, 50, 250, 50,    /* King, Baron, Emperor, Prince, Wizard, Mage */
-    100, 50, 100, 50, 250, 125,   /* Pope, Bishop, Admiral, Captain, Warlord, Lord */
+    100, 50, 100, 50, 250, 50, /* King, Baron, Emperor, Prince, Wizard, Mage */
+    100, 50, 100, 50, 250, 125, /* Pope, Bishop, Admiral, Captain, Warlord, Lord */
 
     /* Demons and Magical Creatures (38-49): High power levels */
-    250, 50, 500, 100, 250, 125,  /* Demon, Devil, Dragyn, Wyrm, Shadow, Nazgul */
+    250, 50, 500, 100, 250, 125, /* Demon, Devil, Dragyn, Wyrm, Shadow, Nazgul */
 
     /* Summoned and Elemental Creatures (50-54): Extremely powerful */
-    50, 50, 50, 75, 75,            /* Spirit, Assassin, Efreet, Gargoyle, Wraith */
-    75, 50, 150, 150, 150,         /* Hero, Centaur, Giant, Superhero, Mummy */
-    175, 150, 500, 500, 1000       /* Elemental, Minotaur, Daemon, Balrog, Dragon */
+    50, 50, 50, 75, 75, /* Spirit, Assassin, Efreet, Gargoyle, Wraith */
+    75, 50, 150, 150, 150, /* Hero, Centaur, Giant, Superhero, Mummy */
+    175, 150, 500, 500, 1000 /* Elemental, Minotaur, Daemon, Balrog, Dragon */
 };
 
 /*
@@ -361,22 +357,22 @@ int unitminsth[] = {
  */
 int unitattack[] = {
     /* Basic Military Units (0-25) */
-    -40, -15,   0,   0,   0,  5,   0,   /* Militia through Archers */
-      5,  20,  10,  15,  20,  10,  0,   /* Uruk-Hai through Mercenaries */
-     25,  20,  20,  30, -20, -20,  20,   /* Trolls through Rocs */
-     40,  40,  50, -15, -30, -30,       /* Knights through Scout */
+    -40, -15, 0, 0, 0, 5, 0, /* Militia through Archers */
+    5, 20, 10, 15, 20, 10, 0, /* Uruk-Hai through Mercenaries */
+    25, 20, 20, 30, -20, -20, 20, /* Trolls through Rocs */
+    40, 40, 50, -15, -30, -30, /* Knights through Scout */
 
     /* Leaders and Nobles (26-37) */
-     30, 20, 30, 20, 30, 20,            /* King through Mage */
-     30, 20, 30, 20, 30, 30,            /* Pope through Lord */
+    30, 20, 30, 20, 30, 20, /* King through Mage */
+    30, 20, 30, 20, 30, 30, /* Pope through Lord */
 
     /* Demons and Magical Creatures (38-49) */
-     50, 20, 50, 40, 50, 40,            /* Demon through Nazgul */
+    50, 20, 50, 40, 50, 40, /* Demon through Nazgul */
 
     /* Summoned and Elemental Creatures (50-54) */
-      0, 20, 10, 10, 10,                /* Spirit through Wraith */
-      0, 10,  0, 15, 15,                /* Hero through Mummy */
-      5, 20, 50, 40, 50                 /* Elemental through Dragon */
+    0, 20, 10, 10, 10, /* Spirit through Wraith */
+    0, 10, 0, 15, 15, /* Hero through Mummy */
+    5, 20, 50, 40, 50 /* Elemental through Dragon */
 };
 
 /*
@@ -393,22 +389,22 @@ int unitattack[] = {
  */
 int unitdefend[] = {
     /* Basic Military Units (0-25) */
-    -25, -15,   0,   0,   0,  0,  10,   /* Militia through Archers */
-      5,   0,  10,  15,  20,  10,  0,   /* Uruk-Hai through Mercenaries */
-     15,  20,  20,  30,  20,  20,  30,   /* Trolls through Rocs */
-     40,  50,  50, -15, -30, -30,       /* Knights through Scout */
+    -25, -15, 0, 0, 0, 0, 10, /* Militia through Archers */
+    5, 0, 10, 15, 20, 10, 0, /* Uruk-Hai through Mercenaries */
+    15, 20, 20, 30, 20, 20, 30, /* Trolls through Rocs */
+    40, 50, 50, -15, -30, -30, /* Knights through Scout */
 
     /* Leaders and Nobles (26-37) */
-     30, 20, 30, 20, 30, 20,            /* King through Mage */
-     30, 20, 30, 20, 30, 30,            /* Pope through Lord */
+    30, 20, 30, 20, 30, 20, /* King through Mage */
+    30, 20, 30, 20, 30, 30, /* Pope through Lord */
 
     /* Demons and Magical Creatures (38-49) */
-     50, 20, 50, 40, 50, 40,            /* Demon through Nazgul */
+    50, 20, 50, 40, 50, 40, /* Demon through Nazgul */
 
     /* Summoned and Elemental Creatures (50-54) */
-      0, 20, 10, 10, 10,                /* Spirit through Wraith */
-      0, 10,  0, 15, 15,                /* Hero through Mummy */
-      5, 20, 50, 40, 50                 /* Elemental through Dragon */
+    0, 20, 10, 10, 10, /* Spirit through Wraith */
+    0, 10, 0, 15, 15, /* Hero through Mummy */
+    5, 20, 50, 40, 50 /* Elemental through Dragon */
 };
 
 /*
@@ -428,22 +424,22 @@ int unitdefend[] = {
  */
 int unitmove[] = {
     /* Basic Military Units (0-25) */
-     0, 10, 10, 10,  0,  0, 10,        /* Militia through Archers */
-    10, 10, 10, 10, 10, 20, 10,        /* Uruk-Hai through Mercenaries */
-    10, 13, 20, 20,  5,  5, 10,        /* Trolls through Rocs */
-    20, 15,  5, 10, 10, 20,            /* Knights through Scout */
+    0, 10, 10, 10, 0, 0, 10, /* Militia through Archers */
+    10, 10, 10, 10, 10, 20, 10, /* Uruk-Hai through Mercenaries */
+    10, 13, 20, 20, 5, 5, 10, /* Trolls through Rocs */
+    20, 15, 5, 10, 10, 20, /* Knights through Scout */
 
     /* Leaders and Nobles (26-37) */
-    20, 20, 20, 20, 20, 20,            /* King through Mage */
-    20, 20, 20, 20, 20, 20,            /* Pope through Lord */
+    20, 20, 20, 20, 20, 20, /* King through Mage */
+    20, 20, 20, 20, 20, 20, /* Pope through Lord */
 
     /* Demons and Magical Creatures (38-49) */
-    20, 20, 20, 20, 20, 20,            /* Demon through Nazgul */
+    20, 20, 20, 20, 20, 20, /* Demon through Nazgul */
 
     /* Summoned and Elemental Creatures (50-54) */
-    10, 10, 15, 10, 10,                /* Spirit through Wraith */
-    10, 15, 10, 10, 10,                /* Hero through Mummy */
-    15, 10, 10, 15, 20                 /* Elemental through Dragon */
+    10, 10, 15, 10, 10, /* Spirit through Wraith */
+    10, 15, 10, 10, 10, /* Hero through Mummy */
+    15, 10, 10, 15, 20 /* Elemental through Dragon */
 };
 
 /*
@@ -460,22 +456,22 @@ int unitmove[] = {
  */
 int u_enmetal[] = {
     /* Basic Military Units (0-25) */
-      0,  80,  80, 100, 100, 100, 100,    /* Militia through Archers */
-    150, 150, 150, 150, 150, 100,   0,    /* Uruk-Hai through Mercenaries */
-    200, 200, 100, 300,1000,1000, 300,    /* Trolls through Rocs */
-    600, 400, 600, 100,   0,   0,         /* Knights through Scout */
+    0, 80, 80, 100, 100, 100, 100, /* Militia through Archers */
+    150, 150, 150, 150, 150, 100, 0, /* Uruk-Hai through Mercenaries */
+    200, 200, 100, 300, 1000, 1000, 300, /* Trolls through Rocs */
+    600, 400, 600, 100, 0, 0, /* Knights through Scout */
 
     /* Leaders and Nobles (26-37) - No metal costs */
-    0, 0, 0, 0, 0, 0,                     /* King through Mage */
-    0, 0, 0, 0, 0, 0,                     /* Pope through Lord */
+    0, 0, 0, 0, 0, 0, /* King through Mage */
+    0, 0, 0, 0, 0, 0, /* Pope through Lord */
 
     /* Demons and Magical Creatures (38-49) - No metal costs */
-    0, 0, 0, 0, 0, 0,                     /* Demon through Nazgul */
+    0, 0, 0, 0, 0, 0, /* Demon through Nazgul */
 
     /* Summoned and Elemental Creatures (50-54) - No metal costs */
-    0, 0, 0, 0, 0,                        /* Spirit through Wraith */
-    0, 0, 0, 0, 0,                        /* Hero through Mummy */
-    0, 0, 0, 0, 0                         /* Elemental through Dragon */
+    0, 0, 0, 0, 0, /* Spirit through Wraith */
+    0, 0, 0, 0, 0, /* Hero through Mummy */
+    0, 0, 0, 0, 0 /* Elemental through Dragon */
 };
 
 /*
@@ -491,22 +487,22 @@ int u_enmetal[] = {
  */
 int u_encost[] = {
     /* Basic Military Units (0-25) - Gold costs */
-     50,  70,  85, 100, 100, 100, 100,    /* Militia through Archers */
-    125, 125, 150, 180, 180, 300, 225,    /* Uruk-Hai through Mercenaries */
-    225, 225, 300, 450, 600, 600, 600,    /* Trolls through Rocs */
-    600, 800, 600, 100,10000, 100,        /* Knights through Scout */
+    50, 70, 85, 100, 100, 100, 100, /* Militia through Archers */
+    125, 125, 150, 180, 180, 300, 225, /* Uruk-Hai through Mercenaries */
+    225, 225, 300, 450, 600, 600, 600, /* Trolls through Rocs */
+    600, 800, 600, 100, 10000, 100, /* Knights through Scout */
 
     /* Leaders and Nobles (26-37) - No enlistment costs */
-    0, 0, 0, 0, 0, 0,                     /* King through Mage */
-    0, 0, 0, 0, 0, 0,                     /* Pope through Lord */
+    0, 0, 0, 0, 0, 0, /* King through Mage */
+    0, 0, 0, 0, 0, 0, /* Pope through Lord */
 
     /* Demons and Magical Creatures (38-49) - No direct costs */
-    0, 0, 0, 0, 0, 0,                     /* Demon through Nazgul */
+    0, 0, 0, 0, 0, 0, /* Demon through Nazgul */
 
     /* Summoned and Elemental Creatures (50-54) - Spell point costs */
-    2, 2, 2, 2, 2,                        /* Spirit through Wraith: 2 SP each */
-    2, 2, 5, 5, 5,                        /* Hero through Mummy: 2-5 SP */
-    5, 5,10,10,15                         /* Elemental through Dragon: 5-15 SP */
+    2, 2, 2, 2, 2, /* Spirit through Wraith: 2 SP each */
+    2, 2, 5, 5, 5, /* Hero through Mummy: 2-5 SP */
+    5, 5, 10, 10, 15 /* Elemental through Dragon: 5-15 SP */
 };
 
 /*
@@ -523,22 +519,22 @@ int u_encost[] = {
  */
 int unitmaint[] = {
     /* Basic Military Units (0-25) - Gold per turn */
-     20,  20,  50,  50,  50,  50,  50,    /* Militia through Archers */
-     50,  50,  50,  75,  75, 200, 100,    /* Uruk-Hai through Mercenaries */
-    100, 100, 175, 225, 250, 250, 250,    /* Trolls through Rocs */
-    250, 250, 250,   0,2000, 100,         /* Knights through Scout */
+    20, 20, 50, 50, 50, 50, 50, /* Militia through Archers */
+    50, 50, 50, 75, 75, 200, 100, /* Uruk-Hai through Mercenaries */
+    100, 100, 175, 225, 250, 250, 250, /* Trolls through Rocs */
+    250, 250, 250, 0, 2000, 100, /* Knights through Scout */
 
     /* Leaders and Nobles (26-37) - No maintenance costs */
-    0, 0, 0, 0, 0, 0,                     /* King through Mage */
-    0, 0, 0, 0, 0, 0,                     /* Pope through Lord */
+    0, 0, 0, 0, 0, 0, /* King through Mage */
+    0, 0, 0, 0, 0, 0, /* Pope through Lord */
 
     /* Demons and Magical Creatures (38-49) - No maintenance */
-    0, 0, 0, 0, 0, 0,                     /* Demon through Nazgul */
+    0, 0, 0, 0, 0, 0, /* Demon through Nazgul */
 
     /* Summoned Creatures (50-54) - Jewel costs per turn */
-    1000, 400, 400, 450, 450,             /* Spirit through Wraith */
-     200, 200,2100, 450,1000,             /* Hero through Mummy */
-    1900,2100,6000,6000,10000             /* Elemental through Dragon */
+    1000, 400, 400, 450, 450, /* Spirit through Wraith */
+    200, 200, 2100, 450, 1000, /* Hero through Mummy */
+    1900, 2100, 6000, 6000, 10000 /* Elemental through Dragon */
 };
 
 /*
@@ -553,26 +549,26 @@ int unitmaint[] = {
  * Core Game Files
  * These files are essential for basic game operation
  */
-char *exefile =  "exec";      /* External command execution file */
-char *datafile = "data";      /* Main game data storage file */
-char *msgfile =  "mesg";      /* Message passing and communication file */
-char *timefile = "timelog";   /* Game timing and scheduling log */
-char *sortname = "conqsort";  /* External sorting utility program name */
+char *exefile = "exec"; /* External command execution file */
+char *datafile = "data"; /* Main game data storage file */
+char *msgfile = "mesg"; /* Message passing and communication file */
+char *timefile = "timelog"; /* Game timing and scheduling log */
+char *sortname = "conqsort"; /* External sorting utility program name */
 
 #ifdef ADMIN
 /*
  * Administrative Files (enabled with ADMIN compilation flag)
  */
-char scenario[NAMELTH+1];     /* Current scenario name buffer */
-char *npcsfile = "nations";   /* NPC nation configuration file */
+char scenario[NAMELTH + 1]; /* Current scenario name buffer */
+char *npcsfile = "nations"; /* NPC nation configuration file */
 #endif /* ADMIN */
 
 /*
  * Game Content and Interface Files
  */
-char *helpfile = "help";      /* Help system content file */
-char *newsfile = "news";      /* Game news and announcements file */
-char *isonfile = "lock";      /* Game session lock file for multi-user coordination */
+char *helpfile = "help"; /* Help system content file */
+char *newsfile = "news"; /* Game news and announcements file */
+char *isonfile = "lock"; /* Game session lock file for multi-user coordination */
 
 #ifdef TRADE
 /*
@@ -610,17 +606,15 @@ char *seasonstr[] = {"Winter", "Spring", "Summer", "Fall"};
  */
 char *pwrname[] = {
     /* Military Powers (0-10): Combat and warfare enhancements */
-    "WARRIOR", "CAPTAIN", "WARLORD", "ARCHER", "CAVALRY", "SAPPER",
-    "ARMOR", "AVIAN", "MI_MONST", "AV_MONST", "MA_MONST",
+    "WARRIOR", "CAPTAIN", "WARLORD", "ARCHER", "CAVALRY", "SAPPER", "ARMOR", "AVIAN",
+    "MI_MONST", "AV_MONST", "MA_MONST",
 
     /* Civilian Powers (11-23): Economic and infrastructure improvements */
-    "SLAVER", "DERVISH", "HIDDEN", "ARCHITECT", "RELIGION", "MINER",
-    "BREEDER", "URBAN", "STEEL", "NINJA", "SAILOR", "DEMOCRACY", "ROADS",
+    "SLAVER", "DERVISH", "HIDDEN", "ARCHITECT", "RELIGION", "MINER", "BREEDER", "URBAN",
+    "STEEL", "NINJA", "SAILOR", "DEMOCRACY", "ROADS",
 
     /* Magical Powers (24-30): Supernatural abilities and magic */
-    "THE_VOID", "KNOWALL", "DESTROYER", "VAMPIRE",
-    "SUMMON", "WYZARD", "SORCERER", "ERROR"
-};
+    "THE_VOID", "KNOWALL", "DESTROYER", "VAMPIRE", "SUMMON", "WYZARD", "SORCERER", "ERROR"};
 
 /*
  * powers - Power identifier constants array
@@ -640,43 +634,43 @@ char *pwrname[] = {
  */
 long powers[] = {
     /* Military Powers (0-10) */
-    WARRIOR,    /* 0: Basic military enhancement */
-    CAPTAIN,    /* 1: Leadership and command bonuses */
-    WARLORD,    /* 2: Advanced military tactics */
-    ARCHER,     /* 3: Ranged combat specialization */
-    CAVALRY,    /* 4: Mounted unit advantages */
-    SAPPER,     /* 5: Siege warfare and fortification */
-    ARMOR,      /* 6: Defensive combat bonuses */
-    AVIAN,      /* 7: Flying unit creation and control */
-    MI_MONST,   /* 8: Minor monster summoning */
-    AV_MONST,   /* 9: Average monster summoning */
-    MA_MONST,   /* 10: Major monster summoning */
+    WARRIOR, /* 0: Basic military enhancement */
+    CAPTAIN, /* 1: Leadership and command bonuses */
+    WARLORD, /* 2: Advanced military tactics */
+    ARCHER, /* 3: Ranged combat specialization */
+    CAVALRY, /* 4: Mounted unit advantages */
+    SAPPER, /* 5: Siege warfare and fortification */
+    ARMOR, /* 6: Defensive combat bonuses */
+    AVIAN, /* 7: Flying unit creation and control */
+    MI_MONST, /* 8: Minor monster summoning */
+    AV_MONST, /* 9: Average monster summoning */
+    MA_MONST, /* 10: Major monster summoning */
 
     /* Civilian Powers (11-23) */
-    SLAVER,     /* 11: Population manipulation */
-    DERVISH,    /* 12: Desert and nomadic bonuses */
-    HIDDEN,     /* 13: Stealth and espionage */
-    ARCHITECT,  /* 14: Advanced construction */
-    RELIGION,   /* 15: Religious and morale bonuses */
-    MINER,      /* 16: Resource extraction bonuses */
-    BREEDER,    /* 17: Population growth enhancement */
-    URBAN,      /* 18: City development bonuses */
-    STEEL,      /* 19: Advanced metallurgy */
-    NINJA,      /* 20: Stealth combat specialists */
-    SAILOR,     /* 21: Naval and maritime bonuses */
-    DEMOCRACY,  /* 22: Political and diplomatic bonuses */
-    ROADS,      /* 23: Transportation infrastructure */
+    SLAVER, /* 11: Population manipulation */
+    DERVISH, /* 12: Desert and nomadic bonuses */
+    HIDDEN, /* 13: Stealth and espionage */
+    ARCHITECT, /* 14: Advanced construction */
+    RELIGION, /* 15: Religious and morale bonuses */
+    MINER, /* 16: Resource extraction bonuses */
+    BREEDER, /* 17: Population growth enhancement */
+    URBAN, /* 18: City development bonuses */
+    STEEL, /* 19: Advanced metallurgy */
+    NINJA, /* 20: Stealth combat specialists */
+    SAILOR, /* 21: Naval and maritime bonuses */
+    DEMOCRACY, /* 22: Political and diplomatic bonuses */
+    ROADS, /* 23: Transportation infrastructure */
 
     /* Magical Powers (24-30) */
-    THE_VOID,   /* 24: Dark magic and void manipulation */
-    KNOWALL,    /* 25: Divination and information gathering */
-    DESTROYER,  /* 26: Destructive magical abilities */
-    VAMPIRE,    /* 27: Undead and life-drain powers */
-    SUMMON,     /* 28: General summoning abilities */
-    WYZARD,     /* 29: Advanced magical knowledge */
-    SORCERER,   /* 30: Master magical abilities */
+    THE_VOID, /* 24: Dark magic and void manipulation */
+    KNOWALL, /* 25: Divination and information gathering */
+    DESTROYER, /* 26: Destructive magical abilities */
+    VAMPIRE, /* 27: Undead and life-drain powers */
+    SUMMON, /* 28: General summoning abilities */
+    WYZARD, /* 29: Advanced magical knowledge */
+    SORCERER, /* 30: Master magical abilities */
 
-    0           /* Array terminator */
+    0 /* Array terminator */
 };
 
 /*
@@ -691,26 +685,26 @@ long powers[] = {
  * File Handles and I/O Systems
  * Global file pointers and I/O state variables for game operation
  */
-FILE *fnews;                     /* News file handle */
-struct sprd_sht spread;          /* Spreadsheet/data structure for game calculations */
+FILE *fnews; /* News file handle */
+struct sprd_sht spread; /* Spreadsheet/data structure for game calculations */
 
-FILE *fm;                        /* Main communication file handle */
-int mailok = DONEMAIL;          /* Mail system status flag */
+FILE *fm; /* Main communication file handle */
+int mailok = DONEMAIL; /* Mail system status flag */
 
 #ifdef CONQUER
 #ifdef SYSMAIL
 /*
  * System Mail Configuration (SYSMAIL enabled builds)
  */
-char sysmail[FILELTH];          /* System mail file path buffer */
-int sys_mail_status;            /* System mail status flag */
+char sysmail[FILELTH]; /* System mail file path buffer */
+int sys_mail_status; /* System mail status flag */
 #endif /* SYSMAIL */
 
 /*
  * Conquer Mail System Variables
  */
-char conqmail[FILELTH];         /* Conquer mail file path buffer */
-int conq_mail_status;           /* Conquer mail system status */
+char conqmail[FILELTH]; /* Conquer mail file path buffer */
+int conq_mail_status; /* Conquer mail system status */
 #endif /* CONQUER */
 
 /*
@@ -764,12 +758,11 @@ char *tg_value = "13335157911433442331131135734567789123937571111111111111111110
  */
 char *tg_name[] = {
     /* Textiles and Livestock (0-8) */
-    "furs", "wool", "beer", "cloth", "wine",
-    "mules", "horses", "pigeons", "griffons",
+    "furs", "wool", "beer", "cloth", "wine", "mules", "horses", "pigeons", "griffons",
 
     /* Food and Agriculture (9-19) */
-    "corn", "fish", "sugar", "honey", "fruit",
-    "rice", "wheat", "dairy", "peas", "bread", "cereal",
+    "corn", "fish", "sugar", "honey", "fruit", "rice", "wheat", "dairy", "peas", "bread",
+    "cereal",
 
     /* Construction Materials (20-26) */
     "pottery", "salt", "timber", "granite", "pine", "oak", "nails",
@@ -793,8 +786,8 @@ char *tg_name[] = {
     "bronze", "copper", "lead", "tin", "iron", "steel", "mithral", "adamantine",
 
     /* Luxury Goods and Precious Materials (51-61) */
-    "spice", "silver", "pearls", "dye", "silk", "gold", "rubys", "ivory", "diamonds", "platinum",
+    "spice", "silver", "pearls", "dye", "silk", "gold", "rubys", "ivory", "diamonds",
+    "platinum",
 
     /* Terminator (62) */
-    "none"
-};
+    "none"};

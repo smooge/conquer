@@ -3,7 +3,8 @@
  *
  * This file is part of Conquer.
  * Originally Copyright (C) 1988-1989 by Edward M. Barlow and Adam Bryant
- * Copyright (C) 2025 Juan Manuel Méndez Rey (Vejeta) - Licensed under GPL v3 with permission from original authors
+ * Copyright (C) 2025 Juan Manuel Méndez Rey (Vejeta) - Licensed under GPL v3 with permission
+ * from original authors
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,33 +38,33 @@
 #include "patchlevel.h"
 #include "safe_convert.h"
 
-char	fison[FILELTH];
-char	*getpass(const char *prompt);
-void	sect_info(void);
-struct	s_sector **sct;
-struct	s_nation ntn[NTOTAL];	/* player nation stats */
-struct	s_world	world;
-char	**occ;	/*is sector occupied by an army?*/
-short	**movecost;
-long	startgold=0;
-long	mercgot=0;
+char fison[FILELTH];
+char *getpass(const char *prompt);
+void sect_info(void);
+struct s_sector **sct;
+struct s_nation ntn[NTOTAL]; /* player nation stats */
+struct s_world world;
+char **occ; /*is sector occupied by an army?*/
+short **movecost;
+long startgold = 0;
+long mercgot = 0;
 
-short	xoffset=0,yoffset=0;	/*offset of upper left hand corner*/
+short xoffset = 0, yoffset = 0; /*offset of upper left hand corner*/
 /* current cursor postion (relative to 00 in upper corner) */
 /*	position is 2*x,y*/
-short	xcurs=0,ycurs=0;
-short	redraw=FULL;	/* if !DONE: redraw map		*/
-static int	done=FALSE;	/* if TRUE: you are done	*/
-short	hilmode=HI_OWN;	/* hilight mode */
-short	dismode=DI_DESI;/* display mode			*/
-short	otherdismode= -(DI_MOVE);
-short	otherhilmode= HI_OWN;
-short	selector=0;	/* selector (y vbl) for which army/navy... is "picked"*/
-short	pager=0;	/* pager for selector 0,1,2,3*/
-short	country=0;	/* nation id of owner*/
-struct	s_nation	*curntn;
-short	Gaudy=FALSE;
-static uid_t	owneruid;
+short xcurs = 0, ycurs = 0;
+short redraw = FULL; /* if !DONE: redraw map		*/
+static int done = FALSE; /* if TRUE: you are done	*/
+short hilmode = HI_OWN; /* hilight mode */
+short dismode = DI_DESI; /* display mode			*/
+short otherdismode = -(DI_MOVE);
+short otherhilmode = HI_OWN;
+short selector = 0; /* selector (y vbl) for which army/navy... is "picked"*/
+short pager = 0; /* pager for selector 0,1,2,3*/
+short country = 0; /* nation id of owner*/
+struct s_nation *curntn;
+short Gaudy = FALSE;
+static uid_t owneruid;
 
 FILE *fexe;
 
@@ -110,597 +111,593 @@ FILE *fexe;
  *   - Handles both interactive and batch modes (print maps, scores)
  *   - Complex authentication with password encryption
  *   - Legacy K&R function definition style needs modernization
-  * @last_documented: 2025-09-17
+ * @last_documented: 2025-09-17
  */
 int main(int argc, char **argv) {
-#ifdef  USERLOG
-	FILE *userlog;
+#ifdef USERLOG
+    FILE *userlog;
 #endif
-#ifdef  CHECKUSER
-	int checkuser_mod = FALSE;
-	int checkuser_uid = 0;
-	int checkuser_list = FALSE;
+#ifdef CHECKUSER
+    int checkuser_mod = FALSE;
+    int checkuser_uid = 0;
+    int checkuser_list = FALSE;
 #endif
-	register int i,j;
-	char name[NAMELTH+1],filename[FILELTH];
+    register int i, j;
+    char name[NAMELTH + 1], filename[FILELTH];
 #ifndef __STDC__
-	void srand();
+    void srand();
 #endif
-	void init_hasseen(void),mapprep(void);
-	char passwd[PASSLTH+1];
-	extern char conqmail[];
+    void init_hasseen(void), mapprep(void);
+    char passwd[PASSLTH + 1];
+    extern char conqmail[];
 #ifdef SYSMAIL
-	extern char sysmail[];
+    extern char sysmail[];
 #endif /* SYSMAIL */
-	int sflag=FALSE,pflag=FALSE,l,in_ch,old_ch=' ';
+    int sflag = FALSE, pflag = FALSE, l, in_ch, old_ch = ' ';
 
-	char defaultdir[BIGLTH],tmppass[PASSLTH+1];
-	char cq_opts[BIGLTH];
-	struct passwd *pwent;
+    char defaultdir[BIGLTH], tmppass[PASSLTH + 1];
+    char cq_opts[BIGLTH];
+    struct passwd *pwent;
 
-	owneruid=getuid();
-	srand((unsigned) time((long *) 0));
-	name[0] = '\0';
-	defaultdir[0] = '\0';
-	cq_opts[0] = '\0';
+    owneruid = getuid();
+    srand((unsigned)time((long *)0));
+    name[0] = '\0';
+    defaultdir[0] = '\0';
+    cq_opts[0] = '\0';
 
-	/* check conquer options */
-	if (getenv(ENVIRON_OPTS)!=NULL) {
-		snprintf(cq_opts, BIGLTH, "%s", getenv(ENVIRON_OPTS));
-	}
-	if (cq_opts[0] != '\0') {
-		l = safe_size_to_int(strlen(cq_opts));
-		for(i=0; i<l; i++) {
-			switch(cq_opts[i]) {
-			case 'G':
-				/* set Gaudy display */
-				Gaudy = TRUE;
-				break;
-			case 'N':
-			case 'n':
-				/* check for nation name */
-				if (strncmp(cq_opts+i+1,"ation=",6)==0) {
-					i += 7;
-				} else if (strncmp(cq_opts+i+1,"ame=",4)==0) {
-					i += 5;
-				} else {
-					fprintf(stderr,"conquer: invalid environment\n");
-					fprintf(stderr,"\t%s = %s\n",ENVIRON_OPTS,cq_opts);
-					fprintf(stderr,"\texpected <nation=NAME>\n");
-					exit(FAIL);
-				}
-				if (i<l) {
-					/* grab the nation name */
-					for (j=0;j<NAMELTH&&j<l-i&&cq_opts[i+j]!=',';j++) {
-						name[j] = cq_opts[i+j];
-					}
-					name[j]='\0';
+    /* check conquer options */
+    if (getenv(ENVIRON_OPTS) != NULL) {
+        snprintf(cq_opts, BIGLTH, "%s", getenv(ENVIRON_OPTS));
+    }
+    if (cq_opts[0] != '\0') {
+        l = safe_size_to_int(strlen(cq_opts));
+        for (i = 0; i < l; i++) {
+            switch (cq_opts[i]) {
+                case 'G':
+                    /* set Gaudy display */
+                    Gaudy = TRUE;
+                    break;
+                case 'N':
+                case 'n':
+                    /* check for nation name */
+                    if (strncmp(cq_opts + i + 1, "ation=", 6) == 0) {
+                        i += 7;
+                    } else if (strncmp(cq_opts + i + 1, "ame=", 4) == 0) {
+                        i += 5;
+                    } else {
+                        fprintf(stderr, "conquer: invalid environment\n");
+                        fprintf(stderr, "\t%s = %s\n", ENVIRON_OPTS, cq_opts);
+                        fprintf(stderr, "\texpected <nation=NAME>\n");
+                        exit(FAIL);
+                    }
+                    if (i < l) {
+                        /* grab the nation name */
+                        for (j = 0; j < NAMELTH && j < l - i && cq_opts[i + j] != ','; j++) {
+                            name[j] = cq_opts[i + j];
+                        }
+                        name[j] = '\0';
 
-					/* end the parse properly */
-					i += j-1;
-					if (j==NAMELTH) {
-						for (;i<l && cq_opts[i]!=',';i++);
-					}
-				}
-				break;
-			case 'D':
-			case 'd':
-				/* check for data directory */
-				if (strncmp(cq_opts+i+1,"ata=",4)==0) {
-					i += 5;
-				} else if (strncmp(cq_opts+i+1,"atadir=",7)==0) {
-					i += 8;
-				} else if (strncmp(cq_opts+i+1,"irectory=",9)==0) {
-					i += 10;
-				} else if (strncmp(cq_opts+i+1,"ir=",3)==0) {
-					i += 4;
-				} else {
-					fprintf(stderr,"conquer: invalid environment\n");
-					fprintf(stderr,"\t%s = %s\n",ENVIRON_OPTS,cq_opts);
-					fprintf(stderr,"\texpected <data=NAME>\n");
-					exit(FAIL);
-				}
-				if (i<l) {
-					/* grab the data directory */
-					for (j=0; j<l-i && cq_opts[i+j]!=',';j++) {
-						defaultdir[j] = cq_opts[i+j];
-					}
-					defaultdir[j]='\0';
-					i += j-1;
-				}
-				break;
-			case ' ':
-			case ',':
-				/* ignore commas and spaces */
-				break;
-			default:
-				/* complain */
-				fprintf(stderr,"conquer: invalid environment\n");
-				fprintf(stderr,"\t%s = %s\n",ENVIRON_OPTS,cq_opts);
-				fprintf(stderr,"\tunexpected option <%c>\n",cq_opts[i]);
-				exit(FAIL);
-				break;
-			}
-	     }
-	}
+                        /* end the parse properly */
+                        i += j - 1;
+                        if (j == NAMELTH) {
+                            for (; i < l && cq_opts[i] != ','; i++)
+                                ;
+                        }
+                    }
+                    break;
+                case 'D':
+                case 'd':
+                    /* check for data directory */
+                    if (strncmp(cq_opts + i + 1, "ata=", 4) == 0) {
+                        i += 5;
+                    } else if (strncmp(cq_opts + i + 1, "atadir=", 7) == 0) {
+                        i += 8;
+                    } else if (strncmp(cq_opts + i + 1, "irectory=", 9) == 0) {
+                        i += 10;
+                    } else if (strncmp(cq_opts + i + 1, "ir=", 3) == 0) {
+                        i += 4;
+                    } else {
+                        fprintf(stderr, "conquer: invalid environment\n");
+                        fprintf(stderr, "\t%s = %s\n", ENVIRON_OPTS, cq_opts);
+                        fprintf(stderr, "\texpected <data=NAME>\n");
+                        exit(FAIL);
+                    }
+                    if (i < l) {
+                        /* grab the data directory */
+                        for (j = 0; j < l - i && cq_opts[i + j] != ','; j++) {
+                            defaultdir[j] = cq_opts[i + j];
+                        }
+                        defaultdir[j] = '\0';
+                        i += j - 1;
+                    }
+                    break;
+                case ' ':
+                case ',':
+                    /* ignore commas and spaces */
+                    break;
+                default:
+                    /* complain */
+                    fprintf(stderr, "conquer: invalid environment\n");
+                    fprintf(stderr, "\t%s = %s\n", ENVIRON_OPTS, cq_opts);
+                    fprintf(stderr, "\tunexpected option <%c>\n", cq_opts[i]);
+                    exit(FAIL);
+                    break;
+            }
+        }
+    }
 
-	/* set the default data directory */
-	if (defaultdir[0] == '\0') {
-		strncpy(defaultdir, DEFAULTDIR, sizeof(defaultdir) - 1);
-		defaultdir[sizeof(defaultdir) - 1] = '\0';
-	}
-	if (defaultdir[0] != '/') {
-		size_t len = strlen(defaultdir);
-		if (len >= sizeof(cq_opts)) {
-			len = sizeof(cq_opts) - 1;
-		}
-		memcpy(cq_opts, defaultdir, len);
-		cq_opts[len] = '\0';
-		snprintf(defaultdir, sizeof(defaultdir), "%s/%.200s", DEFAULTDIR, cq_opts);
-	}
+    /* set the default data directory */
+    if (defaultdir[0] == '\0') {
+        strncpy(defaultdir, DEFAULTDIR, sizeof(defaultdir) - 1);
+        defaultdir[sizeof(defaultdir) - 1] = '\0';
+    }
+    if (defaultdir[0] != '/') {
+        size_t len = strlen(defaultdir);
+        if (len >= sizeof(cq_opts)) {
+            len = sizeof(cq_opts) - 1;
+        }
+        memcpy(cq_opts, defaultdir, len);
+        cq_opts[len] = '\0';
+        snprintf(defaultdir, sizeof(defaultdir), "%s/%.200s", DEFAULTDIR, cq_opts);
+    }
 
-	/* process the command line arguments */
+    /* process the command line arguments */
 #ifdef CHECKUSER
-	while((i=getopt(argc,argv,"Ghpln:u:d:s"))!=EOF) switch(i){
+    while ((i = getopt(argc, argv, "Ghpln:u:d:s")) != EOF)
+        switch (i) {
 #else
-	while((i=getopt(argc,argv,"Ghpn:d:s"))!=EOF) switch(i){
+    while ((i = getopt(argc, argv, "Ghpn:d:s")) != EOF)
+        switch (i) {
 #endif
-	/* process the command line arguments */
-	case 'h': /* execute help program*/
-		initscr();
-		savetty();
-		noecho();
-		crmode();			/* cbreak mode */
-		signal(SIGINT,SIG_IGN);		/* disable keyboard signals */
-		signal(SIGQUIT,SIG_IGN);
-		help();
-		endwin();
-		putchar('\n');
-		exit(SUCCESS);
-	case 'p': /* print the map*/
-		pflag++;
-		break;
-	case 'G':
-		Gaudy = TRUE;
-		break;
-	case 'd':
-		if(optarg[0]!='/') {
-			snprintf(defaultdir, sizeof(defaultdir), "%s/%s", DEFAULTDIR, optarg);
-		} else {
-			strncpy(defaultdir, optarg, sizeof(defaultdir) - 1);
-			defaultdir[sizeof(defaultdir) - 1] = '\0';
-		}
-		break;
-	case 'n':
-		strncpy(name, optarg, sizeof(name) - 1);
-		name[sizeof(name) - 1] = '\0';
-		break;
+            /* process the command line arguments */
+            case 'h': /* execute help program*/
+                initscr();
+                savetty();
+                noecho();
+                crmode(); /* cbreak mode */
+                signal(SIGINT, SIG_IGN); /* disable keyboard signals */
+                signal(SIGQUIT, SIG_IGN);
+                help();
+                endwin();
+                putchar('\n');
+                exit(SUCCESS);
+            case 'p': /* print the map*/
+                pflag++;
+                break;
+            case 'G':
+                Gaudy = TRUE;
+                break;
+            case 'd':
+                if (optarg[0] != '/') {
+                    snprintf(defaultdir, sizeof(defaultdir), "%s/%s", DEFAULTDIR, optarg);
+                } else {
+                    strncpy(defaultdir, optarg, sizeof(defaultdir) - 1);
+                    defaultdir[sizeof(defaultdir) - 1] = '\0';
+                }
+                break;
+            case 'n':
+                strncpy(name, optarg, sizeof(name) - 1);
+                name[sizeof(name) - 1] = '\0';
+                break;
 #ifdef CHECKUSER
-	case 'l':
-		checkuser_list = TRUE;
-		break;
-	case 'u':
-		checkuser_mod = TRUE;	/* check for god later */
-		checkuser_uid = safe_uid_to_int(owneruid);
-		if (strlen (optarg) > 0) {
-		   struct passwd *check_pw = getpwnam(optarg);
-		   if (check_pw)
-		      checkuser_uid = safe_uid_to_int(check_pw->pw_uid);
-		}
-		break;
+            case 'l':
+                checkuser_list = TRUE;
+                break;
+            case 'u':
+                checkuser_mod = TRUE; /* check for god later */
+                checkuser_uid = safe_uid_to_int(owneruid);
+                if (strlen(optarg) > 0) {
+                    struct passwd *check_pw = getpwnam(optarg);
+                    if (check_pw)
+                        checkuser_uid = safe_uid_to_int(check_pw->pw_uid);
+                }
+                break;
 #endif
-	case 's': /*print the score*/
-		sflag++;
-		break;
-	case '?': /*  print out command line arguments */
+            case 's': /*print the score*/
+                sflag++;
+                break;
+            case '?': /*  print out command line arguments */
 #ifdef CHECKUSER
-		fprintf(stderr,"Command line format: %s [-Ghpls -d DIR -nNAT -u USER]\n",argv[0]);
-		fprintf(stderr,"\t-u USER  change nation username\n");
-		fprintf(stderr,"\t-l       list nation owners\n");
+                fprintf(stderr, "Command line format: %s [-Ghpls -d DIR -nNAT -u USER]\n",
+                        argv[0]);
+                fprintf(stderr, "\t-u USER  change nation username\n");
+                fprintf(stderr, "\t-l       list nation owners\n");
 #else
-		fprintf(stderr,"Command line format: %s [-Ghps -d DIR -nNAT]\n",argv[0]);
+                fprintf(stderr, "Command line format: %s [-Ghps -d DIR -nNAT]\n", argv[0]);
 #endif
-		fprintf(stderr,"\t-n NAT   play as nation NAT\n");
-		fprintf(stderr,"\t-d DIR   to use play different game\n");
-		fprintf(stderr,"\t-G       gaudily highlight nation in news\n");
-		fprintf(stderr,"\t-h       print help text\n");
-		fprintf(stderr,"\t-p       print a map\n");
-		fprintf(stderr,"\t-s       print scores\n");
-		exit(SUCCESS);
-	}
+                fprintf(stderr, "\t-n NAT   play as nation NAT\n");
+                fprintf(stderr, "\t-d DIR   to use play different game\n");
+                fprintf(stderr, "\t-G       gaudily highlight nation in news\n");
+                fprintf(stderr, "\t-h       print help text\n");
+                fprintf(stderr, "\t-p       print a map\n");
+                fprintf(stderr, "\t-s       print scores\n");
+                exit(SUCCESS);
+        }
 
-	/* now that we have parsed the args, we can go to the
-	 * dir where the files are kept and do some work.
-	 */
-	if (chdir(defaultdir)) {
-		fprintf(stderr,"unable to change dir to %s\n",defaultdir);
-		exit(FAIL);
-	}
+    /* now that we have parsed the args, we can go to the
+     * dir where the files are kept and do some work.
+     */
+    if (chdir(defaultdir)) {
+        fprintf(stderr, "unable to change dir to %s\n", defaultdir);
+        exit(FAIL);
+    }
 
-	readdata();				/* read data*/
-	verifydata( __FILE__, __LINE__ );	/* verify data */
+    readdata(); /* read data*/
+    verifydata(__FILE__, __LINE__); /* verify data */
 
-	/* now print the scores */
-	if(sflag){
-		printscore();
-		exit(SUCCESS);
-	}
+    /* now print the scores */
+    if (sflag) {
+        printscore();
+        exit(SUCCESS);
+    }
 
-	/*
-	*  Set the real uid to the effective.  This will avoid a
-	*  number of problems involving file protection if the
-	*  executable is setuid.
-	*/
-	if (getuid() != geteuid()) { /* we are running suid */
-		(void) umask(MASK);	/* nobody else can read files */
-		(void) setuid (geteuid ()) ;
-	}
+    /*
+     *  Set the real uid to the effective.  This will avoid a
+     *  number of problems involving file protection if the
+     *  executable is setuid.
+     */
+    if (getuid() != geteuid()) { /* we are running suid */
+        (void)umask(MASK); /* nobody else can read files */
+        (void)setuid(geteuid());
+    }
 
-	fprintf(stderr,"conquer %s.%s: Copyright (c) 1988 Edward M Barlow\n",VERSION,PATCHLEVEL);
-    fprintf(stderr,"GPL v3 licensed version (c) 2025 - original authors' permission granted\n");
+    fprintf(stderr, "conquer %s.%s: Copyright (c) 1988 Edward M Barlow\n", VERSION, PATCHLEVEL);
+    fprintf(stderr,
+            "GPL v3 licensed version (c) 2025 - original authors' permission granted\n");
 
-	/* check for update in progress */
-	snprintf(filename, sizeof(filename), "%sup", isonfile);
-	if(check_lock(filename,FALSE)==TRUE) {
-		fprintf(stderr,"Conquer is updating\n");
-		fprintf(stderr,"Please try again later.\n");
-		exit(FAIL);
-	}
+    /* check for update in progress */
+    snprintf(filename, sizeof(filename), "%sup", isonfile);
+    if (check_lock(filename, FALSE) == TRUE) {
+        fprintf(stderr, "Conquer is updating\n");
+        fprintf(stderr, "Please try again later.\n");
+        exit(FAIL);
+    }
 
-	/* identify player and country represented */
-	/* get nation name from command line or by asking user.
-	*     if you fail give name of administrator of game
-	*/
-	if (name[0] == '\0') {
-		if (pflag != FALSE)
-			fprintf(stderr,"Display map for what nation: ");
-		else fprintf(stderr,"What nation would you like to be: ");
-		if (fgets(name, NAMELTH+1, stdin) != NULL) {
-				name[strcspn(name, "\n")] = '\0';
-		}
-	}
+    /* identify player and country represented */
+    /* get nation name from command line or by asking user.
+     *     if you fail give name of administrator of game
+     */
+    if (name[0] == '\0') {
+        if (pflag != FALSE)
+            fprintf(stderr, "Display map for what nation: ");
+        else
+            fprintf(stderr, "What nation would you like to be: ");
+        if (fgets(name, NAMELTH + 1, stdin) != NULL) {
+            name[strcspn(name, "\n")] = '\0';
+        }
+    }
 #ifdef OGOD
-	if(strcmp(name,"god")==0 || strcmp(name,"unowned")==0) {
-		struct passwd *login_pw = getpwnam(LOGIN);
-		if (login_pw == NULL) {
-			fprintf(stderr, "Error: User '%s' not found or access denied\n", LOGIN);
-			exit(FAIL);
-		}
+    if (strcmp(name, "god") == 0 || strcmp(name, "unowned") == 0) {
+        struct passwd *login_pw = getpwnam(LOGIN);
+        if (login_pw == NULL) {
+            fprintf(stderr, "Error: User '%s' not found or access denied\n", LOGIN);
+            exit(FAIL);
+        }
 
-		if ((owneruid != login_pw->pw_uid ) &&
-		  ((pwent=getpwnam(ntn[0].leader)) == NULL ||
-		  owneruid != pwent->pw_uid )) {
-			fprintf(stderr,"Sorry -- you can not login as god\n");
-			fprintf(stderr,"you need to be logged in as %s",LOGIN);
-			if (strcmp(LOGIN, ntn[0].leader)!=0) {
-				fprintf(stderr," or %s",ntn[0].leader);
-			}
-			fprintf(stderr,"\n");
-			exit(FAIL);
-		}
-		strncpy(name, "unowned", sizeof(name) - 1);
-		name[sizeof(name) - 1] = '\0';
-		hilmode = HI_NONE;
-	}
+        if ((owneruid != login_pw->pw_uid)
+            && ((pwent = getpwnam(ntn[0].leader)) == NULL || owneruid != pwent->pw_uid)) {
+            fprintf(stderr, "Sorry -- you can not login as god\n");
+            fprintf(stderr, "you need to be logged in as %s", LOGIN);
+            if (strcmp(LOGIN, ntn[0].leader) != 0) {
+                fprintf(stderr, " or %s", ntn[0].leader);
+            }
+            fprintf(stderr, "\n");
+            exit(FAIL);
+        }
+        strncpy(name, "unowned", sizeof(name) - 1);
+        name[sizeof(name) - 1] = '\0';
+        hilmode = HI_NONE;
+    }
 #else
-	if(strcmp(name,"god")==0) {
-		strncpy(name, "unowned", sizeof(name) - 1);
-		name[sizeof(name) - 1] = '\0';
-	}
+    if (strcmp(name, "god") == 0) {
+        strncpy(name, "unowned", sizeof(name) - 1);
+        name[sizeof(name) - 1] = '\0';
+    }
 #endif /* OGOD */
 
 #ifdef CHECKUSER
-	if ((checkuser_mod) || (checkuser_list)) {
-		struct passwd *login_pw2 = getpwnam(LOGIN);
-		struct passwd *leader_pw = getpwnam(ntn[0].leader);
-		if (login_pw2 == NULL) {
-			fprintf(stderr, "Error: User '%s' not found or access denied\n", LOGIN);
-			exit(FAIL);
-		}
-		if (leader_pw == NULL) {
-			fprintf(stderr, "Error: Leader '%s' not found or access denied\n", ntn[0].leader);
-			exit(FAIL);
-		}
+    if ((checkuser_mod) || (checkuser_list)) {
+        struct passwd *login_pw2 = getpwnam(LOGIN);
+        struct passwd *leader_pw = getpwnam(ntn[0].leader);
+        if (login_pw2 == NULL) {
+            fprintf(stderr, "Error: User '%s' not found or access denied\n", LOGIN);
+            exit(FAIL);
+        }
+        if (leader_pw == NULL) {
+            fprintf(stderr, "Error: Leader '%s' not found or access denied\n", ntn[0].leader);
+            exit(FAIL);
+        }
 
-		if ((owneruid == login_pw2->pw_uid) ||
-        	    (owneruid == leader_pw->pw_uid)) {
-			/* don't change - already set */
-		}
-		else {
-			checkuser_mod = FALSE;
-			checkuser_list = FALSE;
-			fprintf (stderr, "Sorry -- only god may modify/list a nation's uid\n");
-		      	exit(FAIL);
-		}
-	}
+        if ((owneruid == login_pw2->pw_uid) || (owneruid == leader_pw->pw_uid)) {
+            /* don't change - already set */
+        } else {
+            checkuser_mod = FALSE;
+            checkuser_list = FALSE;
+            fprintf(stderr, "Sorry -- only god may modify/list a nation's uid\n");
+            exit(FAIL);
+        }
+    }
 #endif
-       country=(-1);
-	for(i=0;i<NTOTAL;i++)
-	if(strcmp(name,ntn[i].name)==0) {
-		country=safe_int_to_short(i);
-		break;
-	}
+    country = (-1);
+    for (i = 0; i < NTOTAL; i++)
+        if (strcmp(name, ntn[i].name) == 0) {
+            country = safe_int_to_short(i);
+            break;
+        }
 
-	if(country==(-1)) {
-		fprintf(stderr,"Sorry, name <%s> not found\n",name);
-		fprintf(stderr,"\nFor rules type <conquer -h>");
-		fprintf(stderr,"\nFor information on conquer please contact %s.",OWNER);
-		fprintf(stderr,"\nTo enter this campaign please send mail to %s", LOGIN);
-		if (strcmp(LOGIN, ntn[0].leader)!=0) {
-			fprintf(stderr," or %s",ntn[0].leader);
-		}
-		fprintf(stderr,".\n");
-		return EXIT_FAILURE;
-	} else if(country==0 && !pflag) {
-		snprintf(filename, sizeof(filename), "%sadd", isonfile);
-		if(check_lock(filename,FALSE)==TRUE) {
-			fprintf(stderr,"A new player is being added.\n");
-			fprintf(stderr,"Continue anyway? [y or n]");
-			while(((i=getchar())!='y')&&(i!='n')) ;
-			if(i!='y') exit(FAIL);
-		}
-	}
-	curntn = &ntn[country];
+    if (country == (-1)) {
+        fprintf(stderr, "Sorry, name <%s> not found\n", name);
+        fprintf(stderr, "\nFor rules type <conquer -h>");
+        fprintf(stderr, "\nFor information on conquer please contact %s.", OWNER);
+        fprintf(stderr, "\nTo enter this campaign please send mail to %s", LOGIN);
+        if (strcmp(LOGIN, ntn[0].leader) != 0) {
+            fprintf(stderr, " or %s", ntn[0].leader);
+        }
+        fprintf(stderr, ".\n");
+        return EXIT_FAILURE;
+    } else if (country == 0 && !pflag) {
+        snprintf(filename, sizeof(filename), "%sadd", isonfile);
+        if (check_lock(filename, FALSE) == TRUE) {
+            fprintf(stderr, "A new player is being added.\n");
+            fprintf(stderr, "Continue anyway? [y or n]");
+            while (((i = getchar()) != 'y') && (i != 'n'))
+                ;
+            if (i != 'y')
+                exit(FAIL);
+        }
+    }
+    curntn = &ntn[country];
 
-	/*get encrypted password*/
-	fprintf(stderr,"\nWhat is your Nation's Password: ");
-	snprintf(tmppass, PASSLTH+1, "%s", getpass(""));
-	snprintf(passwd, PASSLTH+1, "%s", crypt(tmppass,SALT));
-	if((strncmp(passwd,curntn->passwd,PASSLTH)!=0)
-	&&(strncmp(passwd,ntn[0].passwd,PASSLTH)!=0)) {
-		fprintf(stderr,"\nError: Reenter your Nation's Password: ");
-		snprintf(tmppass, PASSLTH+1, "%s", getpass(""));
-		snprintf(passwd, PASSLTH+1, "%s", crypt(tmppass,SALT));
-		if((strncmp(passwd,curntn->passwd,PASSLTH)!=0)
-		&&(strncmp(passwd,ntn[0].passwd,PASSLTH)!=0)) {
-			fprintf(stderr,"\nSorry:");
-			fprintf(stderr,"\nFor rules type <conquer -h>");
-			fprintf(stderr,"\nFor information on conquer please contact %s.",
-				OWNER);
-			fprintf(stderr,"\nTo enter this campaign please send mail to %s",
-				LOGIN);
-			if (strcmp(LOGIN, ntn[0].leader)!=0) {
-				fprintf(stderr," or %s",ntn[0].leader);
-			}
-			fprintf(stderr,".\n");
-			exit(FAIL);
-		}
-	}
+    /*get encrypted password*/
+    fprintf(stderr, "\nWhat is your Nation's Password: ");
+    snprintf(tmppass, PASSLTH + 1, "%s", getpass(""));
+    snprintf(passwd, PASSLTH + 1, "%s", crypt(tmppass, SALT));
+    if ((strncmp(passwd, curntn->passwd, PASSLTH) != 0)
+        && (strncmp(passwd, ntn[0].passwd, PASSLTH) != 0)) {
+        fprintf(stderr, "\nError: Reenter your Nation's Password: ");
+        snprintf(tmppass, PASSLTH + 1, "%s", getpass(""));
+        snprintf(passwd, PASSLTH + 1, "%s", crypt(tmppass, SALT));
+        if ((strncmp(passwd, curntn->passwd, PASSLTH) != 0)
+            && (strncmp(passwd, ntn[0].passwd, PASSLTH) != 0)) {
+            fprintf(stderr, "\nSorry:");
+            fprintf(stderr, "\nFor rules type <conquer -h>");
+            fprintf(stderr, "\nFor information on conquer please contact %s.", OWNER);
+            fprintf(stderr, "\nTo enter this campaign please send mail to %s", LOGIN);
+            if (strcmp(LOGIN, ntn[0].leader) != 0) {
+                fprintf(stderr, " or %s", ntn[0].leader);
+            }
+            fprintf(stderr, ".\n");
+            exit(FAIL);
+        }
+    }
 
-	/* now print the maps */
-	if (pflag) {	/* print a map of the game */
-		fprintf(stderr,"\nFor convenience, this output is to stderr,\n");
-		fprintf(stderr,"while the maps will be sent to stdout.\n\n");
-		fprintf(stderr,"\tThe valid options are,\n");
-		fprintf(stderr,"\t\t1) altitudes\n\t\t2) vegetations\n");
-		fprintf(stderr,"\t\t3) nations\n");
-		fprintf(stderr,"\t\t4) designations\n\n");
-		fprintf(stderr,"\tWhat type of map? ");
-		if (scanf("%hd", &dismode) != 1) {
-			/* Input error - clear buffer and exit */
-			int c;
-			while ((c = getchar()) != '\n' && c != EOF);
-			fprintf(stderr,"Invalid input\n");
-			exit(FAIL);
-		}
-		fprintf(stderr,"\n");
-		switch(dismode) {
-		case 1:
-			mapprep();
-			printele();
-			break;
-		case 2:
-			mapprep();
-			printveg();
-			break;
-		case 3:
-			mapprep();
-			pr_ntns();
-			break;
-		case 4:
-			mapprep();
-			pr_desg();
-			break;
-		default:
-			fprintf(stderr,"Invalid Choice\n");
-		     exit(FAIL);
-			break;
-		}
-		exit(SUCCESS);
-	}
+    /* now print the maps */
+    if (pflag) { /* print a map of the game */
+        fprintf(stderr, "\nFor convenience, this output is to stderr,\n");
+        fprintf(stderr, "while the maps will be sent to stdout.\n\n");
+        fprintf(stderr, "\tThe valid options are,\n");
+        fprintf(stderr, "\t\t1) altitudes\n\t\t2) vegetations\n");
+        fprintf(stderr, "\t\t3) nations\n");
+        fprintf(stderr, "\t\t4) designations\n\n");
+        fprintf(stderr, "\tWhat type of map? ");
+        if (scanf("%hd", &dismode) != 1) {
+            /* Input error - clear buffer and exit */
+            int c;
+            while ((c = getchar()) != '\n' && c != EOF)
+                ;
+            fprintf(stderr, "Invalid input\n");
+            exit(FAIL);
+        }
+        fprintf(stderr, "\n");
+        switch (dismode) {
+            case 1:
+                mapprep();
+                printele();
+                break;
+            case 2:
+                mapprep();
+                printveg();
+                break;
+            case 3:
+                mapprep();
+                pr_ntns();
+                break;
+            case 4:
+                mapprep();
+                pr_desg();
+                break;
+            default:
+                fprintf(stderr, "Invalid Choice\n");
+                exit(FAIL);
+                break;
+        }
+        exit(SUCCESS);
+    }
 
 #ifdef CHECKUSER
-        /* New code by "spide" */
-	if (checkuser_mod)
-	   {
-		fprintf (stderr, "Nation:  %s\n", curntn->name);
-		struct passwd *current_user = getpwuid(safe_short_to_uid(curntn->uid));
-		if (current_user == NULL) {
-			fprintf(stderr, "Error: Current user UID not found\n");
-			exit(FAIL);
-		}
-                fprintf (stderr, "   Current player = %s\n", current_user->pw_name);
+    /* New code by "spide" */
+    if (checkuser_mod) {
+        fprintf(stderr, "Nation:  %s\n", curntn->name);
+        struct passwd *current_user = getpwuid(safe_short_to_uid(curntn->uid));
+        if (current_user == NULL) {
+            fprintf(stderr, "Error: Current user UID not found\n");
+            exit(FAIL);
+        }
+        fprintf(stderr, "   Current player = %s\n", current_user->pw_name);
 
-		curntn->uid = safe_int_to_short(checkuser_uid);
+        curntn->uid = safe_int_to_short(checkuser_uid);
 
-		struct passwd *new_user = getpwuid(safe_short_to_uid(curntn->uid));
-		if (new_user == NULL) {
-			fprintf(stderr, "Error: New user UID not found\n");
-			exit(FAIL);
-		}
-                fprintf (stderr, "   New player = %s\n", new_user->pw_name);
-		writedata();
-		exit (SUCCESS);
-	   }
-	if (checkuser_list)
-	   {
-	      	for (i=0; i < NTOTAL; i++)
-			if (ntn[i].active != INACTIVE)
-			{
-				struct passwd *list_user = getpwuid(safe_short_to_uid(ntn[i].uid));
-				const char *username = (list_user != NULL) ? list_user->pw_name : "UNKNOWN";
-				fprintf (stderr, "%3d %15s %d %-15s\n",
-					i, ntn[i].name,
-					ntn[i].uid,
-					username);
-			}
-		exit (SUCCESS);
-	   }
-	struct passwd *login_pw3 = getpwnam(LOGIN);
-	struct passwd *leader_pw2 = getpwnam(ntn[0].leader);
-	if (login_pw3 == NULL) {
-		fprintf(stderr, "Error: User '%s' not found or access denied\n", LOGIN);
-		exit(FAIL);
-	}
-	if (leader_pw2 == NULL) {
-		fprintf(stderr, "Error: Leader '%s' not found or access denied\n", ntn[0].leader);
-		exit(FAIL);
-	}
+        struct passwd *new_user = getpwuid(safe_short_to_uid(curntn->uid));
+        if (new_user == NULL) {
+            fprintf(stderr, "Error: New user UID not found\n");
+            exit(FAIL);
+        }
+        fprintf(stderr, "   New player = %s\n", new_user->pw_name);
+        writedata();
+        exit(SUCCESS);
+    }
+    if (checkuser_list) {
+        for (i = 0; i < NTOTAL; i++)
+            if (ntn[i].active != INACTIVE) {
+                struct passwd *list_user = getpwuid(safe_short_to_uid(ntn[i].uid));
+                const char *username = (list_user != NULL) ? list_user->pw_name : "UNKNOWN";
+                fprintf(stderr, "%3d %15s %d %-15s\n", i, ntn[i].name, ntn[i].uid, username);
+            }
+        exit(SUCCESS);
+    }
+    struct passwd *login_pw3 = getpwnam(LOGIN);
+    struct passwd *leader_pw2 = getpwnam(ntn[0].leader);
+    if (login_pw3 == NULL) {
+        fprintf(stderr, "Error: User '%s' not found or access denied\n", LOGIN);
+        exit(FAIL);
+    }
+    if (leader_pw2 == NULL) {
+        fprintf(stderr, "Error: Leader '%s' not found or access denied\n", ntn[0].leader);
+        exit(FAIL);
+    }
 
-        if (((uid_t)curntn->uid != owneruid) &&
-	    (owneruid != login_pw3->pw_uid) &&
-            (owneruid != leader_pw2->pw_uid) &&
-	    ((uid_t)curntn->uid != login_pw3->pw_uid))
-           {
-              fprintf (stderr,"\nSorry -- you are not the owner of %s",curntn->name);
-	      fprintf(stderr,"\nFor information on conquer please contact %s.",OWNER);
-              fprintf(stderr,"\nor send mail to %s", LOGIN);
-	      fprintf(stderr,"\n");
-	      exit(FAIL);
-           }
+    if (((uid_t)curntn->uid != owneruid) && (owneruid != login_pw3->pw_uid)
+        && (owneruid != leader_pw2->pw_uid) && ((uid_t)curntn->uid != login_pw3->pw_uid)) {
+        fprintf(stderr, "\nSorry -- you are not the owner of %s", curntn->name);
+        fprintf(stderr, "\nFor information on conquer please contact %s.", OWNER);
+        fprintf(stderr, "\nor send mail to %s", LOGIN);
+        fprintf(stderr, "\n");
+        exit(FAIL);
+    }
 #endif
 
-	initscr();		/* SET UP THE SCREEN */
-	/* check terminal size */
-	if (COLS<80 || LINES<24) {
-		fprintf(stderr,"%s: terminal should be at least 80x24\n",argv[0]);
-		fprintf(stderr,"please try again with a different setup\n");
-		beep();
-		getch();
-		bye(FALSE);
-	}
+    initscr(); /* SET UP THE SCREEN */
+    /* check terminal size */
+    if (COLS < 80 || LINES < 24) {
+        fprintf(stderr, "%s: terminal should be at least 80x24\n", argv[0]);
+        fprintf(stderr, "please try again with a different setup\n");
+        beep();
+        getch();
+        bye(FALSE);
+    }
 
-	copyscreen();		/* copyright screen */
-				/* note the getch() later - everything between
-					now and then is non-interactive */
-	init_hasseen();		/* now we know how big the screen is,
-					we can init that array!	*/
+    copyscreen(); /* copyright screen */
+    /* note the getch() later - everything between
+            now and then is non-interactive */
+    init_hasseen(); /* now we know how big the screen is,
+                            we can init that array!	*/
 
-	strncpy(fison, "START", sizeof(fison) - 1);	/* just in case you abort early */
-	fison[sizeof(fison) - 1] = '\0';
-	crmode();		/* cbreak mode */
+    strncpy(fison, "START", sizeof(fison) - 1); /* just in case you abort early */
+    fison[sizeof(fison) - 1] = '\0';
+    crmode(); /* cbreak mode */
 
-	/* check if user is super-user nation[0] */
-	/*	else setup cursor to capitol*/
-	if((country==0)||(ismonst(ntn[country].active))) {
-		xcurs=MAPX/2-1;
-		ycurs=MAPY/2-1;
-		redraw=FULL;
-		/* create gods lock file but do not limit access */
-		(void) aretheyon();
-	} else {
-		if(curntn->active==INACTIVE) {
-			standout();
-			mvaddstr(LINES-2,0,"Sorry, for some reason, your country no longer exists.");
-			mvprintw(LINES-1,0,"If there is a problem, please send mail to %s", LOGIN);
-			if (strcmp(LOGIN, ntn[0].leader)!=0) {
-				printw(" or %s",ntn[0].leader);
-			}
-			printw(".");
-			standend();
-			beep();
-			refresh();
-			getch();
-			bye(TRUE);
-		}
-		if(aretheyon()==TRUE) {
-			mvaddstr(LINES-2,0,"Sorry, country is already logged in.");
-			mvaddstr(LINES-1,0,"Please try again later.");
-			beep();
-			refresh();
-			getch();
-			bye(FALSE);
-		}
-		execute(FALSE);
+    /* check if user is super-user nation[0] */
+    /*	else setup cursor to capitol*/
+    if ((country == 0) || (ismonst(ntn[country].active))) {
+        xcurs = MAPX / 2 - 1;
+        ycurs = MAPY / 2 - 1;
+        redraw = FULL;
+        /* create gods lock file but do not limit access */
+        (void)aretheyon();
+    } else {
+        if (curntn->active == INACTIVE) {
+            standout();
+            mvaddstr(LINES - 2, 0, "Sorry, for some reason, your country no longer exists.");
+            mvprintw(LINES - 1, 0, "If there is a problem, please send mail to %s", LOGIN);
+            if (strcmp(LOGIN, ntn[0].leader) != 0) {
+                printw(" or %s", ntn[0].leader);
+            }
+            printw(".");
+            standend();
+            beep();
+            refresh();
+            getch();
+            bye(TRUE);
+        }
+        if (aretheyon() == TRUE) {
+            mvaddstr(LINES - 2, 0, "Sorry, country is already logged in.");
+            mvaddstr(LINES - 1, 0, "Please try again later.");
+            beep();
+            refresh();
+            getch();
+            bye(FALSE);
+        }
+        execute(FALSE);
 #ifdef TRADE
-		checktrade();
+        checktrade();
 #endif /* TRADE */
-		xcurs = curntn->capx;
-		ycurs = curntn->capy;
-	}
-	xoffset = 0;
-	yoffset = 0;
+        xcurs = curntn->capx;
+        ycurs = curntn->capy;
+    }
+    xoffset = 0;
+    yoffset = 0;
 #ifdef USERLOG
-	userlog = fopen (".userlog", "a");
-	struct passwd *owner_user = getpwuid(owneruid);
-	const char *owner_name = (owner_user != NULL) ? owner_user->pw_name : "UNKNOWN";
-        fprintf (userlog, "%3d %15s %30s %15s\n",
-   		TURN, owner_name, defaultdir, curntn->name);
-        fclose (userlog);
+    userlog = fopen(".userlog", "a");
+    struct passwd *owner_user = getpwuid(owneruid);
+    const char *owner_name = (owner_user != NULL) ? owner_user->pw_name : "UNKNOWN";
+    fprintf(userlog, "%3d %15s %30s %15s\n", TURN, owner_name, defaultdir, curntn->name);
+    fclose(userlog);
 #endif
-	centermap();
-	updmove(curntn->race,country);
+    centermap();
+    updmove(curntn->race, country);
 
-	/* open output for future printing*/
-	snprintf(filename, sizeof(filename), "%s%d", exefile, country);
-	if ((fexe=fopen(filename,"a"))==NULL) {
-		beep();
-		mvprintw(LINES-2,0,"error opening %s",filename);
-		refresh();
-		getch();
-		bye(TRUE);
-	}
+    /* open output for future printing*/
+    snprintf(filename, sizeof(filename), "%s%d", exefile, country);
+    if ((fexe = fopen(filename, "a")) == NULL) {
+        beep();
+        mvprintw(LINES - 2, 0, "error opening %s", filename);
+        refresh();
+        getch();
+        bye(TRUE);
+    }
 
 
-	signal(SIGINT,SIG_IGN);		/* disable keyboard signals */
-	signal(SIGQUIT,SIG_IGN);
-	signal(SIGHUP,hangup);		/* must catch hangups */
-	signal(SIGTERM,hangup);		/* likewise for cheats!! */
+    signal(SIGINT, SIG_IGN); /* disable keyboard signals */
+    signal(SIGQUIT, SIG_IGN);
+    signal(SIGHUP, hangup); /* must catch hangups */
+    signal(SIGTERM, hangup); /* likewise for cheats!! */
 
-	noecho();
-	prep(country,FALSE);	/* initialize prep array */
-	whatcansee();			/* what can they see */
+    noecho();
+    prep(country, FALSE); /* initialize prep array */
+    whatcansee(); /* what can they see */
 
-	/* initialize mail files */
-	(void) snprintf(conqmail, FILELTH, "%s%d", msgfile, country);
+    /* initialize mail files */
+    (void)snprintf(conqmail, FILELTH, "%s%d", msgfile, country);
 #ifdef SYSMAIL
-	if (getenv("MAIL")==0) {
-		(void) snprintf(sysmail, FILELTH, "%s/%s", SPOOLDIR, getenv("USER"));
-	} else {
-		const char* mail_env = getenv("MAIL");
-		if (mail_env != NULL) {
-			strncpy(sysmail, mail_env, FILELTH - 1);
-			sysmail[FILELTH - 1] = '\0';
-		}
-	}
+    if (getenv("MAIL") == 0) {
+        (void)snprintf(sysmail, FILELTH, "%s/%s", SPOOLDIR, getenv("USER"));
+    } else {
+        const char *mail_env = getenv("MAIL");
+        if (mail_env != NULL) {
+            strncpy(sysmail, mail_env, FILELTH - 1);
+            sysmail[FILELTH - 1] = '\0';
+        }
+    }
 #endif /* SYSMAIL */
-	mvaddstr(LINES-1, COLS-20, "PRESS ANY KEY");
-	refresh();
-	getch();		/* get response from copyscreen */
+    mvaddstr(LINES - 1, COLS - 20, "PRESS ANY KEY");
+    refresh();
+    getch(); /* get response from copyscreen */
 
-	while(done==FALSE) {			/*main while routine*/
-		coffmap(); 	/* check if cursor is out of bounds*/
-		check_mail();	/* check for new mail */
-		in_ch = getch();
-		/* get commands */
-		if (in_ch=='!') {
-			parse(old_ch);
-		} else {
-			if (parse(in_ch)) old_ch=in_ch;
-		}
-	}
+    while (done == FALSE) { /*main while routine*/
+        coffmap(); /* check if cursor is out of bounds*/
+        check_mail(); /* check for new mail */
+        in_ch = getch();
+        /* get commands */
+        if (in_ch == '!') {
+            parse(old_ch);
+        } else {
+            if (parse(in_ch))
+                old_ch = in_ch;
+        }
+    }
 
-	if(country==0) writedata();
-	else {
-		fprintf(fexe,"L_NGOLD\t%d \t%d \t%ld \t0 \t0 \t%s\n",
-			XNAGOLD ,country,curntn->tgold,"null");
-		fprintf(fexe,"L_NMETAL\t%d \t%d \t%ld \t0 \t0 \t%s\n",
-			XNAMETAL ,country,curntn->metals,"null");
-		fprintf(fexe,"L_NJWLS\t%d \t%d \t%ld \t0 \t0 \t%s\n",
-			XNARGOLD ,country,curntn->jewels,"null");
-	}
-	bye(TRUE);	 		/* done so quit */
-	return EXIT_SUCCESS;  /* Should not reach here due to bye() calling exit() */
+    if (country == 0)
+        writedata();
+    else {
+        fprintf(fexe, "L_NGOLD\t%d \t%d \t%ld \t0 \t0 \t%s\n", XNAGOLD, country, curntn->tgold,
+                "null");
+        fprintf(fexe, "L_NMETAL\t%d \t%d \t%ld \t0 \t0 \t%s\n", XNAMETAL, country,
+                curntn->metals, "null");
+        fprintf(fexe, "L_NJWLS\t%d \t%d \t%ld \t0 \t0 \t%s\n", XNARGOLD, country,
+                curntn->jewels, "null");
+    }
+    bye(TRUE); /* done so quit */
+    return EXIT_SUCCESS; /* Should not reach here due to bye() calling exit() */
 }
 
 /************************************************************************/
@@ -740,41 +737,41 @@ int main(int argc, char **argv) {
  *   - Assumes curses screen is properly initialized
  *   - Different display for god mode (country==0) vs normal nations
  *   - Conditional compilation for SYSMAIL feature
-  * @last_documented: 2025-09-17
+ * @last_documented: 2025-09-17
  */
 void makebottom(void) {
-	standend();
-	move(LINES-4,0);
-	clrtoeol();
-	mvprintw(LINES-3,0,"Conquer: %s.%s Turn %d",VERSION,PATCHLEVEL,TURN);
-	clrtoeol();
-	mvaddstr(LINES-1,0,"  type ? for help");
-	clrtoeol();
-	mvaddstr(LINES-2,0,"  type Q to save & quit");
-	clrtoeol();
+    standend();
+    move(LINES - 4, 0);
+    clrtoeol();
+    mvprintw(LINES - 3, 0, "Conquer: %s.%s Turn %d", VERSION, PATCHLEVEL, TURN);
+    clrtoeol();
+    mvaddstr(LINES - 1, 0, "  type ? for help");
+    clrtoeol();
+    mvaddstr(LINES - 2, 0, "  type Q to save & quit");
+    clrtoeol();
 
-	if(country==0) {
-		mvaddstr(LINES-3,COLS-20,"nation...GOD");
-	} else {
-		mvprintw(LINES-3,COLS-20,"nation...%s",curntn->name);
-		mvprintw(LINES-2,COLS-20,"treasury.%ld",curntn->tgold);
-	}
-	mvprintw(LINES-1,COLS-20,"%s of Year %d",PSEASON(TURN),YEAR(TURN));
+    if (country == 0) {
+        mvaddstr(LINES - 3, COLS - 20, "nation...GOD");
+    } else {
+        mvprintw(LINES - 3, COLS - 20, "nation...%s", curntn->name);
+        mvprintw(LINES - 2, COLS - 20, "treasury.%ld", curntn->tgold);
+    }
+    mvprintw(LINES - 1, COLS - 20, "%s of Year %d", PSEASON(TURN), YEAR(TURN));
 
-	/* mail status */
+    /* mail status */
 #ifdef SYSMAIL
-	/* display mail information */
-	if (sys_mail_status==NEW_MAIL) {
-		mvaddstr(LINES-3,COLS/2-6,"You have System Mail");
-	}
-	if (conq_mail_status==NEW_MAIL) {
-		mvaddstr(LINES-2,COLS/2-6,"You have Conquer Mail");
-	}
+    /* display mail information */
+    if (sys_mail_status == NEW_MAIL) {
+        mvaddstr(LINES - 3, COLS / 2 - 6, "You have System Mail");
+    }
+    if (conq_mail_status == NEW_MAIL) {
+        mvaddstr(LINES - 2, COLS / 2 - 6, "You have Conquer Mail");
+    }
 #else
-	/* display mail information */
-	if (conq_mail_status==NEW_MAIL) {
-		mvaddstr(LINES-3,COLS/2-6,"You have Conquer Mail");
-	}
+    /* display mail information */
+    if (conq_mail_status == NEW_MAIL) {
+        mvaddstr(LINES - 3, COLS / 2 - 6, "You have Conquer Mail");
+    }
 #endif /* SYSMAIL */
 }
 
@@ -822,414 +819,445 @@ void makebottom(void) {
  *   - Some commands restricted to god/admin users
  *   - Movement commands use vi-like keybindings
  *   - Legacy K&R function definition style
-  * @last_documented: 2025-09-17
+ * @last_documented: 2025-09-17
  */
 int parse(int ch) {
-	char	name[LINELTH+1];
-	char	passwd[PASSLTH+1];
-	struct passwd *pwent;
+    char name[LINELTH + 1];
+    char passwd[PASSLTH + 1];
+    struct passwd *pwent;
 #ifdef DEBUG
-	void sect_info();
+    void sect_info();
 #endif /* DEBUG */
-	int	ocountry;
+    int ocountry;
 
-	switch(ch) {
-	case EXT_CMD:	/* extended command */
-		ext_cmd( -1 );
-		makebottom();
-		refresh();
-		curntn->tgold -= MOVECOST;
-		return(TRUE);
-		break;
-	case '':	/* redraw the screen */
-		centermap();
-		redraw=FULL;
-		break;
+    switch (ch) {
+        case EXT_CMD: /* extended command */
+            ext_cmd(-1);
+            makebottom();
+            refresh();
+            curntn->tgold -= MOVECOST;
+            return (TRUE);
+            break;
+        case '': /* redraw the screen */
+            centermap();
+            redraw = FULL;
+            break;
 #ifdef DEBUG
-	case '\t':	/* debugging information for god and demi-god */
-		struct passwd *login_pw4 = getpwnam(LOGIN);
-		if (login_pw4 == NULL) {
-			break; /* deny access if login user not found */
-		}
-		if ((owneruid != login_pw4->pw_uid ) &&
-		    ((pwent=getpwnam(ntn[0].leader))==NULL || owneruid != pwent->pw_uid ))
-			break;
-		sect_info();
-		break;
+        case '\t': /* debugging information for god and demi-god */
+            struct passwd *login_pw4 = getpwnam(LOGIN);
+            if (login_pw4 == NULL) {
+                break; /* deny access if login user not found */
+            }
+            if ((owneruid != login_pw4->pw_uid)
+                && ((pwent = getpwnam(ntn[0].leader)) == NULL || owneruid != pwent->pw_uid))
+                break;
+            sect_info();
+            break;
 #endif /* DEBUG */
-	case 'a':	/*army report*/
-		redraw=FULL;
-		armyrpt(0);
-		curntn->tgold -= MOVECOST;
-		break;
-	case '1':
-	case 'b':	/*move south west*/
-		pager=0;
-		selector=0;
-		if (XREAL > 0) xcurs--;
-		if (YREAL < MAPY - 1) ycurs++;
-		break;
-	case 'B':	/*budget*/
-		redraw=FULL;
-		budget();
-		curntn->tgold -= MOVECOST;
-		break;
-	case 'c':	/*change nation stats*/
-		redraw=FULL;
-		change();
-		curntn->tgold -= MOVECOST;
-		break;
-	case 'C':	/*construct*/
-		construct();
-		makebottom();
-		curntn->tgold -= MOVECOST;
-		break;
-	case 'd':	/*change display*/
-		newdisplay();
-		break;
-	case 'D':	/*draft*/
-		draft();
-		curntn->tgold -= MOVECOST;
-		makebottom();
-		return(TRUE);
-		break;
-	case 'f': /*report on ships and load/unload*/
-		redraw=PART;
-		curntn->tgold -= MOVECOST;
-		fleetrpt();
-		break;
-	case 'F':	/*go to next army*/
-		navygoto();
-		break;
-	case 'g':	/*group report*/
-		redraw=PART;
-		curntn->tgold -= MOVECOST;
-		armyrpt(1);
-		break;
-	case 'G':	/*go to next army*/
-		armygoto();
-		break;
-	case 'H':	/*scroll west*/
-		pager=0;
-		selector=0;
-		if (XREAL > (COLS-22)/4) xcurs-=safe_int_to_short((COLS-22)/4);
-		else xcurs = -xoffset;
-		break;
-	case '4':
-	case 'h':	/*move west*/
-		pager=0;
-		selector=0;
-		if (XREAL > 0) xcurs--;
-		break;
-	case 'I':	/*campaign information*/
-		camp_info();
-		redraw=FULL;
-		break;
-	case 'J':	/*scroll down*/
-		pager=0;
-		selector=0;
-		if (YREAL + (SCREEN_Y_SIZE)/2 < MAPY)
-			ycurs+=safe_int_to_short((SCREEN_Y_SIZE)/2);
-		else ycurs = safe_int_to_short(MAPY - yoffset - 1);
-		break;
-	case '2':
-	case 'j':	/*move down*/
-		pager=0;
-		selector=0;
-		if (YREAL < MAPY - 1) ycurs++;
-		break;
-	case '8':
-	case 'k':	/*move up*/
-		pager=0;
-		selector=0;
-		if (YREAL > 0) ycurs--;
-		break;
-	case 'K':	/*scroll up*/
-		pager=0;
-		selector=0;
-		if (YREAL > (SCREEN_Y_SIZE)/2) ycurs-=safe_int_to_short((SCREEN_Y_SIZE)/2);
-		else ycurs = -yoffset;
-		break;
-	case '6':
-	case 'l':	/*move east*/
-		pager=0;
-		selector=0;
-		if (XREAL < MAPX - 1) xcurs++;
-		break;
-	case 'L':	/*scroll east*/
-		pager=0;
-		selector=0;
-		if (XREAL + (COLS-22)/4 < MAPX) xcurs+=safe_int_to_short((COLS-22)/4);
-		else xcurs = safe_int_to_short(MAPX - xoffset - 1);
-		break;
-	case 'm':	/*move selected item to new x,y */
-		mymove();
-		makebottom();
-		curntn->tgold -= MOVECOST;
-		return(TRUE);
-		break;
-	case 'M':	/*magic*/
-		redraw=FULL;
-		curntn->tgold -= MOVECOST;
-		domagic();
-		break;
-	case '3':
-	case 'n':	/*move south-east*/
-		pager=0;
-		selector=0;
-		if (YREAL < MAPY - 1) ycurs++;
-		if (XREAL < MAPX - 1) xcurs++;
-		break;
-	case 'N':	/*read newspaper */
-		redraw=PART;
-		curntn->tgold -= MOVECOST;
-		newspaper();
-		break;
-	case 'o':	/*pick (crsr up)*/
-		selector-=2;
-		if(selector<0) {
-			selector=safe_int_to_short(SCRARM*2-2);
-			pager--;
-		}
-		/*move to last army in current sector*/
-		if (pager<0) {
-			pager=safe_int_to_short((units_in_sector(XREAL,YREAL,country)-1)/SCRARM);
-			selector=safe_int_to_short(((units_in_sector(XREAL,YREAL,country)-1)%SCRARM)*2);
-		}
-		break;
-	case 'p':	/*pick*/
-		selector+=2;
-		if(selector>=SCRARM*2) {
-			selector=0;
-			pager+=1;
-		}
-		/*current selected unit is selector/2+SCRARM*pager*/
-		if((selector/2)+(pager*SCRARM)>=units_in_sector(XREAL,YREAL,country)) {
-			pager=0;
-			selector=0;
-		}
-		break;
-	case 'P':	/*production*/
-		redraw=FULL;
-		curntn->tgold -= MOVECOST;
-		produce();
-		break;
-	case 'Q':	/*quit*/
-	case 'q':	/*quit*/
-		done=TRUE;
-		break;
-	case 'r':	/*redesignate*/
-		redesignate();
-		curntn->tgold -= MOVECOST;
-		makemap();
-		makebottom();
-		break;
-		/*list*/
-	case 'R':	/*Read Messages*/
-		redraw=PART;
-		curntn->tgold -= MOVECOST;
-		rmessage();
-		refresh();
-		break;
-	case 's':	/*score*/
-		redraw=FULL;
-		curntn->tgold -= MOVECOST;
-		showscore();
-		break;
-	case 'S':	/*diplomacy screens*/
-		diploscrn();
-		curntn->tgold -= MOVECOST;
-		redraw=FULL;
-		break;
-	case 't':	/*fleet loading*/
-		loadfleet();
-		curntn->tgold -= MOVECOST;
-		makeside(FALSE);
-		makebottom();
-		return(TRUE);
-		break;
+        case 'a': /*army report*/
+            redraw = FULL;
+            armyrpt(0);
+            curntn->tgold -= MOVECOST;
+            break;
+        case '1':
+        case 'b': /*move south west*/
+            pager = 0;
+            selector = 0;
+            if (XREAL > 0)
+                xcurs--;
+            if (YREAL < MAPY - 1)
+                ycurs++;
+            break;
+        case 'B': /*budget*/
+            redraw = FULL;
+            budget();
+            curntn->tgold -= MOVECOST;
+            break;
+        case 'c': /*change nation stats*/
+            redraw = FULL;
+            change();
+            curntn->tgold -= MOVECOST;
+            break;
+        case 'C': /*construct*/
+            construct();
+            makebottom();
+            curntn->tgold -= MOVECOST;
+            break;
+        case 'd': /*change display*/
+            newdisplay();
+            break;
+        case 'D': /*draft*/
+            draft();
+            curntn->tgold -= MOVECOST;
+            makebottom();
+            return (TRUE);
+            break;
+        case 'f': /*report on ships and load/unload*/
+            redraw = PART;
+            curntn->tgold -= MOVECOST;
+            fleetrpt();
+            break;
+        case 'F': /*go to next army*/
+            navygoto();
+            break;
+        case 'g': /*group report*/
+            redraw = PART;
+            curntn->tgold -= MOVECOST;
+            armyrpt(1);
+            break;
+        case 'G': /*go to next army*/
+            armygoto();
+            break;
+        case 'H': /*scroll west*/
+            pager = 0;
+            selector = 0;
+            if (XREAL > (COLS - 22) / 4)
+                xcurs -= safe_int_to_short((COLS - 22) / 4);
+            else
+                xcurs = -xoffset;
+            break;
+        case '4':
+        case 'h': /*move west*/
+            pager = 0;
+            selector = 0;
+            if (XREAL > 0)
+                xcurs--;
+            break;
+        case 'I': /*campaign information*/
+            camp_info();
+            redraw = FULL;
+            break;
+        case 'J': /*scroll down*/
+            pager = 0;
+            selector = 0;
+            if (YREAL + (SCREEN_Y_SIZE) / 2 < MAPY)
+                ycurs += safe_int_to_short((SCREEN_Y_SIZE) / 2);
+            else
+                ycurs = safe_int_to_short(MAPY - yoffset - 1);
+            break;
+        case '2':
+        case 'j': /*move down*/
+            pager = 0;
+            selector = 0;
+            if (YREAL < MAPY - 1)
+                ycurs++;
+            break;
+        case '8':
+        case 'k': /*move up*/
+            pager = 0;
+            selector = 0;
+            if (YREAL > 0)
+                ycurs--;
+            break;
+        case 'K': /*scroll up*/
+            pager = 0;
+            selector = 0;
+            if (YREAL > (SCREEN_Y_SIZE) / 2)
+                ycurs -= safe_int_to_short((SCREEN_Y_SIZE) / 2);
+            else
+                ycurs = -yoffset;
+            break;
+        case '6':
+        case 'l': /*move east*/
+            pager = 0;
+            selector = 0;
+            if (XREAL < MAPX - 1)
+                xcurs++;
+            break;
+        case 'L': /*scroll east*/
+            pager = 0;
+            selector = 0;
+            if (XREAL + (COLS - 22) / 4 < MAPX)
+                xcurs += safe_int_to_short((COLS - 22) / 4);
+            else
+                xcurs = safe_int_to_short(MAPX - xoffset - 1);
+            break;
+        case 'm': /*move selected item to new x,y */
+            mymove();
+            makebottom();
+            curntn->tgold -= MOVECOST;
+            return (TRUE);
+            break;
+        case 'M': /*magic*/
+            redraw = FULL;
+            curntn->tgold -= MOVECOST;
+            domagic();
+            break;
+        case '3':
+        case 'n': /*move south-east*/
+            pager = 0;
+            selector = 0;
+            if (YREAL < MAPY - 1)
+                ycurs++;
+            if (XREAL < MAPX - 1)
+                xcurs++;
+            break;
+        case 'N': /*read newspaper */
+            redraw = PART;
+            curntn->tgold -= MOVECOST;
+            newspaper();
+            break;
+        case 'o': /*pick (crsr up)*/
+            selector -= 2;
+            if (selector < 0) {
+                selector = safe_int_to_short(SCRARM * 2 - 2);
+                pager--;
+            }
+            /*move to last army in current sector*/
+            if (pager < 0) {
+                pager =
+                    safe_int_to_short((units_in_sector(XREAL, YREAL, country) - 1) / SCRARM);
+                selector = safe_int_to_short(
+                    ((units_in_sector(XREAL, YREAL, country) - 1) % SCRARM) * 2);
+            }
+            break;
+        case 'p': /*pick*/
+            selector += 2;
+            if (selector >= SCRARM * 2) {
+                selector = 0;
+                pager += 1;
+            }
+            /*current selected unit is selector/2+SCRARM*pager*/
+            if ((selector / 2) + (pager * SCRARM) >= units_in_sector(XREAL, YREAL, country)) {
+                pager = 0;
+                selector = 0;
+            }
+            break;
+        case 'P': /*production*/
+            redraw = FULL;
+            curntn->tgold -= MOVECOST;
+            produce();
+            break;
+        case 'Q': /*quit*/
+        case 'q': /*quit*/
+            done = TRUE;
+            break;
+        case 'r': /*redesignate*/
+            redesignate();
+            curntn->tgold -= MOVECOST;
+            makemap();
+            makebottom();
+            break;
+            /*list*/
+        case 'R': /*Read Messages*/
+            redraw = PART;
+            curntn->tgold -= MOVECOST;
+            rmessage();
+            refresh();
+            break;
+        case 's': /*score*/
+            redraw = FULL;
+            curntn->tgold -= MOVECOST;
+            showscore();
+            break;
+        case 'S': /*diplomacy screens*/
+            diploscrn();
+            curntn->tgold -= MOVECOST;
+            redraw = FULL;
+            break;
+        case 't': /*fleet loading*/
+            loadfleet();
+            curntn->tgold -= MOVECOST;
+            makeside(FALSE);
+            makebottom();
+            return (TRUE);
+            break;
 #ifdef TRADE
-	case 'T':	/*go to commerce section*/
-		trade();
-		curntn->tgold -= MOVECOST;
-		redraw=FULL;
-		break;
+        case 'T': /*go to commerce section*/
+            trade();
+            curntn->tgold -= MOVECOST;
+            redraw = FULL;
+            break;
 #endif /* TRADE */
-	case '9':
-	case 'u':	/*move north-east*/
-		pager=0;
-		selector=0;
-		if (YREAL > 0) ycurs--;
-		if (XREAL < MAPX - 1) xcurs++;
-		break;
-    	case 'U':	/* scroll north-east */
-		pager=0;
-		selector=0;
-		if (XREAL + (COLS-22)/4 < MAPX) xcurs+=safe_int_to_short((COLS-22)/4);
-		else xcurs = safe_int_to_short(MAPX - xoffset - 1);
-		if (YREAL > (SCREEN_Y_SIZE)/2) ycurs-=safe_int_to_short((SCREEN_Y_SIZE)/2);
-		else ycurs = -yoffset;
-		break;
-    	case 'v':	/* version credits */
-		credits();
-		redraw=FULL;
-		break;
-	case 'w':	/* spell casting */
-		wizardry();
-		curntn->tgold -= MOVECOST;
-		return(TRUE);
-		break;
-	case 'W':	/*message*/
-		curntn->tgold -= MOVECOST;
-		wmessage();
-		break;
-	case 'X': /*jump to capitol*/
-		redraw = PART;
-		pager=0;
-		selector=0;
-		jump_to(TRUE);
-		break;
-	case 'x': /*jump to a location*/
-		redraw=PART;
-		pager=0;
-		selector=0;
-		jump_to(FALSE);
-		makebottom();
-		break;
-	case '7':
-	case 'y':	/*move north-west*/
-		pager=0;
-		selector=0;
-		if (YREAL > 0) ycurs--;
-		if (XREAL > 0) xcurs--;
-		break;
-	case 'Y':	/* scroll north-west */
-		pager=0;
-		selector=0;
-		if (XREAL < (COLS-22)/4) xcurs = -xoffset;
-		else xcurs-=safe_int_to_short((COLS-22)/4);
-		if (YREAL < (SCREEN_Y_SIZE)/2) ycurs = -yoffset;
-		else ycurs-=safe_int_to_short((SCREEN_Y_SIZE)/2);
-		break;
-	case 'Z':	/*move civilians up to 2 spaces*/
-		moveciv();
-		makebottom();
-		curntn->tgold -= MOVECOST;
-		break;
-	case 'z':	/*login as new user */
+        case '9':
+        case 'u': /*move north-east*/
+            pager = 0;
+            selector = 0;
+            if (YREAL > 0)
+                ycurs--;
+            if (XREAL < MAPX - 1)
+                xcurs++;
+            break;
+        case 'U': /* scroll north-east */
+            pager = 0;
+            selector = 0;
+            if (XREAL + (COLS - 22) / 4 < MAPX)
+                xcurs += safe_int_to_short((COLS - 22) / 4);
+            else
+                xcurs = safe_int_to_short(MAPX - xoffset - 1);
+            if (YREAL > (SCREEN_Y_SIZE) / 2)
+                ycurs -= safe_int_to_short((SCREEN_Y_SIZE) / 2);
+            else
+                ycurs = -yoffset;
+            break;
+        case 'v': /* version credits */
+            credits();
+            redraw = FULL;
+            break;
+        case 'w': /* spell casting */
+            wizardry();
+            curntn->tgold -= MOVECOST;
+            return (TRUE);
+            break;
+        case 'W': /*message*/
+            curntn->tgold -= MOVECOST;
+            wmessage();
+            break;
+        case 'X': /*jump to capitol*/
+            redraw = PART;
+            pager = 0;
+            selector = 0;
+            jump_to(TRUE);
+            break;
+        case 'x': /*jump to a location*/
+            redraw = PART;
+            pager = 0;
+            selector = 0;
+            jump_to(FALSE);
+            makebottom();
+            break;
+        case '7':
+        case 'y': /*move north-west*/
+            pager = 0;
+            selector = 0;
+            if (YREAL > 0)
+                ycurs--;
+            if (XREAL > 0)
+                xcurs--;
+            break;
+        case 'Y': /* scroll north-west */
+            pager = 0;
+            selector = 0;
+            if (XREAL < (COLS - 22) / 4)
+                xcurs = -xoffset;
+            else
+                xcurs -= safe_int_to_short((COLS - 22) / 4);
+            if (YREAL < (SCREEN_Y_SIZE) / 2)
+                ycurs = -yoffset;
+            else
+                ycurs -= safe_int_to_short((SCREEN_Y_SIZE) / 2);
+            break;
+        case 'Z': /*move civilians up to 2 spaces*/
+            moveciv();
+            makebottom();
+            curntn->tgold -= MOVECOST;
+            break;
+        case 'z': /*login as new user */
 #ifdef OGOD
-		struct passwd *login_pw5 = getpwnam(LOGIN);
-		if (login_pw5 == NULL) {
-			break; /* deny access if login user not found */
-		}
-		if ((owneruid != login_pw5->pw_uid ) &&
-		    ((pwent=getpwnam(ntn[0].leader))==NULL || owneruid != pwent->pw_uid )) break;
+            struct passwd *login_pw5 = getpwnam(LOGIN);
+            if (login_pw5 == NULL) {
+                break; /* deny access if login user not found */
+            }
+            if ((owneruid != login_pw5->pw_uid)
+                && ((pwent = getpwnam(ntn[0].leader)) == NULL || owneruid != pwent->pw_uid))
+                break;
 #endif
-		clear_bottom(0);
-		if(country != 0) {
-		fprintf(fexe,"L_NGOLD\t%d \t%d \t%ld \t0 \t0 \t%s\n",
-			XNAGOLD ,country,curntn->tgold,"null");
-		fprintf(fexe,"L_NMETAL\t%d \t%d \t%ld \t0 \t0 \t%s\n",
-			XNAMETAL ,country,curntn->metals,"null");
-		fprintf(fexe,"L_NJWLS\t%d \t%d \t%ld \t0 \t0 \t%s\n",
-			XNARGOLD ,country,curntn->jewels,"null");
-		} else
-		mvaddstr(LINES-4,0,"SUPER-USER: YOUR CHANGES WILL NOT BE SAVED IF YOU DO THIS!!!");
-		standout();
-		mvaddstr(LINES-3,0,"Change login to:");
-		standend();
-		addch(' ');
-		refresh();
+            clear_bottom(0);
+            if (country != 0) {
+                fprintf(fexe, "L_NGOLD\t%d \t%d \t%ld \t0 \t0 \t%s\n", XNAGOLD, country,
+                        curntn->tgold, "null");
+                fprintf(fexe, "L_NMETAL\t%d \t%d \t%ld \t0 \t0 \t%s\n", XNAMETAL, country,
+                        curntn->metals, "null");
+                fprintf(fexe, "L_NJWLS\t%d \t%d \t%ld \t0 \t0 \t%s\n", XNARGOLD, country,
+                        curntn->jewels, "null");
+            } else
+                mvaddstr(LINES - 4, 0,
+                         "SUPER-USER: YOUR CHANGES WILL NOT BE SAVED IF YOU DO THIS!!!");
+            standout();
+            mvaddstr(LINES - 3, 0, "Change login to:");
+            standend();
+            addch(' ');
+            refresh();
 
-		ocountry=country;
- 		country=safe_int_to_short(get_country());
+            ocountry = country;
+            country = safe_int_to_short(get_country());
 
-		/* check validity of country choice */
-		if( country==(-1) || country>=NTOTAL
-		|| ( !isactive(ntn[country].active) && country!=0 )) {
-			country=safe_int_to_short(ocountry);
-			makebottom();
-			break;
-		}
-		if(country==ocountry){
-			errormsg("What?  You are already logged into that nation.");
-			makebottom();
-			break;
-		}
+            /* check validity of country choice */
+            if (country == (-1) || country >= NTOTAL
+                || (!isactive(ntn[country].active) && country != 0)) {
+                country = safe_int_to_short(ocountry);
+                makebottom();
+                break;
+            }
+            if (country == ocountry) {
+                errormsg("What?  You are already logged into that nation.");
+                makebottom();
+                break;
+            }
 
-		/*get password*/
-		clear_bottom(0);
-		mvaddstr(LINES-4,0,"What is your Nation's Password: ");
-		refresh();
-		(void) get_pass(passwd);
-		const char* encrypted = crypt(passwd, SALT);
-		if (encrypted != NULL) {
-			strncpy(name, encrypted, sizeof(name) - 1);
-			name[sizeof(name) - 1] = '\0';
-		}
+            /*get password*/
+            clear_bottom(0);
+            mvaddstr(LINES - 4, 0, "What is your Nation's Password: ");
+            refresh();
+            (void)get_pass(passwd);
+            const char *encrypted = crypt(passwd, SALT);
+            if (encrypted != NULL) {
+                strncpy(name, encrypted, sizeof(name) - 1);
+                name[sizeof(name) - 1] = '\0';
+            }
 
-		if((strncmp(name,ntn[country].passwd,PASSLTH)!=0)
-		&&(strncmp(name,ntn[0].passwd,PASSLTH)!=0)){
-			errormsg("Sorry, Password Invalid.");
-			country=safe_int_to_short(ocountry);
-			makebottom();
-			break;
-		}
-		if(aretheyon()==TRUE) {
-			errormsg("Sorry, that Nation is already logged in.");
-			country=safe_int_to_short(ocountry);
-			makebottom();
-			break;
-		}
+            if ((strncmp(name, ntn[country].passwd, PASSLTH) != 0)
+                && (strncmp(name, ntn[0].passwd, PASSLTH) != 0)) {
+                errormsg("Sorry, Password Invalid.");
+                country = safe_int_to_short(ocountry);
+                makebottom();
+                break;
+            }
+            if (aretheyon() == TRUE) {
+                errormsg("Sorry, that Nation is already logged in.");
+                country = safe_int_to_short(ocountry);
+                makebottom();
+                break;
+            }
 
-		/* remove old lock file -- new one already made */
-		snprintf(fison, sizeof(fison), "%s%d", isonfile, ocountry);
-		unlink(fison);
+            /* remove old lock file -- new one already made */
+            snprintf(fison, sizeof(fison), "%s%d", isonfile, ocountry);
+            unlink(fison);
 
-		fclose(fexe);
-		/* open output for future printing*/
-		snprintf(fison, sizeof(fison), "%s%d", isonfile, country);
-	 	snprintf(name, sizeof(name), "%s%d", exefile, country);
-	 	if ((fexe=fopen(name,"a"))==NULL) {
-			beep();
-			fprintf(stderr,"error opening %s\n",name);
-			unlink(fison);
-			exit(FAIL);
-	 	}
-		curntn = &ntn[country];
+            fclose(fexe);
+            /* open output for future printing*/
+            snprintf(fison, sizeof(fison), "%s%d", isonfile, country);
+            snprintf(name, sizeof(name), "%s%d", exefile, country);
+            if ((fexe = fopen(name, "a")) == NULL) {
+                beep();
+                fprintf(stderr, "error opening %s\n", name);
+                unlink(fison);
+                exit(FAIL);
+            }
+            curntn = &ntn[country];
 
-		fprintf(stderr,"\n");
-		roads_this_turn=0;
-		terror_adj=0;
-		move(LINES-3,0);
-		readdata();
-		execute(FALSE);
+            fprintf(stderr, "\n");
+            roads_this_turn = 0;
+            terror_adj = 0;
+            move(LINES - 3, 0);
+            readdata();
+            execute(FALSE);
 
-		(void) snprintf(conqmail, FILELTH, "%s%d", msgfile, country);
-		updmove(curntn->race,country);
-		/*go to that nations capitol*/
-		if((country==0)||(!isntn(ntn[country].active))) {
-			xcurs=MAPX/2-1;
-			ycurs=MAPY/2-1;
-		} else {
-			xcurs=curntn->capx;
-			ycurs=curntn->capy;
-		}
-		xoffset = yoffset = 0;
-		centermap();
-		redraw=FULL;
-		break;
-	case '?':	/*display help screen*/
-		redraw=PART;
-		help();
-		break;
-	case ' ': /*ignore, and don't beep*/
-		break;
-	default:
-		beep();
-		break;
-	}
-	return(FALSE);
+            (void)snprintf(conqmail, FILELTH, "%s%d", msgfile, country);
+            updmove(curntn->race, country);
+            /*go to that nations capitol*/
+            if ((country == 0) || (!isntn(ntn[country].active))) {
+                xcurs = MAPX / 2 - 1;
+                ycurs = MAPY / 2 - 1;
+            } else {
+                xcurs = curntn->capx;
+                ycurs = curntn->capy;
+            }
+            xoffset = yoffset = 0;
+            centermap();
+            redraw = FULL;
+            break;
+        case '?': /*display help screen*/
+            redraw = PART;
+            help();
+            break;
+        case ' ': /*ignore, and don't beep*/
+            break;
+        default:
+            beep();
+            break;
+    }
+    return (FALSE);
 }
 
 #ifdef DEBUG
@@ -1272,59 +1300,61 @@ int parse(int ch) {
  *   - Not thread-safe (accesses global variables)
  *   - Provides detailed internal state visibility
  *   - Used for development and debugging purposes
-  * @last_documented: 2025-09-17
+ * @last_documented: 2025-09-17
  */
 void sect_info() {
-	int i,j,acnt1=0,acnt2=0,ncnt1=0,ncnt2=0,x,y;
+    int i, j, acnt1 = 0, acnt2 = 0, ncnt1 = 0, ncnt2 = 0, x, y;
 
-	/* erase prior information */
-	for(i=0;i<LINES-13;i++) {
-		move(i,COLS-21);
-		clrtoeol();
-	}
+    /* erase prior information */
+    for (i = 0; i < LINES - 13; i++) {
+        move(i, COLS - 21);
+        clrtoeol();
+    }
 
-	standout();
-	mvaddstr(0,COLS-20,"Sector Information");
-	mvprintw(1,COLS-20,"  x = %2d, y = %2d  ",(int)XREAL,(int)YREAL);
-	standend();
+    standout();
+    mvaddstr(0, COLS - 20, "Sector Information");
+    mvprintw(1, COLS - 20, "  x = %2d, y = %2d  ", (int)XREAL, (int)YREAL);
+    standend();
 
-	/* find units in the sector */
-	for (i=0;i<NTOTAL;i++) if (ntn[i].active != INACTIVE) {
-		x = 0;
-		for (j=0;j<MAXARM;j++) {
-			if (ntn[i].arm[j].sold > 0 && ntn[i].arm[j].xloc == XREAL
-			    && ntn[i].arm[j].yloc == YREAL ) x++;
-		}
-		y = 0;
-		for (j=0;j<MAXNAVY;j++) {
-			if (ntn[i].nvy[j].xloc != XREAL ||
-			    ntn[i].nvy[j].yloc != YREAL ) continue;
-			if (ntn[i].nvy[j].warships!=0 ||
-			    ntn[i].nvy[j].merchant!=0 ||
-			    ntn[i].nvy[j].galleys!=0) y++;
-		}
-		if (i!=country) {
-			acnt2 += x;
-			ncnt2 += y;
-		} else {
-			acnt1 = x;
-			ncnt1 = y;
-		}
-	}
+    /* find units in the sector */
+    for (i = 0; i < NTOTAL; i++)
+        if (ntn[i].active != INACTIVE) {
+            x = 0;
+            for (j = 0; j < MAXARM; j++) {
+                if (ntn[i].arm[j].sold > 0 && ntn[i].arm[j].xloc == XREAL
+                    && ntn[i].arm[j].yloc == YREAL)
+                    x++;
+            }
+            y = 0;
+            for (j = 0; j < MAXNAVY; j++) {
+                if (ntn[i].nvy[j].xloc != XREAL || ntn[i].nvy[j].yloc != YREAL)
+                    continue;
+                if (ntn[i].nvy[j].warships != 0 || ntn[i].nvy[j].merchant != 0
+                    || ntn[i].nvy[j].galleys != 0)
+                    y++;
+            }
+            if (i != country) {
+                acnt2 += x;
+                ncnt2 += y;
+            } else {
+                acnt1 = x;
+                ncnt1 = y;
+            }
+        }
 
-	mvprintw(3,COLS-20,"Own A_Units: %d", acnt1);
-	mvprintw(4,COLS-20,"Own N_Units: %d", ncnt1);
-	mvprintw(5,COLS-20,"Other A_Units: %d", acnt2);
-	mvprintw(6,COLS-20,"Other N_Units: %d", ncnt2);
+    mvprintw(3, COLS - 20, "Own A_Units: %d", acnt1);
+    mvprintw(4, COLS - 20, "Own N_Units: %d", ncnt1);
+    mvprintw(5, COLS - 20, "Other A_Units: %d", acnt2);
+    mvprintw(6, COLS - 20, "Other N_Units: %d", ncnt2);
 
-	mvprintw(8,COLS-20,"Occval: %d", occ[XREAL][YREAL]);
+    mvprintw(8, COLS - 20, "Occval: %d", occ[XREAL][YREAL]);
 
-	/* let them look at the information */
-	errormsg("");
+    /* let them look at the information */
+    errormsg("");
 
-	/* fix the display */
-	makeside(FALSE);
-	makebottom();
+    /* fix the display */
+    makeside(FALSE);
+    makebottom();
 }
 #endif /* DEBUG */
 
@@ -1369,282 +1399,309 @@ void sect_info() {
  *   - Handles unit paging for sectors with many units
  *   - Different display modes for different nation relationships
  *   - Magic effects influence information visibility
-  * @last_documented: 2025-09-17
+ * @last_documented: 2025-09-17
  */
-void makeside(int alwayssee) {	/* see even if cant really see sector */
-	short	i;
-	int	armbonus;
-	int	found=0,nvyfnd=0;
-	long	enemy;
-	int	y;
-	short	armynum;
-	short	nvynum;
-	int	count;
-	int	nfound=0,nfound2=0;
-	register struct s_sector	*sptr = &sct[XREAL][YREAL];
+void makeside(int alwayssee) { /* see even if cant really see sector */
+    short i;
+    int armbonus;
+    int found = 0, nvyfnd = 0;
+    long enemy;
+    int y;
+    short armynum;
+    short nvynum;
+    int count;
+    int nfound = 0, nfound2 = 0;
+    register struct s_sector *sptr = &sct[XREAL][YREAL];
 
-	if( !alwayssee )
-	if( !canbeseen((int) XREAL,(int) YREAL) ) {
-		for(i=0;i<LINES-3;i++){
-			move(i,COLS-21);
-			clrtoeol();
-		}
-		return;
-	}
+    if (!alwayssee)
+        if (!canbeseen((int)XREAL, (int)YREAL)) {
+            for (i = 0; i < LINES - 3; i++) {
+                move(i, COLS - 21);
+                clrtoeol();
+            }
+            return;
+        }
 
-	for(count=0;count<LINES-13;count++){	/*clear top right hand side */
-		move(count,COLS-21);
-		clrtoeol();
-	}
+    for (count = 0; count < LINES - 13; count++) { /*clear top right hand side */
+        move(count, COLS - 21);
+        clrtoeol();
+    }
 
-	/*check for your armies*/
-	count=units_in_sector(XREAL,YREAL,country);
-	if(pager*SCRARM>count) pager=0;
+    /*check for your armies*/
+    count = units_in_sector(XREAL, YREAL, country);
+    if (pager * SCRARM > count)
+        pager = 0;
 
-	/*first army found is #0*/
-	/*show armies / navies in range pager*SCRARM to pager*SCRARM + SCRARM*/
-	/*so if pager=0 show 0 to 5 (SCRARM), pager=2 show 10 to 15*/
-	/*current selected unit is selector/2+4*pager*/
+    /*first army found is #0*/
+    /*show armies / navies in range pager*SCRARM to pager*SCRARM + SCRARM*/
+    /*so if pager=0 show 0 to 5 (SCRARM), pager=2 show 10 to 15*/
+    /*current selected unit is selector/2+4*pager*/
 
-	if(count>(SCRARM+(pager*SCRARM))) mvaddstr(LINES-14,COLS-20,"MORE...");
+    if (count > (SCRARM + (pager * SCRARM)))
+        mvaddstr(LINES - 14, COLS - 20, "MORE...");
 
-	nfound=0;
-	for(armynum=0;armynum<MAXARM;armynum++){
-		if((P_ASOLD>0)&&(P_AXLOC==XREAL)&&(P_AYLOC==YREAL)) {
-			if((nfound>=pager*SCRARM)&&(nfound<SCRARM+(pager*SCRARM))) {
-				/*print that army to nfound%SCRARM*/
-				/* patch by rob mayoff */
-				if(selector==(nfound%SCRARM)*2) {
-					mvaddch((nfound%SCRARM)*2,COLS-21,'*');
-					standout();
-				} else	mvaddch((nfound%SCRARM)*2,COLS-21,'>');
+    nfound = 0;
+    for (armynum = 0; armynum < MAXARM; armynum++) {
+        if ((P_ASOLD > 0) && (P_AXLOC == XREAL) && (P_AYLOC == YREAL)) {
+            if ((nfound >= pager * SCRARM) && (nfound < SCRARM + (pager * SCRARM))) {
+                /*print that army to nfound%SCRARM*/
+                /* patch by rob mayoff */
+                if (selector == (nfound % SCRARM) * 2) {
+                    mvaddch((nfound % SCRARM) * 2, COLS - 21, '*');
+                    standout();
+                } else
+                    mvaddch((nfound % SCRARM) * 2, COLS - 21, '>');
 
-				if(P_ATYPE<MINLEADER)
-				mvprintw((nfound%SCRARM)*2,COLS-20,"army %d: %ld %s",armynum,P_ASOLD,*(shunittype+(P_ATYPE%UTYPE)));
-				else
-				mvprintw((nfound%SCRARM)*2,COLS-20,"%s %d: str=%ld",*(unittype+(P_ATYPE%UTYPE)),armynum,P_ASOLD);
-				clrtoeol();
+                if (P_ATYPE < MINLEADER)
+                    mvprintw((nfound % SCRARM) * 2, COLS - 20, "army %d: %ld %s", armynum,
+                             P_ASOLD, *(shunittype + (P_ATYPE % UTYPE)));
+                else
+                    mvprintw((nfound % SCRARM) * 2, COLS - 20, "%s %d: str=%ld",
+                             *(unittype + (P_ATYPE % UTYPE)), armynum, P_ASOLD);
+                clrtoeol();
 
-				if(P_ASTAT >= NUMSTATUS )
-				mvprintw((nfound%SCRARM)*2+1,COLS-20," member group %d",P_ASTAT-NUMSTATUS);
-				else
-				mvprintw((nfound%SCRARM)*2+1,COLS-20," mv:%d st:%s",P_AMOVE,*(soldname+P_ASTAT));
-				standend();
-			}
-			nfound++;
-		}
-		if((occ[XREAL][YREAL]!=0)
-		&&(occ[XREAL][YREAL]!=country)
-		&&((sptr->owner==country)||((P_ASOLD>0)&&(P_AXLOC<=XREAL+1)
-		&&(P_AXLOC>=XREAL-1)&&(P_AYLOC<=YREAL+1)&&(P_AYLOC>=YREAL-1))))
-			found=1;
-		if((occ[XREAL][YREAL]!=0)&&(country==0)) found=1;
-	}
+                if (P_ASTAT >= NUMSTATUS)
+                    mvprintw((nfound % SCRARM) * 2 + 1, COLS - 20, " member group %d",
+                             P_ASTAT - NUMSTATUS);
+                else
+                    mvprintw((nfound % SCRARM) * 2 + 1, COLS - 20, " mv:%d st:%s", P_AMOVE,
+                             *(soldname + P_ASTAT));
+                standend();
+            }
+            nfound++;
+        }
+        if ((occ[XREAL][YREAL] != 0) && (occ[XREAL][YREAL] != country)
+            && ((sptr->owner == country)
+                || ((P_ASOLD > 0) && (P_AXLOC <= XREAL + 1) && (P_AXLOC >= XREAL - 1)
+                    && (P_AYLOC <= YREAL + 1) && (P_AYLOC >= YREAL - 1))))
+            found = 1;
+        if ((occ[XREAL][YREAL] != 0) && (country == 0))
+            found = 1;
+    }
 
-	if(nfound<SCRARM+(pager*SCRARM)) for(nvynum=0;nvynum<MAXNAVY;nvynum++){
-		if(((P_NWSHP!=0)||(P_NMSHP!=0)||(P_NGSHP!=0))
-		&&(P_NXLOC==XREAL)&&(P_NYLOC==YREAL)) {
-			if((nfound>=pager*SCRARM)&&(nfound<SCRARM+(pager*SCRARM))) {
-				/*print a navy*/
-				if(selector==(nfound%SCRARM)*2) {
-					if((P_NARMY!=MAXARM)||(P_NPEOP!=0))
-					mvaddch((nfound%SCRARM)*2,COLS-21,'+');
-					else
-					mvaddch((nfound%SCRARM)*2,COLS-21,'*');
-					standout();
-				} else	mvaddch((nfound%SCRARM)*2,COLS-21,'>');
+    if (nfound < SCRARM + (pager * SCRARM))
+        for (nvynum = 0; nvynum < MAXNAVY; nvynum++) {
+            if (((P_NWSHP != 0) || (P_NMSHP != 0) || (P_NGSHP != 0)) && (P_NXLOC == XREAL)
+                && (P_NYLOC == YREAL)) {
+                if ((nfound >= pager * SCRARM) && (nfound < SCRARM + (pager * SCRARM))) {
+                    /*print a navy*/
+                    if (selector == (nfound % SCRARM) * 2) {
+                        if ((P_NARMY != MAXARM) || (P_NPEOP != 0))
+                            mvaddch((nfound % SCRARM) * 2, COLS - 21, '+');
+                        else
+                            mvaddch((nfound % SCRARM) * 2, COLS - 21, '*');
+                        standout();
+                    } else
+                        mvaddch((nfound % SCRARM) * 2, COLS - 21, '>');
 
-				mvprintw((nfound%SCRARM)*2,COLS-20,"nvy %d: mv:%hd cw:%hd",nvynum,P_NMOVE,P_NCREW);
-				mvprintw((nfound%SCRARM)*2+1,COLS-20,"war:%2hd mer:%2hd gal:%2hd",
-					P_NWAR(N_LIGHT)+P_NWAR(N_MEDIUM)+P_NWAR(N_HEAVY),
-					P_NMER(N_LIGHT)+P_NMER(N_MEDIUM)+P_NMER(N_HEAVY),
-					P_NGAL(N_LIGHT)+P_NGAL(N_MEDIUM)+P_NGAL(N_HEAVY));
-				standend();
-			}
-			nfound++;
-		}
-		if((occ[XREAL][YREAL]!=0)&&(occ[XREAL][YREAL]!=country)
-		&&(P_NWSHP!=0||P_NMSHP!=0||P_NGSHP!=0)&&(P_NXLOC<=XREAL+1)
-		&&(P_NXLOC>=XREAL-1)&&(P_NYLOC<=YREAL+1)&&(P_NYLOC>=YREAL-1))
-			nvyfnd=1;
-		if((occ[XREAL][YREAL]!=0)&&(country==0)) nvyfnd=1;
-	}
+                    mvprintw((nfound % SCRARM) * 2, COLS - 20, "nvy %d: mv:%hd cw:%hd", nvynum,
+                             P_NMOVE, P_NCREW);
+                    mvprintw((nfound % SCRARM) * 2 + 1, COLS - 20, "war:%2hd mer:%2hd gal:%2hd",
+                             P_NWAR(N_LIGHT) + P_NWAR(N_MEDIUM) + P_NWAR(N_HEAVY),
+                             P_NMER(N_LIGHT) + P_NMER(N_MEDIUM) + P_NMER(N_HEAVY),
+                             P_NGAL(N_LIGHT) + P_NGAL(N_MEDIUM) + P_NGAL(N_HEAVY));
+                    standend();
+                }
+                nfound++;
+            }
+            if ((occ[XREAL][YREAL] != 0) && (occ[XREAL][YREAL] != country)
+                && (P_NWSHP != 0 || P_NMSHP != 0 || P_NGSHP != 0) && (P_NXLOC <= XREAL + 1)
+                && (P_NXLOC >= XREAL - 1) && (P_NYLOC <= YREAL + 1) && (P_NYLOC >= YREAL - 1))
+                nvyfnd = 1;
+            if ((occ[XREAL][YREAL] != 0) && (country == 0))
+                nvyfnd = 1;
+        }
 
-	count=0;
-	nfound2=nfound;
-	if((found==1)||(nvyfnd==1)) for(i=0;i<NTOTAL;i++) {
-		if( !magic(i,HIDDEN) || country == 0 ){
-			enemy=0;
-			for(armynum=0;armynum<MAXARM;armynum++){
-				if((i!=country)
-				&&(ntn[i].arm[armynum].xloc==XREAL)
-				&&(ntn[i].arm[armynum].yloc==YREAL)
-				&&(ntn[i].arm[armynum].sold>0)){
-				if(nfound2>SCRARM) nfound2=SCRARM;
-				if( ntn[i].arm[armynum].unittyp>=MINMONSTER ){
-					mvprintw(nfound2*2+count,COLS-20,"%s: str=%ld",*(unittype+(ntn[i].arm[armynum].unittyp%UTYPE)),ntn[i].arm[armynum].sold);
-					count++;
-				} else enemy += ntn[i].arm[armynum].sold;
-				}
-			}
-			if(enemy>0) {
-				if((magic(country,NINJA)==TRUE) || country == 0 )
-					mvprintw(nfound2*2+count,COLS-20,"%s: %ld men  ",ntn[i].name,enemy);
-				else if(magic(i,THE_VOID)==TRUE)
-				mvprintw(nfound2*2+count,COLS-20,"%s: ?? men  ",ntn[i].name);
-				else {
-					srand(safe_long_to_uint(i*17+enemy+TURN*3));
-					mvprintw(nfound2*2+count,COLS-20,"%s: %ld men  ",ntn[i].name,(enemy*(rand()%60+70)/100));
-					srand((unsigned) time((long *) 0));
-				}
-				count++;
-			}
-			enemy=0;
-			for(nvynum=0;nvynum<MAXNAVY;nvynum++){
-				if((i!=country)
-				&&(ntn[i].nvy[nvynum].xloc==XREAL)
-				&&(ntn[i].nvy[nvynum].yloc==YREAL)
-				&&(ntn[i].nvy[nvynum].warships
-				+ntn[i].nvy[nvynum].merchant
-				+(int)ntn[i].nvy[nvynum].galleys!=0))
-					enemy += fltships(i,nvynum);
-				}
-			if(enemy>0) {
-				if((magic(country,NINJA)==TRUE) || country == 0 )
-					mvprintw(nfound2*2+count,COLS-20,"%s: %ld ships",ntn[i].name,enemy);
-				else if(magic(i,THE_VOID)==TRUE)
-				mvprintw(nfound2*2+count,COLS-20,"%s: ?? ships",ntn[i].name);
-				else {
-					srand(safe_long_to_uint(i*17+enemy+TURN*3));
-					mvprintw(nfound2*2+count,COLS-20,"%s: %ld ships",ntn[i].name,(enemy*(rand()%60+70)/100));
-					srand((unsigned) time((long *) 0));
-				}
-				count++;
-			}
-		}
-	}
+    count = 0;
+    nfound2 = nfound;
+    if ((found == 1) || (nvyfnd == 1))
+        for (i = 0; i < NTOTAL; i++) {
+            if (!magic(i, HIDDEN) || country == 0) {
+                enemy = 0;
+                for (armynum = 0; armynum < MAXARM; armynum++) {
+                    if ((i != country) && (ntn[i].arm[armynum].xloc == XREAL)
+                        && (ntn[i].arm[armynum].yloc == YREAL)
+                        && (ntn[i].arm[armynum].sold > 0)) {
+                        if (nfound2 > SCRARM)
+                            nfound2 = SCRARM;
+                        if (ntn[i].arm[armynum].unittyp >= MINMONSTER) {
+                            mvprintw(nfound2 * 2 + count, COLS - 20, "%s: str=%ld",
+                                     *(unittype + (ntn[i].arm[armynum].unittyp % UTYPE)),
+                                     ntn[i].arm[armynum].sold);
+                            count++;
+                        } else
+                            enemy += ntn[i].arm[armynum].sold;
+                    }
+                }
+                if (enemy > 0) {
+                    if ((magic(country, NINJA) == TRUE) || country == 0)
+                        mvprintw(nfound2 * 2 + count, COLS - 20, "%s: %ld men  ", ntn[i].name,
+                                 enemy);
+                    else if (magic(i, THE_VOID) == TRUE)
+                        mvprintw(nfound2 * 2 + count, COLS - 20, "%s: ?? men  ", ntn[i].name);
+                    else {
+                        srand(safe_long_to_uint(i * 17 + enemy + TURN * 3));
+                        mvprintw(nfound2 * 2 + count, COLS - 20, "%s: %ld men  ", ntn[i].name,
+                                 (enemy * (rand() % 60 + 70) / 100));
+                        srand((unsigned)time((long *)0));
+                    }
+                    count++;
+                }
+                enemy = 0;
+                for (nvynum = 0; nvynum < MAXNAVY; nvynum++) {
+                    if ((i != country) && (ntn[i].nvy[nvynum].xloc == XREAL)
+                        && (ntn[i].nvy[nvynum].yloc == YREAL)
+                        && (ntn[i].nvy[nvynum].warships + ntn[i].nvy[nvynum].merchant
+                                + (int)ntn[i].nvy[nvynum].galleys
+                            != 0))
+                        enemy += fltships(i, nvynum);
+                }
+                if (enemy > 0) {
+                    if ((magic(country, NINJA) == TRUE) || country == 0)
+                        mvprintw(nfound2 * 2 + count, COLS - 20, "%s: %ld ships", ntn[i].name,
+                                 enemy);
+                    else if (magic(i, THE_VOID) == TRUE)
+                        mvprintw(nfound2 * 2 + count, COLS - 20, "%s: ?? ships", ntn[i].name);
+                    else {
+                        srand(safe_long_to_uint(i * 17 + enemy + TURN * 3));
+                        mvprintw(nfound2 * 2 + count, COLS - 20, "%s: %ld ships", ntn[i].name,
+                                 (enemy * (rand() % 60 + 70) / 100));
+                        srand((unsigned)time((long *)0));
+                    }
+                    count++;
+                }
+            }
+        }
 
-	standend();
-	mvprintw(LINES-13,COLS-20,"x is %d",XREAL);
-	clrtoeol();
-	mvprintw(LINES-13,COLS-11,"y is %d",YREAL);
-	clrtoeol();
+    standend();
+    mvprintw(LINES - 13, COLS - 20, "x is %d", XREAL);
+    clrtoeol();
+    mvprintw(LINES - 13, COLS - 11, "y is %d", YREAL);
+    clrtoeol();
 
-	if((country!=0)&&(sptr->altitude==WATER)){
-		for(y=LINES-12;y<=LINES-4;y++) {	move(y,COLS-20); clrtoeol();}
-		mvaddstr(LINES-10,COLS-9,"WATER");
-	} else {
-	if((country!=0)&&(country!=sptr->owner)
-	&&(magic(sptr->owner,THE_VOID)==TRUE)){
-		for(y=LINES-11;y<=LINES-4;y++) {
-			move(y,COLS-20);
-			clrtoeol();
-		}
-	} else {
+    if ((country != 0) && (sptr->altitude == WATER)) {
+        for (y = LINES - 12; y <= LINES - 4; y++) {
+            move(y, COLS - 20);
+            clrtoeol();
+        }
+        mvaddstr(LINES - 10, COLS - 9, "WATER");
+    } else {
+        if ((country != 0) && (country != sptr->owner)
+            && (magic(sptr->owner, THE_VOID) == TRUE)) {
+            for (y = LINES - 11; y <= LINES - 4; y++) {
+                move(y, COLS - 20);
+                clrtoeol();
+            }
+        } else {
+            for (y = LINES - 11; y <= LINES - 10; y++) {
+                move(y, COLS - 20);
+                clrtoeol();
+            }
 
-		for(y=LINES-11;y<=LINES-10;y++) {
-			move(y,COLS-20);
-			clrtoeol();
-		}
+            if (sptr->designation != DNODESIG)
+                standout();
+            for (i = 0; *(des + i) != '0'; i++)
+                if (sptr->designation == *(des + i)) {
+                    mvprintw(LINES - 11, COLS - 20, "%s", *(desname + i));
+                    clrtoeol();
+                    break;
+                }
+            standend();
 
-		if( sptr->designation!=DNODESIG ) standout();
-		for(i=0;*(des+i)!='0';i++)
-			if(sptr->designation== *(des+i)){
-			mvprintw(LINES-11,COLS-20,"%s",*(desname+i));
-			clrtoeol();
-			break;
-		}
-		standend();
+            if ((sptr->owner == country) || (country == 0) || (magic(country, NINJA) == TRUE))
+                mvprintw(LINES - 9, COLS - 20, "people: %6ld", sptr->people);
+            else {
+                srand(safe_long_to_uint(country * 17 + TURN * 3 + sptr->people));
+                mvprintw(LINES - 9, COLS - 20, "people: %6ld",
+                         sptr->people * (rand() % 60 + 70) / 100);
+                srand((unsigned)time((long *)0));
+            }
+            clrtoeol();
+            if ((sptr->owner == country) || (sptr->owner == 0) || (country == 0)
+                || (!isntn(ntn[sptr->owner].active))) {
+                /* exotic trade goods */
+                if (sptr->tradegood != TG_none && tg_ok(country, sptr)) {
+                    standout();
+                    mvprintw(LINES - 7, COLS - 20, "item: %s", tg_name[sptr->tradegood]);
+                    clrtoeol();
+                    if (*(tg_stype + sptr->tradegood) == 'x')
+                        mvaddstr(LINES - 7, COLS - 4, "ANY");
+                    else
+                        mvprintw(LINES - 7, COLS - 4, "(%c)", *(tg_stype + sptr->tradegood));
+                    standend();
+                } else {
+                    mvaddstr(LINES - 7, COLS - 20, "item: none");
+                    clrtoeol();
+                }
 
-		if((sptr->owner==country)||(country==0)||(magic(country,NINJA)==TRUE))
-		mvprintw(LINES-9,COLS-20,"people: %6ld",sptr->people);
-		else {
-			srand(safe_long_to_uint(country*17+TURN*3+sptr->people));
-			mvprintw(LINES-9,COLS-20,"people: %6ld",sptr->people*(rand()%60+70)/100);
-			srand((unsigned) time((long *) 0));
-		}
-		clrtoeol();
-		if((sptr->owner==country)
-		||(sptr->owner==0)
-		||(country == 0)
-		||(!isntn(ntn[sptr->owner].active))){
-			/* exotic trade goods */
-			if( sptr->tradegood != TG_none && tg_ok(country,sptr) ) {
-				standout();
-				mvprintw(LINES-7,COLS-20,"item: %s",tg_name[sptr->tradegood]);
-				clrtoeol();
-				if( *(tg_stype+sptr->tradegood) == 'x' )
-					mvaddstr(LINES-7,COLS-4,"ANY");
-				else
-					mvprintw(LINES-7,COLS-4,"(%c)",*(tg_stype+sptr->tradegood));
-				standend();
-			} else {
-				mvaddstr(LINES-7,COLS-20,"item: none");
-				clrtoeol();
-			}
+                if (sptr->jewels != 0 && tg_ok(country, sptr)) {
+                    standout();
+                    mvprintw(LINES - 6, COLS - 20, "gold: %2d", sptr->jewels);
+                    standend();
+                } else
+                    mvaddstr(LINES - 6, COLS - 20, "gold:  0");
+                if (sptr->metal != 0 && tg_ok(country, sptr)) {
+                    standout();
+                    mvprintw(LINES - 6, COLS - 10, "metal: %2d", sptr->metal);
+                    standend();
+                } else
+                    mvaddstr(LINES - 6, COLS - 10, "metal:  0");
 
-			if( sptr->jewels != 0 && tg_ok(country,sptr)) {
-				standout();
-				mvprintw(LINES-6,COLS-20,"gold: %2d",sptr->jewels);
-				standend();
-			} else mvaddstr(LINES-6,COLS-20,"gold:  0");
-			if( sptr->metal != 0 && tg_ok(country,sptr)) {
-				standout();
-				mvprintw(LINES-6,COLS-10,"metal: %2d",sptr->metal);
-				standend();
-			} else mvaddstr(LINES-6,COLS-10,"metal:  0");
+                armbonus = fort_val(sptr);
+                if (armbonus > 0)
+                    mvprintw(LINES - 5, COLS - 20, "fortress: +%d%%", armbonus);
+                else
+                    move(LINES - 5, COLS - 20);
+                clrtoeol();
+            } else {
+                for (y = LINES - 7; y <= LINES - 5; y++) {
+                    move(y, COLS - 20);
+                    clrtoeol();
+                }
+            }
+        }
 
-			armbonus = fort_val(sptr);
-			if(armbonus>0)
-			mvprintw(LINES-5,COLS-20,"fortress: +%d%%",armbonus);
-			else move(LINES-5,COLS-20);
-			clrtoeol();
-		}
-		else {
-			for(y=LINES-7;y<=LINES-5;y++) {
-				move(y,COLS-20);
-				clrtoeol();
-			}
-		}
-	}
+        standout();
+        if ((sptr->owner == 0) || (ntn[sptr->owner].active == NPC_SAVAGE))
+            mvaddstr(LINES - 12, COLS - 20, "unowned");
+        else
+            mvprintw(LINES - 12, COLS - 20, "owner: %s", ntn[sptr->owner].name);
+        standend();
+        clrtoeol();
 
-	standout();
-	if((sptr->owner==0)||(ntn[sptr->owner].active==NPC_SAVAGE))
-		mvaddstr(LINES-12,COLS-20,"unowned");
-	else mvprintw(LINES-12,COLS-20,"owner: %s",ntn[sptr->owner].name);
-	standend();
-	clrtoeol();
+        for (i = 0; *(veg + i) != '0'; i++)
+            if (sptr->vegetation == *(veg + i))
+                mvprintw(LINES - 11, COLS - 10, "%s", *(vegname + i));
 
-	for(i=0;*(veg+i)!='0';i++)
-		if(sptr->vegetation==*(veg+i))
-		mvprintw(LINES-11,COLS-10,"%s",*(vegname+i));
+        if (((i = safe_int_to_short(tofood(sptr, country))) != 0)
+            && ((magic(sptr->owner, THE_VOID) != TRUE) || (sptr->owner == country))) {
+            if (i > 6)
+                standout();
+            if (i < 10)
+                mvprintw(LINES - 11, COLS - 2, "%d", i);
+            else
+                mvprintw(LINES - 11, COLS - 3, "%d", i);
+            standend();
+        }
 
-	if(((i=safe_int_to_short(tofood(sptr,country))) != 0)
-	&&((magic(sptr->owner,THE_VOID)!=TRUE)
-	||(sptr->owner==country))){
-		if(i>6) standout();
-		if(i<10)	mvprintw(LINES-11,COLS-2,"%d",i);
-		else		mvprintw(LINES-11,COLS-3,"%d",i);
-		standend();
-	}
+        if (sptr->owner != 0)
+            for (i = 1; i <= 8; i++)
+                if (ntn[sptr->owner].race == *(races + i)[0]) {
+                    mvprintw(LINES - 10, COLS - 20, "%s", *(races + i));
+                    clrtoeol();
+                }
 
-	if(sptr->owner!=0) for(i=1;i<=8;i++)
-		if(ntn[sptr->owner].race==*(races+i)[0]){
-		mvprintw(LINES-10,COLS-20,"%s",*(races+i));
-		clrtoeol();
-		}
+        for (i = 0; (*(ele + i) != '0'); i++)
+            if (sptr->altitude == *(ele + i)) {
+                mvprintw(LINES - 10, COLS - 10, "%s", *(elename + i));
+                break;
+            }
+    }
 
-	for(i=0;(*(ele+i) != '0');i++)
-		if( sptr->altitude == *(ele+i) ){
-			mvprintw(LINES-10,COLS-10,"%s",*(elename+i));
-			break;
-		}
-	}
-
-	if(movecost[XREAL][YREAL]<0)
-	mvaddstr(LINES-8,COLS-20,"YOU CAN'T ENTER HERE");
-	else
-	mvprintw(LINES-8,COLS-20,"move cost:  %2d      ",movecost[XREAL][YREAL]);
+    if (movecost[XREAL][YREAL] < 0)
+        mvaddstr(LINES - 8, COLS - 20, "YOU CAN'T ENTER HERE");
+    else
+        mvprintw(LINES - 8, COLS - 20, "move cost:  %2d      ", movecost[XREAL][YREAL]);
 }
 
 /************************************************************************/
@@ -1685,12 +1742,12 @@ void makeside(int alwayssee) {	/* see even if cant really see sector */
  *   - Lock files must be cleaned up on game exit
  *   - Used in conjunction with check_lock() function
  *   - Different behavior for god mode vs normal nations
-  * @last_documented: 2025-09-17
+ * @last_documented: 2025-09-17
  */
 int aretheyon(void) {
-	/* return file descriptor for lock file */
-	snprintf(fison, sizeof(fison), "%s%d", isonfile, country);
-	return(check_lock(fison,TRUE));
+    /* return file descriptor for lock file */
+    snprintf(fison, sizeof(fison), "%s%d", isonfile, country);
+    return (check_lock(fison, TRUE));
 }
 
 /************************************************************************/
@@ -1733,36 +1790,37 @@ int aretheyon(void) {
  *   - Conditional compilation for TIMELOG feature
  *   - Must be displayed to every player on every login
  *   - Part of legal compliance for GPL v3 licensing
-  * @last_documented: 2025-09-17
+ * @last_documented: 2025-09-17
  */
 void copyscreen(void) {
 #ifdef TIMELOG
     FILE *timefp;
-    char string[LINELTH+1];
+    char string[LINELTH + 1];
 #endif /* TIMELOG */
 
     clear();
     standout();
-    mvprintw(8,COLS/2-12,"Conquer %s.%s",VERSION,PATCHLEVEL);
+    mvprintw(8, COLS / 2 - 12, "Conquer %s.%s", VERSION, PATCHLEVEL);
     standend();
-    mvaddstr(10,COLS/2-21, "Original Copyright (c) 1988 Edward M Barlow");
-    mvaddstr(11,COLS/2-20,"Written by Edward M Barlow and Adam Bryant");
-    mvaddstr(12,COLS/2-9,"All Rights Reserved");
-    mvaddstr(13,COLS/2-16,"GPL v3 Licensed Version (c) 2025");
-    mvaddstr(14,COLS/2-28,"Released under GPL v3 with original authors' permission");
+    mvaddstr(10, COLS / 2 - 21, "Original Copyright (c) 1988 Edward M Barlow");
+    mvaddstr(11, COLS / 2 - 20, "Written by Edward M Barlow and Adam Bryant");
+    mvaddstr(12, COLS / 2 - 9, "All Rights Reserved");
+    mvaddstr(13, COLS / 2 - 16, "GPL v3 Licensed Version (c) 2025");
+    mvaddstr(14, COLS / 2 - 28, "Released under GPL v3 with original authors' permission");
 
-    mvaddstr(LINES-8,COLS/2-32,"This GPL v3 version may be freely redistributed under the terms");
-    mvaddstr(LINES-7,COLS/2-27,"of the GNU General Public License version 3 or later");
-    mvaddstr(LINES-6,COLS/2-26,"See LICENSE file for complete terms and conditions");
+    mvaddstr(LINES - 8, COLS / 2 - 32,
+             "This GPL v3 version may be freely redistributed under the terms");
+    mvaddstr(LINES - 7, COLS / 2 - 27, "of the GNU General Public License version 3 or later");
+    mvaddstr(LINES - 6, COLS / 2 - 26, "See LICENSE file for complete terms and conditions");
 
 #ifdef TIMELOG
-    if ((timefp=fopen(timefile,"r"))!=NULL) {
+    if ((timefp = fopen(timefile, "r")) != NULL) {
         fgets(string, 50, timefp);
-        mvprintw(LINES-1, 0, "Last Update: %s", string);
+        mvprintw(LINES - 1, 0, "Last Update: %s", string);
         fclose(timefp);
     }
 #endif /* TIMELOG */
-    mvaddstr(LINES-1, COLS-20, "PLEASE WAIT");
+    mvaddstr(LINES - 1, COLS - 20, "PLEASE WAIT");
     refresh();
 }
 /************************************************************************/
@@ -1806,17 +1864,20 @@ void copyscreen(void) {
  *   - Signal handlers should call this function
  *   - Does not return (calls exit())
  *   - Thread-safe cleanup sequence
-  * @last_documented: 2025-09-17
+ * @last_documented: 2025-09-17
  */
-void bye(int dounlink) {	/* TRUE if want to do unlink */
-	if( dounlink ) if(strcmp(fison,"START")!=0) unlink(fison);
-	clear();
-	refresh();
-	nocrmode();
-	endwin();
-	if (fexe!=NULL) fclose(fexe);
-	fprintf(stderr,"quit & save\n");
-	exit(SUCCESS);
+void bye(int dounlink) { /* TRUE if want to do unlink */
+    if (dounlink)
+        if (strcmp(fison, "START") != 0)
+            unlink(fison);
+    clear();
+    refresh();
+    nocrmode();
+    endwin();
+    if (fexe != NULL)
+        fclose(fexe);
+    fprintf(stderr, "quit & save\n");
+    exit(SUCCESS);
 }
 
 /************************************************************************/
@@ -1857,34 +1918,34 @@ void bye(int dounlink) {	/* TRUE if want to do unlink */
  *   - Part of proper attribution for open source project
  *   - Non-interactive display (waits for single keypress)
  *   - Accessible from main game loop via 'v' command
-  * @last_documented: 2025-09-17
+ * @last_documented: 2025-09-17
  */
 void credits(void) {
-	clear();
-	mvprintw(4,0,"Conquer %s.%s",VERSION,PATCHLEVEL);
-	mvaddstr(5,0,"Original Copyright (c) 1988 by Edward M Barlow");
-	mvaddstr(6,0,"Written by Edward M Barlow and Adam Bryant");
-	mvaddstr(7,0,"All Rights Reserved (Original Version)");
+    clear();
+    mvprintw(4, 0, "Conquer %s.%s", VERSION, PATCHLEVEL);
+    mvaddstr(5, 0, "Original Copyright (c) 1988 by Edward M Barlow");
+    mvaddstr(6, 0, "Written by Edward M Barlow and Adam Bryant");
+    mvaddstr(7, 0, "All Rights Reserved (Original Version)");
 
-	mvaddstr(9,0,"GPL v3 Licensed Version (c) 2025");
-	mvaddstr(10,0,"Modernized and relicensed with original authors' permission");
-	mvaddstr(11,0,"Cross-platform compatibility and modern C standard support added");
+    mvaddstr(9, 0, "GPL v3 Licensed Version (c) 2025");
+    mvaddstr(10, 0, "Modernized and relicensed with original authors' permission");
+    mvaddstr(11, 0, "Cross-platform compatibility and modern C standard support added");
 
-	mvaddstr(13,0,"Original contributors and acknowledgments:");
-	mvaddstr(14,0,"Thanks to the following for comments, patches, and playtesting:");
-	mvaddstr(16,0,"Derick Hirasawa    Brian Rauchfuss      Joe E. Powell");
-	mvaddstr(17,0,"Andrew Collins     Joe Nolet");
-	mvaddstr(18,0,"Kenneth Moyle      Brian Bresnahan");
-	mvaddstr(19,0,"Paul Davison       Robert Deroy");
+    mvaddstr(13, 0, "Original contributors and acknowledgments:");
+    mvaddstr(14, 0, "Thanks to the following for comments, patches, and playtesting:");
+    mvaddstr(16, 0, "Derick Hirasawa    Brian Rauchfuss      Joe E. Powell");
+    mvaddstr(17, 0, "Andrew Collins     Joe Nolet");
+    mvaddstr(18, 0, "Kenneth Moyle      Brian Bresnahan");
+    mvaddstr(19, 0, "Paul Davison       Robert Deroy");
 
-	mvaddstr(21,0,"Also thanks to the many playtesters at Boston University");
-	mvaddstr(22,0,"and at the Communications Hex");
+    mvaddstr(21, 0, "Also thanks to the many playtesters at Boston University");
+    mvaddstr(22, 0, "and at the Communications Hex");
 
-	mvaddstr(LINES-4,0,"This version is free software licensed under GPL v3");
-	mvaddstr(LINES-3,0,"You may redistribute and modify it under the GPL v3 terms");
-	mvaddstr(LINES-2,0,"See LICENSE file for complete terms and conditions");
+    mvaddstr(LINES - 4, 0, "This version is free software licensed under GPL v3");
+    mvaddstr(LINES - 3, 0, "You may redistribute and modify it under the GPL v3 terms");
+    mvaddstr(LINES - 2, 0, "See LICENSE file for complete terms and conditions");
 
-	errormsg("");
+    errormsg("");
 }
 
 /************************************************************************/
@@ -1926,68 +1987,71 @@ void credits(void) {
  *   - Useful for players to understand current game scope
  *   - Shows both world configuration and player-specific data
  *   - Accessible from main game loop via 'I' command
-  * @last_documented: 2025-09-17
+ * @last_documented: 2025-09-17
  */
 void camp_info(void) {
-	int mercs=0,solds=0,armynum,nvynum,nontn=0;
-	int numarm=0,numnvy=0,numlead=0;
+    int mercs = 0, solds = 0, armynum, nvynum, nontn = 0;
+    int numarm = 0, numnvy = 0, numlead = 0;
 
-	clear();
-	standout();
-	mvaddstr(2,COLS/2-16," CONQUER CAMPAIGN INFORMATION ");
-	mvaddstr(5,0,"World Information");
-	mvaddstr(5,COLS-40,"Player Information");
-	standend();
+    clear();
+    standout();
+    mvaddstr(2, COLS / 2 - 16, " CONQUER CAMPAIGN INFORMATION ");
+    mvaddstr(5, 0, "World Information");
+    mvaddstr(5, COLS - 40, "Player Information");
+    standend();
 
-	/* quick statistics */
-	for(armynum=0;armynum<MAXARM;armynum++) {
-		if (P_ASOLD!=0) {
-			numarm++;
-			if (P_ATYPE<MINLEADER) {
-				solds+=safe_long_to_int(P_ASOLD);
-				if (P_ATYPE==A_MERCENARY) mercs+=safe_long_to_int(P_ASOLD);
-			} else if (P_ATYPE<MINMONSTER) {
-				numlead++;
-			}
-		}
-	}
-	for(nvynum=0;nvynum<MAXNAVY;nvynum++) {
-		if (P_NWSHP!=0||P_NGSHP!=0||P_NMSHP!=0) numnvy++;
-	}
-	for(armynum=1;armynum<NTOTAL;armynum++) {
-		if (ismonst(ntn[armynum].active)) nontn++;
-	}
+    /* quick statistics */
+    for (armynum = 0; armynum < MAXARM; armynum++) {
+        if (P_ASOLD != 0) {
+            numarm++;
+            if (P_ATYPE < MINLEADER) {
+                solds += safe_long_to_int(P_ASOLD);
+                if (P_ATYPE == A_MERCENARY)
+                    mercs += safe_long_to_int(P_ASOLD);
+            } else if (P_ATYPE < MINMONSTER) {
+                numlead++;
+            }
+        }
+    }
+    for (nvynum = 0; nvynum < MAXNAVY; nvynum++) {
+        if (P_NWSHP != 0 || P_NGSHP != 0 || P_NMSHP != 0)
+            numnvy++;
+    }
+    for (armynum = 1; armynum < NTOTAL; armynum++) {
+        if (ismonst(ntn[armynum].active))
+            nontn++;
+    }
 
-	/* global information */
-	mvprintw(7,0,"World Map Size............. %dx%d", MAPX, MAPY);
-	mvprintw(8,0,"Currently Active Nations... %d", WORLDNTN);
-	mvprintw(9,0,"Maximum Active Nations..... %d", NTOTAL-nontn-1);
-	mvprintw(10,0,"Number of Monster Nations.. %d", nontn);
-	mvprintw(11,0,"Maximum Number of Armies... %d", MAXARM);
-	mvprintw(12,0,"Maximum Number of Navies... %d", MAXNAVY);
-	mvprintw(13,0,"Land displacement to meet.. %d", MEETNTN);
-	mvprintw(14,0,"Chance of Scout Capture.... %d%%", PFINDSCOUT);
+    /* global information */
+    mvprintw(7, 0, "World Map Size............. %dx%d", MAPX, MAPY);
+    mvprintw(8, 0, "Currently Active Nations... %d", WORLDNTN);
+    mvprintw(9, 0, "Maximum Active Nations..... %d", NTOTAL - nontn - 1);
+    mvprintw(10, 0, "Number of Monster Nations.. %d", nontn);
+    mvprintw(11, 0, "Maximum Number of Armies... %d", MAXARM);
+    mvprintw(12, 0, "Maximum Number of Navies... %d", MAXNAVY);
+    mvprintw(13, 0, "Land displacement to meet.. %d", MEETNTN);
+    mvprintw(14, 0, "Chance of Scout Capture.... %d%%", PFINDSCOUT);
 
-	/* user information */
-	mvprintw(7,COLS-40,"Number of Leaders........... %d",numlead);
-	mvprintw(8,COLS-40,"Men Needed To Take Land..... %ld",TAKESECTOR);
-	mvprintw(9,COLS-40,"Mercenaries in Nation....... %d",mercs);
-	mvprintw(10,COLS-40,"Total Soldiers in Nation.... %d",solds);
-	mvprintw(11,COLS-40,"Current Number of Armies.... %d",numarm);
-	mvprintw(12,COLS-40,"Current Number of Navies.... %d",numnvy);
+    /* user information */
+    mvprintw(7, COLS - 40, "Number of Leaders........... %d", numlead);
+    mvprintw(8, COLS - 40, "Men Needed To Take Land..... %ld", TAKESECTOR);
+    mvprintw(9, COLS - 40, "Mercenaries in Nation....... %d", mercs);
+    mvprintw(10, COLS - 40, "Total Soldiers in Nation.... %d", solds);
+    mvprintw(11, COLS - 40, "Current Number of Armies.... %d", numarm);
+    mvprintw(12, COLS - 40, "Current Number of Navies.... %d", numnvy);
 
-	/* other information */
-	mvprintw(LINES-6,0,"The Diety: %s", LOGIN);
-	if (strcmp(LOGIN,ntn[0].leader)==0) {
-		mvaddstr(LINES-5,0,"The Demi-God: [none]");
-	} else {
-		mvprintw(LINES-5,0,"The Demi-God: %s", ntn[0].leader);
-	}
+    /* other information */
+    mvprintw(LINES - 6, 0, "The Diety: %s", LOGIN);
+    if (strcmp(LOGIN, ntn[0].leader) == 0) {
+        mvaddstr(LINES - 5, 0, "The Demi-God: [none]");
+    } else {
+        mvprintw(LINES - 5, 0, "The Demi-God: %s", ntn[0].leader);
+    }
 
-	standout();
-	mvaddstr(LINES-2,COLS/2-13," HIT ANY KEY TO CONTINUE");
-	standend();
-	refresh();
+    standout();
+    mvaddstr(LINES - 2, COLS / 2 - 13, " HIT ANY KEY TO CONTINUE");
+    standend();
+    refresh();
 
-	getch();
+    getch();
 }

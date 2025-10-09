@@ -29,7 +29,7 @@ void tearDown(void) {
  */
 void test_file_operations_integration(void) {
     /* Simulate testing file operations without actually using files */
-    const char* test_data = "Integration test data";
+    const char *test_data = "Integration test data";
     char buffer[256];
 
     /* Simulate writing to a buffer (instead of file) */
@@ -67,19 +67,19 @@ void test_multi_module_integration(void) {
 void test_configuration_integration(void) {
     /* Test that configuration values are properly integrated */
 
-    #ifdef PATCHLEVEL
-        /* If we have config access, test basic integration */
-        TEST_ASSERT_TRUE(1);
-    #else
-        TEST_FAIL_MESSAGE("Configuration integration failed");
-    #endif
+#ifdef PATCHLEVEL
+    /* If we have config access, test basic integration */
+    TEST_ASSERT_TRUE(1);
+#else
+    TEST_FAIL_MESSAGE("Configuration integration failed");
+#endif
 
-    /* Test POSIX compliance flag integration */
-    #ifdef _POSIX_C_SOURCE
-        TEST_ASSERT_TRUE(_POSIX_C_SOURCE >= 200809L);
-    #else
-        TEST_FAIL_MESSAGE("POSIX compliance not configured");
-    #endif
+/* Test POSIX compliance flag integration */
+#ifdef _POSIX_C_SOURCE
+    TEST_ASSERT_TRUE(_POSIX_C_SOURCE >= 200809L);
+#else
+    TEST_FAIL_MESSAGE("POSIX compliance not configured");
+#endif
 }
 
 /*
@@ -89,7 +89,7 @@ void test_memory_management_integration(void) {
     /* Test memory allocation and deallocation integration */
 
     /* Allocate memory */
-    int* test_array = malloc(10 * sizeof(int));
+    int *test_array = malloc(10 * sizeof(int));
     TEST_ASSERT_NOT_NULL(test_array);
 
     /* Initialize and use memory */

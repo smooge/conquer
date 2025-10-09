@@ -111,15 +111,20 @@ if(CLANG_FORMAT_EXECUTABLE)
     # ==================================================================
     # Target: format-fix-single
     # Apply formatting to a single file specified by FORMAT_FILE variable
-    # Usage: cmake --build build --target format-fix-single -- FORMAT_FILE=combat.c
+    # Usage: FORMAT_FILE=combat.c cmake --build build --target format-fix-single
     # ==================================================================
+    set(FORMAT_FILE "" CACHE STRING "Single file to format")
     add_custom_target(format-fix-single
-        COMMAND ${CMAKE_COMMAND} -E echo "Formatting single file: $ENV{FORMAT_FILE}"
-        COMMAND ${CLANG_FORMAT_EXECUTABLE}
-            -i
-            --style=file
-            ${CMAKE_SOURCE_DIR}/$ENV{FORMAT_FILE}
-        COMMAND ${CMAKE_COMMAND} -E echo "Formatting complete for $ENV{FORMAT_FILE}"
+        COMMAND ${CMAKE_COMMAND} -E echo "Formatting single file: ${FORMAT_FILE}"
+        COMMAND bash -c "if [ -n \"${FORMAT_FILE}\" ] && [ -f \"${CMAKE_SOURCE_DIR}/${FORMAT_FILE}\" ]; then \
+                cp \"${CMAKE_SOURCE_DIR}/${FORMAT_FILE}\" \"${CMAKE_SOURCE_DIR}/${FORMAT_FILE}.orig\"; \
+                ${CLANG_FORMAT_EXECUTABLE} -i --style=file \"${CMAKE_SOURCE_DIR}/${FORMAT_FILE}\"; \
+                echo \"Formatted ${FORMAT_FILE} (backup: ${FORMAT_FILE}.orig)\"; \
+            else \
+                echo \"ERROR: FORMAT_FILE not set or file not found: ${FORMAT_FILE}\"; \
+                echo \"Usage: FORMAT_FILE=combat.c cmake --build build --target format-fix-single\"; \
+                exit 1; \
+            fi"
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         COMMENT "Applying clang-format to single file"
         VERBATIM

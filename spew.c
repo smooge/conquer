@@ -98,7 +98,8 @@
  *
  * This file is part of Conquer.
  * Originally Copyright (C) 1988-1989 by Edward M. Barlow and Adam Bryant
- * Copyright (C) 2025 Juan Manuel Méndez Rey (Vejeta) - Licensed under GPL v3 with permission from original authors
+ * Copyright (C) 2025 Juan Manuel Méndez Rey (Vejeta) - Licensed under GPL v3 with permission
+ * from original authors
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -143,17 +144,17 @@
 
 /* Structure to hold a single definition within a class */
 struct definition {
-    int weight;                    /* cumulative weight for selection */
-    char *text;                   /* the actual text definition */
-    struct definition *next;      /* linked list pointer */
+    int weight; /* cumulative weight for selection */
+    char *text; /* the actual text definition */
+    struct definition *next; /* linked list pointer */
 };
 
 /* Structure to hold a class of definitions */
 struct text_class {
-    char *name;                   /* name of this class */
-    char *variants;               /* string of variant tags */
-    int total_weight;             /* total weight of all definitions */
-    struct definition *defs;      /* linked list of definitions */
+    char *name; /* name of this class */
+    char *variants; /* string of variant tags */
+    int total_weight; /* total weight of all definitions */
+    struct definition *defs; /* linked list of definitions */
 };
 
 /* Global variables */
@@ -251,10 +252,9 @@ static int compare_classes(const void *a, const void *b);
  *   Dependencies: Filesystem access, DEFAULTDIR/DEFFILE configuration, random generator
  *   Mock Requirements: Filesystem mocking, rules file fixtures, output stream capture
  *   Complexity: Moderate - File I/O and text processing with multiple error paths
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-void makemess(int count, FILE *output)
-{
+void makemess(int count, FILE *output) {
     char main_class[32];
     int i;
 
@@ -381,8 +381,7 @@ void makemess(int count, FILE *output)
  *   Mock Requirements: File system mocking, malloc failure injection, stderr capture
  *   Complexity: Complex - Multi-stage parsing with dynamic memory management
  */
-static int load_rules_file(const char *filename)
-{
+static int load_rules_file(const char *filename) {
     rules_file = fopen(filename, "r");
     if (!rules_file) {
         return -1;
@@ -397,8 +396,8 @@ static int load_rules_file(const char *filename)
 
     classes = calloc(MAX_CLASSES, sizeof(struct text_class));
     if (!classes) {
-        fprintf(stderr, "load_rules_file: calloc(%d, %zu) failed\n",
-                MAX_CLASSES, sizeof(struct text_class));
+        fprintf(stderr, "load_rules_file: calloc(%d, %zu) failed\n", MAX_CLASSES,
+                sizeof(struct text_class));
         fclose(rules_file);
         return -1;
     }
@@ -530,8 +529,7 @@ static int load_rules_file(const char *filename)
  *   Mock Requirements: malloc failure injection for duplicate_string()
  *   Complexity: Moderate - String parsing with multiple validation paths
  */
-static int parse_class_header(const char *line, struct text_class *cls)
-{
+static int parse_class_header(const char *line, struct text_class *cls) {
     static char temp_name[100];
     static char temp_variants[100];
     const char *p = line + 1; /* Skip the '%' */
@@ -547,7 +545,8 @@ static int parse_class_header(const char *line, struct text_class *cls)
     cls->defs = NULL;
 
     /* Skip whitespace */
-    while (*p == ' ') p++;
+    while (*p == ' ')
+        p++;
 
     /* Extract class name */
     if (!isalnum(*p)) {
@@ -578,7 +577,8 @@ static int parse_class_header(const char *line, struct text_class *cls)
                 p++;
             }
 
-            if (*p == '}') p++;
+            if (*p == '}')
+                p++;
             *var_ptr = '\0';
             cls->variants = duplicate_string(temp_variants);
             break;
@@ -678,11 +678,10 @@ static int parse_class_header(const char *line, struct text_class *cls)
  *   Approach: Unit tests with various definition formats and edge cases
  *   Key Tests: NULL parameter, weight parsing, escape sequences, memory allocation, text limits
  *   Dependencies: duplicate_string() function, malloc availability
- *   Mock Requirements: malloc failure injection, MAX_DEF_LEN boundary testing, NULL parameter handling
- *   Complexity: Moderate - Text processing with multiple parsing states
+ *   Mock Requirements: malloc failure injection, MAX_DEF_LEN boundary testing, NULL parameter
+ * handling Complexity: Moderate - Text processing with multiple parsing states
  */
-static struct definition *parse_definition(const char *line)
-{
+static struct definition *parse_definition(const char *line) {
     struct definition *def;
     const char *p;
     int weight = 1; /* default weight */
@@ -699,15 +698,15 @@ static struct definition *parse_definition(const char *line)
 
     def = malloc(sizeof(struct definition));
     if (!def) {
-        fprintf(stderr, "parse_definition: malloc(%zu) failed\n",
-                sizeof(struct definition));
+        fprintf(stderr, "parse_definition: malloc(%zu) failed\n", sizeof(struct definition));
         exit(EX_SOFTWARE);
     }
 
     /* Check for weight specification */
     if (*p == '(') {
         p++;
-        while (*p == ' ') p++;
+        while (*p == ' ')
+            p++;
 
         if (isdigit(*p)) {
             weight = 0;
@@ -717,8 +716,10 @@ static struct definition *parse_definition(const char *line)
             }
         }
 
-        while (*p == ' ') p++;
-        if (*p == ')') p++;
+        while (*p == ' ')
+            p++;
+        if (*p == ')')
+            p++;
     }
 
     /* Process the text, handling escape sequences */
@@ -853,8 +854,7 @@ static struct definition *parse_definition(const char *line)
  *   Mock Requirements: Test class arrays with known sort order
  *   Complexity: Simple - Standard binary search with string comparison
  */
-static struct text_class *find_class(const char *name, int name_len)
-{
+static struct text_class *find_class(const char *name, int name_len) {
     int low = 0, high = num_classes - 1;
 
     while (low <= high) {
@@ -985,8 +985,7 @@ static struct text_class *find_class(const char *name, int name_len)
  *   Mock Requirements: Controlled classes array, deterministic random values, output capture
  *   Complexity: Complex - Recursive engine with multiple processing modes
  */
-static void generate_text(const char *class_spec, char default_variant, FILE *output)
-{
+static void generate_text(const char *class_spec, char default_variant, FILE *output) {
     const char *slash_pos = strchr(class_spec, DELIMITER_CHAR);
     if (!slash_pos) {
         fprintf(output, "???%s???", class_spec);
@@ -1050,7 +1049,8 @@ static void generate_text(const char *class_spec, char default_variant, FILE *ou
                 /* Recursive class reference */
                 if (writing) {
                     const char *start = p - 1;
-                    while (*p != DELIMITER_CHAR && *p) p++;
+                    while (*p != DELIMITER_CHAR && *p)
+                        p++;
                     if (*p == DELIMITER_CHAR) {
                         p += 2; /* Skip delimiter and variant tag */
                         char temp_spec[64];
@@ -1063,8 +1063,10 @@ static void generate_text(const char *class_spec, char default_variant, FILE *ou
                     }
                 } else {
                     /* Skip over the reference */
-                    while (*p != DELIMITER_CHAR && *p) p++;
-                    if (*p == DELIMITER_CHAR) p += 2;
+                    while (*p != DELIMITER_CHAR && *p)
+                        p++;
+                    if (*p == DELIMITER_CHAR)
+                        p += 2;
                 }
             } else if (*p) {
                 if (writing) {
@@ -1214,8 +1216,7 @@ static void generate_text(const char *class_spec, char default_variant, FILE *ou
  *   Mock Requirements: File stream mocking, controlled input content
  *   Complexity: Moderate - String processing with multiple filtering stages
  */
-static int read_line(void)
-{
+static int read_line(void) {
     char *comment_pos;
 
     do {
@@ -1227,7 +1228,8 @@ static int read_line(void)
 
         /* Remove newline */
         char *newline = strrchr(input_line, '\n');
-        if (newline) *newline = '\0';
+        if (newline)
+            *newline = '\0';
 
         /* Remove comments (marked by \*) */
         comment_pos = strstr(input_line, "\\*");
@@ -1350,8 +1352,7 @@ static int read_line(void)
  *   Mock Requirements: Test text_class structures with known names
  *   Complexity: Simple - Standard string comparison wrapper
  */
-static int compare_classes(const void *a, const void *b)
-{
+static int compare_classes(const void *a, const void *b) {
     const struct text_class *cls_a = (const struct text_class *)a;
     const struct text_class *cls_b = (const struct text_class *)b;
     return strcmp(cls_a->name, cls_b->name);
@@ -1474,8 +1475,7 @@ static int compare_classes(const void *a, const void *b)
  *   Mock Requirements: malloc failure injection for error path testing
  *   Complexity: Simple - Standard string duplication with error handling
  */
-static char *duplicate_string(const char *str)
-{
+static char *duplicate_string(const char *str) {
     if (!str) {
         fprintf(stderr, "duplicate_string: NULL parameter\n");
         exit(EX_SOFTWARE);
@@ -1484,8 +1484,7 @@ static char *duplicate_string(const char *str)
     /* Validate string length is within reasonable bounds */
     size_t str_len = strlen(str);
     if (str_len > MAX_DEF_LEN) {
-        fprintf(stderr, "duplicate_string: String too long (%zu > %d)\n",
-                str_len, MAX_DEF_LEN);
+        fprintf(stderr, "duplicate_string: String too long (%zu > %d)\n", str_len, MAX_DEF_LEN);
         exit(EX_SOFTWARE);
     }
 
@@ -1498,8 +1497,7 @@ static char *duplicate_string(const char *str)
     int len = safe_size_to_int(str_len);
     char *copy = malloc(safe_int_to_size(len + 1));
     if (!copy) {
-        fprintf(stderr, "duplicate_string: malloc(%zu) failed\n",
-                safe_int_to_size(len + 1));
+        fprintf(stderr, "duplicate_string: malloc(%zu) failed\n", safe_int_to_size(len + 1));
         exit(EX_SOFTWARE);
     }
 
@@ -1630,9 +1628,9 @@ static char *duplicate_string(const char *str)
  *   Mock Requirements: Memory allocation tracking, leak detection integration
  *   Complexity: Moderate - Multi-level deallocation with ordering requirements
  */
-static void cleanup_memory(void)
-{
-    if (!classes) return;
+static void cleanup_memory(void) {
+    if (!classes)
+        return;
 
     for (int i = 0; i < num_classes; i++) {
         free(classes[i].name);
@@ -1688,10 +1686,9 @@ static void cleanup_memory(void)
  *   - Prevents link errors in non-SPEW builds
  * @last_documented: 2025-10-08
  */
-void makemess(int count, FILE *output)
-{
-    (void)count;   /* Suppress unused parameter warning */
-    (void)output;  /* Suppress unused parameter warning */
+void makemess(int count, FILE *output) {
+    (void)count; /* Suppress unused parameter warning */
+    (void)output; /* Suppress unused parameter warning */
     /* Do nothing if SPEW is disabled */
 }
 #endif /* SPEW */

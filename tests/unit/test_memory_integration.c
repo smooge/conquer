@@ -42,7 +42,8 @@
 #include "unity.h"
 
 /* Forward declarations for testable allocation functions */
-extern char **m2alloc_safe(int nrows, int ncols, int entrysize, char *error_msg, size_t error_msg_size);
+extern char **m2alloc_safe(int nrows, int ncols, int entrysize, char *error_msg,
+                           size_t error_msg_size);
 extern char **m2alloc(int nrows, int ncols, int entrysize);
 
 /* Test setup and teardown */
@@ -129,18 +130,18 @@ void test_memory_lifecycle_varying_sizes(void) {
         int cols;
         int entry_size;
     } sizes[] = {
-        {1, 1, sizeof(char)},       /* Minimum */
-        {10, 10, sizeof(int)},      /* Small */
-        {50, 50, sizeof(long)},     /* Medium */
+        {1, 1, sizeof(char)}, /* Minimum */
+        {10, 10, sizeof(int)}, /* Small */
+        {50, 50, sizeof(long)}, /* Medium */
         {100, 100, sizeof(double)}, /* Large */
-        {1, 1000, sizeof(int)},     /* Wide */
-        {1000, 1, sizeof(int)},     /* Tall */
+        {1, 1000, sizeof(int)}, /* Wide */
+        {1000, 1, sizeof(int)}, /* Tall */
     };
 
     for (size_t i = 0; i < sizeof(sizes) / sizeof(sizes[0]); i++) {
         error_msg[0] = '\0';
-        char **array = m2alloc_safe(sizes[i].rows, sizes[i].cols,
-                                    sizes[i].entry_size, error_msg, sizeof(error_msg));
+        char **array = m2alloc_safe(sizes[i].rows, sizes[i].cols, sizes[i].entry_size,
+                                    error_msg, sizeof(error_msg));
 
         TEST_ASSERT_NOT_NULL(array);
         TEST_ASSERT_EQUAL(0, strlen(error_msg));
@@ -360,22 +361,14 @@ void test_bounds_negative_parameters(void) {
     char error_msg[256];
 
     /* All negative combinations */
-    int params[][3] = {
-        {-1, 10, 4},
-        {10, -1, 4},
-        {10, 10, -4},
-        {-1, -1, 4},
-        {-1, 10, -4},
-        {10, -1, -4},
-        {-1, -1, -4},
-        {-100, -100, -100}
-    };
+    int params[][3] = {{-1, 10, 4},  {10, -1, 4},  {10, 10, -4}, {-1, -1, 4},
+                       {-1, 10, -4}, {10, -1, -4}, {-1, -1, -4}, {-100, -100, -100}};
 
     for (size_t i = 0; i < sizeof(params) / sizeof(params[0]); i++) {
         error_msg[0] = '\0';
         errno = 0;
-        char **result = m2alloc_safe(params[i][0], params[i][1], params[i][2],
-                                     error_msg, sizeof(error_msg));
+        char **result = m2alloc_safe(params[i][0], params[i][1], params[i][2], error_msg,
+                                     sizeof(error_msg));
 
         TEST_ASSERT_NULL(result);
         TEST_ASSERT_EQUAL(EINVAL, errno);
@@ -411,8 +404,8 @@ void test_bounds_extreme_allocations(void) {
 
     /* Extremely large allocation that should fail */
     error_msg[0] = '\0';
-    char **result = m2alloc_safe(INT_MAX / 100, INT_MAX / 100, sizeof(long),
-                                 error_msg, sizeof(error_msg));
+    char **result =
+        m2alloc_safe(INT_MAX / 100, INT_MAX / 100, sizeof(long), error_msg, sizeof(error_msg));
 
     TEST_ASSERT_NULL(result);
     /* Should fail with either EINVAL (overflow) or ENOMEM (malloc failure) */

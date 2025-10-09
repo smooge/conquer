@@ -3,7 +3,8 @@
  *
  * This file is part of Conquer.
  * Originally Copyright (C) 1988-1989 by Edward M. Barlow and Adam Bryant
- * Copyright (C) 2025 Juan Manuel Méndez Rey (Vejeta) - Licensed under GPL v3 with permission from original authors
+ * Copyright (C) 2025 Juan Manuel Méndez Rey (Vejeta) - Licensed under GPL v3 with permission
+ * from original authors
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -68,37 +69,34 @@
  *   Dependencies: P_NWSHP global variable, N_MASK and N_BITSIZE constants
  *   Mock Requirements: Global fleet state setup
  *   Complexity: Moderate - Bit manipulation requires careful boundary testing
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-int
-addwships(short nvynum, short shipsize, short nships)
-{
-	int hold=nships;
+int addwships(short nvynum, short shipsize, short nships) {
+    int hold = nships;
 
-	/* return FALSE if fails, TRUE otherwise */
+    /* return FALSE if fails, TRUE otherwise */
 
-	/* check for valid input */
-	if (nvynum<0 || nvynum>=MAXNAVY ||
-	shipsize<N_LIGHT || shipsize>N_HEAVY)
-		return(FALSE);
+    /* check for valid input */
+    if (nvynum < 0 || nvynum >= MAXNAVY || shipsize < N_LIGHT || shipsize > N_HEAVY)
+        return (FALSE);
 
-	hold += P_NWAR(shipsize);
-	if (hold > N_MASK) {
-		return(FALSE);
-	}
+    hold += P_NWAR(shipsize);
+    if (hold > N_MASK) {
+        return (FALSE);
+    }
 
-	/* place new value in proper place */
-	hold <<= (N_BITSIZE*shipsize);
+    /* place new value in proper place */
+    hold <<= (N_BITSIZE * shipsize);
 
-	/* set it in variable */
-	P_NWSHP |= safe_int_to_ushort(hold);
+    /* set it in variable */
+    P_NWSHP |= safe_int_to_ushort(hold);
 
-	/* form mask so other values won't be changed */
-	hold |= ~(N_MASK<<(N_BITSIZE*shipsize));
+    /* form mask so other values won't be changed */
+    hold |= ~(N_MASK << (N_BITSIZE * shipsize));
 
-	/* now change the variable */
-	P_NWSHP &= safe_int_to_ushort(hold);
-	return(TRUE);
+    /* now change the variable */
+    P_NWSHP &= safe_int_to_ushort(hold);
+    return (TRUE);
 }
 
 /*
@@ -141,37 +139,34 @@ addwships(short nvynum, short shipsize, short nships)
  *   Dependencies: P_NMSHP global variable, N_MASK and N_BITSIZE constants
  *   Mock Requirements: Global fleet state setup
  *   Complexity: Moderate - Bit manipulation requires careful boundary testing
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-int
-addmships (int nvynum, int shipsize, int nships)
-{
-	int hold=nships;
+int addmships(int nvynum, int shipsize, int nships) {
+    int hold = nships;
 
-	/* return FALSE if fails, TRUE otherwise */
+    /* return FALSE if fails, TRUE otherwise */
 
-	/* check for valid input */
-	if (nvynum<0 || nvynum>=MAXNAVY ||
-	shipsize<N_LIGHT || shipsize>N_HEAVY)
-		return(FALSE);
+    /* check for valid input */
+    if (nvynum < 0 || nvynum >= MAXNAVY || shipsize < N_LIGHT || shipsize > N_HEAVY)
+        return (FALSE);
 
-	hold += P_NMER(shipsize);
-	if (hold > N_MASK) {
-		return(FALSE);
-	}
+    hold += P_NMER(shipsize);
+    if (hold > N_MASK) {
+        return (FALSE);
+    }
 
-	/* place new value in proper place */
-	hold <<= (N_BITSIZE*shipsize);
+    /* place new value in proper place */
+    hold <<= (N_BITSIZE * shipsize);
 
-	/* set it in variable */
-	P_NMSHP |= safe_int_to_ushort(hold);
+    /* set it in variable */
+    P_NMSHP |= safe_int_to_ushort(hold);
 
-	/* form mask so other values won't be changed */
-	hold |= ~(N_MASK<<(N_BITSIZE*shipsize));
+    /* form mask so other values won't be changed */
+    hold |= ~(N_MASK << (N_BITSIZE * shipsize));
 
-	/* now change the variable */
-	P_NMSHP &= safe_int_to_ushort(hold);
-	return(TRUE);
+    /* now change the variable */
+    P_NMSHP &= safe_int_to_ushort(hold);
+    return (TRUE);
 }
 
 /*
@@ -215,37 +210,34 @@ addmships (int nvynum, int shipsize, int nships)
  *   Dependencies: P_NGSHP global variable, N_MASK and N_BITSIZE constants
  *   Mock Requirements: Global fleet state setup
  *   Complexity: Moderate - Bit manipulation requires careful boundary testing
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-int
-addgships (int nvynum, int shipsize, int nships)
-{
-	int hold=nships;
+int addgships(int nvynum, int shipsize, int nships) {
+    int hold = nships;
 
-	/* return FALSE if fails, TRUE otherwise */
+    /* return FALSE if fails, TRUE otherwise */
 
-	/* check for valid input */
-	if (nvynum<0 || nvynum>=MAXNAVY ||
-	shipsize<N_LIGHT || shipsize>N_HEAVY)
-		return(FALSE);
+    /* check for valid input */
+    if (nvynum < 0 || nvynum >= MAXNAVY || shipsize < N_LIGHT || shipsize > N_HEAVY)
+        return (FALSE);
 
-	hold += P_NGAL(shipsize);
-	if (hold > N_MASK) {
-		return(FALSE);
-	}
+    hold += P_NGAL(shipsize);
+    if (hold > N_MASK) {
+        return (FALSE);
+    }
 
-	/* place new value in proper place */
-	hold <<= (N_BITSIZE*shipsize);
+    /* place new value in proper place */
+    hold <<= (N_BITSIZE * shipsize);
 
-	/* set it in variable */
-	P_NGSHP |= safe_int_to_ushort(hold);
+    /* set it in variable */
+    P_NGSHP |= safe_int_to_ushort(hold);
 
-	/* form mask so other values won't be changed */
-	hold |= ~(N_MASK<<(N_BITSIZE*shipsize));
+    /* form mask so other values won't be changed */
+    hold |= ~(N_MASK << (N_BITSIZE * shipsize));
 
-	/* now change the variable */
-	P_NGSHP &= safe_int_to_ushort(hold);
-	return(TRUE);
+    /* now change the variable */
+    P_NGSHP &= safe_int_to_ushort(hold);
+    return (TRUE);
 }
 
 /*
@@ -289,36 +281,33 @@ addgships (int nvynum, int shipsize, int nships)
  *   Dependencies: P_NWSHP global variable, N_MASK and N_BITSIZE constants
  *   Mock Requirements: Global fleet state setup with existing ships
  *   Complexity: Moderate - Bit manipulation with underflow protection logic
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-void
-subwships (int nvynum, int shipsize, int nships)
-{
-	int hold;
+void subwships(int nvynum, int shipsize, int nships) {
+    int hold;
 
-	/* return FALSE if fails, TRUE otherwise */
+    /* return FALSE if fails, TRUE otherwise */
 
-	/* check for valid input */
-	if (nvynum<0 || nvynum>=MAXNAVY ||
-	shipsize<N_LIGHT || shipsize>N_HEAVY)
-		return;
+    /* check for valid input */
+    if (nvynum < 0 || nvynum >= MAXNAVY || shipsize < N_LIGHT || shipsize > N_HEAVY)
+        return;
 
-	hold = P_NWAR(shipsize) - nships;
-	if (hold < 0) {
-		return;
-	}
+    hold = P_NWAR(shipsize) - nships;
+    if (hold < 0) {
+        return;
+    }
 
-	/* place new value in proper place */
-	hold <<= (N_BITSIZE*shipsize);
+    /* place new value in proper place */
+    hold <<= (N_BITSIZE * shipsize);
 
-	/* set it in variable */
-	P_NWSHP |= safe_int_to_ushort(hold);
+    /* set it in variable */
+    P_NWSHP |= safe_int_to_ushort(hold);
 
-	/* form mask so other values won't be changed */
-	hold |= ~(N_MASK<<(N_BITSIZE*shipsize));
+    /* form mask so other values won't be changed */
+    hold |= ~(N_MASK << (N_BITSIZE * shipsize));
 
-	/* now change the variable */
-	P_NWSHP &= safe_int_to_ushort(hold);
+    /* now change the variable */
+    P_NWSHP &= safe_int_to_ushort(hold);
 }
 
 /*
@@ -363,35 +352,32 @@ subwships (int nvynum, int shipsize, int nships)
  *   Dependencies: P_NMSHP global variable, N_MASK and N_BITSIZE constants
  *   Mock Requirements: Global fleet state setup with existing merchant ships
  *   Complexity: Moderate - Bit manipulation with underflow protection logic
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-void
-submships (int nvynum, int shipsize, int nships)
-{
-	int hold;
+void submships(int nvynum, int shipsize, int nships) {
+    int hold;
 
-	/* return FALSE if fails, TRUE otherwise */
+    /* return FALSE if fails, TRUE otherwise */
 
-	/* check for valid input */
-	if (nvynum<0 || nvynum>=MAXNAVY ||
-	shipsize<N_LIGHT || shipsize>N_HEAVY)
-		return;
+    /* check for valid input */
+    if (nvynum < 0 || nvynum >= MAXNAVY || shipsize < N_LIGHT || shipsize > N_HEAVY)
+        return;
 
-	hold = P_NMER(shipsize) - nships;
-	if (hold < 0) {
-		return;
-	}
-	/* place new value in proper place */
-	hold <<= (N_BITSIZE*shipsize);
+    hold = P_NMER(shipsize) - nships;
+    if (hold < 0) {
+        return;
+    }
+    /* place new value in proper place */
+    hold <<= (N_BITSIZE * shipsize);
 
-	/* set it in variable */
-	P_NMSHP |= safe_int_to_ushort(hold);
+    /* set it in variable */
+    P_NMSHP |= safe_int_to_ushort(hold);
 
-	/* form mask so other values won't be changed */
-	hold |= ~(N_MASK<<(N_BITSIZE*shipsize));
+    /* form mask so other values won't be changed */
+    hold |= ~(N_MASK << (N_BITSIZE * shipsize));
 
-	/* now change the variable */
-	P_NMSHP &= safe_int_to_ushort(hold);
+    /* now change the variable */
+    P_NMSHP &= safe_int_to_ushort(hold);
 }
 
 /*
@@ -436,36 +422,33 @@ submships (int nvynum, int shipsize, int nships)
  *   Dependencies: P_NGSHP global variable, N_MASK and N_BITSIZE constants
  *   Mock Requirements: Global fleet state setup with existing galley ships
  *   Complexity: Moderate - Bit manipulation with underflow protection logic
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-void
-subgships (int nvynum, int shipsize, int nships)
-{
-	int hold;
+void subgships(int nvynum, int shipsize, int nships) {
+    int hold;
 
-	/* return FALSE if fails, TRUE otherwise */
+    /* return FALSE if fails, TRUE otherwise */
 
-	/* check for valid input */
-	if (nvynum<0 || nvynum>=MAXNAVY ||
-	shipsize<N_LIGHT || shipsize>N_HEAVY)
-		return;
+    /* check for valid input */
+    if (nvynum < 0 || nvynum >= MAXNAVY || shipsize < N_LIGHT || shipsize > N_HEAVY)
+        return;
 
-	hold = P_NGAL(shipsize) - nships;
-	if (hold < 0) {
-		return;
-	}
-	/* place new value in proper place */
-	hold <<= (N_BITSIZE*shipsize);
+    hold = P_NGAL(shipsize) - nships;
+    if (hold < 0) {
+        return;
+    }
+    /* place new value in proper place */
+    hold <<= (N_BITSIZE * shipsize);
 
-	/* set it in variable */
-	P_NGSHP |= safe_int_to_ushort(hold);
+    /* set it in variable */
+    P_NGSHP |= safe_int_to_ushort(hold);
 
-	/* form mask so other values won't be changed */
-	hold |= ~(N_MASK<<(N_BITSIZE*shipsize));
+    /* form mask so other values won't be changed */
+    hold |= ~(N_MASK << (N_BITSIZE * shipsize));
 
-	/* now change the variable */
-	P_NGSHP &= safe_int_to_ushort(hold);
-	return;
+    /* now change the variable */
+    P_NGSHP &= safe_int_to_ushort(hold);
+    return;
 }
 
 /*
@@ -508,22 +491,20 @@ subgships (int nvynum, int shipsize, int nships)
  *   Dependencies: P_NWAR/P_NMER/P_NGAL macros, curntn global variable
  *   Mock Requirements: Multi-nation setup with populated fleets
  *   Complexity: Simple - Mathematical accumulation with context management
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-int
-fltships (short nation, int nvynum)
-{
-	struct s_nation *savntn=curntn;
-	int i, hold=0;
+int fltships(short nation, int nvynum) {
+    struct s_nation *savntn = curntn;
+    int i, hold = 0;
 
-	curntn= &ntn[nation];
-	for(i=N_LIGHT;i<=N_HEAVY;i++) {
-		hold += (int) P_NWAR(i);
-		hold += (int) P_NMER(i);
-		hold += (int) P_NGAL(i);
-	}
-	curntn= savntn;
-	return(hold);
+    curntn = &ntn[nation];
+    for (i = N_LIGHT; i <= N_HEAVY; i++) {
+        hold += (int)P_NWAR(i);
+        hold += (int)P_NMER(i);
+        hold += (int)P_NGAL(i);
+    }
+    curntn = savntn;
+    return (hold);
 }
 
 #ifdef ADMIN
@@ -575,23 +556,25 @@ fltships (short nation, int nvynum)
  *   Mock Requirements: Fleet setup with various ship types and sizes
  *   Complexity: Simple - Mathematical minimum calculation with iteration
  */
-unsigned short
-fltspeed (int nvynum)
-{
-	int i,hold=99;
+unsigned short fltspeed(int nvynum) {
+    int i, hold = 99;
 
-	/* light ships faster than heavy ships */
-	for (i=N_LIGHT;i<=N_HEAVY && hold>N_WSPD;i++)
-		if (P_NWAR(i)>0) hold=N_WSPD+(2-i)*N_SIZESPD;
+    /* light ships faster than heavy ships */
+    for (i = N_LIGHT; i <= N_HEAVY && hold > N_WSPD; i++)
+        if (P_NWAR(i) > 0)
+            hold = N_WSPD + (2 - i) * N_SIZESPD;
 
-	for (i=N_LIGHT;i<=N_HEAVY && hold>N_MSPD;i++)
-		if (P_NMER(i)>0) hold=N_MSPD+(2-i)*N_SIZESPD;
+    for (i = N_LIGHT; i <= N_HEAVY && hold > N_MSPD; i++)
+        if (P_NMER(i) > 0)
+            hold = N_MSPD + (2 - i) * N_SIZESPD;
 
-	for (i=N_LIGHT;i<=N_HEAVY && hold>N_GSPD;i++)
-		if (P_NGAL(i)>0) hold=N_GSPD+(2-i)*N_SIZESPD;
+    for (i = N_LIGHT; i <= N_HEAVY && hold > N_GSPD; i++)
+        if (P_NGAL(i) > 0)
+            hold = N_GSPD + (2 - i) * N_SIZESPD;
 
-	if (hold==99) hold=N_NOSPD;
-	return(safe_int_to_ushort(hold));
+    if (hold == 99)
+        hold = N_NOSPD;
+    return (safe_int_to_ushort(hold));
 }
 #endif /* ADMIN */
 
@@ -643,21 +626,18 @@ fltspeed (int nvynum)
  *   Dependencies: P_NWAR/P_NMER/P_NGAL macros, ship size constants
  *   Mock Requirements: Fleet setup with various ship types and sizes
  *   Complexity: Simple - Mathematical accumulation with size-based multipliers
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-int
-flthold (int nvynum)
-{
-	int i,hold=0;
+int flthold(int nvynum) {
+    int i, hold = 0;
 
-	/* light ships faster than heavy ships */
-	for (i=N_LIGHT;i<=N_HEAVY;i++)
-	{
-		hold += (i+1) * (int)P_NWAR(i);
-		hold += (i+1) * (int)P_NMER(i);
-		hold += (i+1) * (int)P_NGAL(i);
-	}
-	return(hold);
+    /* light ships faster than heavy ships */
+    for (i = N_LIGHT; i <= N_HEAVY; i++) {
+        hold += (i + 1) * (int)P_NWAR(i);
+        hold += (i + 1) * (int)P_NMER(i);
+        hold += (i + 1) * (int)P_NGAL(i);
+    }
+    return (hold);
 }
 
 #ifdef ADMIN
@@ -709,18 +689,15 @@ flthold (int nvynum)
  *   Dependencies: P_NWAR macro, ship size constants
  *   Mock Requirements: Fleet setup with various warship types and sizes
  *   Complexity: Simple - Mathematical accumulation with size-based multipliers
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-int
-fltwhold (int nvynum)
-{
-	int i,hold=0;
+int fltwhold(int nvynum) {
+    int i, hold = 0;
 
-	for (i=N_LIGHT;i<=N_HEAVY;i++)
-	{
-		hold += (i+1) * (int)P_NWAR(i);
-	}
-	return(hold);
+    for (i = N_LIGHT; i <= N_HEAVY; i++) {
+        hold += (i + 1) * (int)P_NWAR(i);
+    }
+    return (hold);
 }
 #endif /* ADMIN */
 
@@ -772,18 +749,15 @@ fltwhold (int nvynum)
  *   Dependencies: P_NGAL macro, ship size constants
  *   Mock Requirements: Fleet setup with various galley types and sizes
  *   Complexity: Simple - Mathematical accumulation with size-based multipliers
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-int
-fltghold (int nvynum)
-{
-	int i,hold=0;
+int fltghold(int nvynum) {
+    int i, hold = 0;
 
-	for (i=N_LIGHT;i<=N_HEAVY;i++)
-	{
-		hold += (i+1) * (int)P_NGAL(i);
-	}
-	return(hold);
+    for (i = N_LIGHT; i <= N_HEAVY; i++) {
+        hold += (i + 1) * (int)P_NGAL(i);
+    }
+    return (hold);
 }
 
 /*
@@ -834,18 +808,15 @@ fltghold (int nvynum)
  *   Dependencies: P_NMER macro, ship size constants
  *   Mock Requirements: Fleet setup with various merchant types and sizes
  *   Complexity: Simple - Mathematical accumulation with size-based multipliers
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-int
-fltmhold (int nvynum)
-{
-	int i,hold=0;
+int fltmhold(int nvynum) {
+    int i, hold = 0;
 
-	for (i=N_LIGHT;i<=N_HEAVY;i++)
-	{
-		hold += (i+1) * (int)P_NMER(i);
-	}
-	return(hold);
+    for (i = N_LIGHT; i <= N_HEAVY; i++) {
+        hold += (i + 1) * (int)P_NMER(i);
+    }
+    return (hold);
 }
 
 #ifdef CONQUER
@@ -889,28 +860,26 @@ fltmhold (int nvynum)
  *   Mock Requirements: UI system setup and input simulation
  *   Complexity: Simple - Straightforward input handling with validation
  */
-static int
-get_cargo (char *str)
-{
-	int choice=(-1);
+static int get_cargo(char *str) {
+    int choice = (-1);
 
-	mvprintw(LINES-3,0,"%s (A)rmy or (P)eople?",str);
-	clrtoeol();
-	refresh();
-	switch(getch()) {
-	case 'a':
-	case 'A':
-	     choice=TRUE;
-	     break;
-	case 'p':
-	case 'P':
-	     choice=FALSE;
-	     break;
-	default:
-	     break;
-	}
+    mvprintw(LINES - 3, 0, "%s (A)rmy or (P)eople?", str);
+    clrtoeol();
+    refresh();
+    switch (getch()) {
+        case 'a':
+        case 'A':
+            choice = TRUE;
+            break;
+        case 'p':
+        case 'P':
+            choice = FALSE;
+            break;
+        default:
+            break;
+    }
 
-	return(choice);
+    return (choice);
 }
 
 /*
@@ -960,23 +929,21 @@ get_cargo (char *str)
  *   Dependencies: Army status constants (TRADED, GENERAL, etc.)
  *   Mock Requirements: Army status constant definitions
  *   Complexity: Simple - Switch statement with boolean logic
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-int
-loadstat (int status)
-{
-	switch(status) {
-	case TRADED:
-	case GENERAL:
-	case MILITIA:
-	case GARRISON:
-	case ONBOARD:
-		return(FALSE);
-		break;
-	default:
-		break;
-	}
-	return(TRUE);
+int loadstat(int status) {
+    switch (status) {
+        case TRADED:
+        case GENERAL:
+        case MILITIA:
+        case GARRISON:
+        case ONBOARD:
+            return (FALSE);
+            break;
+        default:
+            break;
+    }
+    return (TRUE);
 }
 
 /*
@@ -1060,198 +1027,197 @@ loadstat (int status)
  *   Dependencies: Global game state, sector system, army system, UI system
  *   Mock Requirements: Complete game state with fleets, armies, sectors, nations
  *   Complexity: Complex - Extensive branching logic with multiple subsystem interactions
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-void
-loadfleet (void)
-{
-	short nvynum;
-	/* merchant holding unused */
-	int ghold, mhold, unload, doarmy;
-	int gcargo, mcargo, amount, armynum;
+void loadfleet(void) {
+    short nvynum;
+    /* merchant holding unused */
+    int ghold, mhold, unload, doarmy;
+    int gcargo, mcargo, amount, armynum;
 
-	clear_bottom(0);
-	if((nvynum=safe_int_to_short(getselunit()-MAXARM))>=0){
-		if(nvynum>=MAXNAVY){
-			errormsg("Invalid Navy");
-			return;
-		}
-	} else {
-		errormsg("Invalid Navy");
-		return;
-	}
+    clear_bottom(0);
+    if ((nvynum = safe_int_to_short(getselunit() - MAXARM)) >= 0) {
+        if (nvynum >= MAXNAVY) {
+            errormsg("Invalid Navy");
+            return;
+        }
+    } else {
+        errormsg("Invalid Navy");
+        return;
+    }
 
-	if(sct[XREAL][YREAL].altitude==WATER) {
-		errormsg("Fleet must be landed");
-		return;
-	}
+    if (sct[XREAL][YREAL].altitude == WATER) {
+        errormsg("Fleet must be landed");
+        return;
+    }
 
-	/* process loading or unloading */
-	ghold = fltghold(nvynum);
-	mhold = fltmhold(nvynum);
-	if((ghold==0)&&(mhold == 0)) {
-		errormsg("No storage space available");
-		return;
-	} else if((P_NARMY==MAXARM)&&(P_NPEOP==0)) {
-		unload=FALSE;
-	} else {
-		mvprintw(LINES-4,0,"Cargo:   People %d",P_NPEOP*mhold);
-		if(P_NARMY==MAXARM) mvaddstr(LINES-4,25,"Army (none)");
-		else mvprintw(LINES-4,25,"Army (%d)",P_NARMY);
-		mvaddstr(LINES-3,0,"Do you wish to (L)oad or (U)nload?");
-		refresh();
-		switch(getch()) {
-		case 'l':
-		case 'L':
-		     unload=FALSE;
-		     break;
-		case 'u':
-		case 'U':
-		     unload=TRUE;
-		     break;
-		default:
-		     return;
-		}
-	}
+    /* process loading or unloading */
+    ghold = fltghold(nvynum);
+    mhold = fltmhold(nvynum);
+    if ((ghold == 0) && (mhold == 0)) {
+        errormsg("No storage space available");
+        return;
+    } else if ((P_NARMY == MAXARM) && (P_NPEOP == 0)) {
+        unload = FALSE;
+    } else {
+        mvprintw(LINES - 4, 0, "Cargo:   People %d", P_NPEOP * mhold);
+        if (P_NARMY == MAXARM)
+            mvaddstr(LINES - 4, 25, "Army (none)");
+        else
+            mvprintw(LINES - 4, 25, "Army (%d)", P_NARMY);
+        mvaddstr(LINES - 3, 0, "Do you wish to (L)oad or (U)nload?");
+        refresh();
+        switch (getch()) {
+            case 'l':
+            case 'L':
+                unload = FALSE;
+                break;
+            case 'u':
+            case 'U':
+                unload = TRUE;
+                break;
+            default:
+                return;
+        }
+    }
 
-	if(unload==TRUE) {
-		if(P_NARMY==MAXARM) doarmy=FALSE;
-		else if(P_NPEOP==0) doarmy=TRUE;
-		else {
-			doarmy=get_cargo("Unload");
-		}
-		if(doarmy==TRUE) {
-			armynum=P_NARMY;
-			if(sct[XREAL][YREAL].owner==0
-			&& P_ATYPE!=A_MARINES
-			&& P_ATYPE!=A_SAILOR) {
-				errormsg("Only sailors or marines may disembark in unowned land");
-				return;
-			} else if (sct[XREAL][YREAL].owner!=country
-			&& sct[XREAL][YREAL].owner!=0
-			&& P_ATYPE!=A_MARINES) {
-				errormsg("Only marines may disembark in someone else's land");
-				return;
-			}
-			P_ASTAT=DEFEND;
-			P_NARMY=MAXARM;
-			if (!((sct[XREAL][YREAL].designation==DCITY
-			|| sct[XREAL][YREAL].designation==DCAPITOL)
-			&& (sct[XREAL][YREAL].owner==country
-			|| (!(ntn[sct[XREAL][YREAL].owner].dstatus[country]!=UNMET)
-			&& ntn[sct[XREAL][YREAL].owner].dstatus[country]<=NEUTRAL)))
-			|| P_NMOVE < N_CITYCOST) {
-				P_NMOVE=0;
-			} else {
-				P_NMOVE-= N_CITYCOST;
-			}
-			NADJMOV;
-			NADJHLD;
-			AADJSTAT;
-		} else if(doarmy==FALSE){
-			if (sct[XREAL][YREAL].owner!=country) {
-				mvaddstr(LINES-3,0,"Unload in a sector you don't own? (y or n)");
-				clrtoeol();
-				refresh();
-				if (getch()!='y') {
-					return;
-				}
-			}
-			mvaddstr(LINES-2,0,"Unload how many people?");
-			refresh();
-			amount=safe_long_to_int(get_number());
-			if(amount > mhold*P_NPEOP) {
-				errormsg("There are not that many on board");
-			} else if (amount > 0) {
-				sct[XREAL][YREAL].people += amount;
-				P_NPEOP=(unsigned char)((mhold*P_NPEOP-amount)/mhold);
-				NADJHLD;
-				if ((sct[XREAL][YREAL].designation!=DCITY
-				&& sct[XREAL][YREAL].designation!=DCAPITOL)
-				|| P_NMOVE < N_CITYCOST) {
-					P_NMOVE=0;
-				} else {
-					P_NMOVE-= N_CITYCOST;
-				}
-				NADJMOV;
-				SADJCIV;
-			}
-		}
-	} else {
-		clear_bottom(0);
-		mcargo = safe_long_to_int(mhold*(SHIPHOLD-P_NPEOP));
-		if(P_NARMY==MAXARM) {
-			gcargo = ghold*SHIPHOLD;
-			mvprintw(LINES-4,0,"Available Space:  %d soldiers  %d people", gcargo, mcargo);
-		} else {
-			gcargo = 0;
-			mvprintw(LINES-4,0,"Available Space:  0 soldiers  %d people", mcargo);
-		}
-		if(gcargo==0) doarmy=FALSE;
-		else if(mcargo==0) doarmy=TRUE;
-		else {
-			doarmy=get_cargo("Load");
-		}
-		if(doarmy==TRUE) {
-			mvaddstr(LINES-2,0,"Load what army?");
-			refresh();
-			armynum = safe_long_to_int(get_number());
-			if(armynum<0) {
-				// do nothing
-			} else if((armynum>=MAXARM)||(P_ASOLD<=0)
-			||(loadstat(P_ASTAT)==FALSE)) {
-				errormsg("Invalid Army");
-			} else if((P_AXLOC!=XREAL)||(P_AYLOC!=YREAL)) {
-				errormsg("Army not in sector");
-			} else if(P_ASOLD > gcargo &&
-			(P_ATYPE<MINLEADER || P_ATYPE>=MINMONSTER)) {
-				errormsg("Army too large for fleet");
-			} else {
-				P_ASTAT=ONBOARD;
-				P_AMOVE=0;
-				P_NARMY=safe_int_to_uchar(armynum);
-				if (!((sct[XREAL][YREAL].designation==DCITY
-				|| sct[XREAL][YREAL].designation==DCAPITOL)
-				&& (sct[XREAL][YREAL].owner==country
-				|| (!(ntn[sct[XREAL][YREAL].owner].dstatus[country]!=UNMET)
-				&& ntn[sct[XREAL][YREAL].owner].dstatus[country]<=NEUTRAL)))
-				|| P_NMOVE < N_CITYCOST) {
-					P_NMOVE=0;
-				} else {
-					P_NMOVE-= N_CITYCOST;
-				}
-				NADJMOV;
-				NADJHLD;
-				AADJMOV;
-				AADJSTAT;
-			}
-		} else if(doarmy==FALSE && mcargo!=0){
-			mvaddstr(LINES-2,0,"Load how many people?");
-			refresh();
-			amount=safe_long_to_int(get_number());
-			if(sct[XREAL][YREAL].owner!=country) {
-				errormsg("The people refuse to board");
-			} else if(amount > mcargo) {
-				errormsg("Not enough room on fleet");
-			} else if(sct[XREAL][YREAL].people < amount) {
-				errormsg("Not enough people in sector");
-			} else if (amount > 0) {
-				sct[XREAL][YREAL].people -= amount;
-				P_NPEOP += (unsigned char)(amount / mhold);
-				SADJCIV;
-				if ((sct[XREAL][YREAL].designation!=DCITY
-				&& sct[XREAL][YREAL].designation!=DCAPITOL)
-				|| P_NMOVE < N_CITYCOST) {
-					P_NMOVE=0;
-				} else {
-					P_NMOVE-= N_CITYCOST;
-				}
-				NADJMOV;
-				NADJHLD;
-			}
-		} else if (mcargo==0) {
-			errormsg("No more room onboard fleet");
-		}
-	}
+    if (unload == TRUE) {
+        if (P_NARMY == MAXARM)
+            doarmy = FALSE;
+        else if (P_NPEOP == 0)
+            doarmy = TRUE;
+        else {
+            doarmy = get_cargo("Unload");
+        }
+        if (doarmy == TRUE) {
+            armynum = P_NARMY;
+            if (sct[XREAL][YREAL].owner == 0 && P_ATYPE != A_MARINES && P_ATYPE != A_SAILOR) {
+                errormsg("Only sailors or marines may disembark in unowned land");
+                return;
+            } else if (sct[XREAL][YREAL].owner != country && sct[XREAL][YREAL].owner != 0
+                       && P_ATYPE != A_MARINES) {
+                errormsg("Only marines may disembark in someone else's land");
+                return;
+            }
+            P_ASTAT = DEFEND;
+            P_NARMY = MAXARM;
+            if (!((sct[XREAL][YREAL].designation == DCITY
+                   || sct[XREAL][YREAL].designation == DCAPITOL)
+                  && (sct[XREAL][YREAL].owner == country
+                      || (!(ntn[sct[XREAL][YREAL].owner].dstatus[country] != UNMET)
+                          && ntn[sct[XREAL][YREAL].owner].dstatus[country] <= NEUTRAL)))
+                || P_NMOVE < N_CITYCOST) {
+                P_NMOVE = 0;
+            } else {
+                P_NMOVE -= N_CITYCOST;
+            }
+            NADJMOV;
+            NADJHLD;
+            AADJSTAT;
+        } else if (doarmy == FALSE) {
+            if (sct[XREAL][YREAL].owner != country) {
+                mvaddstr(LINES - 3, 0, "Unload in a sector you don't own? (y or n)");
+                clrtoeol();
+                refresh();
+                if (getch() != 'y') {
+                    return;
+                }
+            }
+            mvaddstr(LINES - 2, 0, "Unload how many people?");
+            refresh();
+            amount = safe_long_to_int(get_number());
+            if (amount > mhold * P_NPEOP) {
+                errormsg("There are not that many on board");
+            } else if (amount > 0) {
+                sct[XREAL][YREAL].people += amount;
+                P_NPEOP = (unsigned char)((mhold * P_NPEOP - amount) / mhold);
+                NADJHLD;
+                if ((sct[XREAL][YREAL].designation != DCITY
+                     && sct[XREAL][YREAL].designation != DCAPITOL)
+                    || P_NMOVE < N_CITYCOST) {
+                    P_NMOVE = 0;
+                } else {
+                    P_NMOVE -= N_CITYCOST;
+                }
+                NADJMOV;
+                SADJCIV;
+            }
+        }
+    } else {
+        clear_bottom(0);
+        mcargo = safe_long_to_int(mhold * (SHIPHOLD - P_NPEOP));
+        if (P_NARMY == MAXARM) {
+            gcargo = ghold * SHIPHOLD;
+            mvprintw(LINES - 4, 0, "Available Space:  %d soldiers  %d people", gcargo, mcargo);
+        } else {
+            gcargo = 0;
+            mvprintw(LINES - 4, 0, "Available Space:  0 soldiers  %d people", mcargo);
+        }
+        if (gcargo == 0)
+            doarmy = FALSE;
+        else if (mcargo == 0)
+            doarmy = TRUE;
+        else {
+            doarmy = get_cargo("Load");
+        }
+        if (doarmy == TRUE) {
+            mvaddstr(LINES - 2, 0, "Load what army?");
+            refresh();
+            armynum = safe_long_to_int(get_number());
+            if (armynum < 0) {
+                // do nothing
+            } else if ((armynum >= MAXARM) || (P_ASOLD <= 0) || (loadstat(P_ASTAT) == FALSE)) {
+                errormsg("Invalid Army");
+            } else if ((P_AXLOC != XREAL) || (P_AYLOC != YREAL)) {
+                errormsg("Army not in sector");
+            } else if (P_ASOLD > gcargo && (P_ATYPE < MINLEADER || P_ATYPE >= MINMONSTER)) {
+                errormsg("Army too large for fleet");
+            } else {
+                P_ASTAT = ONBOARD;
+                P_AMOVE = 0;
+                P_NARMY = safe_int_to_uchar(armynum);
+                if (!((sct[XREAL][YREAL].designation == DCITY
+                       || sct[XREAL][YREAL].designation == DCAPITOL)
+                      && (sct[XREAL][YREAL].owner == country
+                          || (!(ntn[sct[XREAL][YREAL].owner].dstatus[country] != UNMET)
+                              && ntn[sct[XREAL][YREAL].owner].dstatus[country] <= NEUTRAL)))
+                    || P_NMOVE < N_CITYCOST) {
+                    P_NMOVE = 0;
+                } else {
+                    P_NMOVE -= N_CITYCOST;
+                }
+                NADJMOV;
+                NADJHLD;
+                AADJMOV;
+                AADJSTAT;
+            }
+        } else if (doarmy == FALSE && mcargo != 0) {
+            mvaddstr(LINES - 2, 0, "Load how many people?");
+            refresh();
+            amount = safe_long_to_int(get_number());
+            if (sct[XREAL][YREAL].owner != country) {
+                errormsg("The people refuse to board");
+            } else if (amount > mcargo) {
+                errormsg("Not enough room on fleet");
+            } else if (sct[XREAL][YREAL].people < amount) {
+                errormsg("Not enough people in sector");
+            } else if (amount > 0) {
+                sct[XREAL][YREAL].people -= amount;
+                P_NPEOP += (unsigned char)(amount / mhold);
+                SADJCIV;
+                if ((sct[XREAL][YREAL].designation != DCITY
+                     && sct[XREAL][YREAL].designation != DCAPITOL)
+                    || P_NMOVE < N_CITYCOST) {
+                    P_NMOVE = 0;
+                } else {
+                    P_NMOVE -= N_CITYCOST;
+                }
+                NADJMOV;
+                NADJHLD;
+            }
+        } else if (mcargo == 0) {
+            errormsg("No more room onboard fleet");
+        }
+    }
 }
 #endif /* CONQUER */
