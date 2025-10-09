@@ -14,6 +14,11 @@
 
 **Objective**: Audit and fix all ambiguous `char` declarations to eliminate platform-dependent behavior
 
+**Philosophy**: Fix declarations at the source, not with conversion functions
+- **Primary Goal**: Change `char` → `unsigned char` or `signed char` based on semantic intent
+- **Secondary Goal**: Eliminate most `(unsigned char)` casts by fixing root declarations
+- **Phase 10.2 Note**: Safe conversion functions (explicit types only) for edge cases after declarations fixed
+
 **Scope**:
 - Audit all `char` variable declarations, parameters, and struct members
 - Classify by semantic intent (text vs integer)
@@ -30,6 +35,11 @@
 - **34 `(unsigned char)` casts** indicate serious portability issues
 - Array indexing with negative char = UNDEFINED BEHAVIOR
 - ctype.h functions with negative char = UNDEFINED BEHAVIOR
+
+**Architectural Approach**:
+- **NO** `safe_char_to_uchar(char value)` - perpetuates ambiguity!
+- **YES** Fix declarations: `char veg[]` → `unsigned char veg[]`
+- **YES** Explicit conversions (Phase 10.2): `safe_schar_to_uchar(signed char)`, `safe_int_to_uchar(int)`
 
 ---
 
@@ -350,7 +360,7 @@ curntn->poverty = (unsigned char)(95L - curntn->tgold/curntn->tciv);
 // BEFORE (DANGEROUS)
 curntn->poverty = (unsigned char)(95L - curntn->tgold/curntn->tciv);
 
-// AFTER (SAFE)
+// AFTER - OPTION A (Explicit bounds checking):
 long poverty_calc = 95L - curntn->tgold/curntn->tciv;
 if (poverty_calc < 0) {
     curntn->poverty = 0;
@@ -360,9 +370,11 @@ if (poverty_calc < 0) {
     curntn->poverty = (unsigned char)poverty_calc;
 }
 
-// OR (if safe_convert.h already has safe_long_to_uchar):
-long poverty_calc = 95L - curntn->tgold/curntn->tciv;
-curntn->poverty = safe_long_to_uchar(poverty_calc);
+// AFTER - OPTION B (Use safe_long_to_uchar from Phase 10.2):
+// NOTE: This function will be added in Phase 10.2 with explicit types
+// long poverty_calc = 95L - curntn->tgold/curntn->tciv;
+// curntn->poverty = safe_long_to_uchar(poverty_calc);
+// For Phase 10.1, use Option A (explicit bounds checking)
 ```
 
 - [ ] **5.1.5** Change declaration if needed (ensure unsigned char)
@@ -531,7 +543,56 @@ _modernization/scripts/test_char_signed.sh -w 9 -x c2x
 ```
 
 - [ ] **7.1.2** Add examples from actual codebase fixes
-- [ ] **7.1.3** Document safe conversion patterns
+- [ ] **7.1.3** Document Phase 10.2 safe conversion functions (explicit types only):
+
+```markdown
+## Safe Conversion Functions (Phase 10.2)
+
+After Phase 10.1 fixes most declarations, Phase 10.2 will add explicit type conversions for edge cases:
+
+### Explicit Type Conversions ONLY
+
+```c
+// Convert signed char to unsigned char (when you have explicit signed, need unsigned)
+unsigned char safe_schar_to_uchar(signed char value);
+
+// Convert unsigned char to signed char (when you have explicit unsigned, need signed)
+signed char safe_uchar_to_schar(unsigned char value);
+
+// Convert int to unsigned char with range checking (for calculation results)
+unsigned char safe_int_to_uchar(int value);
+
+// Convert long to unsigned char with range checking (for calculation results)
+unsigned char safe_long_to_uchar(long value);
+```
+
+### ❌ NO safe_char_to_uchar(char value)
+
+We deliberately DO NOT provide `safe_char_to_uchar(char value)` because:
+- It perpetuates the `char` ambiguity we're trying to eliminate
+- Forces developers to use explicit types (`signed char` or `unsigned char`)
+- Makes code self-documenting about intent
+- Prevents hiding platform-dependent behavior behind a "safe" function
+
+### When to Use Safe Conversions
+
+Only use safe conversion functions when you have **legitimate type mismatches**:
+
+```c
+// Good: Converting calculation result to bounded unsigned char
+long calculation = some_formula();
+unsigned char result = safe_long_to_uchar(calculation);
+
+// Good: Converting signed delta to unsigned index
+signed char delta = calculate_change();
+unsigned char index = safe_schar_to_uchar(delta);  // Negative → 0
+
+// Bad: Using char (ambiguous type) - FIX THE DECLARATION INSTEAD!
+// char value;
+// unsigned char result = safe_char_to_uchar(value);  // NO! Fix 'char value' declaration
+```
+```
+
 - [ ] **7.1.4** Link to Issue #10 for historical context
 
 **Deliverable**: `CHAR_TYPE_GUIDELINES.md`
@@ -663,8 +724,84 @@ array[index] = data;  // Safe on both platforms ✅
 
 ---
 
-**Document Version**: 1.0
+## Phase 10.1 vs Phase 10.2: Clear Distinction
+
+### Phase 10.1: FIX DECLARATIONS (This Phase)
+
+**Goal**: Eliminate ambiguous `char` types by using explicit declarations
+
+**Approach**:
+```c
+// BEFORE (ambiguous)
+char veg[10];
+char index;
+char *str;
+veg_cost[(unsigned char)veg[j]] = value;  // Workaround with cast
+
+// AFTER Phase 10.1 (explicit types)
+unsigned char veg[10];      // Array of small unsigned ints (0-255)
+unsigned char index;        // Array index (must be non-negative)
+char *str;                  // Keep as char (text string)
+veg_cost[veg[j]] = value;   // No cast needed! ✅
+```
+
+**What We Do**:
+- Audit all `char` declarations
+- Change to `unsigned char` (for indices, counts, 0-255 range)
+- Change to `signed char` (for deltas, -128 to 127 range)
+- Keep as `char` (for text strings only)
+- Remove most `(unsigned char)` casts (now unnecessary)
+
+**What We DON'T Do**:
+- ❌ Add `safe_char_to_uchar(char)` function (perpetuates ambiguity)
+- ❌ Add any safe conversion functions (that's Phase 10.2)
+- ❌ Use conversion functions as workaround (fix root cause instead)
+
+### Phase 10.2: EXPLICIT CONVERSIONS (Next Phase)
+
+**Goal**: Add safe conversion functions for legitimate type mismatches (EXPLICIT TYPES ONLY)
+
+**Functions to Add** (all use explicit types):
+```c
+unsigned char safe_schar_to_uchar(signed char value);   // ✅ Explicit signed → unsigned
+signed char safe_uchar_to_schar(unsigned char value);   // ✅ Explicit unsigned → signed
+unsigned char safe_int_to_uchar(int value);             // ✅ Int calculation → unsigned char
+unsigned char safe_long_to_uchar(long value);           // ✅ Long calculation → unsigned char
+```
+
+**Functions We WON'T Add**:
+```c
+unsigned char safe_char_to_uchar(char value);  // ❌ NO! Ambiguous input type
+```
+
+**When Used**:
+- After Phase 10.1 fixes most declarations
+- Only for edge cases with legitimate type mismatches
+- Primarily for calculation results needing range clamping
+- Example: `safe_long_to_uchar(95L - gold/civ)` in update.c
+
+**Why Explicit Types Only**:
+- Forces developers to know if they have signed or unsigned
+- Self-documenting code (function name reveals source type)
+- Prevents hiding platform-dependent behavior
+- Architectural cleanliness (no ambiguous types anywhere)
+
+### Summary
+
+**Phase 10.1**: Fix the root cause (ambiguous declarations) → Eliminate most casts
+**Phase 10.2**: Add explicit conversions for edge cases → Only for legitimate mismatches
+
+**Analogy**:
+- Phase 10.1 = Fix the leaky roof (stop water at source)
+- Phase 10.2 = Add gutters (handle legitimate water flow)
+- NOT doing = Add buckets everywhere (hide the leak)
+
+---
+
+**Document Version**: 1.1
 **Created**: 2025-10-09
+**Updated**: 2025-10-09 (explicit type conversion approach)
 **Status**: Ready for Execution
 **Next Step**: Create `test_char_signed.sh` script (Task 1.1)
 **Critical Path**: Tasks 1 → 2 → 3 → 4 (must complete for x86_64 compatibility)
+**Architectural Principle**: Fix declarations, not symptoms. Use explicit types everywhere.
