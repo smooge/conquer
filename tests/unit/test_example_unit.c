@@ -37,8 +37,8 @@ void test_unity_basic_assertions(void) {
 
 void test_unity_string_assertions(void) {
     /* Test string comparison capabilities */
-    const char* expected = "Hello, World!";
-    const char* actual = "Hello, World!";
+    const char *expected = "Hello, World!";
+    const char *actual = "Hello, World!";
 
     TEST_ASSERT_EQUAL_STRING(expected, actual);
     TEST_ASSERT_EQUAL_STRING_LEN("Hello", "Hello, Unity!", 5);
@@ -64,8 +64,8 @@ void test_unity_float_assertions(void) {
 void test_unity_pointer_assertions(void) {
     /* Test pointer assertion capabilities */
     int value = 42;
-    int* valid_ptr = &value;
-    int* null_ptr = NULL;
+    int *valid_ptr = &value;
+    int *null_ptr = NULL;
 
     TEST_ASSERT_NOT_NULL(valid_ptr);
     TEST_ASSERT_NULL(null_ptr);
@@ -90,14 +90,14 @@ void test_simple_function(void) {
  * Test project configuration accessibility
  */
 void test_config_header_access(void) {
-    /* Verify that config.h is accessible from tests */
-    #ifdef PATCHLEVEL
-        /* If PATCHLEVEL is defined, we have config.h access */
-        TEST_ASSERT_TRUE(1);
-    #else
-        /* This should not happen if CMake integration is correct */
-        TEST_FAIL_MESSAGE("config.h not accessible from test");
-    #endif
+/* Verify that config.h is accessible from tests */
+#ifdef PATCHLEVEL
+    /* If PATCHLEVEL is defined, we have config.h access */
+    TEST_ASSERT_TRUE(1);
+#else
+    /* This should not happen if CMake integration is correct */
+    TEST_FAIL_MESSAGE("config.h not accessible from test");
+#endif
 }
 
 /*

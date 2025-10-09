@@ -17,7 +17,8 @@
 #include "unity.h"
 
 /* Forward declarations for m2alloc functions */
-extern char **m2alloc_safe(int nrows, int ncols, int entrysize, char *error_msg, size_t error_msg_size);
+extern char **m2alloc_safe(int nrows, int ncols, int entrysize, char *error_msg,
+                           size_t error_msg_size);
 extern char **m2alloc(int nrows, int ncols, int entrysize);
 
 /* Test setup and teardown */
@@ -36,8 +37,7 @@ void tearDown(void) {
 
 void test_m2alloc_safe_negative_rows(void) {
     char error_msg[256] = {0};
-    char **result = m2alloc_safe(-5, 10, sizeof(int),
-                                  error_msg, sizeof(error_msg));
+    char **result = m2alloc_safe(-5, 10, sizeof(int), error_msg, sizeof(error_msg));
 
     TEST_ASSERT_NULL(result);
     TEST_ASSERT_EQUAL(EINVAL, errno);
@@ -47,8 +47,7 @@ void test_m2alloc_safe_negative_rows(void) {
 
 void test_m2alloc_safe_negative_cols(void) {
     char error_msg[256] = {0};
-    char **result = m2alloc_safe(10, -5, sizeof(int),
-                                  error_msg, sizeof(error_msg));
+    char **result = m2alloc_safe(10, -5, sizeof(int), error_msg, sizeof(error_msg));
 
     TEST_ASSERT_NULL(result);
     TEST_ASSERT_EQUAL(EINVAL, errno);
@@ -57,8 +56,7 @@ void test_m2alloc_safe_negative_cols(void) {
 
 void test_m2alloc_safe_negative_entrysize(void) {
     char error_msg[256] = {0};
-    char **result = m2alloc_safe(10, 10, -4,
-                                  error_msg, sizeof(error_msg));
+    char **result = m2alloc_safe(10, 10, -4, error_msg, sizeof(error_msg));
 
     TEST_ASSERT_NULL(result);
     TEST_ASSERT_EQUAL(EINVAL, errno);
@@ -67,8 +65,7 @@ void test_m2alloc_safe_negative_entrysize(void) {
 
 void test_m2alloc_safe_zero_rows(void) {
     char error_msg[256] = {0};
-    char **result = m2alloc_safe(0, 10, sizeof(int),
-                                  error_msg, sizeof(error_msg));
+    char **result = m2alloc_safe(0, 10, sizeof(int), error_msg, sizeof(error_msg));
 
     TEST_ASSERT_NULL(result);
     TEST_ASSERT_EQUAL(EINVAL, errno);
@@ -77,8 +74,7 @@ void test_m2alloc_safe_zero_rows(void) {
 
 void test_m2alloc_safe_zero_cols(void) {
     char error_msg[256] = {0};
-    char **result = m2alloc_safe(10, 0, sizeof(int),
-                                  error_msg, sizeof(error_msg));
+    char **result = m2alloc_safe(10, 0, sizeof(int), error_msg, sizeof(error_msg));
 
     TEST_ASSERT_NULL(result);
     TEST_ASSERT_EQUAL(EINVAL, errno);
@@ -86,8 +82,7 @@ void test_m2alloc_safe_zero_cols(void) {
 
 void test_m2alloc_safe_zero_entrysize(void) {
     char error_msg[256] = {0};
-    char **result = m2alloc_safe(10, 10, 0,
-                                  error_msg, sizeof(error_msg));
+    char **result = m2alloc_safe(10, 10, 0, error_msg, sizeof(error_msg));
 
     TEST_ASSERT_NULL(result);
     TEST_ASSERT_EQUAL(EINVAL, errno);
@@ -105,13 +100,12 @@ void test_m2alloc_safe_overflow_ncols_times_entrysize(void) {
      * because INT_MAX * INT_MAX < SIZE_MAX on 64-bit
      * This tests that huge allocations fail safely
      */
-    char **result = m2alloc_safe(2, INT_MAX, INT_MAX / 2,
-                                  error_msg, sizeof(error_msg));
+    char **result = m2alloc_safe(2, INT_MAX, INT_MAX / 2, error_msg, sizeof(error_msg));
 
     TEST_ASSERT_NULL(result);
     /* Accept either EINVAL (overflow) or ENOMEM (malloc failure) */
     TEST_ASSERT_TRUE(errno == EINVAL || errno == ENOMEM);
-    TEST_ASSERT_NOT_EQUAL(0, error_msg[0]);  /* Error message should be set */
+    TEST_ASSERT_NOT_EQUAL(0, error_msg[0]); /* Error message should be set */
 }
 
 void test_m2alloc_safe_overflow_nrows_times_row_data_size(void) {
@@ -121,13 +115,13 @@ void test_m2alloc_safe_overflow_nrows_times_row_data_size(void) {
      * On 64-bit systems with int params, may get ENOMEM instead of EINVAL
      * This tests that huge allocations fail safely
      */
-    char **result = m2alloc_safe(INT_MAX / 100, INT_MAX / 100, sizeof(long),
-                                  error_msg, sizeof(error_msg));
+    char **result =
+        m2alloc_safe(INT_MAX / 100, INT_MAX / 100, sizeof(long), error_msg, sizeof(error_msg));
 
     TEST_ASSERT_NULL(result);
     /* Accept either EINVAL (overflow) or ENOMEM (malloc failure) */
     TEST_ASSERT_TRUE(errno == EINVAL || errno == ENOMEM);
-    TEST_ASSERT_NOT_EQUAL(0, error_msg[0]);  /* Error message should be set */
+    TEST_ASSERT_NOT_EQUAL(0, error_msg[0]); /* Error message should be set */
 }
 
 void test_m2alloc_safe_overflow_total_size(void) {
@@ -137,13 +131,13 @@ void test_m2alloc_safe_overflow_total_size(void) {
      * On 64-bit systems with int params, may get ENOMEM instead of EINVAL
      * This tests that huge allocations fail safely
      */
-    char **result = m2alloc_safe(INT_MAX / 10, INT_MAX / 10, sizeof(long),
-                                  error_msg, sizeof(error_msg));
+    char **result =
+        m2alloc_safe(INT_MAX / 10, INT_MAX / 10, sizeof(long), error_msg, sizeof(error_msg));
 
     TEST_ASSERT_NULL(result);
     /* Accept either EINVAL (overflow) or ENOMEM (malloc failure) */
     TEST_ASSERT_TRUE(errno == EINVAL || errno == ENOMEM);
-    TEST_ASSERT_NOT_EQUAL(0, error_msg[0]);  /* Error message should be set */
+    TEST_ASSERT_NOT_EQUAL(0, error_msg[0]); /* Error message should be set */
 }
 
 /*
@@ -163,9 +157,8 @@ void test_m2alloc_safe_null_error_msg_buffer(void) {
 }
 
 void test_m2alloc_safe_small_error_msg_buffer(void) {
-    char error_msg[10];  /* Very small buffer */
-    char **result = m2alloc_safe(-5, 10, sizeof(int),
-                                  error_msg, sizeof(error_msg));
+    char error_msg[10]; /* Very small buffer */
+    char **result = m2alloc_safe(-5, 10, sizeof(int), error_msg, sizeof(error_msg));
 
     TEST_ASSERT_NULL(result);
     TEST_ASSERT_EQUAL(EINVAL, errno);
@@ -179,11 +172,10 @@ void test_m2alloc_safe_small_error_msg_buffer(void) {
 
 void test_m2alloc_safe_small_array_int(void) {
     char error_msg[256] = {0};
-    char **result = m2alloc_safe(10, 10, sizeof(int),
-                                  error_msg, sizeof(error_msg));
+    char **result = m2alloc_safe(10, 10, sizeof(int), error_msg, sizeof(error_msg));
 
     TEST_ASSERT_NOT_NULL(result);
-    TEST_ASSERT_EQUAL(0, strlen(error_msg));  /* No error message */
+    TEST_ASSERT_EQUAL(0, strlen(error_msg)); /* No error message */
 
     /* Verify we can access the array */
     int **arr = (int **)result;
@@ -197,8 +189,7 @@ void test_m2alloc_safe_small_array_int(void) {
 
 void test_m2alloc_safe_small_array_char(void) {
     char error_msg[256] = {0};
-    char **result = m2alloc_safe(5, 20, sizeof(char),
-                                  error_msg, sizeof(error_msg));
+    char **result = m2alloc_safe(5, 20, sizeof(char), error_msg, sizeof(error_msg));
 
     TEST_ASSERT_NOT_NULL(result);
 
@@ -220,8 +211,8 @@ void test_m2alloc_safe_small_array_struct(void) {
     };
 
     char error_msg[256] = {0};
-    char **result = m2alloc_safe(3, 3, (int)sizeof(struct test_struct),
-                                  error_msg, sizeof(error_msg));
+    char **result =
+        m2alloc_safe(3, 3, (int)sizeof(struct test_struct), error_msg, sizeof(error_msg));
 
     TEST_ASSERT_NOT_NULL(result);
 
@@ -241,8 +232,7 @@ void test_m2alloc_safe_small_array_struct(void) {
 void test_m2alloc_safe_rectangular_array(void) {
     char error_msg[256] = {0};
     /* Non-square array (more typical use case) */
-    char **result = m2alloc_safe(100, 50, sizeof(int),
-                                  error_msg, sizeof(error_msg));
+    char **result = m2alloc_safe(100, 50, sizeof(int), error_msg, sizeof(error_msg));
 
     TEST_ASSERT_NOT_NULL(result);
 
@@ -264,8 +254,7 @@ void test_m2alloc_safe_rectangular_array(void) {
 void test_m2alloc_safe_single_element(void) {
     char error_msg[256] = {0};
     /* Edge case: 1x1 array */
-    char **result = m2alloc_safe(1, 1, sizeof(long),
-                                  error_msg, sizeof(error_msg));
+    char **result = m2alloc_safe(1, 1, sizeof(long), error_msg, sizeof(error_msg));
 
     TEST_ASSERT_NOT_NULL(result);
 
@@ -279,8 +268,7 @@ void test_m2alloc_safe_single_element(void) {
 void test_m2alloc_safe_single_row(void) {
     char error_msg[256] = {0};
     /* Edge case: 1 row, multiple columns */
-    char **result = m2alloc_safe(1, 100, sizeof(int),
-                                  error_msg, sizeof(error_msg));
+    char **result = m2alloc_safe(1, 100, sizeof(int), error_msg, sizeof(error_msg));
 
     TEST_ASSERT_NOT_NULL(result);
 
@@ -296,8 +284,7 @@ void test_m2alloc_safe_single_row(void) {
 void test_m2alloc_safe_single_column(void) {
     char error_msg[256] = {0};
     /* Edge case: multiple rows, 1 column */
-    char **result = m2alloc_safe(100, 1, sizeof(int),
-                                  error_msg, sizeof(error_msg));
+    char **result = m2alloc_safe(100, 1, sizeof(int), error_msg, sizeof(error_msg));
 
     TEST_ASSERT_NOT_NULL(result);
 
@@ -339,8 +326,7 @@ void test_m2alloc_wrapper_maintains_compatibility(void) {
 
 void test_m2alloc_safe_contiguous_memory_layout(void) {
     char error_msg[256] = {0};
-    char **result = m2alloc_safe(10, 10, sizeof(int),
-                                  error_msg, sizeof(error_msg));
+    char **result = m2alloc_safe(10, 10, sizeof(int), error_msg, sizeof(error_msg));
 
     TEST_ASSERT_NOT_NULL(result);
 
@@ -358,7 +344,7 @@ void test_m2alloc_safe_contiguous_memory_layout(void) {
 
     /* All rows should have same stride */
     for (int i = 1; i < 9; i++) {
-        size_t stride = (char *)arr[i+1] - (char *)arr[i];
+        size_t stride = (char *)arr[i + 1] - (char *)arr[i];
         TEST_ASSERT_EQUAL(expected_stride, stride);
     }
 

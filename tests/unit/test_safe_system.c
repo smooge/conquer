@@ -46,9 +46,9 @@
 
 /* Mock implementation of check_lock() for unit testing */
 int check_lock(const char *name, int acquire) {
-    (void)name;    /* Suppress unused parameter warning */
+    (void)name; /* Suppress unused parameter warning */
     (void)acquire; /* Suppress unused parameter warning */
-    return 0;      /* Always return FALSE (lock available) for testing */
+    return 0; /* Always return FALSE (lock available) for testing */
 }
 
 /* Test fixture directory for temporary files */
@@ -83,11 +83,11 @@ void setUp(void) {
  * Returns:
  *   0 on success, result of remove() on failure
  */
-static int remove_callback(const char *fpath, const struct stat *sb,
-                          int typeflag, struct FTW *ftwbuf) {
-    (void)sb;       /* Suppress unused parameter warning */
+static int remove_callback(const char *fpath, const struct stat *sb, int typeflag,
+                           struct FTW *ftwbuf) {
+    (void)sb; /* Suppress unused parameter warning */
     (void)typeflag; /* Suppress unused parameter warning */
-    (void)ftwbuf;   /* Suppress unused parameter warning */
+    (void)ftwbuf; /* Suppress unused parameter warning */
     return remove(fpath);
 }
 
@@ -129,7 +129,8 @@ static long get_file_size(const char *filename) {
 
 static char *read_file_content(const char *filename) {
     FILE *fp = fopen(filename, "r");
-    if (!fp) return NULL;
+    if (!fp)
+        return NULL;
 
     fseek(fp, 0, SEEK_END);
     long size = ftell(fp);
@@ -406,15 +407,15 @@ void test_secure_file_delete_mixed_patterns(void) {
 
     /* Delete using mixed exact and glob patterns */
     const char *patterns[] = {
-        TEST_DELETE_FILE1,                    /* Exact filename */
-        TEST_DIR "/delete_me_*.log"           /* Glob pattern */
+        TEST_DELETE_FILE1, /* Exact filename */
+        TEST_DIR "/delete_me_*.log" /* Glob pattern */
     };
     int result = secure_file_delete(patterns, 2);
     TEST_ASSERT_EQUAL_INT(2, result); /* Should delete 2 files */
 
     /* Verify correct files were deleted */
     TEST_ASSERT_FALSE(file_exists(TEST_DELETE_FILE1)); /* Exact match */
-    TEST_ASSERT_TRUE(file_exists(TEST_DELETE_FILE2));  /* Should remain */
+    TEST_ASSERT_TRUE(file_exists(TEST_DELETE_FILE2)); /* Should remain */
     TEST_ASSERT_FALSE(file_exists(TEST_DELETE_FILE3)); /* Glob match */
 }
 
@@ -466,10 +467,8 @@ void test_secure_file_delete_security_no_shell_injection(void) {
 
     /* Attempt shell injection via malicious pattern */
     /* This should NOT execute shell commands */
-    const char *patterns[] = {
-        TEST_DELETE_FILE1 "; rm -rf /; echo 'pwned'",
-        TEST_DELETE_FILE1 " && echo 'injection'"
-    };
+    const char *patterns[] = {TEST_DELETE_FILE1 "; rm -rf /; echo 'pwned'",
+                              TEST_DELETE_FILE1 " && echo 'injection'"};
 
     /* The function should safely handle these patterns */
     int result = secure_file_delete(patterns, 2);
@@ -736,7 +735,8 @@ void test_sort_file_in_place_large_file(void) {
  */
 void test_sort_file_in_place_content_integrity(void) {
     const char *test_file = TEST_DIR "/sort_integrity.txt";
-    const char *data = "ZZ Special chars: !@#$%^&*()\nMM Numbers: 1234567890\nAA Mixed: Test123!@#\n";
+    const char *data =
+        "ZZ Special chars: !@#$%^&*()\nMM Numbers: 1234567890\nAA Mixed: Test123!@#\n";
 
     create_test_file(test_file, data);
 
@@ -764,8 +764,7 @@ void test_safe_system_performance_multiple_operations(void) {
 
     /* Create 10 source files */
     for (int i = 0; i < 10; i++) {
-        snprintf(source_files[i], sizeof(source_files[i]),
-                 TEST_DIR "/perf_source_%d.txt", i);
+        snprintf(source_files[i], sizeof(source_files[i]), TEST_DIR "/perf_source_%d.txt", i);
         create_test_file(source_files[i], "Performance test content\n");
     }
 
@@ -839,10 +838,12 @@ int main(void) {
     RUN_TEST(test_safe_system_performance_multiple_operations);
 
     printf("\n=== Safe System Test Summary ===\n");
-    printf("Functions Tested: 4 (append_file_to_file, write_timestamp_to_file, secure_file_delete, sort_file_in_place)\n");
+    printf("Functions Tested: 4 (append_file_to_file, write_timestamp_to_file, "
+           "secure_file_delete, sort_file_in_place)\n");
     printf("Total Test Cases Run: %lu\n", Unity.NumberOfTests);
     printf("Security Features: Command injection prevention, safe file operations\n");
-    printf("Coverage: Normal operations, error conditions, security validation, sorting algorithms\n");
+    printf("Coverage: Normal operations, error conditions, security validation, sorting "
+           "algorithms\n");
 
     return UNITY_END();
 }

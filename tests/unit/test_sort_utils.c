@@ -40,8 +40,7 @@ static L_PTR build_node(char data[], L_PTR nptr) {
     /* Check string length and bounds */
     size_t data_len = strlen(data);
     if (data_len > MAX_STR) {
-        fprintf(stderr, "build_node: String too long (%zu > %d)\n",
-                data_len, MAX_STR);
+        fprintf(stderr, "build_node: String too long (%zu > %d)\n", data_len, MAX_STR);
         exit(EX_SOFTWARE);
     }
 
@@ -52,12 +51,12 @@ static L_PTR build_node(char data[], L_PTR nptr) {
     }
 
     /* build the memory space */
-    if((temp=(L_PTR)malloc(sizeof(L_DATA)))==(L_PTR)NULL) {
-        fprintf(stderr,"Error in creating structure memory!\n");
+    if ((temp = (L_PTR)malloc(sizeof(L_DATA))) == (L_PTR)NULL) {
+        fprintf(stderr, "Error in creating structure memory!\n");
         exit(EX_SOFTWARE);
     }
-    if((temp->line=(char *)malloc((strlen(data)+1)*sizeof(char)))==NULL) {
-        fprintf(stderr,"Error in creating data memory!\n");
+    if ((temp->line = (char *)malloc((strlen(data) + 1) * sizeof(char))) == NULL) {
+        fprintf(stderr, "Error in creating data memory!\n");
         exit(EX_SOFTWARE);
     }
 
@@ -65,7 +64,7 @@ static L_PTR build_node(char data[], L_PTR nptr) {
     memcpy(temp->line, data, data_len);
     temp->line[data_len] = '\0';
     temp->next = nptr;
-    return(temp);
+    return (temp);
 }
 
 /* Helper function to free a node for cleanup */
@@ -125,7 +124,8 @@ void test_build_node_empty_string(void) {
  * Test build_node with long string
  */
 void test_build_node_long_string(void) {
-    char test_data[] = "This is a very long string that should still be handled correctly by the build_node function";
+    char test_data[] = "This is a very long string that should still be handled correctly by "
+                       "the build_node function";
     L_PTR result = build_node(test_data, NULL);
 
     TEST_ASSERT_NOT_NULL(result);
@@ -338,12 +338,12 @@ void test_parsepagesize_letter_lowercase(void) {
  * Test parsepagesize with invalid input - mixed case A4
  */
 void test_parsepagesize_invalid_mixed_case_a4(void) {
-    char input[] = "A4";  /* This should work */
+    char input[] = "A4"; /* This should work */
     int result = parsepagesize(input);
     TEST_ASSERT_EQUAL_INT(1, result);
 
     /* Test actual mixed case */
-    char mixed[] = "a4";  /* This should work */
+    char mixed[] = "a4"; /* This should work */
     result = parsepagesize(mixed);
     TEST_ASSERT_EQUAL_INT(1, result);
 

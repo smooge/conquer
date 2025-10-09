@@ -33,10 +33,10 @@
  * This represents the text_class structure used by compare_classes()
  */
 struct text_class {
-    char *name;                   /* name of this class */
-    char *variants;               /* string of variant tags */
-    int total_weight;             /* total weight of all definitions */
-    void *defs;                   /* linked list of definitions (not used in tests) */
+    char *name; /* name of this class */
+    char *variants; /* string of variant tags */
+    int total_weight; /* total weight of all definitions */
+    void *defs; /* linked list of definitions (not used in tests) */
 };
 
 /*
@@ -53,20 +53,20 @@ static int compare_classes(const void *a, const void *b);
  * NOTE: This implementation now exits on errors for production use,
  * but test version returns NULL for testability
  */
-static char *duplicate_string(const char *str)
-{
-    if (!str) return NULL;  /* Test version returns NULL instead of exit */
+static char *duplicate_string(const char *str) {
+    if (!str)
+        return NULL; /* Test version returns NULL instead of exit */
 
     size_t str_len = strlen(str);
     /* Test version: Production code limits to MAX_DEF_LEN and exits */
     if (str_len > 1000) {
-        return NULL;  /* Test version returns NULL instead of exit */
+        return NULL; /* Test version returns NULL instead of exit */
     }
 
     int len = safe_size_to_int(str_len);
     char *copy = malloc(safe_int_to_size(len + 1));
     if (!copy) {
-        return NULL;  /* Test version returns NULL instead of exit */
+        return NULL; /* Test version returns NULL instead of exit */
     }
 
     memcpy(copy, str, safe_int_to_size(len + 1));
@@ -78,8 +78,7 @@ static char *duplicate_string(const char *str)
  *
  * Copied implementation from spew.c for testing
  */
-static int compare_classes(const void *a, const void *b)
-{
+static int compare_classes(const void *a, const void *b) {
     const struct text_class *cls_a = (const struct text_class *)a;
     const struct text_class *cls_b = (const struct text_class *)b;
     return strcmp(cls_a->name, cls_b->name);
@@ -298,7 +297,7 @@ void test_compare_classes_prefix_strings(void) {
  * Only name field should matter for comparison
  */
 void test_compare_classes_ignores_other_fields(void) {
-    struct text_class cls_a = {"test", "different", 42, (void*)0x1234};
+    struct text_class cls_a = {"test", "different", 42, (void *)0x1234};
     struct text_class cls_b = {"test", "variants", -1, NULL};
 
     int result = compare_classes(&cls_a, &cls_b);
@@ -311,10 +310,7 @@ void test_compare_classes_ignores_other_fields(void) {
  */
 void test_compare_classes_sorting_order(void) {
     struct text_class classes[3] = {
-        {"zebra", NULL, 0, NULL},
-        {"apple", NULL, 0, NULL},
-        {"banana", NULL, 0, NULL}
-    };
+        {"zebra", NULL, 0, NULL}, {"apple", NULL, 0, NULL}, {"banana", NULL, 0, NULL}};
 
     /* Test all pairwise comparisons for correct ordering */
     TEST_ASSERT_TRUE(compare_classes(&classes[1], &classes[2]) < 0); /* apple < banana */

@@ -89,7 +89,7 @@ void test_safe_clamp_nation_attr_extreme_values(void) {
  */
 void test_safe_uid_to_int_normal_range(void) {
     /* Test typical UID values */
-    TEST_ASSERT_EQUAL_INT(0, safe_uid_to_int(0));      /* root */
+    TEST_ASSERT_EQUAL_INT(0, safe_uid_to_int(0)); /* root */
     TEST_ASSERT_EQUAL_INT(1000, safe_uid_to_int(1000)); /* typical user */
     TEST_ASSERT_EQUAL_INT(65534, safe_uid_to_int(65534)); /* nobody */
 }
@@ -302,7 +302,7 @@ void test_safe_short_to_char_extreme_values(void) {
  */
 void test_safe_int_to_char_normal_range(void) {
     TEST_ASSERT_EQUAL_INT8(0, safe_int_to_char(0));
-    TEST_ASSERT_EQUAL_INT8(65, safe_int_to_char(65));  /* 'A' */
+    TEST_ASSERT_EQUAL_INT8(65, safe_int_to_char(65)); /* 'A' */
 
     /* Handle both signed and unsigned char platforms */
     if (CHAR_MIN < 0) {
@@ -350,11 +350,11 @@ void test_safe_rand_short_normal_range(void) {
 
 void test_safe_rand_short_boundary_conditions(void) {
     /* Test edge cases */
-    TEST_ASSERT_EQUAL_INT16(0, safe_rand_short(0));    /* Invalid range */
-    TEST_ASSERT_EQUAL_INT16(0, safe_rand_short(-1));   /* Invalid range */
+    TEST_ASSERT_EQUAL_INT16(0, safe_rand_short(0)); /* Invalid range */
+    TEST_ASSERT_EQUAL_INT16(0, safe_rand_short(-1)); /* Invalid range */
 
     short result = safe_rand_short(1);
-    TEST_ASSERT_EQUAL_INT16(0, result);  /* Only possible value */
+    TEST_ASSERT_EQUAL_INT16(0, result); /* Only possible value */
 }
 
 void test_safe_rand_short_extreme_values(void) {
@@ -372,22 +372,22 @@ void test_safe_rand_short_extreme_values(void) {
  */
 void test_safe_rand_uchar_normal_range(void) {
     /* Test typical ranges for resource generation */
-    unsigned char result1 = safe_rand_uchar(7);  /* metal generation */
+    unsigned char result1 = safe_rand_uchar(7); /* metal generation */
     TEST_ASSERT_GREATER_OR_EQUAL_UINT8(0, result1);
     TEST_ASSERT_LESS_THAN_UINT8(7, result1);
 
-    unsigned char result2 = safe_rand_uchar(3);  /* jewels generation */
+    unsigned char result2 = safe_rand_uchar(3); /* jewels generation */
     TEST_ASSERT_GREATER_OR_EQUAL_UINT8(0, result2);
     TEST_ASSERT_LESS_THAN_UINT8(3, result2);
 }
 
 void test_safe_rand_uchar_boundary_conditions(void) {
     /* Test edge cases */
-    TEST_ASSERT_EQUAL_UINT8(0, safe_rand_uchar(0));    /* Invalid range */
-    TEST_ASSERT_EQUAL_UINT8(0, safe_rand_uchar(-1));   /* Invalid range */
+    TEST_ASSERT_EQUAL_UINT8(0, safe_rand_uchar(0)); /* Invalid range */
+    TEST_ASSERT_EQUAL_UINT8(0, safe_rand_uchar(-1)); /* Invalid range */
 
     unsigned char result = safe_rand_uchar(1);
-    TEST_ASSERT_EQUAL_UINT8(0, result);  /* Only possible value */
+    TEST_ASSERT_EQUAL_UINT8(0, result); /* Only possible value */
 }
 
 void test_safe_rand_uchar_extreme_values(void) {
@@ -413,8 +413,8 @@ void test_safe_rand_uchar_extreme_values(void) {
 void test_safe_float_to_int_normal_range(void) {
     /* Test normal float values */
     TEST_ASSERT_EQUAL_INT(0, safe_float_to_int(0.0f));
-    TEST_ASSERT_EQUAL_INT(100, safe_float_to_int(100.4f));  /* Round down */
-    TEST_ASSERT_EQUAL_INT(101, safe_float_to_int(100.6f));  /* Round up */
+    TEST_ASSERT_EQUAL_INT(100, safe_float_to_int(100.4f)); /* Round down */
+    TEST_ASSERT_EQUAL_INT(101, safe_float_to_int(100.6f)); /* Round up */
 
     /* For negative values, the rounding behavior is: add 0.5 then truncate */
     /* -100.4 + 0.5 = -99.9 -> truncates to -99 */
@@ -737,7 +737,8 @@ void test_safe_double_to_char_normal_range(void) {
     if (CHAR_MIN < 0) {
         TEST_ASSERT_EQUAL_INT8(-50, safe_double_to_char(-50.0));
     } else {
-        TEST_ASSERT_EQUAL_INT8(0, safe_double_to_char(-50.0)); /* Clamped to 0 on unsigned char platforms */
+        TEST_ASSERT_EQUAL_INT8(
+            0, safe_double_to_char(-50.0)); /* Clamped to 0 on unsigned char platforms */
     }
 }
 
@@ -770,7 +771,8 @@ void test_safe_float_to_char_normal_range(void) {
     if (CHAR_MIN < 0) {
         TEST_ASSERT_EQUAL_INT8(-50, safe_float_to_char(-50.0f));
     } else {
-        TEST_ASSERT_EQUAL_INT8(0, safe_float_to_char(-50.0f)); /* Clamped to 0 on unsigned char platforms */
+        TEST_ASSERT_EQUAL_INT8(
+            0, safe_float_to_char(-50.0f)); /* Clamped to 0 on unsigned char platforms */
     }
 }
 
@@ -1036,20 +1038,20 @@ int main(void) {
     printf("Testing 73 functions from safe_convert.h\n");
     printf("Platform: %s, Compiler: %s\n",
 #ifdef __linux__
-    "Linux",
+           "Linux",
 #elif defined(__APPLE__)
-    "macOS",
+           "macOS",
 #elif defined(__FreeBSD__)
-    "FreeBSD",
+           "FreeBSD",
 #else
-    "Unknown",
+           "Unknown",
 #endif
 #ifdef __GNUC__
-    "GCC " __VERSION__
+           "GCC " __VERSION__
 #elif defined(__clang__)
-    "Clang " __clang_version__
+           "Clang " __clang_version__
 #else
-    "Unknown"
+           "Unknown"
 #endif
     );
     printf("\n");

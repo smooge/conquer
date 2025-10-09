@@ -20,11 +20,11 @@
 /* Include necessary definitions from sort.c */
 #ifndef FALSE
 #define FALSE (0)
-#define TRUE  (1)
+#define TRUE (1)
 #endif
 
 #define DEFAULT_COMP 2
-#define UPPER(x) ((islower(x))?(toupper(x)):(x))
+#define UPPER(x) ((islower(x)) ? (toupper(x)) : (x))
 
 /* Global variables that comp_line depends on - defined locally for testing */
 int compnum = DEFAULT_COMP;
@@ -35,23 +35,26 @@ int iflag = FALSE;
 static int comp_line(char *a, char *b);
 
 /* Include the actual comp_line implementation */
-static int
-comp_line(char *a, char *b)
-{
+static int comp_line(char *a, char *b) {
     int i;
 
-    for(i=0;i<compnum;i++) {
+    for (i = 0; i < compnum; i++) {
         /* do checks */
         if (iflag) {
-            if (UPPER(a[i])<UPPER(b[i])) return(-1);
-            if (UPPER(b[i])<UPPER(a[i])) return(1);
+            if (UPPER(a[i]) < UPPER(b[i]))
+                return (-1);
+            if (UPPER(b[i]) < UPPER(a[i]))
+                return (1);
         } else {
-            if (a[i]<b[i]) return(-1);
-            if (b[i]<a[i]) return(1);
+            if (a[i] < b[i])
+                return (-1);
+            if (b[i] < a[i])
+                return (1);
         }
-        if (a[i]=='\0') return(0);
+        if (a[i] == '\0')
+            return (0);
     }
-    return(0);
+    return (0);
 }
 
 /* Global state management utilities */
@@ -199,7 +202,7 @@ void test_comp_line_realistic_sorting_scenarios(void) {
     /* Default 2-character comparison, case sensitive */
     setup_global_state(2, FALSE);
     TEST_ASSERT_EQUAL_INT(-1, comp_line("apple", "banana"));
-    TEST_ASSERT_EQUAL_INT(0, comp_line("apple", "application"));  /* First 2 chars same */
+    TEST_ASSERT_EQUAL_INT(0, comp_line("apple", "application")); /* First 2 chars same */
     TEST_ASSERT_EQUAL_INT(1, comp_line("zebra", "apple"));
 
     /* Case insensitive filename sorting */
