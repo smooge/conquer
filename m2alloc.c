@@ -93,104 +93,98 @@
  *   - Compatible with existing free() calls (same memory layout)
  *   - Error messages help debugging allocation issues
  */
-char **m2alloc_safe(
-    int nrows,
-    int ncols,
-    int entrysize,
-    char *error_msg,
-    size_t error_msg_size
-) {
-	char **baseaddr;
-	int j;
+char **m2alloc_safe(int nrows, int ncols, int entrysize, char *error_msg,
+                    size_t error_msg_size) {
+    char **baseaddr;
+    int j;
 
-	/* Parameter validation - reject invalid inputs */
-	if (nrows <= 0 || ncols <= 0 || entrysize <= 0) {
-		if (error_msg != NULL && error_msg_size > 0) {
-			snprintf(error_msg, error_msg_size,
-			        "Invalid dimensions: %dx%d blocks of %d bytes",
-			        nrows, ncols, entrysize);
-		}
-		errno = EINVAL;
-		return NULL;
-	}
+    /* Parameter validation - reject invalid inputs */
+    if (nrows <= 0 || ncols <= 0 || entrysize <= 0) {
+        if (error_msg != NULL && error_msg_size > 0) {
+            snprintf(error_msg, error_msg_size, "Invalid dimensions: %dx%d blocks of %d bytes",
+                     nrows, ncols, entrysize);
+        }
+        errno = EINVAL;
+        return NULL;
+    }
 
-	/*
-	 * Prevent integer overflow in row_data_size calculation.
-	 * Check: ncols * entrysize <= SIZE_MAX
-	 * Rearranged: ncols <= SIZE_MAX / entrysize
-	 */
-	if ((size_t)ncols > SIZE_MAX / (size_t)entrysize) {
-		if (error_msg != NULL && error_msg_size > 0) {
-			snprintf(error_msg, error_msg_size,
-			        "Dimension overflow: %d cols * %d bytes exceeds SIZE_MAX",
-			        ncols, entrysize);
-		}
-		errno = EINVAL;
-		return NULL;
-	}
+    /*
+     * Prevent integer overflow in row_data_size calculation.
+     * Check: ncols * entrysize <= SIZE_MAX
+     * Rearranged: ncols <= SIZE_MAX / entrysize
+     */
+    if ((size_t)ncols > SIZE_MAX / (size_t)entrysize) {
+        if (error_msg != NULL && error_msg_size > 0) {
+            snprintf(error_msg, error_msg_size,
+                     "Dimension overflow: %d cols * %d bytes exceeds SIZE_MAX", ncols,
+                     entrysize);
+        }
+        errno = EINVAL;
+        return NULL;
+    }
 
-	size_t row_data_size = (size_t)ncols * (size_t)entrysize;
+    size_t row_data_size = (size_t)ncols * (size_t)entrysize;
 
-	/* Calculate pointer array size */
-	size_t pointer_size = (size_t)nrows * sizeof(char *);
+    /* Calculate pointer array size */
+    size_t pointer_size = (size_t)nrows * sizeof(char *);
 
-	/*
-	 * Prevent integer overflow in data section calculation.
-	 * Check: nrows * row_data_size <= SIZE_MAX
-	 * Rearranged: nrows <= SIZE_MAX / row_data_size
-	 */
-	if ((size_t)nrows > SIZE_MAX / row_data_size) {
-		if (error_msg != NULL && error_msg_size > 0) {
-			snprintf(error_msg, error_msg_size,
-			        "Allocation too large: %d rows * %zu bytes per row exceeds SIZE_MAX",
-			        nrows, row_data_size);
-		}
-		errno = EINVAL;
-		return NULL;
-	}
+    /*
+     * Prevent integer overflow in data section calculation.
+     * Check: nrows * row_data_size <= SIZE_MAX
+     * Rearranged: nrows <= SIZE_MAX / row_data_size
+     */
+    if ((size_t)nrows > SIZE_MAX / row_data_size) {
+        if (error_msg != NULL && error_msg_size > 0) {
+            snprintf(error_msg, error_msg_size,
+                     "Allocation too large: %d rows * %zu bytes per row exceeds SIZE_MAX",
+                     nrows, row_data_size);
+        }
+        errno = EINVAL;
+        return NULL;
+    }
 
-	size_t data_size = (size_t)nrows * row_data_size;
+    size_t data_size = (size_t)nrows * row_data_size;
 
-	/*
-	 * Prevent integer overflow in total size calculation.
-	 * Check: pointer_size + data_size <= SIZE_MAX
-	 * Rearranged: pointer_size <= SIZE_MAX - data_size
-	 */
-	if (pointer_size > SIZE_MAX - data_size) {
-		if (error_msg != NULL && error_msg_size > 0) {
-			snprintf(error_msg, error_msg_size,
-			        "Total allocation overflow: %zu + %zu bytes exceeds SIZE_MAX",
-			        pointer_size, data_size);
-		}
-		errno = EINVAL;
-		return NULL;
-	}
+    /*
+     * Prevent integer overflow in total size calculation.
+     * Check: pointer_size + data_size <= SIZE_MAX
+     * Rearranged: pointer_size <= SIZE_MAX - data_size
+     */
+    if (pointer_size > SIZE_MAX - data_size) {
+        if (error_msg != NULL && error_msg_size > 0) {
+            snprintf(error_msg, error_msg_size,
+                     "Total allocation overflow: %zu + %zu bytes exceeds SIZE_MAX",
+                     pointer_size, data_size);
+        }
+        errno = EINVAL;
+        return NULL;
+    }
 
-	size_t total_size = pointer_size + data_size;
+    size_t total_size = pointer_size + data_size;
 
-	/* Perform allocation */
-	#pragma GCC diagnostic push
-	#pragma GCC diagnostic ignored "-Wanalyzer-allocation-size"
-	baseaddr = (char **) malloc(total_size);
-	#pragma GCC diagnostic pop
+/* Perform allocation */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wanalyzer-allocation-size"
+    baseaddr = (char **)malloc(total_size);
+#pragma GCC diagnostic pop
 
-	if (baseaddr == NULL) {
-		if (error_msg != NULL && error_msg_size > 0) {
-			snprintf(error_msg, error_msg_size,
-			        "Cannot allocate %d by %d blocks of %d bytes (%zu total)",
-			        nrows, ncols, entrysize, total_size);
-		}
-		errno = ENOMEM;
-		return NULL;
-	}
+    if (baseaddr == NULL) {
+        if (error_msg != NULL && error_msg_size > 0) {
+            snprintf(error_msg, error_msg_size,
+                     "Cannot allocate %d by %d blocks of %d bytes (%zu total)", nrows, ncols,
+                     entrysize, total_size);
+        }
+        errno = ENOMEM;
+        return NULL;
+    }
 
-	/* Set up row pointers - point into data section */
-	*baseaddr = (char *) (baseaddr + nrows);
-	for (j = 1; j < nrows; j++) {
-		baseaddr[j] = baseaddr[j-1] + (int)row_data_size;
-	}
+    /* Set up row pointers - point into data section */
+    *baseaddr = (char *)(baseaddr + nrows);
+    for (j = 1; j < nrows; j++) {
+        baseaddr[j] = baseaddr[j - 1] + (int)row_data_size;
+    }
 
-	return baseaddr;
+    return baseaddr;
 }
 
 /*
@@ -258,19 +252,17 @@ char **m2alloc_safe(
  *   - Critical infrastructure for scalable world sizes
  *   - See m2alloc_safe() for testable version with NULL return on error
  */
-char **m2alloc(
-    int nrows,		/* row dimension */
-    int ncols,		/* column dimension */
-    int entrysize	/* # bytes in items to be stored */
+char **m2alloc(int nrows, /* row dimension */
+               int ncols, /* column dimension */
+               int entrysize /* # bytes in items to be stored */
 ) {
-	char error_msg[256];
-	char **result = m2alloc_safe(nrows, ncols, entrysize,
-	                             error_msg, sizeof(error_msg));
+    char error_msg[256];
+    char **result = m2alloc_safe(nrows, ncols, entrysize, error_msg, sizeof(error_msg));
 
-	if (result == NULL) {
-		printf("OOPS - %s\n", error_msg);
-		abrt();
-	}
+    if (result == NULL) {
+        printf("OOPS - %s\n", error_msg);
+        abrt();
+    }
 
-	return result;
+    return result;
 }
