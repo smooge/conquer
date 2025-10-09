@@ -3,7 +3,8 @@
  *
  * This file is part of Conquer.
  * Originally Copyright (C) 1988-1989 by Edward M. Barlow and Adam Bryant
- * Copyright (C) 2025 Juan Manuel Méndez Rey (Vejeta) - Licensed under GPL v3 with permission from original authors
+ * Copyright (C) 2025 Juan Manuel Méndez Rey (Vejeta) - Licensed under GPL v3 with permission
+ * from original authors
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,26 +29,26 @@
 /* system definitions just in case */
 #ifndef FALSE
 #define FALSE (0)
-#define TRUE  (1)
+#define TRUE (1)
 #endif /* FALSE */
 
 /* system exit definitions from sysexits.h on BSD machines */
 #ifndef EX_OK
-#define EX_OK             0   /* successful termination */
-#define EX_USAGE          64  /* invalid command line format */
-#define EX_NOINPUT        66  /* could not open input file */
-#define EX_SOFTWARE       70  /* software error; couldn't malloc */
-#define EX_CANTCREAT      73  /* could not create output file */
+#define EX_OK 0 /* successful termination */
+#define EX_USAGE 64 /* invalid command line format */
+#define EX_NOINPUT 66 /* could not open input file */
+#define EX_SOFTWARE 70 /* software error; couldn't malloc */
+#define EX_CANTCREAT 73 /* could not create output file */
 #endif /* EX_OK */
 
 /* number of characters to compare by default */
 #define DEFAULT_COMP 2
-#define MAX_STR      200
+#define MAX_STR 200
 
 /* structure for holding a line of information */
 typedef struct holder {
-	char *line;
-	struct holder *next;
+    char *line;
+    struct holder *next;
 } L_DATA, *L_PTR;
 
 /* Function prototypes */
@@ -61,22 +62,22 @@ static L_PTR build_node(char data[], L_PTR nptr);
 L_PTR head;
 
 /* usage string */
-static char usage[]="Usage: %s [-num -h] [infile] [outfile]\n\
+static char usage[] = "Usage: %s [-num -h] [infile] [outfile]\n\
 	-h		display this screen\n\
 	-i		treat upper and lower case characters as equivalent\n\
 	-num		Sort on first num characters\n";
 
 /* number of characters for comparison */
-int compnum=DEFAULT_COMP;
+int compnum = DEFAULT_COMP;
 
 /* flag for folding upper and lowercase characters */
-int iflag=FALSE;
+int iflag = FALSE;
 
 /* file pointers to infile and outfile */
 FILE *infile, *outfile;
 
 /* macros */
-#define UPPER(x) ((islower(x))?(toupper(x)):(x))
+#define UPPER(x) ((islower(x)) ? (toupper(x)) : (x))
 
 /*
  * main - Text sorting utility with configurable options
@@ -121,142 +122,134 @@ FILE *infile, *outfile;
  *   - Uses global variables for configuration (not thread-safe)
  *   - Memory allocated by build_node() is never freed (acceptable for utility)
  *   - Processes input incrementally to handle large files efficiently
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-int
-main(int argc, char *argv[])
-{
-	/* declare temporary variables and functions */
-	int i,j,num_args=0,l,innum=0,outnum=0;
-	int get_line(char data[]);
-	void place(char data[]);
-	void send_out(void);
+int main(int argc, char *argv[]) {
+    /* declare temporary variables and functions */
+    int i, j, num_args = 0, l, innum = 0, outnum = 0;
+    int get_line(char data[]);
+    void place(char data[]);
+    void send_out(void);
 
-        /* This needs to be done at run-time now */
-        infile=stdin;
-        outfile=stdout;
+    /* This needs to be done at run-time now */
+    infile = stdin;
+    outfile = stdout;
 
-	/* input string */
-	char data[MAX_STR];
+    /* input string */
+    char data[MAX_STR];
 
-	/* parse command line arguments */
-	for (i=1; i<argc; i++) {
-
-		/* process non-switch statements */
-		if (argv[i][0]!='-') {
-			num_args++;
-			switch(num_args) {
-			   case 1:
-				/* do not open unless arguments are valid */
-				innum=i;
-				break;
-			   case 2:
-				/* do not open unless arguments are valid */
-				outnum=i;
-				break;
-			   default:
-				fprintf(stderr,"%s: Too many parameters\n",argv[0]);
+    /* parse command line arguments */
+    for (i = 1; i < argc; i++) {
+        /* process non-switch statements */
+        if (argv[i][0] != '-') {
+            num_args++;
+            switch (num_args) {
+                case 1:
+                    /* do not open unless arguments are valid */
+                    innum = i;
+                    break;
+                case 2:
+                    /* do not open unless arguments are valid */
+                    outnum = i;
+                    break;
+                default:
+                    fprintf(stderr, "%s: Too many parameters\n", argv[0]);
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat-nonliteral"
-				fprintf(stderr, usage, argv[0]);
+                    fprintf(stderr, usage, argv[0]);
 #pragma GCC diagnostic pop
-				exit(EX_USAGE);
-				break;
-			}
-			continue;
-		}
+                    exit(EX_USAGE);
+                    break;
+            }
+            continue;
+        }
 
-		/* process switch statements */
-		l = safe_size_to_int(strlen(argv[i]));
-		for (j=1; j<l; j++) {
-			switch(argv[i][j]) {
-			   case 'h':
+        /* process switch statements */
+        l = safe_size_to_int(strlen(argv[i]));
+        for (j = 1; j < l; j++) {
+            switch (argv[i][j]) {
+                case 'h':
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat-nonliteral"
-				fprintf(stderr, usage, argv[0]);
+                    fprintf(stderr, usage, argv[0]);
 #pragma GCC diagnostic pop
-				exit(EX_OK);
-				break;
-			   case 'i':
-				iflag=TRUE;
-				break;
-			   case '0':
-			   case '1':
-			   case '2':
-			   case '3':
-			   case '4':
-			   case '5':
-			   case '6':
-			   case '7':
-			   case '8':
-			   case '9':
-				/* assign new comparison number */
-				compnum=0;
-				for(;j<l && argv[i][j]>='0' && argv[i][j]<='9';j++)
-				{
-					compnum *= 10;
-					compnum += argv[i][j]-'0';
-				}
-				/* compensate for increment on exit */
-				j--;
-				break;
-			   default:
-				fprintf(stderr,"%s: invalid option '%c' in <%s>\n",
-					   argv[0],argv[i][j],argv[i]);
+                    exit(EX_OK);
+                    break;
+                case 'i':
+                    iflag = TRUE;
+                    break;
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                    /* assign new comparison number */
+                    compnum = 0;
+                    for (; j < l && argv[i][j] >= '0' && argv[i][j] <= '9'; j++) {
+                        compnum *= 10;
+                        compnum += argv[i][j] - '0';
+                    }
+                    /* compensate for increment on exit */
+                    j--;
+                    break;
+                default:
+                    fprintf(stderr, "%s: invalid option '%c' in <%s>\n", argv[0], argv[i][j],
+                            argv[i]);
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat-nonliteral"
-				fprintf(stderr, usage, argv[0]);
+                    fprintf(stderr, usage, argv[0]);
 #pragma GCC diagnostic pop
-				exit(EX_USAGE);
-				break;
-			}
-		}
-	}
+                    exit(EX_USAGE);
+                    break;
+            }
+        }
+    }
 
-	/* open input file now */
-	if(innum!=0) {
-		if((infile=fopen(argv[innum],"r"))==(FILE *)NULL) {
-			fprintf(stderr,"%s: can't open file <%s> for input\n",
-				   argv[0],argv[innum]);
-			exit(EX_NOINPUT);
-		}
-	}
+    /* open input file now */
+    if (innum != 0) {
+        if ((infile = fopen(argv[innum], "r")) == (FILE *)NULL) {
+            fprintf(stderr, "%s: can't open file <%s> for input\n", argv[0], argv[innum]);
+            exit(EX_NOINPUT);
+        }
+    }
 
-	/* ======= main processing loop ======== */
+    /* ======= main processing loop ======== */
 
-	while(!feof(infile)) {
+    while (!feof(infile)) {
+        /* remove any lines less than sort characters */
+        if (get_line(data) > compnum) {
+            place(data);
+        }
+    }
 
-		/* remove any lines less than sort characters */
-		if (get_line(data)>compnum) {
-			place(data);
-		}
+    /* ==== end of main processing loop ==== */
 
-	}
+    /* close input file if not stdin */
+    if (infile != stdin) {
+        (void)fclose(infile);
+    }
 
-	/* ==== end of main processing loop ==== */
+    /* open output file now */
+    if (outnum != 0) {
+        if ((outfile = fopen(argv[outnum], "w")) == (FILE *)NULL) {
+            fprintf(stderr, "%s: cannot open file <%s> for output\n", argv[0], argv[outnum]);
+            exit(EX_CANTCREAT);
+        }
+    }
 
-	/* close input file if not stdin */
-	if (infile!=stdin) {
-		(void) fclose(infile);
-	}
+    send_out();
 
-	/* open output file now */
-	if(outnum!=0) {
-		if ((outfile=fopen(argv[outnum],"w"))==(FILE *)NULL) {
-			fprintf(stderr,"%s: cannot open file <%s> for output\n",
-				   argv[0],argv[outnum]);
-			exit(EX_CANTCREAT);
-		}
-	}
+    /* close output file if not stdout */
+    if (outfile != stdout) {
+        (void)fclose(outfile);
+    }
 
-	send_out();
-
-	/* close output file if not stdout */
-	if (outfile!=stdout) {
-		(void) fclose(outfile);
-	}
-
-	exit(EX_OK);
+    exit(EX_OK);
 }
 
 /*
@@ -296,23 +289,21 @@ main(int argc, char *argv[])
  *   - Input validation prevents buffer overflows in downstream processing
  *   - Essential preprocessing step for reliable sorting operations
  */
-static int get_line(char data[])
-{
-	int in,ch;
+static int get_line(char data[]) {
+    int in, ch;
 
-	/* discard exceptionally long lines */
-	for(in=0;!feof(infile)&&(in<MAX_STR-1)&&((ch=getc(infile))!='\n');)
-	{
-		/* copy valid input into data */
-		if((ch=='\t')||(ch==' ')||((ch>=' ')&&(ch<='~'))) {
-			data[in]=safe_int_to_char(ch);
-			in++;
-		}
-	}
-	/* end string */
-	data[in]='\0';
+    /* discard exceptionally long lines */
+    for (in = 0; !feof(infile) && (in < MAX_STR - 1) && ((ch = getc(infile)) != '\n');) {
+        /* copy valid input into data */
+        if ((ch == '\t') || (ch == ' ') || ((ch >= ' ') && (ch <= '~'))) {
+            data[in] = safe_int_to_char(ch);
+            in++;
+        }
+    }
+    /* end string */
+    data[in] = '\0';
 
-	return(in);
+    return (in);
 }
 
 /*
@@ -348,15 +339,13 @@ static int get_line(char data[])
  *   - Memory allocated for linked list nodes is not freed (utility exits)
  *   - Essential final phase of sorting pipeline after all input processed
  */
-static void
-send_out(void)
-{
-	L_PTR temp=head;
+static void send_out(void) {
+    L_PTR temp = head;
 
-	while (temp!=(L_PTR)NULL) {
-		fprintf(outfile,"%s\n",temp->line);
-		temp = temp->next;
-	}
+    while (temp != (L_PTR)NULL) {
+        fprintf(outfile, "%s\n", temp->line);
+        temp = temp->next;
+    }
 }
 
 /*
@@ -394,27 +383,24 @@ send_out(void)
  *   - Memory allocation handled by build_node() with error checking
  *   - Core sorting algorithm that maintains list order incrementally
  */
-static void
-place(char data[])
-{
-	L_PTR temp;
+static void place(char data[]) {
+    L_PTR temp;
 
-	/* find location for placing input */
-	if(head==(L_PTR)NULL) {
-		/* begin list properly */
-		head = build_node(data,(L_PTR)NULL);
-	} else if (comp_line(head->line,data)==1) {
-		/* add to beginning of list */
-		head = build_node(data,head);
-	} else {
-		/* otherwise add in proper position */
-		temp=head;
-		while ((temp->next!=(L_PTR)NULL)
-		&&(comp_line(temp->next->line,data)!=1)) {
-			temp=temp->next;
-		}
-		temp->next = build_node(data,temp->next);
-	}
+    /* find location for placing input */
+    if (head == (L_PTR)NULL) {
+        /* begin list properly */
+        head = build_node(data, (L_PTR)NULL);
+    } else if (comp_line(head->line, data) == 1) {
+        /* add to beginning of list */
+        head = build_node(data, head);
+    } else {
+        /* otherwise add in proper position */
+        temp = head;
+        while ((temp->next != (L_PTR)NULL) && (comp_line(temp->next->line, data) != 1)) {
+            temp = temp->next;
+        }
+        temp->next = build_node(data, temp->next);
+    }
 }
 
 /*
@@ -453,23 +439,26 @@ place(char data[])
  *   - Stops comparison at first null character in either string
  *   - Essential component for customizable sorting behavior
  */
-static int
-comp_line(char *a, char *b)
-{
-	int i;
+static int comp_line(char *a, char *b) {
+    int i;
 
-	for(i=0;i<compnum;i++) {
-		/* do checks */
-		if (iflag) {
-			if (UPPER(a[i])<UPPER(b[i])) return(-1);
-			if (UPPER(b[i])<UPPER(a[i])) return(1);
-		} else {
-			if (a[i]<b[i]) return(-1);
-			if (b[i]<a[i]) return(1);
-		}
-		if (a[i]=='\0') return(0);
-	}
-	return(0);
+    for (i = 0; i < compnum; i++) {
+        /* do checks */
+        if (iflag) {
+            if (UPPER(a[i]) < UPPER(b[i]))
+                return (-1);
+            if (UPPER(b[i]) < UPPER(a[i]))
+                return (1);
+        } else {
+            if (a[i] < b[i])
+                return (-1);
+            if (b[i] < a[i])
+                return (1);
+        }
+        if (a[i] == '\0')
+            return (0);
+    }
+    return (0);
 }
 
 /*
@@ -528,44 +517,41 @@ comp_line(char *a, char *b)
  *   - Copies string data to prevent external modification issues
  *   - Bounds checking added in Phase 8.4.3.2 to prevent overflow vulnerabilities
  */
-static L_PTR
-build_node(char data[], L_PTR nptr)
-{
-	L_PTR temp;
+static L_PTR build_node(char data[], L_PTR nptr) {
+    L_PTR temp;
 
-	/* Validate input parameter */
-	if (data == NULL) {
-		fprintf(stderr, "build_node: NULL data parameter\n");
-		exit(EX_SOFTWARE);
-	}
+    /* Validate input parameter */
+    if (data == NULL) {
+        fprintf(stderr, "build_node: NULL data parameter\n");
+        exit(EX_SOFTWARE);
+    }
 
-	/* Check string length and bounds */
-	size_t data_len = strlen(data);
-	if (data_len > MAX_STR) {
-		fprintf(stderr, "build_node: String too long (%zu > %d)\n",
-		        data_len, MAX_STR);
-		exit(EX_SOFTWARE);
-	}
+    /* Check string length and bounds */
+    size_t data_len = strlen(data);
+    if (data_len > MAX_STR) {
+        fprintf(stderr, "build_node: String too long (%zu > %d)\n", data_len, MAX_STR);
+        exit(EX_SOFTWARE);
+    }
 
-	/* Check for overflow in allocation size calculation */
-	if (data_len >= SIZE_MAX - 1) {
-		fprintf(stderr, "build_node: String length overflow\n");
-		exit(EX_SOFTWARE);
-	}
+    /* Check for overflow in allocation size calculation */
+    if (data_len >= SIZE_MAX - 1) {
+        fprintf(stderr, "build_node: String length overflow\n");
+        exit(EX_SOFTWARE);
+    }
 
-	/* build the memory space */
-	if((temp=(L_PTR)malloc(sizeof(L_DATA)))==(L_PTR)NULL) {
-		fprintf(stderr,"Error in creating structure memory!\n");
-		exit(EX_SOFTWARE);
-	}
-	if((temp->line=(char *)malloc((strlen(data)+1)*sizeof(char)))==NULL) {
-		fprintf(stderr,"Error in creating data memory!\n");
-		exit(EX_SOFTWARE);
-	}
+    /* build the memory space */
+    if ((temp = (L_PTR)malloc(sizeof(L_DATA))) == (L_PTR)NULL) {
+        fprintf(stderr, "Error in creating structure memory!\n");
+        exit(EX_SOFTWARE);
+    }
+    if ((temp->line = (char *)malloc((strlen(data) + 1) * sizeof(char))) == NULL) {
+        fprintf(stderr, "Error in creating data memory!\n");
+        exit(EX_SOFTWARE);
+    }
 
-	/* assign the values */
-	memcpy(temp->line, data, data_len);
-	temp->line[data_len] = '\0';
-	temp->next = nptr;
-	return(temp);
+    /* assign the values */
+    memcpy(temp->line, data, data_len);
+    temp->line[data_len] = '\0';
+    temp->next = nptr;
+    return (temp);
 }

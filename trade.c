@@ -3,7 +3,8 @@
  *
  * This file is part of Conquer.
  * Originally Copyright (C) 1988-1989 by Edward M. Barlow and Adam Bryant
- * Copyright (C) 2025 Juan Manuel Méndez Rey (Vejeta) - Licensed under GPL v3 with permission from original authors
+ * Copyright (C) 2025 Juan Manuel Méndez Rey (Vejeta) - Licensed under GPL v3 with permission
+ * from original authors
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,36 +33,40 @@
 #ifdef TRADE
 
 /* possible commodities */
-#define TDGOLD   0
-#define TDFOOD   1
-#define TDMETAL  2
-#define TDJEWL   3
-#define TDLAND   4
-#define TDARMY   5
-#define TDSHIP   6
+#define TDGOLD 0
+#define TDFOOD 1
+#define TDMETAL 2
+#define TDJEWL 3
+#define TDLAND 4
+#define TDARMY 5
+#define TDSHIP 6
 
 /* constants and indicators */
-#define	NUMPRODUCTS	7
-#define	MAXITM	30
-#define	SELL	0
-#define	BUY	1
-#define	NODEAL	2
-#define	NOSALE	3
-#define TRADECOST(cost)	(100-cost)/100	/* twenty percent cost is normal*/
+#define NUMPRODUCTS 7
+#define MAXITM 30
+#define SELL 0
+#define BUY 1
+#define NODEAL 2
+#define NOSALE 3
+#define TRADECOST(cost) (100 - cost) / 100 /* twenty percent cost is normal*/
 
-static char *commodities[NUMPRODUCTS] = { "Gold", "Food", "Metal", "Jewels",
-		"Land", "Soldiers", "Ships"};
+static char *commodities[NUMPRODUCTS] = {"Gold", "Food",     "Metal", "Jewels",
+                                         "Land", "Soldiers", "Ships"};
 #ifdef ADMIN
-static char *tradefail[NUMPRODUCTS] = { "lack of gold", "lack of food",
-	"lack of metal", "lack of jewels", "land not owned",
-	"unavailable or destroyed armies",
-	"unavailable or destoryed navies"};
+static char *tradefail[NUMPRODUCTS] = {"lack of gold",
+                                       "lack of food",
+                                       "lack of metal",
+                                       "lack of jewels",
+                                       "land not owned",
+                                       "unavailable or destroyed armies",
+                                       "unavailable or destoryed navies"};
 #endif /* ADMIN */
 #ifdef CONQUER
 /* Use this when you wish to bid something */
-static char *buylist[NUMPRODUCTS] = { "Bid how much gold? ", "Bid how much food? ",
-	"Bid how much metal? ", "Bid how many jewels? ", "What X location? ",
-	"Bid what army? ", "Bid what navy? "};
+static char *buylist[NUMPRODUCTS] = {"Bid how much gold? ",  "Bid how much food? ",
+                                     "Bid how much metal? ", "Bid how many jewels? ",
+                                     "What X location? ",    "Bid what army? ",
+                                     "Bid what navy? "};
 
 /*
  * trade - Main interactive trading interface for commodity exchange
@@ -109,448 +114,463 @@ static char *buylist[NUMPRODUCTS] = { "Bid how much gold? ", "Bid how much food?
  *   - File operations may fail requiring error handling
  *   - Complex state management with trade reservations
  *   - Uses goto-style control flow with while loops and switch statements
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
 void trade(void) {
-	FILE *tfile;
-	int count, done=FALSE, notopen=FALSE;
-	int buysell, holdint, holdint2, extint, inloop;
-	int type1[MAXITM], type2[MAXITM], deal[MAXITM], extra[MAXITM];
-	int natn[MAXITM], itemnum;
-	long lvar1[MAXITM], lvar2[MAXITM], holdlong, holdlong2;
+    FILE *tfile;
+    int count, done = FALSE, notopen = FALSE;
+    int buysell, holdint, holdint2, extint, inloop;
+    int type1[MAXITM], type2[MAXITM], deal[MAXITM], extra[MAXITM];
+    int natn[MAXITM], itemnum;
+    long lvar1[MAXITM], lvar2[MAXITM], holdlong, holdlong2;
 
-	clear();
-	while (done==FALSE) {
-		itemnum=0;
-		done=TRUE;
-		/* open trading file */
-		if ((tfile=fopen(tradefile,"r")) == NULL ) {
-			notopen=TRUE;
-		}
-		/* read in all of the data */
-		while (notopen==FALSE && !feof(tfile)) {
-			holdint = fscanf(tfile,"%d %d %d %d %ld %ld %d\n",
-				&deal[itemnum],&natn[itemnum],&type1[itemnum],
-				&type2[itemnum],&lvar1[itemnum],
-				&lvar2[itemnum],&extra[itemnum]);
-			if (holdint != 7) {
-				/* Parse error or EOF - stop reading */
-				break;
-			}
-			if (deal[itemnum]==NOSALE) {
-				/* remove item from sales list */
-				deal[type1[itemnum]]=NOSALE;
-			} else if (deal[itemnum]==SELL) {
-				itemnum++;
-			}
-		}
-		if (notopen==FALSE) fclose(tfile);
-		move(0,0);
-		clrtobot();
-		/* display header */
-		standout();
-		mvaddstr(0,27,"COMMODITIES EXCHANGE");
-		mvaddstr(1,20,"No Guarantees... All Trades Final");
-		standend();
-		count=3;
-		mvaddstr(count,0,"    Nation                       Item            Price");
-		/* give some minor items for purchase */
-		mvprintw(++count,0,"%2d) %-20s",GETFOOD,"Merchants Guild");
-		mvprintw(count,30,"%9ld %s",GODFOOD,commodities[TDFOOD]);
-		mvprintw(count,50,"%9ld %s",GODPRICE,commodities[TDGOLD]);
-		mvprintw(++count,0,"%2d) %-20s",GETMETAL,"Merchants Guild");
-		mvprintw(count,30,"%9ld %s",GODMETAL,commodities[TDMETAL]);
-		mvprintw(count,50,"%9ld %s",GODPRICE,commodities[TDGOLD]);
-		mvprintw(++count,0,"%2d) %-20s",GETJEWL,"Merchants Guild");
-		mvprintw(count,30,"%9ld %s",GODJEWL,commodities[TDJEWL]);
-		mvprintw(count,50,"%9ld %s",GODPRICE,commodities[TDGOLD]);
+    clear();
+    while (done == FALSE) {
+        itemnum = 0;
+        done = TRUE;
+        /* open trading file */
+        if ((tfile = fopen(tradefile, "r")) == NULL) {
+            notopen = TRUE;
+        }
+        /* read in all of the data */
+        while (notopen == FALSE && !feof(tfile)) {
+            holdint = fscanf(tfile, "%d %d %d %d %ld %ld %d\n", &deal[itemnum], &natn[itemnum],
+                             &type1[itemnum], &type2[itemnum], &lvar1[itemnum], &lvar2[itemnum],
+                             &extra[itemnum]);
+            if (holdint != 7) {
+                /* Parse error or EOF - stop reading */
+                break;
+            }
+            if (deal[itemnum] == NOSALE) {
+                /* remove item from sales list */
+                deal[type1[itemnum]] = NOSALE;
+            } else if (deal[itemnum] == SELL) {
+                itemnum++;
+            }
+        }
+        if (notopen == FALSE)
+            fclose(tfile);
+        move(0, 0);
+        clrtobot();
+        /* display header */
+        standout();
+        mvaddstr(0, 27, "COMMODITIES EXCHANGE");
+        mvaddstr(1, 20, "No Guarantees... All Trades Final");
+        standend();
+        count = 3;
+        mvaddstr(count, 0, "    Nation                       Item            Price");
+        /* give some minor items for purchase */
+        mvprintw(++count, 0, "%2d) %-20s", GETFOOD, "Merchants Guild");
+        mvprintw(count, 30, "%9ld %s", GODFOOD, commodities[TDFOOD]);
+        mvprintw(count, 50, "%9ld %s", GODPRICE, commodities[TDGOLD]);
+        mvprintw(++count, 0, "%2d) %-20s", GETMETAL, "Merchants Guild");
+        mvprintw(count, 30, "%9ld %s", GODMETAL, commodities[TDMETAL]);
+        mvprintw(count, 50, "%9ld %s", GODPRICE, commodities[TDGOLD]);
+        mvprintw(++count, 0, "%2d) %-20s", GETJEWL, "Merchants Guild");
+        mvprintw(count, 30, "%9ld %s", GODJEWL, commodities[TDJEWL]);
+        mvprintw(count, 50, "%9ld %s", GODPRICE, commodities[TDGOLD]);
 
-		/* go through list of commodities */
-		for (holdint=0;holdint<itemnum;holdint++) {
-			if ((deal[holdint]==SELL) && ((country==0) ||
-			(ntn[natn[holdint]].dstatus[country] != UNMET)
-			|| (natn[holdint] == country))) {
-				count++;
-				mvprintw(count,0,"%2d) %-20s",
-					holdint+1,
-					ntn[natn[holdint]].name);
+        /* go through list of commodities */
+        for (holdint = 0; holdint < itemnum; holdint++) {
+            if ((deal[holdint] == SELL)
+                && ((country == 0) || (ntn[natn[holdint]].dstatus[country] != UNMET)
+                    || (natn[holdint] == country))) {
+                count++;
+                mvprintw(count, 0, "%2d) %-20s", holdint + 1, ntn[natn[holdint]].name);
 
-				if (type1[holdint]==TDLAND) {
-					holdlong = (long) tofood( &sct[(int)lvar1[holdint]][extra[holdint]],0);
-					mvprintw(count,30,"(food=%2ld) %s",
-						holdlong,
-						commodities[type1[holdint]]);
-				} else {
-					holdlong = lvar1[holdint];
-					mvprintw(count,30,"%9ld %s",
-						holdlong,
-						commodities[type1[holdint]]);
-				}
-				if (type2[holdint]==TDLAND) {
-					mvprintw(count,50,"(food=%2ld) %s",
-						lvar2[holdint],
-						commodities[type2[holdint]]);
-				} else {
-				mvprintw(count,50,"%9ld %s",
-					lvar2[holdint],
-					commodities[type2[holdint]]);
-				}
-				if (count>LINES-8) {
-					standout();
-					mvaddstr(LINES-2,30,"Hit Any Key to Continue");
-					standend();
-					refresh();
-					getch();
-					clear();
-					standout();
-					mvaddstr(0,27,"COMMODITIES EXCHANGE");
-					standend();
-			    		mvaddstr(2,0,"    Nation                       Item            Minimum Price");
-					count=2;
-				}
-			}
-		}
-		standout();
-		count++;
-		count++;
-		mvaddstr(count++,0,"Do you wish to (B)uy, (S)ell, or (U)nsell?");
-		standend();
-		refresh();
-		inloop=TRUE;
-		while (inloop==TRUE) switch(getch()) {
-		case 'b':
-		case 'B':
-			buysell=BUY;
-			mvaddstr(count++,0,"What item number do you want to purchase? ");
-			refresh();
-			holdint = safe_long_to_int(get_number());
-			if (holdint<0) break;
-			/* check for minor sales */
-			if (holdint==GETFOOD || holdint==GETMETAL || holdint==GETJEWL) {
-				/* strange flow but less control needed */
-				mvaddstr(count++,0,"Spend how much gold? ");
-				refresh();
-				holdlong = get_number();
-				curntn->tgold-=holdlong;
-				if (curntn->tgold<0L) {
-					curntn->tgold+=holdlong;
-					tradeerr("You do not have enough gold");
-				}
-				else switch (holdint) {
-				case GETFOOD:
-					curntn->tfood+= (long)(GODFOOD * ((double)holdlong / GODPRICE));
-					if ( (tfile = fopen(tradefile,"a+"))==NULL) {
-						tradeerr("Error opening file for trading");
-						abrt()
-					}
-					fprintf(tfile, "%d %d %d %d %ld %d %d\n",BUY, country, GETFOOD, 0, curntn->tfood, 0, 0);
-					fclose(tfile);
-					break;
-				case GETMETAL:
-					curntn->metals+=(long)(GODMETAL * ((double)holdlong / GODPRICE));
-					break;
-				case GETJEWL:
-					curntn->jewels+=(long)(GODMETAL * ((double)holdlong / GODPRICE));
-					break;
-				}
-				inloop=FALSE;
-				done=FALSE;
-				break;
-			} else if (holdint<1 || holdint>itemnum
-				|| ntn[natn[holdint - 1]].dstatus[country]==UNMET) {
-				tradeerr("Invalid Item Number");
-				return;
-			}
-			holdint--;
-			if (deal[holdint]!=SELL) {
-				tradeerr("Sorry, that item is not on the market.");
-				return;
-			}
-			if (ntn[natn[holdint]].dstatus[country]==UNMET) {
-				tradeerr("That nation has not been met by you");
-				return;
-			}
-			if (ntn[natn[holdint]].dstatus[country]>HOSTILE) {
-				tradeerr("That nation is not doing business with you");
-				return;
-			}
-			/* obtain bid */
-			mvprintw(count++,0,"%s",buylist[type2[holdint]]);
-			refresh();
-			holdlong2 = 0L;
-			holdlong = (long) get_number();
-			if (holdlong< 0L) break;
-			/* check for valid bid */
-			switch(type2[holdint]) {
-			case TDGOLD:
-				if (holdlong < lvar2[holdint]) {
-					tradeerr("You underbid the minimum.");
-					buysell=NODEAL;
-				} else if (holdlong > curntn->tgold) {
-					tradeerr("Not Enough Gold");
-					buysell=NODEAL;
-				}
-				break;
-			case TDFOOD:
-				if (holdlong < lvar2[holdint]) {
-					tradeerr("You underbid the minimum.");
-					buysell=NODEAL;
-				} else if (holdlong > curntn->tfood) {
-					tradeerr("Not Enough Food");
-					buysell=NODEAL;
-				}
-				break;
-			case TDMETAL:
-				if (holdlong < lvar2[holdint]) {
-					tradeerr("You underbid the minimum.");
-					buysell=NODEAL;
-				} else if (holdlong > curntn->metals) {
-					tradeerr("Not Enough Iron");
-					buysell=NODEAL;
-				}
-				break;
-			case TDJEWL:
-				if (holdlong < lvar2[holdint]) {
-					tradeerr("You underbid the minimum.");
-					buysell=NODEAL;
-				} else if (holdlong > curntn->jewels) {
-					tradeerr("Not Enough Jewels");
-					buysell=NODEAL;
-				}
-				break;
-			case TDLAND:
-				mvaddstr(count++,0,"What Y position? ");
-				refresh();
-				holdlong2 = (long) get_number();
-				if (holdlong2 < 0L) break;
-				if (checkland(BUY,(int)(holdlong),(int)(holdlong2))==NODEAL) {
-					buysell=NODEAL;
-				} else if (tofood( &sct[(int)holdlong][(int)holdlong2],natn[holdint]) < lvar2[holdint]) {
-					tradeerr("You underbid the minimum");
-					buysell=NODEAL;
-				}
-				break;
-			case TDARMY:
-				if ((int)holdlong > MAXARM) {
-					tradeerr("Invalid Unit");
-					buysell=NODEAL;
-				} else if (tradable(country,(int)holdlong)==FALSE) {
-					tradeerr("That unit type is non-tradable.");
-					buysell=NODEAL;
-				} else if (armyvalue(country,(int)holdlong) < lvar2[holdint]) {
-					tradeerr("You underbid the minimum.");
-					buysell=NODEAL;
-				}
-				holdlong2=holdlong;
-				break;
-			case TDSHIP:
-				if ((int)holdlong >= MAXNAVY) {
-					tradeerr("Invalid Navy");
-					buysell=NODEAL;
-				} else if (flthold((int)holdlong) < (int)lvar2[holdint]) {
-					tradeerr("You underbid the minimum.");
-					buysell=NODEAL;
-				} else if((curntn->nvy[(int)holdlong].armynum!=MAXARM)||(curntn->nvy[(int)holdlong].people!=0)) {
-					tradeerr("Navy must be unloaded first.");
-					buysell=NODEAL;
-				}
-				holdlong2=holdlong;
-				break;
-			default:
-				tradeerr("Invalid Commodity");
-				buysell=NODEAL;
-				break;
-			}
-			if (buysell==BUY) {
-				if ( (tfile = fopen(tradefile,"a+"))==NULL) {
-					tradeerr("Error opening file for trading");
-					abrt()
-				}
-				setaside(country,type2[holdint],holdlong,(int)holdlong,FALSE);
-				fprintf(tfile, "%d %d %d %d %ld %ld %d\n",BUY, country, holdint, 0, holdlong, holdlong2, 0);
-				fclose(tfile);
-			}
-			return;
-		case 's':
-		case 'S':
-			/* sell an item */
-			/* only allow MAXITM on market */
-			if (itemnum>=MAXITM) {
-				standout();
-				if (itemnum==0) mvaddstr(count++,0,"Market Congested.  Hit any key to continue");
-				else mvaddstr(count++,0,"Market Congested.  (B)uy or any key to continue");
-				standend();
-				refresh();
-				break;
-			}
-			buysell=SELL;
-			holdint = gettrade("Selling",&count);
-			if (holdint==(-1)) {
-				tradeerr("Invalid Option");
-				return;
-			}
+                if (type1[holdint] == TDLAND) {
+                    holdlong = (long)tofood(&sct[(int)lvar1[holdint]][extra[holdint]], 0);
+                    mvprintw(count, 30, "(food=%2ld) %s", holdlong,
+                             commodities[type1[holdint]]);
+                } else {
+                    holdlong = lvar1[holdint];
+                    mvprintw(count, 30, "%9ld %s", holdlong, commodities[type1[holdint]]);
+                }
+                if (type2[holdint] == TDLAND) {
+                    mvprintw(count, 50, "(food=%2ld) %s", lvar2[holdint],
+                             commodities[type2[holdint]]);
+                } else {
+                    mvprintw(count, 50, "%9ld %s", lvar2[holdint], commodities[type2[holdint]]);
+                }
+                if (count > LINES - 8) {
+                    standout();
+                    mvaddstr(LINES - 2, 30, "Hit Any Key to Continue");
+                    standend();
+                    refresh();
+                    getch();
+                    clear();
+                    standout();
+                    mvaddstr(0, 27, "COMMODITIES EXCHANGE");
+                    standend();
+                    mvaddstr(2, 0,
+                             "    Nation                       Item            Minimum Price");
+                    count = 2;
+                }
+            }
+        }
+        standout();
+        count++;
+        count++;
+        mvaddstr(count++, 0, "Do you wish to (B)uy, (S)ell, or (U)nsell?");
+        standend();
+        refresh();
+        inloop = TRUE;
+        while (inloop == TRUE)
+            switch (getch()) {
+                case 'b':
+                case 'B':
+                    buysell = BUY;
+                    mvaddstr(count++, 0, "What item number do you want to purchase? ");
+                    refresh();
+                    holdint = safe_long_to_int(get_number());
+                    if (holdint < 0)
+                        break;
+                    /* check for minor sales */
+                    if (holdint == GETFOOD || holdint == GETMETAL || holdint == GETJEWL) {
+                        /* strange flow but less control needed */
+                        mvaddstr(count++, 0, "Spend how much gold? ");
+                        refresh();
+                        holdlong = get_number();
+                        curntn->tgold -= holdlong;
+                        if (curntn->tgold < 0L) {
+                            curntn->tgold += holdlong;
+                            tradeerr("You do not have enough gold");
+                        } else
+                            switch (holdint) {
+                                case GETFOOD:
+                                    curntn->tfood +=
+                                        (long)(GODFOOD * ((double)holdlong / GODPRICE));
+                                    if ((tfile = fopen(tradefile, "a+")) == NULL) {
+                                        tradeerr("Error opening file for trading");
+                                        abrt()
+                                    }
+                                    fprintf(tfile, "%d %d %d %d %ld %d %d\n", BUY, country,
+                                            GETFOOD, 0, curntn->tfood, 0, 0);
+                                    fclose(tfile);
+                                    break;
+                                case GETMETAL:
+                                    curntn->metals +=
+                                        (long)(GODMETAL * ((double)holdlong / GODPRICE));
+                                    break;
+                                case GETJEWL:
+                                    curntn->jewels +=
+                                        (long)(GODMETAL * ((double)holdlong / GODPRICE));
+                                    break;
+                            }
+                        inloop = FALSE;
+                        done = FALSE;
+                        break;
+                    } else if (holdint < 1 || holdint > itemnum
+                               || ntn[natn[holdint - 1]].dstatus[country] == UNMET) {
+                        tradeerr("Invalid Item Number");
+                        return;
+                    }
+                    holdint--;
+                    if (deal[holdint] != SELL) {
+                        tradeerr("Sorry, that item is not on the market.");
+                        return;
+                    }
+                    if (ntn[natn[holdint]].dstatus[country] == UNMET) {
+                        tradeerr("That nation has not been met by you");
+                        return;
+                    }
+                    if (ntn[natn[holdint]].dstatus[country] > HOSTILE) {
+                        tradeerr("That nation is not doing business with you");
+                        return;
+                    }
+                    /* obtain bid */
+                    mvprintw(count++, 0, "%s", buylist[type2[holdint]]);
+                    refresh();
+                    holdlong2 = 0L;
+                    holdlong = (long)get_number();
+                    if (holdlong < 0L)
+                        break;
+                    /* check for valid bid */
+                    switch (type2[holdint]) {
+                        case TDGOLD:
+                            if (holdlong < lvar2[holdint]) {
+                                tradeerr("You underbid the minimum.");
+                                buysell = NODEAL;
+                            } else if (holdlong > curntn->tgold) {
+                                tradeerr("Not Enough Gold");
+                                buysell = NODEAL;
+                            }
+                            break;
+                        case TDFOOD:
+                            if (holdlong < lvar2[holdint]) {
+                                tradeerr("You underbid the minimum.");
+                                buysell = NODEAL;
+                            } else if (holdlong > curntn->tfood) {
+                                tradeerr("Not Enough Food");
+                                buysell = NODEAL;
+                            }
+                            break;
+                        case TDMETAL:
+                            if (holdlong < lvar2[holdint]) {
+                                tradeerr("You underbid the minimum.");
+                                buysell = NODEAL;
+                            } else if (holdlong > curntn->metals) {
+                                tradeerr("Not Enough Iron");
+                                buysell = NODEAL;
+                            }
+                            break;
+                        case TDJEWL:
+                            if (holdlong < lvar2[holdint]) {
+                                tradeerr("You underbid the minimum.");
+                                buysell = NODEAL;
+                            } else if (holdlong > curntn->jewels) {
+                                tradeerr("Not Enough Jewels");
+                                buysell = NODEAL;
+                            }
+                            break;
+                        case TDLAND:
+                            mvaddstr(count++, 0, "What Y position? ");
+                            refresh();
+                            holdlong2 = (long)get_number();
+                            if (holdlong2 < 0L)
+                                break;
+                            if (checkland(BUY, (int)(holdlong), (int)(holdlong2)) == NODEAL) {
+                                buysell = NODEAL;
+                            } else if (tofood(&sct[(int)holdlong][(int)holdlong2],
+                                              natn[holdint])
+                                       < lvar2[holdint]) {
+                                tradeerr("You underbid the minimum");
+                                buysell = NODEAL;
+                            }
+                            break;
+                        case TDARMY:
+                            if ((int)holdlong > MAXARM) {
+                                tradeerr("Invalid Unit");
+                                buysell = NODEAL;
+                            } else if (tradable(country, (int)holdlong) == FALSE) {
+                                tradeerr("That unit type is non-tradable.");
+                                buysell = NODEAL;
+                            } else if (armyvalue(country, (int)holdlong) < lvar2[holdint]) {
+                                tradeerr("You underbid the minimum.");
+                                buysell = NODEAL;
+                            }
+                            holdlong2 = holdlong;
+                            break;
+                        case TDSHIP:
+                            if ((int)holdlong >= MAXNAVY) {
+                                tradeerr("Invalid Navy");
+                                buysell = NODEAL;
+                            } else if (flthold((int)holdlong) < (int)lvar2[holdint]) {
+                                tradeerr("You underbid the minimum.");
+                                buysell = NODEAL;
+                            } else if ((curntn->nvy[(int)holdlong].armynum != MAXARM)
+                                       || (curntn->nvy[(int)holdlong].people != 0)) {
+                                tradeerr("Navy must be unloaded first.");
+                                buysell = NODEAL;
+                            }
+                            holdlong2 = holdlong;
+                            break;
+                        default:
+                            tradeerr("Invalid Commodity");
+                            buysell = NODEAL;
+                            break;
+                    }
+                    if (buysell == BUY) {
+                        if ((tfile = fopen(tradefile, "a+")) == NULL) {
+                            tradeerr("Error opening file for trading");
+                            abrt()
+                        }
+                        setaside(country, type2[holdint], holdlong, (int)holdlong, FALSE);
+                        fprintf(tfile, "%d %d %d %d %ld %ld %d\n", BUY, country, holdint, 0,
+                                holdlong, holdlong2, 0);
+                        fclose(tfile);
+                    }
+                    return;
+                case 's':
+                case 'S':
+                    /* sell an item */
+                    /* only allow MAXITM on market */
+                    if (itemnum >= MAXITM) {
+                        standout();
+                        if (itemnum == 0)
+                            mvaddstr(count++, 0, "Market Congested.  Hit any key to continue");
+                        else
+                            mvaddstr(count++, 0,
+                                     "Market Congested.  (B)uy or any key to continue");
+                        standend();
+                        refresh();
+                        break;
+                    }
+                    buysell = SELL;
+                    holdint = gettrade("Selling", &count);
+                    if (holdint == (-1)) {
+                        tradeerr("Invalid Option");
+                        return;
+                    }
 
-			mvprintw(count++,0,"%s",buylist[holdint]);
-			refresh();
-			/* find out how much commodities */
-			holdlong = (long) get_number();
-			if (holdlong < 0) return;
-			extint = 0;
-			if (holdint< TDLAND && holdlong==0L)
-				return;
+                    mvprintw(count++, 0, "%s", buylist[holdint]);
+                    refresh();
+                    /* find out how much commodities */
+                    holdlong = (long)get_number();
+                    if (holdlong < 0)
+                        return;
+                    extint = 0;
+                    if (holdint < TDLAND && holdlong == 0L)
+                        return;
 
-			/* check for valid items */
-			switch(holdint) {
-			case TDGOLD:
-				if (holdlong > curntn->tgold) {
-					tradeerr("Not Enough Gold");
-					buysell=NODEAL;
-				}
-				break;
-			case TDFOOD:
-				if (holdlong > curntn->tfood) {
-					tradeerr("Not Enough Food");
-					buysell=NODEAL;
-				}
-				break;
-			case TDMETAL:
-				if (holdlong > curntn->metals) {
-					tradeerr("Not Enough Iron");
-					buysell=NODEAL;
-				}
-				break;
-			case TDJEWL:
-				if (holdlong > curntn->jewels) {
-					tradeerr("Not Enough Jewels");
-					buysell=NODEAL;
-				}
-				break;
-			case TDLAND:
-				mvaddstr(count++,0,"What Y position? ");
-				refresh();
-				extint = safe_long_to_int(get_number());
-				if (extint < 0) {
-					buysell=NODEAL;
-					break;
-				}
-				buysell = checkland(SELL,(int)holdlong,extint);
-				break;
-			case TDARMY:
-				if (holdlong>=MAXARM || curntn->arm[(int)holdlong].sold <= 0) {
-					tradeerr("Invalid Army");
-					buysell=NODEAL;
-				} else if (tradable(country,(int)holdlong)==FALSE) {
-					tradeerr("That unit is non-tradable.");
-					buysell=NODEAL;
-				}
-				break;
-			case TDSHIP:
-				if (holdlong>=MAXNAVY || flthold((int)holdlong) <= 0) {
-					tradeerr("Invalid Navy");
-					buysell=NODEAL;
-				} else if((curntn->nvy[(int)holdlong].armynum!=MAXARM)||(curntn->nvy[(int)holdlong].people!=0)) {
-					tradeerr("Navy must be unloaded first.");
-					buysell=NODEAL;
-				}
-				break;
-			default:
-				tradeerr("Invalid Commodity");
-				buysell=NODEAL;
-				break;
-			}
-			/* invalid commodity */
-			if (buysell==NODEAL) return;
+                    /* check for valid items */
+                    switch (holdint) {
+                        case TDGOLD:
+                            if (holdlong > curntn->tgold) {
+                                tradeerr("Not Enough Gold");
+                                buysell = NODEAL;
+                            }
+                            break;
+                        case TDFOOD:
+                            if (holdlong > curntn->tfood) {
+                                tradeerr("Not Enough Food");
+                                buysell = NODEAL;
+                            }
+                            break;
+                        case TDMETAL:
+                            if (holdlong > curntn->metals) {
+                                tradeerr("Not Enough Iron");
+                                buysell = NODEAL;
+                            }
+                            break;
+                        case TDJEWL:
+                            if (holdlong > curntn->jewels) {
+                                tradeerr("Not Enough Jewels");
+                                buysell = NODEAL;
+                            }
+                            break;
+                        case TDLAND:
+                            mvaddstr(count++, 0, "What Y position? ");
+                            refresh();
+                            extint = safe_long_to_int(get_number());
+                            if (extint < 0) {
+                                buysell = NODEAL;
+                                break;
+                            }
+                            buysell = checkland(SELL, (int)holdlong, extint);
+                            break;
+                        case TDARMY:
+                            if (holdlong >= MAXARM || curntn->arm[(int)holdlong].sold <= 0) {
+                                tradeerr("Invalid Army");
+                                buysell = NODEAL;
+                            } else if (tradable(country, (int)holdlong) == FALSE) {
+                                tradeerr("That unit is non-tradable.");
+                                buysell = NODEAL;
+                            }
+                            break;
+                        case TDSHIP:
+                            if (holdlong >= MAXNAVY || flthold((int)holdlong) <= 0) {
+                                tradeerr("Invalid Navy");
+                                buysell = NODEAL;
+                            } else if ((curntn->nvy[(int)holdlong].armynum != MAXARM)
+                                       || (curntn->nvy[(int)holdlong].people != 0)) {
+                                tradeerr("Navy must be unloaded first.");
+                                buysell = NODEAL;
+                            }
+                            break;
+                        default:
+                            tradeerr("Invalid Commodity");
+                            buysell = NODEAL;
+                            break;
+                    }
+                    /* invalid commodity */
+                    if (buysell == NODEAL)
+                        return;
 
-			/* find out what they want in trade */
-			holdint2 = gettrade("In Trade For",&count);
-			if (holdint2==(-1)) {
-				tradeerr("Invalid Option");
-				return;
-			}
-			if (holdint2==TDLAND) {
-				holdlong2 = (long) getland(&count);
-				if (holdlong2==(-1L)) {
-					tradeerr("Invalid Vegetation");
-					return;
-				}
-			} else {
-				/* find out for what value */
-				mvprintw(count++,0,"Minimum Amount of %s? "
-					,commodities[holdint2]);
-				refresh();
-				holdlong2 = (long) get_number();
-				if (holdlong2 <= 0L) return;
-			}
+                    /* find out what they want in trade */
+                    holdint2 = gettrade("In Trade For", &count);
+                    if (holdint2 == (-1)) {
+                        tradeerr("Invalid Option");
+                        return;
+                    }
+                    if (holdint2 == TDLAND) {
+                        holdlong2 = (long)getland(&count);
+                        if (holdlong2 == (-1L)) {
+                            tradeerr("Invalid Vegetation");
+                            return;
+                        }
+                    } else {
+                        /* find out for what value */
+                        mvprintw(count++, 0, "Minimum Amount of %s? ", commodities[holdint2]);
+                        refresh();
+                        holdlong2 = (long)get_number();
+                        if (holdlong2 <= 0L)
+                            return;
+                    }
 
-			/* make sure what was bid is unusable */
-			setaside(country,holdint,holdlong,(int)holdlong,FALSE);
+                    /* make sure what was bid is unusable */
+                    setaside(country, holdint, holdlong, (int)holdlong, FALSE);
 
-			/* set up output properly */
-			if (holdint==TDARMY) {
-				extint = (int) holdlong;
-				holdlong = armyvalue(country,(int)holdlong);
-			}
-			else if (holdint==TDSHIP) {
-				extint = (int)holdlong;
-				holdlong = (long)flthold(extint);
-			}
+                    /* set up output properly */
+                    if (holdint == TDARMY) {
+                        extint = (int)holdlong;
+                        holdlong = armyvalue(country, (int)holdlong);
+                    } else if (holdint == TDSHIP) {
+                        extint = (int)holdlong;
+                        holdlong = (long)flthold(extint);
+                    }
 
-			/* send it out */
-			if ( (tfile = fopen(tradefile,"a+"))==NULL) {
-				tradeerr("Error opening file for trading");
-				abrt()
-			}
-			fprintf(tfile, "%d %d %d %d %ld %ld %d\n", SELL, country, holdint, holdint2, holdlong, holdlong2, extint);
-			fclose(tfile);
-			inloop=FALSE;
-			done=FALSE;
-			break;
-		case 'u':
-		case 'U':
-			/* unsell an item */
-			if (itemnum==0) break;
-			mvaddstr(count++,0,"What item number to remove? ");
-			refresh();
-			holdint = safe_long_to_int(get_number());
-			if (holdint < 0) return;
-			if (holdint==0 || holdint>itemnum) {
-				tradeerr("Invalid Item Number");
-				return;
-			}
-			holdint--;
+                    /* send it out */
+                    if ((tfile = fopen(tradefile, "a+")) == NULL) {
+                        tradeerr("Error opening file for trading");
+                        abrt()
+                    }
+                    fprintf(tfile, "%d %d %d %d %ld %ld %d\n", SELL, country, holdint, holdint2,
+                            holdlong, holdlong2, extint);
+                    fclose(tfile);
+                    inloop = FALSE;
+                    done = FALSE;
+                    break;
+                case 'u':
+                case 'U':
+                    /* unsell an item */
+                    if (itemnum == 0)
+                        break;
+                    mvaddstr(count++, 0, "What item number to remove? ");
+                    refresh();
+                    holdint = safe_long_to_int(get_number());
+                    if (holdint < 0)
+                        return;
+                    if (holdint == 0 || holdint > itemnum) {
+                        tradeerr("Invalid Item Number");
+                        return;
+                    }
+                    holdint--;
 #ifdef OGOD
-			/* allow god to remove commodities */
-			if (country!=0 && country!=natn[holdint])
+                    /* allow god to remove commodities */
+                    if (country != 0 && country != natn[holdint])
 #else
-			if (country != natn[holdint])
+                    if (country != natn[holdint])
 #endif /* OGOD */
-			{
-				tradeerr("That is not your item");
-				return;
-			}
+                    {
+                        tradeerr("That is not your item");
+                        return;
+                    }
 
-			if (deal[holdint]!=SELL) {
-				tradeerr("That item is not up for sale");
-				return;
-			}
+                    if (deal[holdint] != SELL) {
+                        tradeerr("That item is not up for sale");
+                        return;
+                    }
 
-			/* remove it from market */
-			if ( (tfile = fopen(tradefile,"a+"))==NULL) {
-				tradeerr("Error opening file for trading");
-				abrt()
-			}
-			fprintf(tfile, "%d %d %d %d %ld %ld %d\n", NOSALE, natn[holdint], holdint, 0, 0L, 0L, 0);
-			fclose(tfile);
-			takeback(natn[holdint],type1[holdint],lvar1[holdint],extra[holdint],FALSE);
-			/*redraw the commodities board so removal is seen*/
-			inloop=FALSE;
-			done=FALSE;
-			break;
-		default:
-			/* return on no choice */
-			return;
-		}
-	}
+                    /* remove it from market */
+                    if ((tfile = fopen(tradefile, "a+")) == NULL) {
+                        tradeerr("Error opening file for trading");
+                        abrt()
+                    }
+                    fprintf(tfile, "%d %d %d %d %ld %ld %d\n", NOSALE, natn[holdint], holdint,
+                            0, 0L, 0L, 0);
+                    fclose(tfile);
+                    takeback(natn[holdint], type1[holdint], lvar1[holdint], extra[holdint],
+                             FALSE);
+                    /*redraw the commodities board so removal is seen*/
+                    inloop = FALSE;
+                    done = FALSE;
+                    break;
+                default:
+                    /* return on no choice */
+                    return;
+            }
+    }
 }
 
 /*
@@ -589,18 +609,16 @@ void trade(void) {
  *   - Used by all trade functions for consistent error reporting
  *   - Hardcoded screen positions (lines 21-22) assume standard terminal size
  *   - Blocking function that pauses game until user acknowledgment
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-void
-tradeerr (char *mesg)
-{
-	clear_bottom(0);
-	standout();
-	mvaddstr(21,0,mesg);
-	standend();
-	mvaddstr(22,0,"Hit any key to continue");
-	refresh();
-	getch();
+void tradeerr(char *mesg) {
+    clear_bottom(0);
+    standout();
+    mvaddstr(21, 0, mesg);
+    standend();
+    mvaddstr(22, 0, "Hit any key to continue");
+    refresh();
+    getch();
 }
 
 /*
@@ -648,33 +666,27 @@ tradeerr (char *mesg)
  *   - Core validation function for land trading system
  *   - Prevents exploitation of capital and city trading
  *   - Used by both buy and sell operations
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-int
-checkland (int tradestat, int xspot, int yspot)
-{
-	int newstat=tradestat;
-	if (!ONMAP(xspot,yspot)) {
-		tradeerr("That is off the map");
-		newstat=NODEAL;
-	}
-	else if (sct[xspot][yspot].owner != country) {
-		tradeerr("You don't own it");
-		newstat=NODEAL;
-	}
-	else if (curntn->capx==xspot && curntn->capy==yspot) {
-		tradeerr("That is your capitol");
-		newstat=NODEAL;
-	}
-	else if (sct[xspot][yspot].designation == DTOWN) {
-		tradeerr("Towns may not be sold");
-		newstat=NODEAL;
-	}
-	else if (sct[xspot][yspot].designation == DCITY) {
-		tradeerr("Cities may not be sold");
-		newstat=NODEAL;
-	}
-	return(newstat);
+int checkland(int tradestat, int xspot, int yspot) {
+    int newstat = tradestat;
+    if (!ONMAP(xspot, yspot)) {
+        tradeerr("That is off the map");
+        newstat = NODEAL;
+    } else if (sct[xspot][yspot].owner != country) {
+        tradeerr("You don't own it");
+        newstat = NODEAL;
+    } else if (curntn->capx == xspot && curntn->capy == yspot) {
+        tradeerr("That is your capitol");
+        newstat = NODEAL;
+    } else if (sct[xspot][yspot].designation == DTOWN) {
+        tradeerr("Towns may not be sold");
+        newstat = NODEAL;
+    } else if (sct[xspot][yspot].designation == DCITY) {
+        tradeerr("Cities may not be sold");
+        newstat = NODEAL;
+    }
+    return (newstat);
 }
 
 /*
@@ -722,38 +734,35 @@ checkland (int tradestat, int xspot, int yspot)
  *   - Used for land trading to establish minimum food value requirements
  *   - Breaks out of nested loops using i=MAPX+1, j=MAPY+1 technique
  *   - Food value depends on both vegetation type and nation context
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-int
-getland (int *count)
-{
-	int	temp=0;
-	int	i,j;
-	char	entered;
+int getland(int *count) {
+    int temp = 0;
+    int i, j;
+    char entered;
 
-	mvprintw((*count)++,0,"MINIMUM VEGETATION: %c, %c, %c, %c, %c, %c, %c, %c, %c, %c, %c or %c: ",
-		VOLCANO,DESERT,TUNDRA,BARREN,LT_VEG,
-		GOOD,WOOD,FOREST,JUNGLE,SWAMP,ICE,NONE);
+    mvprintw((*count)++, 0,
+             "MINIMUM VEGETATION: %c, %c, %c, %c, %c, %c, %c, %c, %c, %c, %c or %c: ", VOLCANO,
+             DESERT, TUNDRA, BARREN, LT_VEG, GOOD, WOOD, FOREST, JUNGLE, SWAMP, ICE, NONE);
 
-	refresh();
-	entered=safe_int_to_uchar(getch());
-	if(entered!=VOLCANO       &&entered!=JUNGLE
-		&&entered!=DESERT &&entered!=TUNDRA
-		&&entered!=BARREN &&entered!=LT_VEG
-		&&entered!=NONE   &&entered!=GOOD
-		&&entered!=WOOD   &&entered!=FOREST
-		&&entered!=SWAMP  &&entered!=ICE) temp=(-1);
-	else {
-		for(i=0;i<MAPX;i++)
-		for(j=0;j<MAPY;j++) if(sct[i][j].vegetation == entered) {
-			temp = tofood( &sct[i][j],country );
-			i=MAPX+1;
-			j=MAPY+1;
-		}
-	}
-	mvprintw((*count)++,0," JUST ENTERED %c so food value is %d", entered,temp);
-	refresh();
-	return(temp);
+    refresh();
+    entered = safe_int_to_uchar(getch());
+    if (entered != VOLCANO && entered != JUNGLE && entered != DESERT && entered != TUNDRA
+        && entered != BARREN && entered != LT_VEG && entered != NONE && entered != GOOD
+        && entered != WOOD && entered != FOREST && entered != SWAMP && entered != ICE)
+        temp = (-1);
+    else {
+        for (i = 0; i < MAPX; i++)
+            for (j = 0; j < MAPY; j++)
+                if (sct[i][j].vegetation == entered) {
+                    temp = tofood(&sct[i][j], country);
+                    i = MAPX + 1;
+                    j = MAPY + 1;
+                }
+    }
+    mvprintw((*count)++, 0, " JUST ENTERED %c so food value is %d", entered, temp);
+    refresh();
+    return (temp);
 }
 
 /*
@@ -804,48 +813,47 @@ getland (int *count)
  *   - Used by multiple trading functions for consistent commodity selection
  *   - Case-insensitive input handling for user convenience
  *   - Returns -1 for any unrecognized input to signal error condition
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-int
-gettrade (char *saletype, int *count)
-{
-	int hold=(-1);
+int gettrade(char *saletype, int *count) {
+    int hold = (-1);
 
-	mvprintw((*count)++,0,"%s: (G)old, (F)ood, (I)ron, (J)ewels, (L)and, (A)rmy, (S)hips?",saletype);
-	refresh();
-	switch(getch()) {
-	case 'g':
-	case 'G':
-		hold=TDGOLD;
-		break;
-	case 'f':
-	case 'F':
-		hold=TDFOOD;
-		break;
-	case 'i':
-	case 'I':
-		hold=TDMETAL;
-		break;
-	case 'j':
-	case 'J':
-		hold=TDJEWL;
-		break;
-	case 'l':
-	case 'L':
-		hold=TDLAND;
-		break;
-	case 'a':
-	case 'A':
-		hold=TDARMY;
-		break;
-	case 's':
-	case 'S':
-		hold=TDSHIP;
-		break;
-	default:
-		break;
-	}
-	return(hold);
+    mvprintw((*count)++, 0, "%s: (G)old, (F)ood, (I)ron, (J)ewels, (L)and, (A)rmy, (S)hips?",
+             saletype);
+    refresh();
+    switch (getch()) {
+        case 'g':
+        case 'G':
+            hold = TDGOLD;
+            break;
+        case 'f':
+        case 'F':
+            hold = TDFOOD;
+            break;
+        case 'i':
+        case 'I':
+            hold = TDMETAL;
+            break;
+        case 'j':
+        case 'J':
+            hold = TDJEWL;
+            break;
+        case 'l':
+        case 'L':
+            hold = TDLAND;
+            break;
+        case 'a':
+        case 'A':
+            hold = TDARMY;
+            break;
+        case 's':
+        case 'S':
+            hold = TDSHIP;
+            break;
+        default:
+            break;
+    }
+    return (hold);
 }
 #endif /* CONQUER */
 
@@ -895,37 +903,37 @@ gettrade (char *saletype, int *count)
  *   - Paired with takeback() to implement trade reservation system
  *   - isup flag creates conditional behavior for some commodity types
  *   - TRADED status prevents units from being used while reserved
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-void
-setaside (int cntry, int item, long longval, int extint, int isup)
-{
-	switch(item)
-	{
-	case TDGOLD:
-		if (isup==FALSE) ntn[cntry].tgold -= longval;
-		break;
-	case TDFOOD:
-		ntn[cntry].tfood -= longval;
-		break;
-	case TDMETAL:
-		if (isup==FALSE) ntn[cntry].metals -= longval;
-		break;
-	case TDJEWL:
-		if (isup==FALSE) ntn[cntry].jewels -= longval;
-		break;
-	case TDLAND:
-		break;
-	case TDARMY:
-		ntn[cntry].arm[extint].smove = 0;
-		ntn[cntry].arm[extint].stat = TRADED;
-		break;
-	case TDSHIP:
-		/* use commodity to hold indicator */
-		ntn[cntry].nvy[extint].smove = 0;
-		ntn[cntry].nvy[extint].commodity = TRADED;
-		break;
-	}
+void setaside(int cntry, int item, long longval, int extint, int isup) {
+    switch (item) {
+        case TDGOLD:
+            if (isup == FALSE)
+                ntn[cntry].tgold -= longval;
+            break;
+        case TDFOOD:
+            ntn[cntry].tfood -= longval;
+            break;
+        case TDMETAL:
+            if (isup == FALSE)
+                ntn[cntry].metals -= longval;
+            break;
+        case TDJEWL:
+            if (isup == FALSE)
+                ntn[cntry].jewels -= longval;
+            break;
+        case TDLAND:
+            break;
+        case TDARMY:
+            ntn[cntry].arm[extint].smove = 0;
+            ntn[cntry].arm[extint].stat = TRADED;
+            break;
+        case TDSHIP:
+            /* use commodity to hold indicator */
+            ntn[cntry].nvy[extint].smove = 0;
+            ntn[cntry].nvy[extint].commodity = TRADED;
+            break;
+    }
 }
 
 /*
@@ -975,36 +983,37 @@ setaside (int cntry, int item, long longval, int extint, int isup)
  *   - Paired with setaside() to implement complete trade reservation system
  *   - Essential for trade cancellation and marketplace unselling operations
  *   - Units remain immobilized until next turn despite status restoration
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-void
-takeback (int cntry, int item, long longval, int extint, int isup)
-{
-	if (cntry == -1) return;
-	switch(item)
-	{
-	case TDGOLD:
-		if (isup==FALSE) ntn[cntry].tgold += longval;
-		break;
-	case TDFOOD:
-		ntn[cntry].tfood += longval;
-		break;
-	case TDMETAL:
-		if (isup==FALSE) ntn[cntry].metals += longval;
-		break;
-	case TDJEWL:
-		if (isup==FALSE) ntn[cntry].jewels += longval;
-		break;
-	case TDLAND:
-		break;
-	case TDARMY:
-		ntn[cntry].arm[extint].stat = DEFEND;
-		break;
-	case TDSHIP:
-		/* use commodity to hold indicator */
-		ntn[cntry].nvy[extint].commodity = 0;
-		break;
-	}
+void takeback(int cntry, int item, long longval, int extint, int isup) {
+    if (cntry == -1)
+        return;
+    switch (item) {
+        case TDGOLD:
+            if (isup == FALSE)
+                ntn[cntry].tgold += longval;
+            break;
+        case TDFOOD:
+            ntn[cntry].tfood += longval;
+            break;
+        case TDMETAL:
+            if (isup == FALSE)
+                ntn[cntry].metals += longval;
+            break;
+        case TDJEWL:
+            if (isup == FALSE)
+                ntn[cntry].jewels += longval;
+            break;
+        case TDLAND:
+            break;
+        case TDARMY:
+            ntn[cntry].arm[extint].stat = DEFEND;
+            break;
+        case TDSHIP:
+            /* use commodity to hold indicator */
+            ntn[cntry].nvy[extint].commodity = 0;
+            break;
+    }
 }
 
 #ifdef ADMIN
@@ -1062,92 +1071,93 @@ takeback (int cntry, int item, long longval, int extint, int isup)
  *   - ADMIN-only function for turn processing and administrative operations
  *   - Critical for maintaining game economy balance with trading costs
  *   - Handles complex unit roster management for military transfers
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-long
-tradeit (int cntry1, int cntry2, int item, long longval, int extra)
-{
-	int unitnum=(-1),unitcount=0;
-	/* error for -1 returned */
-	long returnval=(-1);
-	switch(item)
-	{
-	case TDGOLD:
-		returnval = longval;
-		ntn[cntry2].tgold += longval * TRADECOST(20);
-		break;
-	case TDFOOD:
-		returnval = longval;
-		ntn[cntry2].tfood += longval * TRADECOST(20);
-		break;
-	case TDMETAL:
-		ntn[cntry2].metals += longval * TRADECOST(20);
-		returnval = longval;
-		break;
-	case TDJEWL:
-		ntn[cntry2].jewels += longval * TRADECOST(20);
-		returnval = longval;
-		break;
-	case TDLAND:
-		if (sct[(int)longval][extra].owner==cntry1) {
-			sct[(int)longval][extra].owner = safe_int_to_uchar(cntry2);
-			returnval = longval;
-		}
-		break;
-	case TDARMY:
-		/* find army number for cntry2 */
-		/* give army to cntry2 */
-		if(ntn[cntry1].arm[extra].sold <= 0) return -1;
-		while(unitnum==(-1)&&unitcount<MAXARM) {
-			if (ntn[cntry2].arm[unitcount].sold<=0) {
-				/* give army to cntry2 */
-				ntn[cntry2].arm[unitcount].sold = ntn[cntry1].arm[extra].sold;
-				ntn[cntry2].arm[unitcount].unittyp = ntn[cntry1].arm[extra].unittyp;
-				ntn[cntry2].arm[unitcount].xloc = ntn[cntry2].capx;
-				ntn[cntry2].arm[unitcount].yloc = ntn[cntry2].capy;
-				ntn[cntry2].arm[unitcount].stat = DEFEND;
-				ntn[cntry2].arm[unitcount].smove = 0;
-				/* remove army from cntry1 */
-				ntn[cntry1].arm[extra].sold = 0;
-				ntn[cntry1].arm[extra].smove = 0;
-				ntn[cntry1].arm[extra].stat = DEFEND;
-				unitnum=unitcount;
-			}
-			unitcount++;
-		}
-		returnval=(long)unitnum;
-		break;
-	case TDSHIP:
-		/* give navy to cntry1 */
-		if(ntn[cntry1].nvy[extra].merchant==0
-		   && ntn[cntry1].nvy[extra].warships==0
-		   && ntn[cntry1].nvy[extra].galleys==0) return -1;
-		while(unitnum==(-1)&&unitcount<MAXARM){
-			if ((int)ntn[cntry2].nvy[unitcount].merchant+ntn[cntry2].nvy[unitcount].warships+ntn[cntry2].nvy[unitcount].galleys == 0) {
-				/* give navy to cntry2 */
-				ntn[cntry2].nvy[unitcount].warships = ntn[cntry1].nvy[extra].warships;
-				ntn[cntry2].nvy[unitcount].merchant = ntn[cntry1].nvy[extra].merchant;
-				ntn[cntry2].nvy[unitcount].galleys = ntn[cntry1].nvy[extra].galleys;
-				ntn[cntry2].nvy[unitcount].crew = ntn[cntry1].nvy[extra].crew;
-				ntn[cntry2].nvy[unitcount].xloc = ntn[cntry1].nvy[extra].xloc;
-				ntn[cntry2].nvy[unitcount].yloc = ntn[cntry1].nvy[extra].yloc;
-				ntn[cntry2].nvy[unitcount].commodity = 0;
-				ntn[cntry2].nvy[unitcount].smove = 0;
-				/* remove navy from cntry1 */
-				ntn[cntry1].nvy[extra].smove = 0;
-				ntn[cntry1].nvy[extra].merchant = 0;
-				ntn[cntry1].nvy[extra].warships = 0;
-				ntn[cntry1].nvy[extra].galleys = 0;
-				ntn[cntry1].nvy[extra].crew = 0;
-				ntn[cntry1].nvy[extra].commodity = 0;
-				unitnum=unitcount;
-			}
-			unitcount++;
-		}
-		returnval=(long)unitnum;
-		break;
-	}
-	return(returnval);
+long tradeit(int cntry1, int cntry2, int item, long longval, int extra) {
+    int unitnum = (-1), unitcount = 0;
+    /* error for -1 returned */
+    long returnval = (-1);
+    switch (item) {
+        case TDGOLD:
+            returnval = longval;
+            ntn[cntry2].tgold += longval * TRADECOST(20);
+            break;
+        case TDFOOD:
+            returnval = longval;
+            ntn[cntry2].tfood += longval * TRADECOST(20);
+            break;
+        case TDMETAL:
+            ntn[cntry2].metals += longval * TRADECOST(20);
+            returnval = longval;
+            break;
+        case TDJEWL:
+            ntn[cntry2].jewels += longval * TRADECOST(20);
+            returnval = longval;
+            break;
+        case TDLAND:
+            if (sct[(int)longval][extra].owner == cntry1) {
+                sct[(int)longval][extra].owner = safe_int_to_uchar(cntry2);
+                returnval = longval;
+            }
+            break;
+        case TDARMY:
+            /* find army number for cntry2 */
+            /* give army to cntry2 */
+            if (ntn[cntry1].arm[extra].sold <= 0)
+                return -1;
+            while (unitnum == (-1) && unitcount < MAXARM) {
+                if (ntn[cntry2].arm[unitcount].sold <= 0) {
+                    /* give army to cntry2 */
+                    ntn[cntry2].arm[unitcount].sold = ntn[cntry1].arm[extra].sold;
+                    ntn[cntry2].arm[unitcount].unittyp = ntn[cntry1].arm[extra].unittyp;
+                    ntn[cntry2].arm[unitcount].xloc = ntn[cntry2].capx;
+                    ntn[cntry2].arm[unitcount].yloc = ntn[cntry2].capy;
+                    ntn[cntry2].arm[unitcount].stat = DEFEND;
+                    ntn[cntry2].arm[unitcount].smove = 0;
+                    /* remove army from cntry1 */
+                    ntn[cntry1].arm[extra].sold = 0;
+                    ntn[cntry1].arm[extra].smove = 0;
+                    ntn[cntry1].arm[extra].stat = DEFEND;
+                    unitnum = unitcount;
+                }
+                unitcount++;
+            }
+            returnval = (long)unitnum;
+            break;
+        case TDSHIP:
+            /* give navy to cntry1 */
+            if (ntn[cntry1].nvy[extra].merchant == 0 && ntn[cntry1].nvy[extra].warships == 0
+                && ntn[cntry1].nvy[extra].galleys == 0)
+                return -1;
+            while (unitnum == (-1) && unitcount < MAXARM) {
+                if ((int)ntn[cntry2].nvy[unitcount].merchant
+                        + ntn[cntry2].nvy[unitcount].warships
+                        + ntn[cntry2].nvy[unitcount].galleys
+                    == 0) {
+                    /* give navy to cntry2 */
+                    ntn[cntry2].nvy[unitcount].warships = ntn[cntry1].nvy[extra].warships;
+                    ntn[cntry2].nvy[unitcount].merchant = ntn[cntry1].nvy[extra].merchant;
+                    ntn[cntry2].nvy[unitcount].galleys = ntn[cntry1].nvy[extra].galleys;
+                    ntn[cntry2].nvy[unitcount].crew = ntn[cntry1].nvy[extra].crew;
+                    ntn[cntry2].nvy[unitcount].xloc = ntn[cntry1].nvy[extra].xloc;
+                    ntn[cntry2].nvy[unitcount].yloc = ntn[cntry1].nvy[extra].yloc;
+                    ntn[cntry2].nvy[unitcount].commodity = 0;
+                    ntn[cntry2].nvy[unitcount].smove = 0;
+                    /* remove navy from cntry1 */
+                    ntn[cntry1].nvy[extra].smove = 0;
+                    ntn[cntry1].nvy[extra].merchant = 0;
+                    ntn[cntry1].nvy[extra].warships = 0;
+                    ntn[cntry1].nvy[extra].galleys = 0;
+                    ntn[cntry1].nvy[extra].crew = 0;
+                    ntn[cntry1].nvy[extra].commodity = 0;
+                    unitnum = unitcount;
+                }
+                unitcount++;
+            }
+            returnval = (long)unitnum;
+            break;
+    }
+    return (returnval);
 }
 
 /*
@@ -1201,35 +1211,33 @@ tradeit (int cntry1, int cntry2, int item, long longval, int extra)
  *   - Essential for trade validation and bid comparison
  *   - Handles edge cases where units/land may not exist or be invalid
  *   - Used by both trade processing and marketplace bid evaluation
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-long
-gettval(int cntry1,int cntry2,int type,long longval,int extint)
-{
-	long returnval=(-1);
+long gettval(int cntry1, int cntry2, int type, long longval, int extint) {
+    long returnval = (-1);
 
-	switch(type) {
-	case TDGOLD:
-	case TDFOOD:
-	case TDMETAL:
-	case TDJEWL:
-		returnval=longval;
-		break;
-	case TDLAND:
-		if (cntry2 == sct[(int)longval][extint].owner)
-		returnval=(long)tofood( &sct[(int)longval][extint],cntry1);
-		break;
-	case TDARMY:
-		if (armyvalue(cntry2,extint)>0)
-		returnval=armyvalue(cntry2,extint);
-		break;
-	case TDSHIP:
-		curntn = &ntn[cntry2];
-		if (flthold(extint)>0)
-		returnval = (long)flthold(extint);
-		break;
-	}
-	return(returnval);
+    switch (type) {
+        case TDGOLD:
+        case TDFOOD:
+        case TDMETAL:
+        case TDJEWL:
+            returnval = longval;
+            break;
+        case TDLAND:
+            if (cntry2 == sct[(int)longval][extint].owner)
+                returnval = (long)tofood(&sct[(int)longval][extint], cntry1);
+            break;
+        case TDARMY:
+            if (armyvalue(cntry2, extint) > 0)
+                returnval = armyvalue(cntry2, extint);
+            break;
+        case TDSHIP:
+            curntn = &ntn[cntry2];
+            if (flthold(extint) > 0)
+                returnval = (long)flthold(extint);
+            break;
+    }
+    return (returnval);
 }
 
 /*
@@ -1289,55 +1297,59 @@ gettval(int cntry1,int cntry2,int type,long longval,int extint)
  *   - Provides audit trail for all completed trades
  *   - Critical for player communication and game transparency
  *   - Terminates program on file errors to prevent silent failures
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-void
-trademail (int cntry1, int cntry2, int item1, int item2, long lvar1, long lvar2, long lvar3, long lvar4)
-{
-	FILE *fp[2];
-	int count;
-	char cname[2][NAMELTH+1],filename[2][FILELTH];
+void trademail(int cntry1, int cntry2, int item1, int item2, long lvar1, long lvar2, long lvar3,
+               long lvar4) {
+    FILE *fp[2];
+    int count;
+    char cname[2][NAMELTH + 1], filename[2][FILELTH];
 
-	snprintf(filename[0], sizeof(filename[0]), "%s%d", msgfile, cntry1);
-	snprintf(filename[1], sizeof(filename[1]), "%s%d", msgfile, cntry2);
-	strncpy(cname[0], ntn[cntry1].name, sizeof(cname[0]));
-	cname[0][sizeof(cname[0]) - 1] = '\0';
-	strncpy(cname[1], ntn[cntry2].name, sizeof(cname[1]));
-	cname[1][sizeof(cname[1]) - 1] = '\0';
+    snprintf(filename[0], sizeof(filename[0]), "%s%d", msgfile, cntry1);
+    snprintf(filename[1], sizeof(filename[1]), "%s%d", msgfile, cntry2);
+    strncpy(cname[0], ntn[cntry1].name, sizeof(cname[0]));
+    cname[0][sizeof(cname[0]) - 1] = '\0';
+    strncpy(cname[1], ntn[cntry2].name, sizeof(cname[1]));
+    cname[1][sizeof(cname[1]) - 1] = '\0';
 
-	if ((fp[0]=fopen(filename[0],"a+"))==NULL) {
-		printf("error opening <%s>\n",filename[0]);
-		abrt()
-	}
-	if ((fp[1]=fopen(filename[1],"a+"))==NULL) {
-		printf("error opening <%s>\n",filename[1]);
-		abrt()
-	}
+    if ((fp[0] = fopen(filename[0], "a+")) == NULL) {
+        printf("error opening <%s>\n", filename[0]);
+        abrt()
+    }
+    if ((fp[1] = fopen(filename[1], "a+")) == NULL) {
+        printf("error opening <%s>\n", filename[1]);
+        abrt()
+    }
 
-	for (count=0;count<2;count++) {
-		fprintf(fp[count],"Message to %s from Conquer Commerce Commision\n",cname[count]);
-		fprintf(fp[count],"Dated: %s of Year %d\n",PSEASON(TURN),YEAR(TURN));
-		fprintf(fp[count],"\n");
-		fprintf(fp[count],"   Trade transaction between %s and %s completed.\n",cname[1],cname[0]);
-		if (item1<=TDJEWL)
-		fprintf(fp[count],"       Nation %s receives %ld %s\n",cname[1],lvar1,commodities[item1]);
-		else if (item1==TDLAND)
-		fprintf(fp[count],"       Nation %s receives sector %ld, %ld\n",cname[1],lvar1,lvar2);
-		else if (item1==TDARMY)
-		fprintf(fp[count],"       Nation %s receives army #%ld\n",cname[1],lvar1);
-		else if (item1==TDSHIP)
-		fprintf(fp[count],"       Nation %s receives navy #%ld\n",cname[1],lvar1);
-		if (item2<=TDJEWL)
-		fprintf(fp[count],"       Nation %s receives %ld %s\n",cname[0],lvar3,commodities[item2]);
-		else if (item2==TDLAND)
-		fprintf(fp[count],"       Nation %s receives sector %ld, %ld\n",cname[0],lvar3,lvar4);
-		else if (item2==TDARMY)
-		fprintf(fp[count],"       Nation %s receives army #%ld\n",cname[0],lvar3);
-		else if (item2==TDSHIP)
-		fprintf(fp[count],"       Nation %s receives navy #%ld\n",cname[0],lvar3);
-		fprintf(fp[count],"END\n");
-		fclose(fp[count]);
-	}
+    for (count = 0; count < 2; count++) {
+        fprintf(fp[count], "Message to %s from Conquer Commerce Commision\n", cname[count]);
+        fprintf(fp[count], "Dated: %s of Year %d\n", PSEASON(TURN), YEAR(TURN));
+        fprintf(fp[count], "\n");
+        fprintf(fp[count], "   Trade transaction between %s and %s completed.\n", cname[1],
+                cname[0]);
+        if (item1 <= TDJEWL)
+            fprintf(fp[count], "       Nation %s receives %ld %s\n", cname[1], lvar1,
+                    commodities[item1]);
+        else if (item1 == TDLAND)
+            fprintf(fp[count], "       Nation %s receives sector %ld, %ld\n", cname[1], lvar1,
+                    lvar2);
+        else if (item1 == TDARMY)
+            fprintf(fp[count], "       Nation %s receives army #%ld\n", cname[1], lvar1);
+        else if (item1 == TDSHIP)
+            fprintf(fp[count], "       Nation %s receives navy #%ld\n", cname[1], lvar1);
+        if (item2 <= TDJEWL)
+            fprintf(fp[count], "       Nation %s receives %ld %s\n", cname[0], lvar3,
+                    commodities[item2]);
+        else if (item2 == TDLAND)
+            fprintf(fp[count], "       Nation %s receives sector %ld, %ld\n", cname[0], lvar3,
+                    lvar4);
+        else if (item2 == TDARMY)
+            fprintf(fp[count], "       Nation %s receives army #%ld\n", cname[0], lvar3);
+        else if (item2 == TDSHIP)
+            fprintf(fp[count], "       Nation %s receives navy #%ld\n", cname[0], lvar3);
+        fprintf(fp[count], "END\n");
+        fclose(fp[count]);
+    }
 }
 #endif /* ADMIN */
 
@@ -1392,18 +1404,17 @@ trademail (int cntry1, int cntry2, int item1, int item2, long lvar1, long lvar2,
  *   - Used by trading interface to validate unit availability
  *   - Prevents trading of regular troops to maintain game balance
  *   - Context switching ensures accurate unit status evaluation
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-int
-tradable (int cntry, int armynum)
-{
-	int oldcntry=country,returnval=FALSE;
-	country=safe_int_to_short(cntry);
-	if ( (ASTAT!=TRADED) && (ASTAT!=ONBOARD) && (ATYPE==A_MERCENARY
-		|| ATYPE==A_SIEGE || ATYPE==A_CATAPULT
-		|| ATYPE==A_ELEPHANT || ATYPE>=MINMONSTER) ) returnval=TRUE;
-	country=safe_int_to_short(oldcntry);
-	return(returnval);
+int tradable(int cntry, int armynum) {
+    int oldcntry = country, returnval = FALSE;
+    country = safe_int_to_short(cntry);
+    if ((ASTAT != TRADED) && (ASTAT != ONBOARD)
+        && (ATYPE == A_MERCENARY || ATYPE == A_SIEGE || ATYPE == A_CATAPULT
+            || ATYPE == A_ELEPHANT || ATYPE >= MINMONSTER))
+        returnval = TRUE;
+    country = safe_int_to_short(oldcntry);
+    return (returnval);
 }
 #endif /* CONQUER */
 
@@ -1455,18 +1466,17 @@ tradable (int cntry, int armynum)
  *   - Used for both bid validation and trade completion
  *   - Essential for establishing fair market prices for military units
  *   - Scaling factor prevents unrealistic unit values in trading
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-long
-armyvalue (int cntry, int unit)
-{
-	long returnval;
+long armyvalue(int cntry, int unit) {
+    long returnval;
 
-	returnval = ntn[cntry].arm[unit].sold*100 +
-		ntn[cntry].arm[unit].sold * unitattack[ntn[cntry].arm[unit].unittyp%UTYPE];
-	if (ntn[cntry].arm[unit].unittyp >= MINMONSTER) returnval+=ntn[cntry].arm[unit].sold*10;
-	returnval/=100;
-	return(returnval);
+    returnval = ntn[cntry].arm[unit].sold * 100
+                + ntn[cntry].arm[unit].sold * unitattack[ntn[cntry].arm[unit].unittyp % UTYPE];
+    if (ntn[cntry].arm[unit].unittyp >= MINMONSTER)
+        returnval += ntn[cntry].arm[unit].sold * 10;
+    returnval /= 100;
+    return (returnval);
 }
 
 /*
@@ -1517,43 +1527,48 @@ armyvalue (int cntry, int unit)
  *   - Called during player login to restore trade state
  *   - Essential for persistent trading across game sessions
  *   - Gracefully handles missing trade file (no operations active)
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-void
-checktrade (void)
-{
-	FILE *tfile;
-	int count, itemnum=0, natn[MAXITM];
-	int type1[MAXITM], type2[MAXITM], deal[MAXITM], extra[MAXITM];
-	long lvar1[MAXITM], lvar2[MAXITM];
-	/* initialize purchase list */
-	for (count=0; count<MAXITM; count++) {
-		deal[count]=(-1);
-	}
-	/* open trading file */
-	if ((tfile = fopen(tradefile,"r")) == NULL) {
-		/* no commodities - no transactions */
-		return;
-	}
-	/* read in all of the transactions */
-	while(!feof(tfile)) {
-		if (7 != fscanf(tfile,"%d %d %d %d %ld %ld %d\n",&deal[itemnum],
-			&natn[itemnum],&type1[itemnum],&type2[itemnum],&lvar1[itemnum],&lvar2[itemnum],&extra[itemnum])) break;
-		if (deal[itemnum]==NOSALE) {
-			if (natn[itemnum]==country)
-			takeback(country,type1[type1[itemnum]],lvar1[type1[itemnum]],extra[type1[itemnum]],TRUE);
-		} else if (deal[itemnum]==SELL) {
-			if (natn[itemnum]==country)
-			setaside(country,type1[itemnum],lvar1[itemnum],extra[itemnum],TRUE);
-			itemnum++;
-		} else if (deal[itemnum]==BUY) {
-			if (natn[itemnum]==country) {
-				if (type1[itemnum]==GETFOOD) ntn[country].tfood=lvar1[itemnum];
-				else setaside(country,type2[type1[itemnum]],lvar1[itemnum],(int)lvar1[itemnum],TRUE);
-			}
-		}
-	}
-	fclose(tfile);
+void checktrade(void) {
+    FILE *tfile;
+    int count, itemnum = 0, natn[MAXITM];
+    int type1[MAXITM], type2[MAXITM], deal[MAXITM], extra[MAXITM];
+    long lvar1[MAXITM], lvar2[MAXITM];
+    /* initialize purchase list */
+    for (count = 0; count < MAXITM; count++) {
+        deal[count] = (-1);
+    }
+    /* open trading file */
+    if ((tfile = fopen(tradefile, "r")) == NULL) {
+        /* no commodities - no transactions */
+        return;
+    }
+    /* read in all of the transactions */
+    while (!feof(tfile)) {
+        if (7
+            != fscanf(tfile, "%d %d %d %d %ld %ld %d\n", &deal[itemnum], &natn[itemnum],
+                      &type1[itemnum], &type2[itemnum], &lvar1[itemnum], &lvar2[itemnum],
+                      &extra[itemnum]))
+            break;
+        if (deal[itemnum] == NOSALE) {
+            if (natn[itemnum] == country)
+                takeback(country, type1[type1[itemnum]], lvar1[type1[itemnum]],
+                         extra[type1[itemnum]], TRUE);
+        } else if (deal[itemnum] == SELL) {
+            if (natn[itemnum] == country)
+                setaside(country, type1[itemnum], lvar1[itemnum], extra[itemnum], TRUE);
+            itemnum++;
+        } else if (deal[itemnum] == BUY) {
+            if (natn[itemnum] == country) {
+                if (type1[itemnum] == GETFOOD)
+                    ntn[country].tfood = lvar1[itemnum];
+                else
+                    setaside(country, type2[type1[itemnum]], lvar1[itemnum],
+                             (int)lvar1[itemnum], TRUE);
+            }
+        }
+    }
+    fclose(tfile);
 }
 
 #ifdef ADMIN
@@ -1619,114 +1634,128 @@ checktrade (void)
  *   - Central function for entire trading economy
  *   - Critical for maintaining game balance and fairness
  *   - Handles complex auction mechanics with multiple bidders
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-void
-uptrade (void)
-{
-	FILE *tfile;
-	int count, itemnum=0, natn[MAXITM];
-	int type1[MAXITM], type2[MAXITM], deal[MAXITM], extra[MAXITM];
-	int whobuy[MAXITM];
-	long buy1[MAXITM], buy2[MAXITM];
-	long price[MAXITM], longval1=0L, longval2=0L;
-	long lvar1[MAXITM], lvar2[MAXITM];
+void uptrade(void) {
+    FILE *tfile;
+    int count, itemnum = 0, natn[MAXITM];
+    int type1[MAXITM], type2[MAXITM], deal[MAXITM], extra[MAXITM];
+    int whobuy[MAXITM];
+    long buy1[MAXITM], buy2[MAXITM];
+    long price[MAXITM], longval1 = 0L, longval2 = 0L;
+    long lvar1[MAXITM], lvar2[MAXITM];
 
-	/* initialize purchase list */
-	for (count=0; count<MAXITM; count++) {
-		deal[count]=(-1);
-		whobuy[count]=(-1);
-		price[count]=(-1);
-		buy1[count]=(-1);
-		buy2[count]=(-1);
-	}
-	/* open trading file */
-	if ((tfile = fopen(tradefile,"r")) == NULL) {
-		/* no commodities - no transactions */
-		return;
-	}
-	/* read in all of the transactions */
-	while(!feof(tfile)) {
-		if (7 != fscanf(tfile,"%d %d %d %d %ld %ld %d\n",&deal[itemnum],
-			&natn[itemnum],&type1[itemnum],&type2[itemnum],&lvar1[itemnum],&lvar2[itemnum],&extra[itemnum])) break;
-		if (deal[itemnum]==NOSALE) {
-			/* remove item from sales list */
-			deal[type1[itemnum]]=NOSALE;
-		} else if (deal[itemnum]==SELL) {
-			itemnum++;
-		} else if (deal[itemnum]==BUY) {
-			if (type1[itemnum]==GETFOOD) /* just ignore food */;
-			else if (deal[type1[itemnum]]==SELL &&
-			(price[type1[itemnum]] <
-			gettval(natn[type1[itemnum]],natn[itemnum],
-			type2[type1[itemnum]],lvar1[itemnum],(int)lvar2[itemnum]))) {
-				deal[type1[itemnum]]=BUY;
-				/* highest bid so far */
-				price[type1[itemnum]]=gettval(natn[type1[itemnum]],natn[itemnum],type2[type1[itemnum]],lvar1[itemnum],(int)lvar2[itemnum]);
-				/* return bid to loser */
-				takeback(whobuy[type1[itemnum]],
-					type2[type1[itemnum]],
-					buy1[type1[itemnum]],(int)buy2[type1[itemnum]],FALSE);
-				/* record details of trade */
-				buy1[type1[itemnum]]=lvar1[itemnum];
-				buy2[type1[itemnum]]=lvar2[itemnum];
-				whobuy[type1[itemnum]]=natn[itemnum];
-			} else {
-				/* return bid */
-				takeback(natn[itemnum],
-					type2[type1[itemnum]],
-					lvar1[itemnum],(int)lvar2[itemnum],FALSE);
-			}
-		}
-	}
-	fclose(tfile);
-	unlink(tradefile);
-	if (itemnum == 0) return;
-	/* reopen the file for unsold commodities */
-	if ((tfile=fopen(tradefile,"w")) == NULL) {
-		/* error on opening file */
-		printf("Error opening <%s> for trade update\n",tradefile);
-		abrt()
-	}
+    /* initialize purchase list */
+    for (count = 0; count < MAXITM; count++) {
+        deal[count] = (-1);
+        whobuy[count] = (-1);
+        price[count] = (-1);
+        buy1[count] = (-1);
+        buy2[count] = (-1);
+    }
+    /* open trading file */
+    if ((tfile = fopen(tradefile, "r")) == NULL) {
+        /* no commodities - no transactions */
+        return;
+    }
+    /* read in all of the transactions */
+    while (!feof(tfile)) {
+        if (7
+            != fscanf(tfile, "%d %d %d %d %ld %ld %d\n", &deal[itemnum], &natn[itemnum],
+                      &type1[itemnum], &type2[itemnum], &lvar1[itemnum], &lvar2[itemnum],
+                      &extra[itemnum]))
+            break;
+        if (deal[itemnum] == NOSALE) {
+            /* remove item from sales list */
+            deal[type1[itemnum]] = NOSALE;
+        } else if (deal[itemnum] == SELL) {
+            itemnum++;
+        } else if (deal[itemnum] == BUY) {
+            if (type1[itemnum] == GETFOOD) /* just ignore food */
+                ;
+            else if (deal[type1[itemnum]] == SELL
+                     && (price[type1[itemnum]] < gettval(natn[type1[itemnum]], natn[itemnum],
+                                                         type2[type1[itemnum]], lvar1[itemnum],
+                                                         (int)lvar2[itemnum]))) {
+                deal[type1[itemnum]] = BUY;
+                /* highest bid so far */
+                price[type1[itemnum]] =
+                    gettval(natn[type1[itemnum]], natn[itemnum], type2[type1[itemnum]],
+                            lvar1[itemnum], (int)lvar2[itemnum]);
+                /* return bid to loser */
+                takeback(whobuy[type1[itemnum]], type2[type1[itemnum]], buy1[type1[itemnum]],
+                         (int)buy2[type1[itemnum]], FALSE);
+                /* record details of trade */
+                buy1[type1[itemnum]] = lvar1[itemnum];
+                buy2[type1[itemnum]] = lvar2[itemnum];
+                whobuy[type1[itemnum]] = natn[itemnum];
+            } else {
+                /* return bid */
+                takeback(natn[itemnum], type2[type1[itemnum]], lvar1[itemnum],
+                         (int)lvar2[itemnum], FALSE);
+            }
+        }
+    }
+    fclose(tfile);
+    unlink(tradefile);
+    if (itemnum == 0)
+        return;
+    /* reopen the file for unsold commodities */
+    if ((tfile = fopen(tradefile, "w")) == NULL) {
+        /* error on opening file */
+        printf("Error opening <%s> for trade update\n", tradefile);
+        abrt()
+    }
 
-	/* compute the trading */
-	for (count=0;count<itemnum;count++) {
-		if (deal[count]==SELL) {
-			/* adjust the displayed value */
-			if (type1[count] != TDLAND)
-			lvar1[count]=gettval(0,natn[count],type1[count],lvar1[count],extra[count]);
-			/* keep unsold items up for sale */
-			if(lvar1[count]>=0) fprintf(tfile,"%d %d %d %d %ld %ld %d\n", deal[count], natn[count],type1[count],type2[count],lvar1[count],lvar2[count],extra[count]);
-		} else if (deal[count]==BUY) {
-			/* do the trading */
-			longval1 = tradeit(natn[count],whobuy[count],type1[count],lvar1[count],extra[count]);
-			if (longval1!=(-1)) longval2 = tradeit(whobuy[count],natn[count],type2[count],buy1[count],(int)buy2[count]);
-			if (longval1==(-1)) {
-				/* abort due to seller */
-				fprintf(fnews,"2.\tTrade between %s and %s breaks down due to %s.\n",
-					ntn[natn[count]].name,ntn[whobuy[count]].name,tradefail[type1[count]]);
-			} else if (longval2==(-1)) {
-				/* abort due to buyer */
-				tradeit(whobuy[count],natn[count],type1[count],longval1,extra[count]);
-				fprintf(fnews,"2.\tTrade between %s and %s breaks down due to %s.\n",
-					ntn[whobuy[count]].name,ntn[natn[count]].name,tradefail[type2[count]]);
-				/* place it on the list for next turn */
-				/* adjust the displayed value */
-				/* let land fail during trade */
-				if (type1[count] != TDLAND)
-				lvar1[count]=gettval(0,natn[count],type1[count],lvar1[count],extra[count]);
-				if(lvar1[count]>=0) fprintf(tfile,"%d %d %d %d %ld %ld %d\n", SELL, natn[count],type1[count],type2[count],lvar1[count],lvar2[count],extra[count]);
-			} else {
-				/* trade completed send mail */
-				fprintf(fnews,"2.\tNation %s sells %s to %s for %s\n"
-					,ntn[natn[count]].name,commodities[type1[count]],ntn[whobuy[count]].name,commodities[type2[count]]);
-				trademail(natn[count],whobuy[count],type1[count],
-					type2[count],longval1,(long)extra[count],
-					longval2,buy2[count]);
-			}
-		}
-	}
-	fclose(tfile);
+    /* compute the trading */
+    for (count = 0; count < itemnum; count++) {
+        if (deal[count] == SELL) {
+            /* adjust the displayed value */
+            if (type1[count] != TDLAND)
+                lvar1[count] =
+                    gettval(0, natn[count], type1[count], lvar1[count], extra[count]);
+            /* keep unsold items up for sale */
+            if (lvar1[count] >= 0)
+                fprintf(tfile, "%d %d %d %d %ld %ld %d\n", deal[count], natn[count],
+                        type1[count], type2[count], lvar1[count], lvar2[count], extra[count]);
+        } else if (deal[count] == BUY) {
+            /* do the trading */
+            longval1 =
+                tradeit(natn[count], whobuy[count], type1[count], lvar1[count], extra[count]);
+            if (longval1 != (-1))
+                longval2 = tradeit(whobuy[count], natn[count], type2[count], buy1[count],
+                                   (int)buy2[count]);
+            if (longval1 == (-1)) {
+                /* abort due to seller */
+                fprintf(fnews, "2.\tTrade between %s and %s breaks down due to %s.\n",
+                        ntn[natn[count]].name, ntn[whobuy[count]].name,
+                        tradefail[type1[count]]);
+            } else if (longval2 == (-1)) {
+                /* abort due to buyer */
+                tradeit(whobuy[count], natn[count], type1[count], longval1, extra[count]);
+                fprintf(fnews, "2.\tTrade between %s and %s breaks down due to %s.\n",
+                        ntn[whobuy[count]].name, ntn[natn[count]].name,
+                        tradefail[type2[count]]);
+                /* place it on the list for next turn */
+                /* adjust the displayed value */
+                /* let land fail during trade */
+                if (type1[count] != TDLAND)
+                    lvar1[count] =
+                        gettval(0, natn[count], type1[count], lvar1[count], extra[count]);
+                if (lvar1[count] >= 0)
+                    fprintf(tfile, "%d %d %d %d %ld %ld %d\n", SELL, natn[count], type1[count],
+                            type2[count], lvar1[count], lvar2[count], extra[count]);
+            } else {
+                /* trade completed send mail */
+                fprintf(fnews, "2.\tNation %s sells %s to %s for %s\n", ntn[natn[count]].name,
+                        commodities[type1[count]], ntn[whobuy[count]].name,
+                        commodities[type2[count]]);
+                trademail(natn[count], whobuy[count], type1[count], type2[count], longval1,
+                          (long)extra[count], longval2, buy2[count]);
+            }
+        }
+    }
+    fclose(tfile);
 }
 
 /*
@@ -1781,69 +1810,62 @@ uptrade (void)
  *   - Essential for maintaining marketplace integrity
  *   - Used during nation elimination or administrative intervention
  *   - Prevents orphaned trade entries from inactive nations
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-void
-fixtrade (int cntry)
-{
-	FILE *tfile;
-	int holdint, notopen=FALSE;
-	int type1[MAXITM], type2[MAXITM], deal[MAXITM], extra[MAXITM];
-	int natn[MAXITM], itemnum;
-	long lvar1[MAXITM], lvar2[MAXITM];
+void fixtrade(int cntry) {
+    FILE *tfile;
+    int holdint, notopen = FALSE;
+    int type1[MAXITM], type2[MAXITM], deal[MAXITM], extra[MAXITM];
+    int natn[MAXITM], itemnum;
+    long lvar1[MAXITM], lvar2[MAXITM];
 
-	/* open trading file */
-	if ((tfile=fopen(tradefile,"r")) == NULL ) {
-		notopen=TRUE;
-	}
-	itemnum = 0;
+    /* open trading file */
+    if ((tfile = fopen(tradefile, "r")) == NULL) {
+        notopen = TRUE;
+    }
+    itemnum = 0;
 
-	/* read in all of the data */
-	while (notopen==FALSE && !feof(tfile))
-	{
-		if (fscanf(tfile,"%d %d %d %d %ld %ld %d\n",&deal[itemnum],
-			&natn[itemnum],&type1[itemnum],&type2[itemnum],
-			&lvar1[itemnum],&lvar2[itemnum],&extra[itemnum]) == 7){
-			if (deal[itemnum]==NOSALE) {
-				/* remove item from sales list */
-				deal[type1[itemnum]]=NOSALE;
-			} else if (deal[itemnum]==SELL) {
-				itemnum++;
-			}
-		}
-	}
-	if (notopen==FALSE) fclose(tfile);
+    /* read in all of the data */
+    while (notopen == FALSE && !feof(tfile)) {
+        if (fscanf(tfile, "%d %d %d %d %ld %ld %d\n", &deal[itemnum], &natn[itemnum],
+                   &type1[itemnum], &type2[itemnum], &lvar1[itemnum], &lvar2[itemnum],
+                   &extra[itemnum])
+            == 7) {
+            if (deal[itemnum] == NOSALE) {
+                /* remove item from sales list */
+                deal[type1[itemnum]] = NOSALE;
+            } else if (deal[itemnum] == SELL) {
+                itemnum++;
+            }
+        }
+    }
+    if (notopen == FALSE)
+        fclose(tfile);
 
-	/* go through list of commodities */
+    /* go through list of commodities */
 
-	for ( holdint=0; holdint<itemnum; holdint++)
-	{
-		if ( deal[holdint]==SELL )
-		{
+    for (holdint = 0; holdint < itemnum; holdint++) {
+        if (deal[holdint] == SELL) {
+            if (natn[holdint] == cntry) {
+                /* remove it from market */
 
-			if ( natn[holdint] == cntry )
-			{
-				/* remove it from market */
+                if ((tfile = fopen(tradefile, "a+")) == NULL) {
+                    printf("Error opening file for trading");
+                    abrt()
+                }
 
-				if ( (tfile = fopen(tradefile,"a+"))==NULL)
-				{
-					printf("Error opening file for trading");
-					abrt()
-				}
+                fprintf(tfile, "%d %d %d %d %ld %ld %d\n", NOSALE, natn[holdint], holdint, 0,
+                        0L, 0L, 0);
 
-				fprintf(tfile, "%d %d %d %d %ld %ld %d\n",
-				 NOSALE, natn[holdint], holdint, 0, 0L, 0L, 0);
+                fclose(tfile);
 
-				fclose(tfile);
+                takeback(natn[holdint], type1[holdint], lvar1[holdint], extra[holdint], FALSE);
 
-				takeback( natn[holdint], type1[holdint], lvar1[holdint],
-					extra[holdint], FALSE);
+            } /* natn == cntry */
 
-			}  /* natn == cntry */
+        } /* SELL order */
 
-		} /* SELL order */
-
-	} /* loop through commodities */
+    } /* loop through commodities */
 }
 #endif /* ADMIN */
 #endif /* TRADE */

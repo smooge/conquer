@@ -3,7 +3,8 @@
  *
  * This file is part of Conquer.
  * Originally Copyright (C) 1988-1989 by Edward M. Barlow and Adam Bryant
- * Copyright (C) 2025 Juan Manuel Méndez Rey (Vejeta) - Licensed under GPL v3 with permission from original authors
+ * Copyright (C) 2025 Juan Manuel Méndez Rey (Vejeta) - Licensed under GPL v3 with permission
+ * from original authors
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -163,19 +164,20 @@
  *   - No return value checking needed as m2alloc() handles failures internally
  *   - Safe to call multiple times for reallocation scenarios
  *   - Critical for game initialization and scenario loading operations
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-void
-getspace(void)
-{
-	if (sct != NULL) free(sct);
-	sct = (struct s_sector **) m2alloc(MAPX,MAPY,sizeof(struct s_sector));
-	if (occ != NULL) free(occ);
-	occ = (char **) m2alloc(MAPX,MAPY,sizeof(char));
-	if (movecost != NULL) free(movecost);
+void getspace(void) {
+    if (sct != NULL)
+        free(sct);
+    sct = (struct s_sector **)m2alloc(MAPX, MAPY, sizeof(struct s_sector));
+    if (occ != NULL)
+        free(occ);
+    occ = (char **)m2alloc(MAPX, MAPY, sizeof(char));
+    if (movecost != NULL)
+        free(movecost);
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wanalyzer-allocation-size"
-	movecost = (short **) m2alloc(MAPX,MAPY,sizeof(short));
+    movecost = (short **)m2alloc(MAPX, MAPY, sizeof(short));
 #pragma GCC diagnostic pop
 }
 
@@ -224,58 +226,60 @@ static char **mapseen;
  *   - Navy condition checks for any ship type (merchant, war, gunboat)
  *   - Performance scales with map size and number of military units
  *   - Critical for map printing functions and strategic game balance
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-void mapprep (void) {
-	int armynum, nvynum;
-	int x,y,i,j;
+void mapprep(void) {
+    int armynum, nvynum;
+    int x, y, i, j;
 
-	/* get space for map */
-	mapseen = (char **) m2alloc(MAPX,MAPY,sizeof(char));
+    /* get space for map */
+    mapseen = (char **)m2alloc(MAPX, MAPY, sizeof(char));
 
-	/* initialize the array */
-	if (country==0 || magic(country,KNOWALL)==TRUE) {
-		armynum = TRUE;
-	} else {
-		armynum = FALSE;
-	}
-	for (x=0;x<MAPX;x++) for(y=0;y<MAPY;y++) {
-		mapseen[x][y] = safe_int_to_char(armynum);
-	}
+    /* initialize the array */
+    if (country == 0 || magic(country, KNOWALL) == TRUE) {
+        armynum = TRUE;
+    } else {
+        armynum = FALSE;
+    }
+    for (x = 0; x < MAPX; x++)
+        for (y = 0; y < MAPY; y++) {
+            mapseen[x][y] = safe_int_to_char(armynum);
+        }
 
-	/* done for all knowing */
-	if (country==0 || magic(country,KNOWALL)==TRUE) return;
+    /* done for all knowing */
+    if (country == 0 || magic(country, KNOWALL) == TRUE)
+        return;
 
-	/* add all visible sectors from owned land */
-	for(x = 0; x < MAPX; x++)
-	for(y = 0; y < MAPY; y++)
-	if(sct[x][y].owner==country){
-		for(i=x-LANDSEE;i<=x+LANDSEE;i++)
-		for(j=y-LANDSEE;j<=y+LANDSEE;j++)
-		if (ONMAP(i,j)) {
-			mapseen[i][j]=TRUE;
-		}
-	}
+    /* add all visible sectors from owned land */
+    for (x = 0; x < MAPX; x++)
+        for (y = 0; y < MAPY; y++)
+            if (sct[x][y].owner == country) {
+                for (i = x - LANDSEE; i <= x + LANDSEE; i++)
+                    for (j = y - LANDSEE; j <= y + LANDSEE; j++)
+                        if (ONMAP(i, j)) {
+                            mapseen[i][j] = TRUE;
+                        }
+            }
 
-	/* now add all visible sections from armies */
-	for(armynum=0;armynum<MAXARM;armynum++)
-	if(P_ASOLD>0) {
-		for(i=(int)P_AXLOC-ARMYSEE;i<=(int)P_AXLOC+ARMYSEE;i++)
-		for(j=(int)P_AYLOC-ARMYSEE;j<=(int)P_AYLOC+ARMYSEE;j++)
-		if (ONMAP(i,j)) {
-			mapseen[i][j]=TRUE;
-		}
-	}
+    /* now add all visible sections from armies */
+    for (armynum = 0; armynum < MAXARM; armynum++)
+        if (P_ASOLD > 0) {
+            for (i = (int)P_AXLOC - ARMYSEE; i <= (int)P_AXLOC + ARMYSEE; i++)
+                for (j = (int)P_AYLOC - ARMYSEE; j <= (int)P_AYLOC + ARMYSEE; j++)
+                    if (ONMAP(i, j)) {
+                        mapseen[i][j] = TRUE;
+                    }
+        }
 
-	/* now add sectors visible by navy */
-	for(nvynum=0;nvynum<MAXNAVY;nvynum++)
-	if((P_NMSHP!=0)||(P_NWSHP!=0)||(P_NGSHP!=0)) {
-		for(i=(int)P_NXLOC-NAVYSEE;i<=(int)P_NXLOC+NAVYSEE;i++)
-		for(j=(int)P_NYLOC-NAVYSEE;j<=(int)P_NYLOC+NAVYSEE;j++)
-		if (ONMAP(i,j)) {
-			mapseen[i][j]=TRUE;
-		}
-	}
+    /* now add sectors visible by navy */
+    for (nvynum = 0; nvynum < MAXNAVY; nvynum++)
+        if ((P_NMSHP != 0) || (P_NWSHP != 0) || (P_NGSHP != 0)) {
+            for (i = (int)P_NXLOC - NAVYSEE; i <= (int)P_NXLOC + NAVYSEE; i++)
+                for (j = (int)P_NYLOC - NAVYSEE; j <= (int)P_NYLOC + NAVYSEE; j++)
+                    if (ONMAP(i, j)) {
+                        mapseen[i][j] = TRUE;
+                    }
+        }
 }
 
 /*
@@ -320,25 +324,27 @@ void mapprep (void) {
  *   - Deity view (country==0) shows "World" instead of nation name
  *   - Map dimensions are fixed by compile-time MAPX/MAPY constants
  *   - Performance is O(MAPX*MAPY) with simple character output per sector
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-void printele (void) {
-	register int X, Y;
-	fprintf(stderr,"doing print of altitude\n");
-	if (country == 0) {
-		printf("Conquer %s.%s: Altitude Map of the World on Turn %d\n",
-			VERSION, PATCHLEVEL, TURN);
-	} else {
-		printf("Conquer %s.%s: Altitude Map for Nation %s on Turn %d\n",
-			VERSION, PATCHLEVEL, curntn->name, TURN);
-	}
-	for(Y=0;Y<MAPY;Y++) {
-		for(X=0;X<MAPX;X++) {
-			if(mapseen[X][Y]==TRUE) putc(sct[X][Y].altitude,stdout);
-			else putc(' ',stdout);
-		}
-		putc('\n',stdout);
-	}
+void printele(void) {
+    register int X, Y;
+    fprintf(stderr, "doing print of altitude\n");
+    if (country == 0) {
+        printf("Conquer %s.%s: Altitude Map of the World on Turn %d\n", VERSION, PATCHLEVEL,
+               TURN);
+    } else {
+        printf("Conquer %s.%s: Altitude Map for Nation %s on Turn %d\n", VERSION, PATCHLEVEL,
+               curntn->name, TURN);
+    }
+    for (Y = 0; Y < MAPY; Y++) {
+        for (X = 0; X < MAPX; X++) {
+            if (mapseen[X][Y] == TRUE)
+                putc(sct[X][Y].altitude, stdout);
+            else
+                putc(' ', stdout);
+        }
+        putc('\n', stdout);
+    }
 }
 
 /*
@@ -386,28 +392,30 @@ void printele (void) {
  *   - Useful for territorial analysis and diplomatic intelligence
  *   - Output format matches other map printing functions for consistency
  *   - Performance is O(MAPX*MAPY) with simple character output logic
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-void pr_ntns (void) {
-	register int X, Y;
-	fprintf(stderr,"doing print of nations\n");
-	if (country == 0) {
-		printf("Conquer %s.%s: Nation Map of the World on Turn %d\n",
-			VERSION, PATCHLEVEL, TURN);
-	} else {
-		printf("Conquer %s.%s: Nation Map for Nation %s on Turn %d\n",
-			VERSION, PATCHLEVEL, curntn->name, TURN);
-	}
-	for(Y=0;Y<MAPY;Y++) {
-		for(X=0;X<MAPX;X++) {
-			if(mapseen[X][Y]==TRUE) {
-				if(sct[X][Y].owner==0)
-					putc(sct[X][Y].altitude,stdout);
-				else putc(ntn[sct[X][Y].owner].mark,stdout);
-			} else putc(' ',stdout);
-		}
-		putc('\n',stdout);
-	}
+void pr_ntns(void) {
+    register int X, Y;
+    fprintf(stderr, "doing print of nations\n");
+    if (country == 0) {
+        printf("Conquer %s.%s: Nation Map of the World on Turn %d\n", VERSION, PATCHLEVEL,
+               TURN);
+    } else {
+        printf("Conquer %s.%s: Nation Map for Nation %s on Turn %d\n", VERSION, PATCHLEVEL,
+               curntn->name, TURN);
+    }
+    for (Y = 0; Y < MAPY; Y++) {
+        for (X = 0; X < MAPX; X++) {
+            if (mapseen[X][Y] == TRUE) {
+                if (sct[X][Y].owner == 0)
+                    putc(sct[X][Y].altitude, stdout);
+                else
+                    putc(ntn[sct[X][Y].owner].mark, stdout);
+            } else
+                putc(' ', stdout);
+        }
+        putc('\n', stdout);
+    }
 }
 
 /*
@@ -459,33 +467,35 @@ void pr_ntns (void) {
  *   - NINJA enables offensive intelligence gathering capabilities
  *   - Undesignated sectors show natural terrain for reference
  *   - Information warfare balance between concealment and revelation
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-void pr_desg (void) {
-	register int X, Y;
-	fprintf(stderr,"doing print of designations\n");
-	if (country == 0) {
-		printf("Conquer %s.%s: Designation Map of the World on Turn %d\n",
-			VERSION, PATCHLEVEL, TURN);
-	} else {
-		printf("Conquer %s.%s: Designation Map for Nation %s on Turn %d\n",
-			VERSION, PATCHLEVEL, curntn->name, TURN);
-	}
-	for(Y=0;Y<MAPY;Y++) {
-		for(X=0;X<MAPX;X++) {
-			if (mapseen[X][Y]==TRUE) {
-				if ((country == 0)
-				  || (sct[X][Y].owner == country)
-				  || (magic (country, NINJA) == TRUE)
-				  || (magic (sct[X][Y].owner, THE_VOID) != TRUE)) {
-					if(sct[X][Y].designation==DNODESIG)
-						putc(sct[X][Y].altitude,stdout);
-					else putc(sct[X][Y].designation,stdout);
-				} else putc('?',stdout);
-			} else putc(' ',stdout);
-		}
-		putc('\n',stdout);
-	}
+void pr_desg(void) {
+    register int X, Y;
+    fprintf(stderr, "doing print of designations\n");
+    if (country == 0) {
+        printf("Conquer %s.%s: Designation Map of the World on Turn %d\n", VERSION, PATCHLEVEL,
+               TURN);
+    } else {
+        printf("Conquer %s.%s: Designation Map for Nation %s on Turn %d\n", VERSION, PATCHLEVEL,
+               curntn->name, TURN);
+    }
+    for (Y = 0; Y < MAPY; Y++) {
+        for (X = 0; X < MAPX; X++) {
+            if (mapseen[X][Y] == TRUE) {
+                if ((country == 0) || (sct[X][Y].owner == country)
+                    || (magic(country, NINJA) == TRUE)
+                    || (magic(sct[X][Y].owner, THE_VOID) != TRUE)) {
+                    if (sct[X][Y].designation == DNODESIG)
+                        putc(sct[X][Y].altitude, stdout);
+                    else
+                        putc(sct[X][Y].designation, stdout);
+                } else
+                    putc('?', stdout);
+            } else
+                putc(' ', stdout);
+        }
+        putc('\n', stdout);
+    }
 }
 
 /*
@@ -535,26 +545,27 @@ void pr_desg (void) {
  *   - Important for strategic planning and resource management
  *   - Simplest of the map printing functions in terms of visibility rules
  *   - Performance is O(MAPX*MAPY) with straightforward character output
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-void printveg (void) {
-	register int X, Y;
-	fprintf(stderr,"doing print of vegetation\n");
-	if (country == 0) {
-		printf("Conquer %s.%s: Vegetation Map of the World on Turn %d\n",
-			VERSION, PATCHLEVEL, TURN);
-	} else {
-		printf("Conquer %s.%s: Vegetation Map for Nation %s on Turn %d\n",
-			VERSION, PATCHLEVEL, curntn->name, TURN);
-	}
-	for(Y=0;Y<MAPY;Y++) {
-		for(X=0;X<MAPX;X++) {
-			if(mapseen[X][Y]==TRUE) {
-				putc(sct[X][Y].vegetation,stdout);
-			} else putc(' ',stdout);
-		}
-		putc('\n',stdout);
-	}
+void printveg(void) {
+    register int X, Y;
+    fprintf(stderr, "doing print of vegetation\n");
+    if (country == 0) {
+        printf("Conquer %s.%s: Vegetation Map of the World on Turn %d\n", VERSION, PATCHLEVEL,
+               TURN);
+    } else {
+        printf("Conquer %s.%s: Vegetation Map for Nation %s on Turn %d\n", VERSION, PATCHLEVEL,
+               curntn->name, TURN);
+    }
+    for (Y = 0; Y < MAPY; Y++) {
+        for (X = 0; X < MAPX; X++) {
+            if (mapseen[X][Y] == TRUE) {
+                putc(sct[X][Y].vegetation, stdout);
+            } else
+                putc(' ', stdout);
+        }
+        putc('\n', stdout);
+    }
 }
 #endif /* CONQUER */
 
@@ -609,39 +620,38 @@ void printveg (void) {
  *   - Uses creat() which creates file with specified permissions
  *   - Terminates on any error to prevent partial/corrupted saves
  *   - Essential counterpart to readdata() for complete persistence system
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-void writedata (void) {
-	long	bytes;
-	int	fd;
+void writedata(void) {
+    long bytes;
+    int fd;
 
-	printf("\ndoing write of data\n");
-	if((fd = creat(datafile,0666))==-1) {
-		printf("cannot open data.  check permissions\n");
-		abrt()
-	}
+    printf("\ndoing write of data\n");
+    if ((fd = creat(datafile, 0666)) == -1) {
+        printf("cannot open data.  check permissions\n");
+        abrt()
+    }
 
-/* write world structure */
-	if((bytes=write(fd,&world,sizeof(struct s_world)))!=sizeof(struct s_world))
-	{
-		printf("error writing world data\n");
-		printf("wrong data format (%ld vs. %zu)\n",bytes,sizeof(struct s_world) );
-		abrt()
-	}
+    /* write world structure */
+    if ((bytes = write(fd, &world, sizeof(struct s_world))) != sizeof(struct s_world)) {
+        printf("error writing world data\n");
+        printf("wrong data format (%ld vs. %zu)\n", bytes, sizeof(struct s_world));
+        abrt()
+    }
 
-	if((bytes=write(fd,*sct,(size_t)(MAPX*MAPY)*sizeof(struct s_sector))) == -1)
-	{
-		printf("Wrong number of bytes (%ld) written for sct (should be %zu)\n",bytes,(size_t)(MAPX*MAPY)*sizeof(struct s_sector));
-		abrt()
-	}
-	printf("writing %ld bytes of sector data\n",bytes);
-	if((bytes=write(fd,ntn,NTOTAL*sizeof(struct s_nation))) == -1)
-	{
-		printf("Wrong number of bytes (%ld) written for ntn (should be %zu)\n",bytes,(size_t)NTOTAL*sizeof(struct s_nation));
-		abrt()
-	}
-	printf("writing %ld bytes of nation data\n",bytes);
-	close(fd);
+    if ((bytes = write(fd, *sct, (size_t)(MAPX * MAPY) * sizeof(struct s_sector))) == -1) {
+        printf("Wrong number of bytes (%ld) written for sct (should be %zu)\n", bytes,
+               (size_t)(MAPX * MAPY) * sizeof(struct s_sector));
+        abrt()
+    }
+    printf("writing %ld bytes of sector data\n", bytes);
+    if ((bytes = write(fd, ntn, NTOTAL * sizeof(struct s_nation))) == -1) {
+        printf("Wrong number of bytes (%ld) written for ntn (should be %zu)\n", bytes,
+               (size_t)NTOTAL * sizeof(struct s_nation));
+        abrt()
+    }
+    printf("writing %ld bytes of nation data\n", bytes);
+    close(fd);
 }
 
 /*
@@ -696,56 +706,59 @@ void writedata (void) {
  *   - Comprehensive error reporting helps diagnose save file corruption or version issues
  *   - Critical for game initialization and session restoration functionality
  *   - File format must match writedata() output exactly for successful loading
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-void readdata (void) {
-	int fd;
-	ssize_t n_read;
+void readdata(void) {
+    int fd;
+    ssize_t n_read;
 
-	/*read in existing nation army and navy data*/
-	/*check if file openable*/
-	fprintf(stderr,"reading data file\n");
-	if( (fd = open(datafile,0)) < 0 ) {
-		fprintf( stderr, "can not open %s \n", datafile );
-		fprintf( stderr, "for help with conquer, type conquer -h\n");
-		exit(FAIL);
-	}
+    /*read in existing nation army and navy data*/
+    /*check if file openable*/
+    fprintf(stderr, "reading data file\n");
+    if ((fd = open(datafile, 0)) < 0) {
+        fprintf(stderr, "can not open %s \n", datafile);
+        fprintf(stderr, "for help with conquer, type conquer -h\n");
+        exit(FAIL);
+    }
 
-/* read world structure */
-	if((n_read=read(fd,&world,sizeof(struct s_world)))!=(ssize_t)sizeof(struct s_world))
-	{
-		printf("error reading world data\n");
-		printf("wrong data format (%zd vs. %zu)\n",n_read, sizeof(struct s_world) );
-		abrt()
-	}
+    /* read world structure */
+    if ((n_read = read(fd, &world, sizeof(struct s_world)))
+        != (ssize_t)sizeof(struct s_world)) {
+        printf("error reading world data\n");
+        printf("wrong data format (%zd vs. %zu)\n", n_read, sizeof(struct s_world));
+        abrt()
+    }
 #ifdef DEBUG
-	fprintf(stderr,"reading %zu bytes of world data\n",sizeof(struct s_world));
+    fprintf(stderr, "reading %zu bytes of world data\n", sizeof(struct s_world));
 #endif /* DEBUG */
 
-	getspace();
+    getspace();
 
-	if((n_read=read(fd,*sct,(size_t)(MAPX*MAPY)*sizeof(struct s_sector)))==0)
-		printf("EOF\n");
-	else if(n_read==-1) printf("error reading sector data (sct)\n");
-	if(n_read != (ssize_t)((size_t)(MAPX*MAPY)*sizeof(struct s_sector))) {
-		printf("error reading sector data (sct)\n");
-		printf( "wrong data format (%zd vs. %zu)\n",n_read,  (size_t)(MAPX*MAPY)*sizeof(struct s_sector) );
-		abrt()
-	}
+    if ((n_read = read(fd, *sct, (size_t)(MAPX * MAPY) * sizeof(struct s_sector))) == 0)
+        printf("EOF\n");
+    else if (n_read == -1)
+        printf("error reading sector data (sct)\n");
+    if (n_read != (ssize_t)((size_t)(MAPX * MAPY) * sizeof(struct s_sector))) {
+        printf("error reading sector data (sct)\n");
+        printf("wrong data format (%zd vs. %zu)\n", n_read,
+               (size_t)(MAPX * MAPY) * sizeof(struct s_sector));
+        abrt()
+    }
 #ifdef DEBUG
-	fprintf(stderr,"reading %zd bytes of sector data\n",n_read);
+    fprintf(stderr, "reading %zd bytes of sector data\n", n_read);
 #endif /* DEBUG */
-	if((n_read=read(fd,ntn,NTOTAL*sizeof(struct s_nation))) == -1)
-		printf("error reading s_nation data (ntn)\n");
-	else if(n_read!= (ssize_t)((size_t)NTOTAL*sizeof(struct s_nation))) {
-		printf("error reading s_nation data (ntn)\n");
-		printf( "wrong data format (%zd vs. %zu)\n",n_read, (size_t)NTOTAL*sizeof(struct s_nation) );
-		abrt()
-	}
+    if ((n_read = read(fd, ntn, NTOTAL * sizeof(struct s_nation))) == -1)
+        printf("error reading s_nation data (ntn)\n");
+    else if (n_read != (ssize_t)((size_t)NTOTAL * sizeof(struct s_nation))) {
+        printf("error reading s_nation data (ntn)\n");
+        printf("wrong data format (%zd vs. %zu)\n", n_read,
+               (size_t)NTOTAL * sizeof(struct s_nation));
+        abrt()
+    }
 #ifdef DEBUG
-	fprintf(stderr,"reading %zd bytes of nation data\n",n_read);
+    fprintf(stderr, "reading %zd bytes of nation data\n", n_read);
 #endif /* DEBUG */
-	close(fd);
+    close(fd);
 } /* readdata() */
 
 #ifdef CONQUER
@@ -806,76 +819,72 @@ void readdata (void) {
  *   - Automatically triggers visibility updates after position changes
  *   - Essential for large world navigation where map exceeds screen size
  *   - Coordinates with display system for efficient partial redraws
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-void offmap (void) {
-	/*set offset offsets can not be < 0*/
-	if(xcurs<1){
-		if(XREAL<=0) {
-			xoffset=0;
-			xcurs=0;
-		}
-		else {
-			redraw=PART;
-			xoffset-=15;
-			xcurs+=15;
-		}
-	}
-	else if(xcurs >= SCREEN_X_SIZE-1){
-		if(XREAL<MAPX) {
-			redraw=PART;
-			xoffset+=15;
-			xcurs-=15;
-		}
-	}
-	if(XREAL>=MAPX) xcurs=MAPX-1-xoffset;
-	if(xoffset<0) {
-		xcurs += xoffset;
-		xoffset=0;
-	}
-	if(xcurs<0) {
-		xoffset += xcurs;
-		xcurs=0;
-	}
-	else if(xcurs >= SCREEN_X_SIZE-1) {
-		redraw=PART;
-		xoffset+=15;
-		xcurs-=15;
-	}
+void offmap(void) {
+    /*set offset offsets can not be < 0*/
+    if (xcurs < 1) {
+        if (XREAL <= 0) {
+            xoffset = 0;
+            xcurs = 0;
+        } else {
+            redraw = PART;
+            xoffset -= 15;
+            xcurs += 15;
+        }
+    } else if (xcurs >= SCREEN_X_SIZE - 1) {
+        if (XREAL < MAPX) {
+            redraw = PART;
+            xoffset += 15;
+            xcurs -= 15;
+        }
+    }
+    if (XREAL >= MAPX)
+        xcurs = MAPX - 1 - xoffset;
+    if (xoffset < 0) {
+        xcurs += xoffset;
+        xoffset = 0;
+    }
+    if (xcurs < 0) {
+        xoffset += xcurs;
+        xcurs = 0;
+    } else if (xcurs >= SCREEN_X_SIZE - 1) {
+        redraw = PART;
+        xoffset += 15;
+        xcurs -= 15;
+    }
 
-	if(ycurs<1){
-		if(YREAL<=0) {
-			yoffset=0;
-			ycurs=0;
-		}
-		else {
-			redraw=PART;
-			ycurs+=15;
-			yoffset-=15;
-		}
-	}
-	else if(ycurs >= SCREEN_Y_SIZE-1){
-		if(YREAL<MAPY) {
-			redraw=PART;
-			yoffset+=15;
-			ycurs-=15;
-		}
-	}
-	if(YREAL>=MAPY) ycurs=MAPY-1-yoffset;
-	if(yoffset<0) {
-		ycurs += yoffset;
-		yoffset=0;
-	}
-	if(ycurs<0) {
-		yoffset += ycurs;
-		ycurs=0;
-	}
-	else if(ycurs >= SCREEN_Y_SIZE-1) {
-		redraw=PART;
-		yoffset+=15;
-		ycurs-=15;
-	}
-	whatcansee();
+    if (ycurs < 1) {
+        if (YREAL <= 0) {
+            yoffset = 0;
+            ycurs = 0;
+        } else {
+            redraw = PART;
+            ycurs += 15;
+            yoffset -= 15;
+        }
+    } else if (ycurs >= SCREEN_Y_SIZE - 1) {
+        if (YREAL < MAPY) {
+            redraw = PART;
+            yoffset += 15;
+            ycurs -= 15;
+        }
+    }
+    if (YREAL >= MAPY)
+        ycurs = MAPY - 1 - yoffset;
+    if (yoffset < 0) {
+        ycurs += yoffset;
+        yoffset = 0;
+    }
+    if (ycurs < 0) {
+        yoffset += ycurs;
+        ycurs = 0;
+    } else if (ycurs >= SCREEN_Y_SIZE - 1) {
+        redraw = PART;
+        yoffset += 15;
+        ycurs -= 15;
+    }
+    whatcansee();
 }
 #endif /* XYZZY */
 
@@ -929,21 +938,21 @@ void offmap (void) {
  *   - Commonly used after jump commands or when context is needed
  *   - Provides immediate visual feedback for player orientation
  *   - Part of the XYZZY enhanced display system
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-void centermap (void) {
-	int xx,yy;
-	xx=XREAL;
-	yy=YREAL;
-	xoffset = safe_int_to_short(xx - (SCREEN_X_SIZE/2));
-	yoffset = safe_int_to_short(yy - (SCREEN_Y_SIZE/2));
-	if (xoffset<0)
-		xoffset=0;
-	if (yoffset<0)
-		yoffset=0;
-	xcurs= safe_int_to_short(xx-xoffset);
-	ycurs= safe_int_to_short(yy-yoffset);
-	whatcansee();
+void centermap(void) {
+    int xx, yy;
+    xx = XREAL;
+    yy = YREAL;
+    xoffset = safe_int_to_short(xx - (SCREEN_X_SIZE / 2));
+    yoffset = safe_int_to_short(yy - (SCREEN_Y_SIZE / 2));
+    if (xoffset < 0)
+        xoffset = 0;
+    if (yoffset < 0)
+        yoffset = 0;
+    xcurs = safe_int_to_short(xx - xoffset);
+    ycurs = safe_int_to_short(yy - yoffset);
+    whatcansee();
 }
 
 /*
@@ -1004,77 +1013,78 @@ void centermap (void) {
  *   - Error handling provides clear feedback for boundary violations
  *   - Supports both automated (capitals) and manual (coordinates) navigation
  *   - Critical for game management and strategic oversight functionality
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-void jump_to (int home) {
-	int i,j,done;
-	static int next_ntn;
+void jump_to(int home) {
+    int i, j, done;
+    static int next_ntn;
 
-	/* find location to jump to */
-	if (home) {
-		if (country==0) {
-			/* check if in sequence */
-			if ((XREAL!=ntn[next_ntn].capx)
-			||(YREAL!=ntn[next_ntn].capy)) {
-				next_ntn= 0;
-			}
-			/* find next capitol */
-			done = FALSE;
-			do {
-				next_ntn++;
-				if (next_ntn==NTOTAL) {
-					j = 0;
-					for(i=0;i<NTOTAL;i++)
-					if (isntn(ntn[i].active)) {
-						j = i;
-						i = NTOTAL;
-					}
-					next_ntn = j;
-					done = TRUE;
-				} else {
-					if (isntn(ntn[next_ntn].active)) {
-						done = TRUE;
-					}
-				}
-			} while (done==FALSE);
-			/* default location; or next capitol */
-			if (next_ntn==0) {
-				i = MAPX/2-1;
-				j = MAPY/2-1;
-			} else {
-				i = ntn[next_ntn].capx;
-				j = ntn[next_ntn].capy;
-			}
-		} else {
-			/* go to capitol */
-			i = curntn->capx;
-			j = curntn->capy;
-		}
-	} else {
-		/* entered location */
-		clear_bottom(0);
-		mvaddstr(LINES-3,0,"Jump to what X location? ");
-		refresh();
-		i = safe_long_to_int(get_number());
-		if (i==(-1)) return;
-		if (i>=MAPX) {
-			errormsg("That location is out of this world!");
-			return;
-		}
-		mvaddstr(LINES-2,0,"Jump to what Y location? ");
-		refresh();
-		j = safe_long_to_int(get_number());
-		if (j==(-1)) return;
-		if (j>=MAPY) {
-			errormsg("That location is out of this world!");
-			return;
-		}
-	}
-	/* now center location about given position */
-	xcurs = safe_int_to_short(i);
-	ycurs = safe_int_to_short(j);
-	xoffset = yoffset = 0;
-	centermap();
+    /* find location to jump to */
+    if (home) {
+        if (country == 0) {
+            /* check if in sequence */
+            if ((XREAL != ntn[next_ntn].capx) || (YREAL != ntn[next_ntn].capy)) {
+                next_ntn = 0;
+            }
+            /* find next capitol */
+            done = FALSE;
+            do {
+                next_ntn++;
+                if (next_ntn == NTOTAL) {
+                    j = 0;
+                    for (i = 0; i < NTOTAL; i++)
+                        if (isntn(ntn[i].active)) {
+                            j = i;
+                            i = NTOTAL;
+                        }
+                    next_ntn = j;
+                    done = TRUE;
+                } else {
+                    if (isntn(ntn[next_ntn].active)) {
+                        done = TRUE;
+                    }
+                }
+            } while (done == FALSE);
+            /* default location; or next capitol */
+            if (next_ntn == 0) {
+                i = MAPX / 2 - 1;
+                j = MAPY / 2 - 1;
+            } else {
+                i = ntn[next_ntn].capx;
+                j = ntn[next_ntn].capy;
+            }
+        } else {
+            /* go to capitol */
+            i = curntn->capx;
+            j = curntn->capy;
+        }
+    } else {
+        /* entered location */
+        clear_bottom(0);
+        mvaddstr(LINES - 3, 0, "Jump to what X location? ");
+        refresh();
+        i = safe_long_to_int(get_number());
+        if (i == (-1))
+            return;
+        if (i >= MAPX) {
+            errormsg("That location is out of this world!");
+            return;
+        }
+        mvaddstr(LINES - 2, 0, "Jump to what Y location? ");
+        refresh();
+        j = safe_long_to_int(get_number());
+        if (j == (-1))
+            return;
+        if (j >= MAPY) {
+            errormsg("That location is out of this world!");
+            return;
+        }
+    }
+    /* now center location about given position */
+    xcurs = safe_int_to_short(i);
+    ycurs = safe_int_to_short(j);
+    xoffset = yoffset = 0;
+    centermap();
 }
 
 /*
@@ -1135,56 +1145,54 @@ void jump_to (int home) {
  *   - Essential for diplomatic intelligence and strategic planning
  *   - Provides comprehensive overview of world power structure
  *   - Used by both players and administrators for game state assessment
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-void printscore (void) {
-	int i;
-	int nationid; 	/*current nation id */
+void printscore(void) {
+    int i;
+    int nationid; /*current nation id */
 #ifdef TIMELOG
-	FILE *timefp;
-	char timestr[LINELTH+1];
+    FILE *timefp;
+    char timestr[LINELTH + 1];
 #endif /* TIMELOG */
 
-	printf("Conquer %s.%s: %s of Year %d, Turn %d\n",VERSION,PATCHLEVEL,
-		PSEASON(TURN),YEAR(TURN), TURN);
+    printf("Conquer %s.%s: %s of Year %d, Turn %d\n", VERSION, PATCHLEVEL, PSEASON(TURN),
+           YEAR(TURN), TURN);
 #ifdef TIMELOG
-	if ((timefp=fopen(timefile,"r"))!=NULL) {
-		fgets(timestr, 50, timefp);
-		printf("Last Update: %s", timestr);
-		fclose(timefp);
-	}
+    if ((timefp = fopen(timefile, "r")) != NULL) {
+        fgets(timestr, 50, timefp);
+        printf("Last Update: %s", timestr);
+        fclose(timefp);
+    }
 #endif /* TIMELOG */
-	printf("id      name   race    class    align  score    talons military  civilians sect\n");
-	for (nationid=1; nationid<NTOTAL; nationid++) {
-		if(!isactive(ntn[nationid].active)) continue;
-		printf("%2d ",nationid);
-		printf("%9s ",ntn[nationid].name);
-		/* this check for old 'B' for barbarians; removed eventually */
-		if (ntn[nationid].race=='B') {
-			printf("%6s ", "SAVAGE");
-		} else {
-			for(i=1;(*(races+i)[0])!='U';i++)
-				if(ntn[nationid].race==*(races+i)[0])
-					printf("%6s ",*(races+i));
-		}
+    printf("id      name   race    class    align  score    talons military  civilians sect\n");
+    for (nationid = 1; nationid < NTOTAL; nationid++) {
+        if (!isactive(ntn[nationid].active))
+            continue;
+        printf("%2d ", nationid);
+        printf("%9s ", ntn[nationid].name);
+        /* this check for old 'B' for barbarians; removed eventually */
+        if (ntn[nationid].race == 'B') {
+            printf("%6s ", "SAVAGE");
+        } else {
+            for (i = 1; (*(races + i)[0]) != 'U'; i++)
+                if (ntn[nationid].race == *(races + i)[0])
+                    printf("%6s ", *(races + i));
+        }
 
-		printf("%8s ",*(Class+ntn[nationid].class));
-		printf(" %7s ",alignment[npctype(ntn[nationid].active)]);
-		if (isntn(ntn[nationid].active)) {
+        printf("%8s ", *(Class + ntn[nationid].class));
+        printf(" %7s ", alignment[npctype(ntn[nationid].active)]);
+        if (isntn(ntn[nationid].active)) {
 #ifdef NOSCORE
-			printf("%6ld  %8s %8s   %8s %4s\n",
-				  ntn[nationid].score ,"-----","----" ,"-----","--");
+            printf("%6ld  %8s %8s   %8s %4s\n", ntn[nationid].score, "-----", "----", "-----",
+                   "--");
 #else
-			printf("%6ld  %8ld %8ld   %8ld %4d\n",
-				  ntn[nationid].score ,ntn[nationid].tgold
-				  ,ntn[nationid].tmil ,ntn[nationid].tciv
-				  ,ntn[nationid].tsctrs );
+            printf("%6ld  %8ld %8ld   %8ld %4d\n", ntn[nationid].score, ntn[nationid].tgold,
+                   ntn[nationid].tmil, ntn[nationid].tciv, ntn[nationid].tsctrs);
 #endif /* NOSCORE */
-		} else {
-			printf("%6s  %8s %8s   %8s %4s\n",
-				  "---","-----","----","-----","--");
-		}
-	}
+        } else {
+            printf("%6s  %8s %8s   %8s %4s\n", "---", "-----", "----", "-----", "--");
+        }
+    }
 }
 #endif /* CONQUER */
 
@@ -1254,79 +1262,87 @@ void printscore (void) {
  *   - Integration with food system prevents impossible population concentrations
  *   - Essential for preventing unrealistic population invulnerability
  *   - Provides dramatic feedback for major military and economic disruptions
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-void flee (int x, int y, int isupd, int slaver) {
-	int count=0;	/*count is number of acceptable sectors to go to */
-	int svcountry=country;
-	int slaves=0;
-	int i,j;
-	int people_to_add;
+void flee(int x, int y, int isupd, int slaver) {
+    int count = 0; /*count is number of acceptable sectors to go to */
+    int svcountry = country;
+    int slaves = 0;
+    int i, j;
+    int people_to_add;
 
-	country=sct[x][y].owner;
-	if(slaver==TRUE){
-		slaves= safe_long_to_int(sct[x][y].people/4);
-		sct[x][y].people-=slaves;
-	}
+    country = sct[x][y].owner;
+    if (slaver == TRUE) {
+        slaves = safe_long_to_int(sct[x][y].people / 4);
+        sct[x][y].people -= slaves;
+    }
 
-	/*flee*/
-	sct[x][y].people*=6;
-	sct[x][y].people/=10;
-	/*check if next to anybody of the sectors owners race*/
-	for(i=x-2;i<=x+2;i++) for(j=y-2;j<=y+2;j++)
-		if(ONMAP(i,j)
-		&&(ntn[sct[i][j].owner].race==ntn[sct[x][y].owner].race))
-			count++;
+    /*flee*/
+    sct[x][y].people *= 6;
+    sct[x][y].people /= 10;
+    /*check if next to anybody of the sectors owners race*/
+    for (i = x - 2; i <= x + 2; i++)
+        for (j = y - 2; j <= y + 2; j++)
+            if (ONMAP(i, j) && (ntn[sct[i][j].owner].race == ntn[sct[x][y].owner].race))
+                count++;
 
-	if(count>0) {
+    if (count > 0) {
 #ifdef CONQUER
-	if(isupd==0) {
-		if(slaver==TRUE){
-			mvprintw(LINES-2,20,"CIVILIANS ABANDON SECTOR (%d slaves)",slaves);
-		}else{
-			mvaddstr(LINES-2,20,"CIVILIANS ABANDON SECTOR");
-		}
-	}
+        if (isupd == 0) {
+            if (slaver == TRUE) {
+                mvprintw(LINES - 2, 20, "CIVILIANS ABANDON SECTOR (%d slaves)", slaves);
+            } else {
+                mvaddstr(LINES - 2, 20, "CIVILIANS ABANDON SECTOR");
+            }
+        }
 #endif /* CONQUER */
-	for(i=x-2;i<=x+2;i++) for(j=y-2;j<=y+2;j++)
-		if(ONMAP(i,j)
-		&&(ntn[sct[i][j].owner].race==ntn[sct[x][y].owner].race)) {
-			people_to_add = safe_long_to_int(sct[x][y].people / count);
-			/* don't show until next turn if player move */
-			if(isupd==0) SADJCIV3;
-			else	sct[x][y].people += people_to_add;
-		}
-	} else {
-		sct[x][y].people /= 2;
-		for(i=x-4;i<=x+4;i++) for(j=y-4;j<=y+4;j++)
-			if(ONMAP(i,j)
-			&&(ntn[sct[i][j].owner].race==ntn[sct[x][y].owner].race))
-				count++;
-		if(count>0) {
+        for (i = x - 2; i <= x + 2; i++)
+            for (j = y - 2; j <= y + 2; j++)
+                if (ONMAP(i, j) && (ntn[sct[i][j].owner].race == ntn[sct[x][y].owner].race)) {
+                    people_to_add = safe_long_to_int(sct[x][y].people / count);
+                    /* don't show until next turn if player move */
+                    if (isupd == 0)
+                        SADJCIV3;
+                    else
+                        sct[x][y].people += people_to_add;
+                }
+    } else {
+        sct[x][y].people /= 2;
+        for (i = x - 4; i <= x + 4; i++)
+            for (j = y - 4; j <= y + 4; j++)
+                if (ONMAP(i, j) && (ntn[sct[i][j].owner].race == ntn[sct[x][y].owner].race))
+                    count++;
+        if (count > 0) {
 #ifdef CONQUER
-		if(isupd==0) mvaddstr(LINES-2,20,"PEOPLE FLEE SECTOR AND HALF DIE");
+            if (isupd == 0)
+                mvaddstr(LINES - 2, 20, "PEOPLE FLEE SECTOR AND HALF DIE");
 #endif /* CONQUER */
-		for(i=x-4;i<=x+4;i++) for(j=y-4;j<=y+4;j++)
-			if(ONMAP(i,j)
-			&&(ntn[sct[i][j].owner].race==ntn[sct[x][y].owner].race)) {
-				sct[i][j].people += sct[x][y].people / count;
-				if(isupd==0) SADJCIV2;
-			}
-		}
+            for (i = x - 4; i <= x + 4; i++)
+                for (j = y - 4; j <= y + 4; j++)
+                    if (ONMAP(i, j)
+                        && (ntn[sct[i][j].owner].race == ntn[sct[x][y].owner].race)) {
+                        sct[i][j].people += sct[x][y].people / count;
+                        if (isupd == 0)
+                            SADJCIV2;
+                    }
+        }
 #ifdef CONQUER
-		else if(isupd==0) mvaddstr(LINES-2,20,"PEOPLE IN SECTOR DIE");
+        else if (isupd == 0)
+            mvaddstr(LINES - 2, 20, "PEOPLE IN SECTOR DIE");
 #endif /* CONQUER */
-	}
+    }
 
-	sct[x][y].people = slaves;
-	if(isupd==0) SADJCIV;
-	sct[x][y].fortress=0;
-	/*SINFORT;*/
-	if(tofood( &sct[XREAL][YREAL],sct[XREAL][YREAL].owner)!=0) {
-		DEVASTATE(x,y)
-		if(isupd==0) SADJDES2;
-	}
-	country=safe_int_to_short(svcountry);
+    sct[x][y].people = slaves;
+    if (isupd == 0)
+        SADJCIV;
+    sct[x][y].fortress = 0;
+    /*SINFORT;*/
+    if (tofood(&sct[XREAL][YREAL], sct[XREAL][YREAL].owner) != 0) {
+        DEVASTATE(x, y)
+        if (isupd == 0)
+            SADJDES2;
+    }
+    country = safe_int_to_short(svcountry);
 }
 #ifdef ADMIN
 /*
@@ -1390,51 +1406,59 @@ void flee (int x, int y, int isupd, int slaver) {
  *   - Logging output assists in scenario debugging and verification
  *   - Critical for dynamic world generation and campaign management
  *   - Enables separation of game logic from world data configuration
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-int readmap (void) {
-	FILE	*mapfile;
-	char	line[BIGLTH+1];
-	register int x,y;
+int readmap(void) {
+    FILE *mapfile;
+    char line[BIGLTH + 1];
+    register int x, y;
 
-	/* read in ele.map */
-	strncpy(line, scenario, sizeof(line));
-	line[sizeof(line) - 1] = '\0';
-	strncat(line, ".ele", sizeof(line) - strlen(line) - 1);
-	if ((mapfile=fopen(line,"r"))==NULL) {
-		fprintf(stderr,"error on read of %s file\n",line);
-		return(TRUE);
-	} else fprintf(stderr,"reading elevation map file from %s\n",line );
+    /* read in ele.map */
+    strncpy(line, scenario, sizeof(line));
+    line[sizeof(line) - 1] = '\0';
+    strncat(line, ".ele", sizeof(line) - strlen(line) - 1);
+    if ((mapfile = fopen(line, "r")) == NULL) {
+        fprintf(stderr, "error on read of %s file\n", line);
+        return (TRUE);
+    } else
+        fprintf(stderr, "reading elevation map file from %s\n", line);
 
-	y=0;
-	while( TRUE ) {
-		if(fgets( line, 128, mapfile )==NULL) break;
-		for(x=0;x<MAPX;x++) sct[x][y].altitude = line[x];
-		y++;
-		if(y>=MAPY) break;
-	}
-	fprintf(stderr,"done reading %d lines of %zu characters\n",y,strlen(line));
-	fclose(mapfile);
+    y = 0;
+    while (TRUE) {
+        if (fgets(line, 128, mapfile) == NULL)
+            break;
+        for (x = 0; x < MAPX; x++)
+            sct[x][y].altitude = line[x];
+        y++;
+        if (y >= MAPY)
+            break;
+    }
+    fprintf(stderr, "done reading %d lines of %zu characters\n", y, strlen(line));
+    fclose(mapfile);
 
-	/* read in veg.map */
-	strncpy(line, scenario, sizeof(line));
-	line[sizeof(line) - 1] = '\0';
-	strncat(line, ".veg", sizeof(line) - strlen(line) - 1);
-	if ((mapfile=fopen(line,"r"))==NULL) {
-		fprintf(stderr,"error on read of %s file\n",line);
-		return(TRUE);
-	} else fprintf(stderr,"reading vegetation map file from %s\n",line );
-	y=0;
-	while( TRUE ) {
-		if(fgets( line, BIGLTH, mapfile )==NULL) break;
-		for(x=0;x<MAPX;x++) sct[x][y].vegetation = line[x];
-		y++;
-		if(y>=MAPY) break;
-	}
-	fprintf(stderr,"done reading %d lines of %zu characters\n",y,strlen(line));
-	fclose(mapfile);
+    /* read in veg.map */
+    strncpy(line, scenario, sizeof(line));
+    line[sizeof(line) - 1] = '\0';
+    strncat(line, ".veg", sizeof(line) - strlen(line) - 1);
+    if ((mapfile = fopen(line, "r")) == NULL) {
+        fprintf(stderr, "error on read of %s file\n", line);
+        return (TRUE);
+    } else
+        fprintf(stderr, "reading vegetation map file from %s\n", line);
+    y = 0;
+    while (TRUE) {
+        if (fgets(line, BIGLTH, mapfile) == NULL)
+            break;
+        for (x = 0; x < MAPX; x++)
+            sct[x][y].vegetation = line[x];
+        y++;
+        if (y >= MAPY)
+            break;
+    }
+    fprintf(stderr, "done reading %d lines of %zu characters\n", y, strlen(line));
+    fclose(mapfile);
 
-	return(TRUE);
+    return (TRUE);
 }
 #endif /* ADMIN */
 
@@ -1503,38 +1527,38 @@ int readmap (void) {
  *   - Essential for multi-user game system authentication
  *   - Return value enables password length validation by callers
  *   - Proper string handling ensures safe integration with authentication systems
-  * @last_documented: 2025-09-20
+ * @last_documented: 2025-09-20
  */
-int get_pass (char *str) {
-	char ch;
-	int done=FALSE,count=0;
+int get_pass(char *str) {
+    char ch;
+    int done = FALSE, count = 0;
 
-	while(done==FALSE) {
-		ch = safe_int_to_char(getch());
-		if (ch=='\b' || ch=='\177') {
-			/* delete any entered characters */
-			if (count > 0) {
-				count--;
-			}
-		} else if (ch=='\025') {
-			/* make sure that ^U works */
-			count=0;
-		} else if (ch=='\n' || ch=='\r') {
-			done = TRUE;
-		} else if (ch != '\0') {
-			/* add any other character to the string */
-			if (count < PASSLTH) {
-				/* don't try adding too many */
-				str[count]= ch;
-			}
-			count++;
-		}
-	}
-	/* truncate too long a password and end others properly */
-	if (count > PASSLTH) {
-		str[PASSLTH] = '\0';
-	} else {
-		str[count] = '\0';
-	}
-	return(count);
+    while (done == FALSE) {
+        ch = safe_int_to_char(getch());
+        if (ch == '\b' || ch == '\177') {
+            /* delete any entered characters */
+            if (count > 0) {
+                count--;
+            }
+        } else if (ch == '\025') {
+            /* make sure that ^U works */
+            count = 0;
+        } else if (ch == '\n' || ch == '\r') {
+            done = TRUE;
+        } else if (ch != '\0') {
+            /* add any other character to the string */
+            if (count < PASSLTH) {
+                /* don't try adding too many */
+                str[count] = ch;
+            }
+            count++;
+        }
+    }
+    /* truncate too long a password and end others properly */
+    if (count > PASSLTH) {
+        str[PASSLTH] = '\0';
+    } else {
+        str[count] = '\0';
+    }
+    return (count);
 }
