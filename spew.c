@@ -1241,7 +1241,14 @@ static int read_line(void) {
         size_t len = strlen(input_line);
         if (len > 0) {
             char *end = input_line + len - 1;
-            while (end >= input_line && isspace((unsigned char)*end)) {
+            while (end >= input_line) {
+		    /* C standard compliance: ctype.h functions require unsigned char or EOF
+		     * Use explicit temporary variable instead of inline cast for x86_64 portability
+		     * (char is signed on x86_64, unsigned on aarch64) */
+                unsigned char ch = (unsigned char)*end;
+                if (!isspace(ch)) {
+                    break;
+                }
                 *end = '\0';
                 end--;
             }
