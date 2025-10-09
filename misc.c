@@ -2401,43 +2401,59 @@ void updmove(int race, int cntry) {
         return;
     }
 
+    /*
+     * Phase 10.1: veg[] is now unsigned char* (was char*)
+     * This eliminates the need for (unsigned char) casts when using veg[j]
+     * as an array index. On x86_64, plain char is signed, so values > 127
+     * would produce negative indices causing undefined behavior.
+     * Root cause fixed in data.c by declaring veg as unsigned char*.
+     * @last_documented: 2025-10-09
+     */
     for (j = 0; veg[j] != '0'; j++) {
         switch (race) {
             case ELF:
-                veg_cost[(unsigned char)veg[j]] = EVegcost[j] - '0';
+                veg_cost[veg[j]] = EVegcost[j] - '0';
                 break;
             case DWARF:
-                veg_cost[(unsigned char)veg[j]] = DVegcost[j] - '0';
+                veg_cost[veg[j]] = DVegcost[j] - '0';
                 break;
             case ORC:
-                veg_cost[(unsigned char)veg[j]] = OVegcost[j] - '0';
+                veg_cost[veg[j]] = OVegcost[j] - '0';
                 break;
             case HUMAN:
             default:
-                veg_cost[(unsigned char)veg[j]] = HVegcost[j] - '0';
+                veg_cost[veg[j]] = HVegcost[j] - '0';
                 break;
         } /* switch */
     } /* for */
 
     if (magic(cntry, DERVISH) || magic(cntry, DESTROYER)) {
-        veg_cost[(unsigned char)ICE] = 0;
-        veg_cost[(unsigned char)DESERT] = 0;
+        veg_cost[ICE] = 0;
+        veg_cost[DESERT] = 0;
     }
 
+    /*
+     * Phase 10.1: ele[] is now unsigned char* (was char*)
+     * This eliminates the need for (unsigned char) casts when using ele[j]
+     * as an array index. On x86_64, plain char is signed, so values > 127
+     * would produce negative indices causing undefined behavior.
+     * Root cause fixed in data.c by declaring ele as unsigned char*.
+     * @last_documented: 2025-10-09
+     */
     for (j = 0; ele[j] != '0'; j++) {
         switch (race) {
             case ELF:
-                ele_cost[(unsigned char)ele[j]] = EElecost[j] - '0';
+                ele_cost[ele[j]] = EElecost[j] - '0';
                 break;
             case DWARF:
-                ele_cost[(unsigned char)ele[j]] = DElecost[j] - '0';
+                ele_cost[ele[j]] = DElecost[j] - '0';
                 break;
             case ORC:
-                ele_cost[(unsigned char)ele[j]] = OElecost[j] - '0';
+                ele_cost[ele[j]] = OElecost[j] - '0';
                 break;
             case HUMAN:
             default:
-                ele_cost[(unsigned char)ele[j]] = HElecost[j] - '0';
+                ele_cost[ele[j]] = HElecost[j] - '0';
                 break;
         } /* switch */
     } /* for */

@@ -1383,7 +1383,7 @@ extern	struct	s_world		world;
 
 extern	short	**movecost;
 extern	char	**occ;		/* sector occupied?, NTOTAL+1 if contested */
-extern	char	*ele, *elename[], *veg,	*vegfood, *vegname[];
+extern	unsigned char	*ele, *elename[], *veg,	*vegfood, *vegname[];
 extern	char	*Class[],*races[],*diploname[];
 extern	char	*soldname[], *unittype[], *shunittype[], *directions[];
 extern	int	unitminsth[], u_enmetal[], u_encost[], unitmaint[];

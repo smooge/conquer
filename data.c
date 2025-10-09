@@ -71,8 +71,16 @@
  * '~' = WATER (0), '#' = PEAK (1), '^' = MOUNTAIN (2),
  * '%' = HILL (3), '-' = FLAT (4), '0' = ERROR (5)
  * Used by display routines for map rendering and user interface.
+ *
+ * MUST be unsigned char for safe array indexing (Phase 10.1).
+ * On x86_64, char is signed (-128 to 127). Using plain char for array
+ * indices can produce negative indices when values exceed 127, causing
+ * undefined behavior. Changed from 'char *' to 'unsigned char *' to
+ * ensure safe array indexing on all platforms.
+ *
+ * @last_documented: 2025-10-09
  */
-char *ele = "~#^%-0";
+unsigned char *ele = (unsigned char *)"~#^%-0";
 
 /*
  * Elevation Movement Cost Tables by Race
@@ -97,8 +105,16 @@ char *FElecost = "16211/"; /* Flight movement costs - can cross water */
  * 'v'=VOLCANO, 'd'=DESERT, 't'=TUNDRA, 'b'=BARREN, 'l'=LIGHT_VEG,
  * 'g'=GOOD, 'w'=WOOD, 'f'=FOREST, 'j'=JUNGLE, 's'=SWAMP,
  * 'i'=ICE, '~'=NONE, '0'=ERROR
+ *
+ * MUST be unsigned char for safe array indexing (Phase 10.1).
+ * On x86_64, char is signed (-128 to 127). Using plain char for array
+ * indices can produce negative indices when values exceed 127, causing
+ * undefined behavior. Changed from 'char *' to 'unsigned char *' to
+ * ensure safe array indexing on all platforms.
+ *
+ * @last_documented: 2025-10-09
  */
-char *veg = "vdtblgwfjsi~0";
+unsigned char *veg = (unsigned char *)"vdtblgwfjsi~0";
 
 /*
  * Vegetation Movement Cost Tables by Race
