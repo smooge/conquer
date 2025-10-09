@@ -1,8 +1,8 @@
 # Phase 10.1 Progress Tracker
 
-**Last Updated**: 2025-10-09 14:45:00
-**Phase Status**: IN_PROGRESS (Audit Complete, Ready for HIGH RISK Fixes)
-**Completion**: 30% (Infrastructure + Audit done, ready for fixes)
+**Last Updated**: 2025-10-09 15:57:00
+**Phase Status**: IN_PROGRESS (HIGH RISK: 1 of 2 files complete)
+**Completion**: 45% (Infrastructure + Audit + misc.c complete)
 
 ---
 
@@ -62,17 +62,20 @@
 
 ## High-Risk Files (Priority 1) - From Audit
 
-| File | Status | Risk Category | Lines Affected | Casts Before | Casts After | Estimated Removed | Commit | Session |
-|------|--------|---------------|----------------|--------------|-------------|-------------------|--------|---------|
-| misc.c | ⏳ PENDING | Array Indexing (E) | 2407-2440 | 8 | - | 8 (100%) | - | - |
+| File | Status | Risk Category | Lines Affected | Casts Before | Casts After | Actual Removed | Commit | Session |
+|------|--------|---------------|----------------|--------------|-------------|----------------|--------|---------|
+| misc.c | ✅ COMPLETE | Array Indexing (E) | 2407-2460 | 10 | 0 | 10 (100%) | ac4c0e6 | 2025-10-09 15:57 |
 | spew.c | ⏳ PENDING | ctype.h Usage (D) | 1244 | 1 | - | 1 (100%) | - | - |
 
-**Total HIGH RISK (Critical)**: 2 files, 9 casts, estimated 9 removed (100%)
+**Total HIGH RISK (Critical)**: 2 files, 11 casts (was 9, updated after audit), 10 removed so far (91%)
 
 **Notes**:
-- misc.c: Array indexing with veg[], ele[] (lines 2407-2440, not 1805-1838!)
-  - Fix veg[] and ele[] declarations to unsigned char
-  - Remove 8 (unsigned char) casts
+- misc.c: ✅ COMPLETE - Array indexing with veg[], ele[] (lines 2407-2460)
+  - Changed veg[] and ele[] declarations from `char *` to `unsigned char *` in data.c and data.h
+  - Removed 10 (unsigned char) casts from array indexing code
+  - Added comprehensive documentation explaining char signedness portability
+  - Verified with -fsigned-char flag (x86_64 simulation) - NO new warnings
+  - All 10 tests passing (100% success rate)
 - spew.c: ctype.h with isspace (line 1244, not 1207!)
   - Fix end pointer or use temp variable
   - Remove 1 (unsigned char) cast
@@ -107,17 +110,17 @@
 
 | Metric | Baseline | Current | Target | Status | % Complete |
 |--------|----------|---------|--------|--------|------------|
-| Sign conversion warnings | 167 | 167 | <20 | ⏳ PENDING | 0% |
-| `(unsigned char)` casts | 49 | 49 | <10 | ⏳ PENDING | 0% |
+| Sign conversion warnings | 167 | ~167 | <20 | 🔄 IN_PROGRESS | ~6% |
+| `(unsigned char)` casts | 49 | 39 | <10 | 🔄 IN_PROGRESS | 20% (10 removed) |
 | Plain char declarations audited | 0 | 347 | 347 | ✅ COMPLETE | 100% |
-| HIGH RISK files fixed | 0 | 0 | 2 | ⏳ NEXT | 0% |
+| HIGH RISK files fixed | 0 | 1 | 2 | 🔄 IN_PROGRESS | 50% |
 | MEDIUM RISK files fixed | 0 | 0 | 4 | ⏳ PENDING | 0% |
-| HIGH RISK casts addressed | 0 | 0 | 9 | ⏳ NEXT | 0% |
+| HIGH RISK casts addressed | 0 | 10 | 11 | 🔄 IN_PROGRESS | 91% |
 | MEDIUM RISK casts addressed | 0 | 0 | 15 | ⏳ PENDING | 0% |
 | Test pass rate | 10/10 | 10/10 | 10/10 | ✅ MAINTAINED | 100% |
 | Tier 1: Infrastructure | 0% | 100% | 100% | ✅ COMPLETE | 100% |
 | Tier 2: Audit | 0% | 100% | 100% | ✅ COMPLETE | 100% |
-| Tier 3: HIGH RISK Fixes | 0% | 0% | 100% | ⏳ NEXT | 0% |
+| Tier 3: HIGH RISK Fixes | 0% | 50% | 100% | 🔄 IN_PROGRESS | 50% |
 
 ---
 
@@ -127,25 +130,28 @@
 |---------|------|------|----------|-----------------|----------------|--------|--------------|
 | INFRASTRUCTURE | 2025-10-09 | 14:00-14:15 | ~15 min | Created test_char_signed.sh, ran baseline | test_char_signed.sh (new) | ✅ COMPLETE | ~5% |
 | AUDIT | 2025-10-09 | 14:15-14:45 | ~30 min | Created audit scripts, classified HIGH RISK | 6 audit files created | ✅ COMPLETE | ~3% |
+| TIER 3.1 (misc.c) | 2025-10-09 | 15:30-15:57 | ~27 min | Fixed misc.c array indexing, removed 10 casts | data.c, data.h, misc.c | ✅ COMPLETE | ~8% |
 
-**Total Time Invested**: ~45 minutes (infrastructure + audit)
-**Remaining Estimate**: 5.25-7 hours (fixes + validation + documentation)
+**Total Time Invested**: ~1.2 hours (infrastructure + audit + misc.c fix)
+**Remaining Estimate**: 5-6.5 hours (1 HIGH RISK + MEDIUM RISK + validation + docs)
 
 ---
 
-## Next Steps (Tier 3: HIGH RISK Fixes) ⏳ **READY TO START**
+## Next Steps (Tier 3: HIGH RISK Fixes) 🔄 **IN PROGRESS** (50% complete)
 
-### Immediate Actions
+### Completed
 
-**Task 4.1: Fix misc.c - Array Indexing** (Estimated: 45-60 minutes)
-1. Read misc.c lines 2407-2440 (veg[], ele[] array indexing)
-2. Find veg[] and ele[] declarations in data.h
-3. Change declarations from `char` to `unsigned char`
-4. Remove 8 `(unsigned char)` casts from misc.c
-5. Add documentation explaining char type choice
-6. Compile with `test_char_signed.sh misc.c`
-7. Run test suite (cmake + ctest)
-8. Git commit: "[PHASE-10.1] Fix misc.c char signedness (array indexing)"
+**Task 4.1: Fix misc.c - Array Indexing** ✅ **COMPLETE** (27 minutes actual)
+1. ✅ Read misc.c lines 2407-2460 (veg[], ele[] array indexing)
+2. ✅ Found veg[] and ele[] declarations in data.h line 1386
+3. ✅ Changed declarations from `char *` to `unsigned char *` in data.c and data.h
+4. ✅ Removed 10 `(unsigned char)` casts from misc.c (not 8!)
+5. ✅ Added comprehensive documentation explaining char type choice
+6. ✅ Compiled with `test_char_signed.sh misc.c` - NO new warnings
+7. ✅ Ran test suite - 10/10 tests passed (100% success)
+8. ✅ Git commit: ac4c0e6 "[PHASE-10.1] Fix char signedness in veg/ele array declarations"
+
+### Next Immediate Action
 
 **Task 4.2: Fix spew.c - ctype.h Usage** (Estimated: 30 minutes)
 1. Read spew.c line 1244 (isspace with char)
@@ -307,7 +313,7 @@ Phase 10.1 is complete when:
 
 ---
 
-**Last Updated**: 2025-10-09 14:45:00
-**Next Update**: After completing Tier 3 (HIGH RISK Fixes)
-**Current Focus**: Begin HIGH RISK fixes (misc.c, spew.c)
-**Session**: AUDIT ✅ COMPLETE → Tier 3 (HIGH RISK) ⏳ READY
+**Last Updated**: 2025-10-09 15:57:00
+**Next Update**: After completing Task 4.2 (spew.c)
+**Current Focus**: Tier 3 (HIGH RISK) - 1 of 2 files complete (misc.c ✅, spew.c ⏳)
+**Session**: TIER 3.1 (misc.c) ✅ COMPLETE → Task 4.2 (spew.c) ⏳ NEXT
