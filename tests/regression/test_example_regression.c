@@ -116,7 +116,7 @@ void test_standard_behavior_regression(void) {
     TEST_ASSERT_EQUAL(0, buffer[63]);
 
     /* Standard constants */
-    TEST_ASSERT_TRUE(NULL == 0);  /* NULL should equal 0 */
+    TEST_ASSERT_TRUE(NULL == 0); /* NULL should equal 0 */
     TEST_ASSERT_TRUE(1);
     TEST_ASSERT_FALSE(0);
 }
@@ -134,7 +134,7 @@ void test_type_consistency_regression(void) {
 
     /* Pointer behavior */
     int value = 42;
-    int* ptr = &value;
+    int *ptr = &value;
     TEST_ASSERT_EQUAL(42, *ptr);
     TEST_ASSERT_EQUAL(&value, ptr);
 }
