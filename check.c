@@ -36,7 +36,8 @@
  *
  * This file is part of Conquer.
  * Originally Copyright (C) 1988-1989 by Edward M. Barlow and Adam Bryant
- * Copyright (C) 2025 Juan Manuel Méndez Rey (Vejeta) - Licensed under GPL v3 with permission from original authors
+ * Copyright (C) 2025 Juan Manuel Méndez Rey (Vejeta) - Licensed under GPL v3 with permission
+ * from original authors
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -52,16 +53,16 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include	<ctype.h>
-#include	<stdio.h>
-#include	<fcntl.h>
+#include <ctype.h>
+#include <stdio.h>
+#include <fcntl.h>
 #ifndef FILELOCK
-#include	<sys/types.h>
-#include	<sys/stat.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #endif
 #include <unistd.h>
-#include	"header.h"
-#include	"data.h"
+#include "header.h"
+#include "data.h"
 
 /*
  * verify_ntn - Comprehensive nation data validation and integrity checks
@@ -90,10 +91,10 @@
  * Testing Notes:
  *   Category: B (Integration) - Requires full nation, army, navy, and map data
  *   Approach: Integration testing with constructed game states
- *   Key Tests: Negative resources, invalid positions, army-navy mismatches, diplomatic violations
- *   Dependencies: Global ntn[], sct[][] arrays, nation/army/navy data structures
- *   Mock Requirements: Complete game state with various invalid conditions
- *   Complexity: Moderate - Multi-system validation with complex army-navy relationships
+ *   Key Tests: Negative resources, invalid positions, army-navy mismatches, diplomatic
+ * violations Dependencies: Global ntn[], sct[][] arrays, nation/army/navy data structures Mock
+ * Requirements: Complete game state with various invalid conditions Complexity: Moderate -
+ * Multi-system validation with complex army-navy relationships
  *
  * Notes:
  *   - Uses debugging macros __file__ and __line__ for precise error reporting
@@ -101,108 +102,111 @@
  *   - Handles complex army-navy coordination validation (ONBOARD status)
  *   - Enforces automatic WAR status for all NPC nations (active >= NPC_PEASANT)
  *   - Thread safety: Not thread-safe due to global data modification
-  * @last_documented: 2025-09-19
+ * @last_documented: 2025-09-19
  */
 void verify_ntn(char __file__[], int __line__) {
-	register struct s_nation	*nptr;
-	register int	i;
-	register int	cntry;
-	int j, k;
-	struct army	*a;
+    register struct s_nation *nptr;
+    register int i;
+    register int cntry;
+    int j, k;
+    struct army *a;
 
-	for( cntry = 0; cntry < NTOTAL; cntry++ ) {
-		nptr = &ntn[cntry];
+    for (cntry = 0; cntry < NTOTAL; cntry++) {
+        nptr = &ntn[cntry];
 
-		if(cntry !=0 && nptr->active == 0) continue;
-		if( nptr->metals < 0L ) {
-			fprintf( stderr, "file %s: line %d: nation[%d] metal = %ld\n",
-				__file__, __line__, cntry, nptr->metals );
-			nptr->metals = 0L;
-		}
+        if (cntry != 0 && nptr->active == 0)
+            continue;
+        if (nptr->metals < 0L) {
+            fprintf(stderr, "file %s: line %d: nation[%d] metal = %ld\n", __file__, __line__,
+                    cntry, nptr->metals);
+            nptr->metals = 0L;
+        }
 
-		if( nptr->jewels < 0 ) {
-			fprintf( stderr, "file %s: line %d: nation[%d] jewels = %ld\n",
-				__file__, __line__, cntry, nptr->jewels );
-			nptr->jewels = 0.0;
-		}
+        if (nptr->jewels < 0) {
+            fprintf(stderr, "file %s: line %d: nation[%d] jewels = %ld\n", __file__, __line__,
+                    cntry, nptr->jewels);
+            nptr->jewels = 0.0;
+        }
 
-		for( i = 0; i < MAXARM; i++ ) {
-			a = &nptr->arm[i];
-			if( a->sold < 0 ) {
-				fprintf( stderr, "file %s: line %d: nation[%d] army[%d] sold = %ld\n",
-					__file__, __line__, cntry, i, a->sold );
-				a->sold = 0;
-			}
-			if( a->sold==0 ) continue;
-			if( a->xloc >= MAPX ) {
-				fprintf( stderr, "file %s: line %d: nation[%d] army[%d] xlocation = %d\n",
-					__file__, __line__, cntry, i, a->xloc );
-				a->xloc = 0;
-			}
-			if( a->yloc >= MAPY ) {
-				fprintf( stderr, "file %s: line %d: nation[%d] army[%d] ylocation = %d\n",
-					__file__, __line__, cntry, i, a->yloc );
-				a->yloc = 0;
-			}
-			if( a->stat == ONBOARD) {
-				if (a->smove != 0) {
-					fprintf( stderr, "file %s: line %d: nation[%d] army[%d] onboard move = %d\n",
-						__file__, __line__, cntry, i, a->smove );
-					a->smove = 0;
-				}
-				k = 0;
-				for (j = 0; j < MAXNAVY; j++) {
-					if (nptr->nvy[j].warships == 0
-					  && nptr->nvy[j].merchant == 0
-					  && nptr->nvy[j].galleys == 0)
-						continue;
-					if (nptr->nvy[j].armynum == i) {
-						k = 1;
-					}
-				}
-				if (k == 0) {
-					fprintf(stderr, "files %s: line %d: nation[%d] army[%d] onboard nothing\n",
-						__file__,__line__,cntry,i);
-					a->stat = DEFEND;
-				}
-			}
-			if( a->stat != ONBOARD && sct[a->xloc][a->yloc].altitude==WATER ) {
-				fprintf( stderr, "file %s: line %d: nation[%d] army[%d] loc=%d,%d (water) men=%ld\n",
-				__file__,__line__,cntry,i,a->xloc,a->yloc,a->sold);
-				a->sold = 0;
-			}
-		} /* for */
+        for (i = 0; i < MAXARM; i++) {
+            a = &nptr->arm[i];
+            if (a->sold < 0) {
+                fprintf(stderr, "file %s: line %d: nation[%d] army[%d] sold = %ld\n", __file__,
+                        __line__, cntry, i, a->sold);
+                a->sold = 0;
+            }
+            if (a->sold == 0)
+                continue;
+            if (a->xloc >= MAPX) {
+                fprintf(stderr, "file %s: line %d: nation[%d] army[%d] xlocation = %d\n",
+                        __file__, __line__, cntry, i, a->xloc);
+                a->xloc = 0;
+            }
+            if (a->yloc >= MAPY) {
+                fprintf(stderr, "file %s: line %d: nation[%d] army[%d] ylocation = %d\n",
+                        __file__, __line__, cntry, i, a->yloc);
+                a->yloc = 0;
+            }
+            if (a->stat == ONBOARD) {
+                if (a->smove != 0) {
+                    fprintf(stderr, "file %s: line %d: nation[%d] army[%d] onboard move = %d\n",
+                            __file__, __line__, cntry, i, a->smove);
+                    a->smove = 0;
+                }
+                k = 0;
+                for (j = 0; j < MAXNAVY; j++) {
+                    if (nptr->nvy[j].warships == 0 && nptr->nvy[j].merchant == 0
+                        && nptr->nvy[j].galleys == 0)
+                        continue;
+                    if (nptr->nvy[j].armynum == i) {
+                        k = 1;
+                    }
+                }
+                if (k == 0) {
+                    fprintf(stderr, "files %s: line %d: nation[%d] army[%d] onboard nothing\n",
+                            __file__, __line__, cntry, i);
+                    a->stat = DEFEND;
+                }
+            }
+            if (a->stat != ONBOARD && sct[a->xloc][a->yloc].altitude == WATER) {
+                fprintf(stderr,
+                        "file %s: line %d: nation[%d] army[%d] loc=%d,%d (water) men=%ld\n",
+                        __file__, __line__, cntry, i, a->xloc, a->yloc, a->sold);
+                a->sold = 0;
+            }
+        } /* for */
 
-		for( i = 0; i < MAXNAVY; i++ ) {
-			if (nptr->nvy[i].warships == 0
-			  && nptr->nvy[i].merchant == 0
-			  && nptr->nvy[i].galleys == 0)
-				continue;
-			if (nptr->nvy[i].armynum != MAXARM) {
-				a = &(nptr->arm[nptr->nvy[i].armynum]);
-				if (a->sold == 0 || a->stat != ONBOARD) {
-					fprintf(stderr, "file %s: line %d: nation[%d] navy[%d] carrying invalid troop\n",
-					       __file__,__line__,cntry,i);
-					nptr->nvy[i].armynum = MAXARM;
-				}
-			}
-		} /* for */
+        for (i = 0; i < MAXNAVY; i++) {
+            if (nptr->nvy[i].warships == 0 && nptr->nvy[i].merchant == 0
+                && nptr->nvy[i].galleys == 0)
+                continue;
+            if (nptr->nvy[i].armynum != MAXARM) {
+                a = &(nptr->arm[nptr->nvy[i].armynum]);
+                if (a->sold == 0 || a->stat != ONBOARD) {
+                    fprintf(stderr,
+                            "file %s: line %d: nation[%d] navy[%d] carrying invalid troop\n",
+                            __file__, __line__, cntry, i);
+                    nptr->nvy[i].armynum = MAXARM;
+                }
+            }
+        } /* for */
 
-		for( i = 0; i < NTOTAL; i++ ) {
-			if( ntn[i].active >= NPC_PEASANT ) {
-				if ( nptr->dstatus[i] != WAR ) {
-					nptr->dstatus[i] = WAR;
-				}
-				if ( ntn[i].dstatus[cntry] != WAR ) {
-					ntn[i].dstatus[cntry] = WAR;
-				}
-			} if( nptr->dstatus[i] > JIHAD ) {
-				fprintf( stderr, "file %s: line %d: nation[%d] diplomatic status with %d = %d\n",
-					__file__, __line__, cntry, i, nptr->dstatus[i] );
-				nptr->dstatus[i] = WAR;
-			}
-		} /* for */
-	} /* for */
+        for (i = 0; i < NTOTAL; i++) {
+            if (ntn[i].active >= NPC_PEASANT) {
+                if (nptr->dstatus[i] != WAR) {
+                    nptr->dstatus[i] = WAR;
+                }
+                if (ntn[i].dstatus[cntry] != WAR) {
+                    ntn[i].dstatus[cntry] = WAR;
+                }
+            }
+            if (nptr->dstatus[i] > JIHAD) {
+                fprintf(stderr, "file %s: line %d: nation[%d] diplomatic status with %d = %d\n",
+                        __file__, __line__, cntry, i, nptr->dstatus[i]);
+                nptr->dstatus[i] = WAR;
+            }
+        } /* for */
+    } /* for */
 } /* verify_ntn() */
 
 /*
@@ -233,8 +237,8 @@ void verify_ntn(char __file__[], int __line__) {
  *   Category: B (Integration) - Requires full map data and trade good definitions
  *   Approach: Integration testing with various invalid sector configurations
  *   Key Tests: Invalid trade goods, resource mismatches, water ownership, extreme populations
- *   Dependencies: Global sct[][] array, trade good constants, nation data for ownership validation
- *   Mock Requirements: Map sectors with various invalid property combinations
+ *   Dependencies: Global sct[][] array, trade good constants, nation data for ownership
+ * validation Mock Requirements: Map sectors with various invalid property combinations
  *   Complexity: Moderate - Resource-tradegood relationship validation with boundary checking
  *
  * Notes:
@@ -243,54 +247,59 @@ void verify_ntn(char __file__[], int __line__) {
  *   - Critical for preventing impossible economic conditions
  *   - Handles population overflow and underflow with appropriate corrections
  *   - Thread safety: Not thread-safe due to global map data modification
-  * @last_documented: 2025-09-19
+ * @last_documented: 2025-09-19
  */
-void verify_sct (char __file__[], int __line__) {
-	register struct s_sector	*sptr;
-	register int		x, y;
+void verify_sct(char __file__[], int __line__) {
+    register struct s_sector *sptr;
+    register int x, y;
 
-	for( x = 0; x < MAPX; x++ ) {
-		for( y = 0; y < MAPY; y++ ) {
-			sptr = &sct[x][y];
+    for (x = 0; x < MAPX; x++) {
+        for (y = 0; y < MAPY; y++) {
+            sptr = &sct[x][y];
 
-			if(sptr->tradegood>TG_none) {
-				fprintf( stderr, "file %s: line %d: sct[%d][%d].tradegood = %d (invalid)\n", __file__, __line__, x, y, sptr->tradegood );
-				sptr->tradegood=TG_none;
-			}
-			if(( sptr->metal != 0 )
-			&&(( sptr->tradegood>END_MINE)
-			  ||(sptr->tradegood<=END_NORMAL))) {
-				fprintf( stderr, "file %s: line %d: sct[%d][%d].metal = %d with no tradegood\n", __file__, __line__, x, y, sptr->metal );
-				sptr->metal = 0;
-			}
+            if (sptr->tradegood > TG_none) {
+                fprintf(stderr, "file %s: line %d: sct[%d][%d].tradegood = %d (invalid)\n",
+                        __file__, __line__, x, y, sptr->tradegood);
+                sptr->tradegood = TG_none;
+            }
+            if ((sptr->metal != 0)
+                && ((sptr->tradegood > END_MINE) || (sptr->tradegood <= END_NORMAL))) {
+                fprintf(stderr, "file %s: line %d: sct[%d][%d].metal = %d with no tradegood\n",
+                        __file__, __line__, x, y, sptr->metal);
+                sptr->metal = 0;
+            }
 
-			if(( sptr->jewels != 0 )
-			&&((sptr->tradegood>END_WEALTH)
-			  ||(sptr->tradegood<=END_MINE))) {
-				fprintf( stderr, "file %s: line %d: sct[%d][%d].jewels = %d with no tradegood\n", __file__, __line__, x, y, sptr->jewels );
-				sptr->jewels = 0;
-			}
+            if ((sptr->jewels != 0)
+                && ((sptr->tradegood > END_WEALTH) || (sptr->tradegood <= END_MINE))) {
+                fprintf(stderr, "file %s: line %d: sct[%d][%d].jewels = %d with no tradegood\n",
+                        __file__, __line__, x, y, sptr->jewels);
+                sptr->jewels = 0;
+            }
 
-			if( sptr->people > ABSMAXPEOPLE )
-				sptr->people = ABSMAXPEOPLE;
+            if (sptr->people > ABSMAXPEOPLE)
+                sptr->people = ABSMAXPEOPLE;
 
-			if( sptr->people < 0 ) {
-				fprintf( stderr, "file %s: line %d: sct[%d][%d].people = %ld\n", __file__, __line__, x, y, sptr->people );
-				if( sptr->people < -1*ABSMAXPEOPLE )
-					sptr->people = ABSMAXPEOPLE;
-				else sptr->people = 0;
-			}
+            if (sptr->people < 0) {
+                fprintf(stderr, "file %s: line %d: sct[%d][%d].people = %ld\n", __file__,
+                        __line__, x, y, sptr->people);
+                if (sptr->people < -1 * ABSMAXPEOPLE)
+                    sptr->people = ABSMAXPEOPLE;
+                else
+                    sptr->people = 0;
+            }
 
-			if( sptr->owner != 0 && sptr->altitude == WATER ) {
-				fprintf( stderr, "file %s: line %d: sct[%d][%d].owner = %s (a water sector)\n",__file__,__line__, x, y, ntn[sptr->owner].name );
-				sptr->owner = 0;
-			}
-			if( sptr->fortress > 12 ){
-				fprintf( stderr, "file %s: line %d: sct[%d][%d].fortress = %d \n",__file__,__line__, x, y, sptr->fortress );
-				sptr->fortress = 12;
-			}
-		} /* for */
-	} /* for */
+            if (sptr->owner != 0 && sptr->altitude == WATER) {
+                fprintf(stderr, "file %s: line %d: sct[%d][%d].owner = %s (a water sector)\n",
+                        __file__, __line__, x, y, ntn[sptr->owner].name);
+                sptr->owner = 0;
+            }
+            if (sptr->fortress > 12) {
+                fprintf(stderr, "file %s: line %d: sct[%d][%d].fortress = %d \n", __file__,
+                        __line__, x, y, sptr->fortress);
+                sptr->fortress = 12;
+            }
+        } /* for */
+    } /* for */
 } /* verify_sct() */
 
 /*
@@ -328,13 +337,13 @@ void verify_sct (char __file__[], int __line__) {
  *   - Should be called after data loading and before critical game operations
  *   - Part of defensive programming strategy for data integrity
  *   - Thread safety: Inherits thread safety characteristics of called functions
-  * @last_documented: 2025-09-19
+ * @last_documented: 2025-09-19
  */
-void verifydata (char __file__[], int __line__) {
-	/* check for invalid values */
-	verify_ntn( __file__, __line__ );
-	verify_sct( __file__, __line__ );
-}/* verifydata() */
+void verifydata(char __file__[], int __line__) {
+    /* check for invalid values */
+    verify_ntn(__file__, __line__);
+    verify_sct(__file__, __line__);
+} /* verifydata() */
 
 #ifdef DEBUG
 /*
@@ -371,19 +380,19 @@ void verifydata (char __file__[], int __line__) {
  *   - Acts as a wrapper around verifydata() with added debug information
  *   - Parameter order differs from other functions (line, file vs file, line)
  *   - Thread safety: Inherits characteristics from verifydata() and fprintf()
-  * @last_documented: 2025-09-19
+ * @last_documented: 2025-09-19
  */
-void checkout (char *file, int line) {
-	fprintf(stderr,"file %s line %d\n",file,line);
-	verifydata(file,line);
+void checkout(char *file, int line) {
+    fprintf(stderr, "file %s line %d\n", file, line);
+    verifydata(file, line);
 }
 #endif /* DEBUG */
 
 #ifdef FILELOCK
 /* Modern file locking using flock() - POSIX standard across all target platforms */
-#    include <sys/types.h>
-#    include <sys/file.h>
-#    define do_lock(fd) flock(fd,LOCK_EX|LOCK_NB)
+#include <sys/types.h>
+#include <sys/file.h>
+#define do_lock(fd) flock(fd, LOCK_EX | LOCK_NB)
 #endif /* FILELOCK */
 
 /*
@@ -424,46 +433,46 @@ void checkout (char *file, int line) {
  *   - Handles stale lock cleanup automatically (TIME_DEAD*3 threshold)
  *   - Critical error conditions cause program termination (defensive programming)
  *   - Thread safety: Platform-dependent (filesystem operations)
-  * @last_documented: 2025-09-19
+ * @last_documented: 2025-09-19
  */
-int check_lock (char *filename, int keeplock) {
-	int hold=FALSE;
+int check_lock(char *filename, int keeplock) {
+    int hold = FALSE;
 #ifdef FILELOCK
-	int fd;
+    int fd;
 
-	if ((fd=open(filename,O_WRONLY|O_CREAT,0600))!=(-1)) {
-		if(do_lock(fd)==(-1)) {
-			hold=TRUE;
-		}
-		/* remove lock after checking */
-		if(keeplock==FALSE && hold==FALSE) {
-			close(fd);
-			unlink(filename);
-		}
-	} else {
-		printf("error opening lock file <%s>\n",filename);
-		exit(FAIL);
-	}
+    if ((fd = open(filename, O_WRONLY | O_CREAT, 0600)) != (-1)) {
+        if (do_lock(fd) == (-1)) {
+            hold = TRUE;
+        }
+        /* remove lock after checking */
+        if (keeplock == FALSE && hold == FALSE) {
+            close(fd);
+            unlink(filename);
+        }
+    } else {
+        printf("error opening lock file <%s>\n", filename);
+        exit(FAIL);
+    }
 #else
-	struct stat fst;
+    struct stat fst;
 
-	if( stat( filename, &fst ) == 0 ) {
-		long now;
-		now = time(0);
-		if (now - fst.st_mtime < TIME_DEAD*3) {
-			hold=TRUE;
-		} else {
-			/* remove useless file */
-			unlink(filename);
-		}
-	}
-	if (hold==FALSE && keeplock==TRUE) {
-		/* create lock file */
-		if(open(filename,O_CREAT,0600)==(-1)) {
-			printf("error opening lock file <%s>\n",filename);
-			exit(FAIL);
-		}
-	}
+    if (stat(filename, &fst) == 0) {
+        long now;
+        now = time(0);
+        if (now - fst.st_mtime < TIME_DEAD * 3) {
+            hold = TRUE;
+        } else {
+            /* remove useless file */
+            unlink(filename);
+        }
+    }
+    if (hold == FALSE && keeplock == TRUE) {
+        /* create lock file */
+        if (open(filename, O_CREAT, 0600) == (-1)) {
+            printf("error opening lock file <%s>\n", filename);
+            exit(FAIL);
+        }
+    }
 #endif /* FILELOCK */
-	return(hold);
+    return (hold);
 }
