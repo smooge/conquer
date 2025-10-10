@@ -680,7 +680,7 @@ void budget(void) {
     mvprintw(14, COLS - 50, "TOTAL EXPENSES................%8ld", money);
     standend();
     money = spread.gold - curntn->tgold - money; /* net income */
-    chty = max((money * (long)curntn->charity) / 100L, 0L);
+    chty = max((money * curntn->charity) / 100L, 0L);
     mvprintw(15, COLS - 50, "CHARITY.......................%8ld", chty);
     mvprintw(16, COLS - 50, "NET INCOME....................%8ld", money);
 
@@ -856,7 +856,7 @@ void produce(void) {
              spread.food - curntn->tfood);
     fprintf(fp, "LINE %d FILE %s\n", __LINE__, __FILE__);
     mvprintw(12, 0, "%8ld people @ %3.1f eat.%8.0ld tons", spread.civilians, P_EATRATE,
-             (long)(P_EATRATE * (float)spread.civilians));
+             safe_double_to_long(P_EATRATE * safe_long_to_double(spread.civilians)));
     fprintf(fp, "LINE %d FILE %s\n", __LINE__, __FILE__);
     mvprintw(13, 0, "%8ld soldiers eat.....%8.0ld tons", military,
              safe_double_to_long(safe_long_to_double(military) * 2 * P_EATRATE));
