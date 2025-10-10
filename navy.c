@@ -1130,7 +1130,7 @@ void loadfleet(void) {
                 errormsg("There are not that many on board");
             } else if (amount > 0) {
                 sct[XREAL][YREAL].people += amount;
-                P_NPEOP = (unsigned char)((mhold * P_NPEOP - amount) / mhold);
+                P_NPEOP = safe_long_to_uchar((mhold * P_NPEOP - amount) / mhold);
                 NADJHLD;
                 if ((sct[XREAL][YREAL].designation != DCITY
                      && sct[XREAL][YREAL].designation != DCAPITOL)
@@ -1203,7 +1203,7 @@ void loadfleet(void) {
                 errormsg("Not enough people in sector");
             } else if (amount > 0) {
                 sct[XREAL][YREAL].people -= amount;
-                P_NPEOP += (unsigned char)(amount / mhold);
+                P_NPEOP += safe_long_to_uchar(amount / mhold);
                 SADJCIV;
                 if ((sct[XREAL][YREAL].designation != DCITY
                      && sct[XREAL][YREAL].designation != DCAPITOL)
