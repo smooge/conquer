@@ -104,7 +104,7 @@ void zeroworld(void) {
     for (i = 0; i < NTOTAL; i++) {
         curntn = &ntn[i];
         for (armynum = 0; armynum < MAXARM; armynum++) {
-            P_ASOLD = (long)0;
+            P_ASOLD = 0L;
             P_AXLOC = P_AYLOC = P_ATYPE = P_AMOVE = 0;
             P_ASTAT = DEFEND;
         }
@@ -477,7 +477,7 @@ void createworld(void) { /* create world */
 
     /*determine # of area types to areas*/
     for (i = 0; i < 250; i++) {
-        if ((avvalue * (float)NUMAREAS) > (float)alloc) {
+	    if ((avvalue * safe_int_to_float(NUMAREAS)) > safe_int_to_float(alloc)) {
             /*have not allocated high enough so Allocate more */
             x = rand() % 4; /*0 to 3*/
             if (number[x] > 0) {
@@ -688,7 +688,7 @@ void createworld(void) { /* create world */
                 sct[i][j].altitude = WATER;
 
     /* place  */
-    avvalue = PMOUNT * (float)(100 - pwater);
+    avvalue = PMOUNT * safe_int_to_float(100 - pwater);
     avvalue /= 10000;
     nmountains = safe_float_to_long(NUMSECTS * avvalue);
 
@@ -699,7 +699,7 @@ void createworld(void) { /* create world */
 
     /* heuristic says that 5 is cutoff number to stop placing ranges */
     /* and 1 third of mountains are placed as random hills		*/
-    while (nmountains > 5 && (float)nmountains > ((float)NUMSECTS * avvalue) / 3) {
+    while (nmountains > 5 && safe_long_to_float(nmountains) > (safe_int_to_float(NUMSECTS) * avvalue) / 3) {
         X1 = rand() % (MAPX - 8); /* Place one endpoint of range */
         Y1 = rand() % (MAPY - 8);
         X2 = (rand() % 8) + X1; /* Place second endpoint */
