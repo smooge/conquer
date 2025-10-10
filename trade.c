@@ -179,7 +179,8 @@ void trade(void) {
                 mvprintw(count, 0, "%2d) %-20s", holdint + 1, ntn[natn[holdint]].name);
 
                 if (type1[holdint] == TDLAND) {
-                    holdlong = (long)tofood(&sct[(int)lvar1[holdint]][extra[holdint]], 0);
+                    /* Safe widening cast: tofood() returns int, widened to long for storage */
+                    holdlong = (long)tofood(&sct[safe_long_to_int(lvar1[holdint])][extra[holdint]], 0);
                     mvprintw(count, 30, "(food=%2ld) %s", holdlong,
                              commodities[type1[holdint]]);
                 } else {
@@ -282,7 +283,7 @@ void trade(void) {
                     mvprintw(count++, 0, "%s", buylist[type2[holdint]]);
                     refresh();
                     holdlong2 = 0L;
-                    holdlong = (long)get_number();
+                    holdlong = get_number();
                     if (holdlong < 0L)
                         break;
                     /* check for valid bid */
@@ -326,12 +327,12 @@ void trade(void) {
                         case TDLAND:
                             mvaddstr(count++, 0, "What Y position? ");
                             refresh();
-                            holdlong2 = (long)get_number();
+                            holdlong2 = get_number();
                             if (holdlong2 < 0L)
                                 break;
-                            if (checkland(BUY, (int)(holdlong), (int)(holdlong2)) == NODEAL) {
+                            if (checkland(BUY, safe_long_to_int(holdlong), safe_long_to_int(holdlong2)) == NODEAL) {
                                 buysell = NODEAL;
-                            } else if (tofood(&sct[(int)holdlong][(int)holdlong2],
+                            } else if (tofood(&sct[safe_long_to_int(holdlong)][safe_long_to_int(holdlong2)],
                                               natn[holdint])
                                        < lvar2[holdint]) {
                                 tradeerr("You underbid the minimum");
@@ -339,27 +340,27 @@ void trade(void) {
                             }
                             break;
                         case TDARMY:
-                            if ((int)holdlong > MAXARM) {
+                            if (safe_long_to_int(holdlong) > MAXARM) {
                                 tradeerr("Invalid Unit");
                                 buysell = NODEAL;
-                            } else if (tradable(country, (int)holdlong) == FALSE) {
+                            } else if (tradable(country, safe_long_to_int(holdlong)) == FALSE) {
                                 tradeerr("That unit type is non-tradable.");
                                 buysell = NODEAL;
-                            } else if (armyvalue(country, (int)holdlong) < lvar2[holdint]) {
+                            } else if (armyvalue(country, safe_long_to_int(holdlong)) < lvar2[holdint]) {
                                 tradeerr("You underbid the minimum.");
                                 buysell = NODEAL;
                             }
                             holdlong2 = holdlong;
                             break;
                         case TDSHIP:
-                            if ((int)holdlong >= MAXNAVY) {
+                            if (safe_long_to_int(holdlong) >= MAXNAVY) {
                                 tradeerr("Invalid Navy");
                                 buysell = NODEAL;
-                            } else if (flthold((int)holdlong) < (int)lvar2[holdint]) {
+                            } else if (flthold(safe_long_to_int(holdlong)) < (int)lvar2[holdint]) {
                                 tradeerr("You underbid the minimum.");
                                 buysell = NODEAL;
-                            } else if ((curntn->nvy[(int)holdlong].armynum != MAXARM)
-                                       || (curntn->nvy[(int)holdlong].people != 0)) {
+                            } else if ((curntn->nvy[safe_long_to_int(holdlong)].armynum != MAXARM)
+                                       || (curntn->nvy[safe_long_to_int(holdlong)].people != 0)) {
                                 tradeerr("Navy must be unloaded first.");
                                 buysell = NODEAL;
                             }
@@ -375,7 +376,7 @@ void trade(void) {
                             tradeerr("Error opening file for trading");
                             abrt()
                         }
-                        setaside(country, type2[holdint], holdlong, (int)holdlong, FALSE);
+                        setaside(country, type2[holdint], holdlong, safe_long_to_int(holdlong), FALSE);
                         fprintf(tfile, "%d %d %d %d %ld %ld %d\n", BUY, country, holdint, 0,
                                 holdlong, holdlong2, 0);
                         fclose(tfile);
@@ -406,7 +407,7 @@ void trade(void) {
                     mvprintw(count++, 0, "%s", buylist[holdint]);
                     refresh();
                     /* find out how much commodities */
-                    holdlong = (long)get_number();
+                    holdlong = get_number();
                     if (holdlong < 0)
                         return;
                     extint = 0;
@@ -447,23 +448,23 @@ void trade(void) {
                                 buysell = NODEAL;
                                 break;
                             }
-                            buysell = checkland(SELL, (int)holdlong, extint);
+                            buysell = checkland(SELL, safe_long_to_int(holdlong), extint);
                             break;
                         case TDARMY:
-                            if (holdlong >= MAXARM || curntn->arm[(int)holdlong].sold <= 0) {
+                            if (holdlong >= MAXARM || curntn->arm[safe_long_to_int(holdlong)].sold <= 0) {
                                 tradeerr("Invalid Army");
                                 buysell = NODEAL;
-                            } else if (tradable(country, (int)holdlong) == FALSE) {
+                            } else if (tradable(country, safe_long_to_int(holdlong)) == FALSE) {
                                 tradeerr("That unit is non-tradable.");
                                 buysell = NODEAL;
                             }
                             break;
                         case TDSHIP:
-                            if (holdlong >= MAXNAVY || flthold((int)holdlong) <= 0) {
+                            if (holdlong >= MAXNAVY || flthold(safe_long_to_int(holdlong)) <= 0) {
                                 tradeerr("Invalid Navy");
                                 buysell = NODEAL;
-                            } else if ((curntn->nvy[(int)holdlong].armynum != MAXARM)
-                                       || (curntn->nvy[(int)holdlong].people != 0)) {
+                            } else if ((curntn->nvy[safe_long_to_int(holdlong)].armynum != MAXARM)
+                                       || (curntn->nvy[safe_long_to_int(holdlong)].people != 0)) {
                                 tradeerr("Navy must be unloaded first.");
                                 buysell = NODEAL;
                             }
@@ -493,20 +494,20 @@ void trade(void) {
                         /* find out for what value */
                         mvprintw(count++, 0, "Minimum Amount of %s? ", commodities[holdint2]);
                         refresh();
-                        holdlong2 = (long)get_number();
+                        holdlong2 = get_number();
                         if (holdlong2 <= 0L)
                             return;
                     }
 
                     /* make sure what was bid is unusable */
-                    setaside(country, holdint, holdlong, (int)holdlong, FALSE);
+                    setaside(country, holdint, holdlong, safe_long_to_int(holdlong), FALSE);
 
                     /* set up output properly */
                     if (holdint == TDARMY) {
-                        extint = (int)holdlong;
-                        holdlong = armyvalue(country, (int)holdlong);
+                        extint = safe_long_to_int(holdlong);
+                        holdlong = armyvalue(country, safe_long_to_int(holdlong));
                     } else if (holdint == TDSHIP) {
-                        extint = (int)holdlong;
+                        extint = safe_long_to_int(holdlong);
                         holdlong = (long)flthold(extint);
                     }
 
@@ -1095,8 +1096,8 @@ long tradeit(int cntry1, int cntry2, int item, long longval, int extra) {
             returnval = longval;
             break;
         case TDLAND:
-            if (sct[(int)longval][extra].owner == cntry1) {
-                sct[(int)longval][extra].owner = safe_int_to_uchar(cntry2);
+		if (sct[safe_long_to_int(longval)][extra].owner == cntry1) {
+			sct[safe_long_to_int(longval)][extra].owner = safe_int_to_uchar(cntry2);
                 returnval = longval;
             }
             break;
@@ -1224,8 +1225,9 @@ long gettval(int cntry1, int cntry2, int type, long longval, int extint) {
             returnval = longval;
             break;
         case TDLAND:
-            if (cntry2 == sct[(int)longval][extint].owner)
-                returnval = (long)tofood(&sct[(int)longval][extint], cntry1);
+            if (cntry2 == sct[safe_long_to_int(longval)][extint].owner)
+                /* Safe widening cast: tofood() returns int, widened to long for return value */
+                returnval = (long)tofood(&sct[safe_long_to_int(longval)][extint], cntry1);
             break;
         case TDARMY:
             if (armyvalue(cntry2, extint) > 0)
@@ -1564,7 +1566,7 @@ void checktrade(void) {
                     ntn[country].tfood = lvar1[itemnum];
                 else
                     setaside(country, type2[type1[itemnum]], lvar1[itemnum],
-                             (int)lvar1[itemnum], TRUE);
+                             safe_long_to_int(lvar1[itemnum]), TRUE);
             }
         }
     }
@@ -1676,12 +1678,12 @@ void uptrade(void) {
             else if (deal[type1[itemnum]] == SELL
                      && (price[type1[itemnum]] < gettval(natn[type1[itemnum]], natn[itemnum],
                                                          type2[type1[itemnum]], lvar1[itemnum],
-                                                         (int)lvar2[itemnum]))) {
+                                                         safe_long_to_int(lvar2[itemnum])))) {
                 deal[type1[itemnum]] = BUY;
                 /* highest bid so far */
                 price[type1[itemnum]] =
                     gettval(natn[type1[itemnum]], natn[itemnum], type2[type1[itemnum]],
-                            lvar1[itemnum], (int)lvar2[itemnum]);
+                            lvar1[itemnum], safe_long_to_int(lvar2[itemnum]));
                 /* return bid to loser */
                 takeback(whobuy[type1[itemnum]], type2[type1[itemnum]], buy1[type1[itemnum]],
                          (int)buy2[type1[itemnum]], FALSE);
@@ -1692,7 +1694,7 @@ void uptrade(void) {
             } else {
                 /* return bid */
                 takeback(natn[itemnum], type2[type1[itemnum]], lvar1[itemnum],
-                         (int)lvar2[itemnum], FALSE);
+                         safe_long_to_int(lvar2[itemnum]), FALSE);
             }
         }
     }
@@ -1750,6 +1752,7 @@ void uptrade(void) {
                 fprintf(fnews, "2.\tNation %s sells %s to %s for %s\n", ntn[natn[count]].name,
                         commodities[type1[count]], ntn[whobuy[count]].name,
                         commodities[type2[count]]);
+                /* Safe widening cast: extra[] is int, widened to long for function parameter */
                 trademail(natn[count], whobuy[count], type1[count], type2[count], longval1,
                           (long)extra[count], longval2, buy2[count]);
             }

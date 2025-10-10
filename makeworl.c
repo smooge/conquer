@@ -109,7 +109,7 @@ void zeroworld(void) {
             P_ASTAT = DEFEND;
         }
         for (nvynum = 0; nvynum < MAXNAVY; nvynum++) {
-            P_NWSHP = P_NMSHP = P_NGSHP = (unsigned short)0;
+            P_NWSHP = P_NMSHP = P_NGSHP = 0;
             P_NCREW = P_NPEOP = P_NARMY = 0;
             P_NXLOC = P_NYLOC = P_NMOVE = 0;
         }

@@ -272,6 +272,7 @@ void mymove(void) {
                     for (i = 0; i < MAXARM; i++)
                         if (curntn->arm[i].sold > 0) {
                             standout();
+                            /* Safe widening casts: unsigned char (0-255) coordinates to int for offset arithmetic */
                             see((int)curntn->arm[i].xloc - xoffset,
                                 (int)curntn->arm[i].yloc - yoffset);
                         }
@@ -280,6 +281,7 @@ void mymove(void) {
                                 + curntn->nvy[i].galleys
                             != 0) {
                             standout();
+                            /* Safe widening casts: unsigned char (0-255) coordinates to int for offset arithmetic */
                             see((int)curntn->nvy[i].xloc - xoffset,
                                 (int)curntn->nvy[i].yloc - yoffset);
                         }

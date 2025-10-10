@@ -810,10 +810,8 @@ void dispitem(int item, long amount) {
     }
 
     /* now show the extras for the Raw Materials */
-    printw(", %ld jewels", (long)(safe_long_to_float(amount) * safe_long_to_float(NLJEWELS)
-                                  / safe_long_to_float(Mvalues[CH_RAWGOODS])));
-    printw(", and %ld metal.", (long)(safe_long_to_float(amount) * safe_long_to_float(NLMETAL)
-                                      / safe_long_to_float(Mvalues[CH_RAWGOODS])));
+    printw(", %ld jewels", safe_float_to_long((safe_long_to_float(amount) * safe_long_to_float(NLJEWELS) / safe_long_to_float(Mvalues[CH_RAWGOODS]))));
+    printw(", and %ld metal.", safe_float_to_long(safe_long_to_float(amount) * safe_long_to_float(NLMETAL) / safe_long_to_float(Mvalues[CH_RAWGOODS])));
 }
 
 /*

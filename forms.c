@@ -854,8 +854,7 @@ void change(void) {
         mvprintw(4, COLS / 2 - 12, "popularity.... %3d", curntn->popularity);
         mvprintw(5, COLS / 2 - 12, "prestige...... %3d", curntn->prestige);
         mvprintw(6, COLS / 2 - 12, "knowledge..... %3d", curntn->knowledge);
-        temp = safe_double_to_float(P_EATRATE);
-        mvprintw(7, COLS / 2 - 12, "eatrate.......%3.2f", temp);
+        mvprintw(7, COLS / 2 - 12, "eatrate.......%3.2lf", P_EATRATE);
         mvprintw(8, COLS / 2 - 12, "wealth........ %3d", curntn->wealth);
         mvprintw(9, COLS / 2 - 12, "charity....... %2d%%", curntn->charity);
         mvprintw(10, COLS / 2 - 12, "communication.%3.2lf", P_NTNCOM);

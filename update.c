@@ -949,7 +949,7 @@ void updexecs(void) {
 
         /* is leader killed - put nation into disarray */
         disarray = TRUE;
-        x = getleader((int)curntn->class) - 1;
+        x = getleader(curntn->class) - 1;
         for (armynum = 0; armynum < MAXARM; armynum++)
             if (P_ATYPE == x && P_ASOLD > 0) {
                 disarray = FALSE;

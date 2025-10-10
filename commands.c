@@ -1504,6 +1504,7 @@ void draft(void) {
             }
             P_AYLOC = safe_int_to_uchar(YREAL);
             P_AXLOC = safe_int_to_uchar(XREAL);
+            /* Safe widening casts: unsigned char (0-255) coordinates to int for compass() parameters */
             mvprintw(
                 LINES - 2, 0, "Intelligence indicates that %s lies to the %s", ntn[i].name,
                 *(directions

@@ -1045,6 +1045,7 @@ void redomil(void) {
             diff = (long)min(ideal - P_ASOLD,
                              (int)(curntn->metals / *(u_enmetal + (P_ATYPE % UTYPE))));
 
+        /* Safe widening cast: min() returns int, widened to long for storage */
         diff = (long)min((int)diff, sct[curntn->capx][curntn->capy].people / 2L);
 
         if ((curntn->tgold < 0L || curntn->metals < 0L) && (diff > 0L))

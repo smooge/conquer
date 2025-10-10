@@ -3427,7 +3427,7 @@ void reset_god(void) {
  *   - L_BARON is most common (4 classes use it) - balanced default leader
  * @last_documented: 2025-10-08
  */
-int getleader(int class) {
+int getleader(short class) {
     switch (class) {
         case C_NPC:
         case C_KING:

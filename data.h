@@ -1027,7 +1027,7 @@ extern void get_nname(char str[]);
 extern int get_country(void);
 extern int get_god(void);
 extern void reset_god(void);
-extern int getleader(int class);
+extern int getleader(short class);
 extern int mailopen(int to);
 extern void mailclose(int to);
 extern int markok(int mark, int prtflag);
