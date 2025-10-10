@@ -2661,29 +2661,29 @@ int startcost(void) /* cant be used for npc nations yet!!! see below */
 {
     float points; /* points */
 
-    points = ((float)curntn->tciv) / ONLPOP;
-    points += ((float)curntn->tgold) / ONLGOLD;
-    points += ((float)curntn->tmil) / ONLSOLD;
+    points = (safe_long_to_float(curntn->tciv)) / ONLPOP;
+    points += (safe_long_to_float(curntn->tgold)) / ONLGOLD;
+    points += (safe_long_to_float(curntn->tmil)) / ONLSOLD;
     if (curntn->race == ORC) {
-        points += ((float)curntn->repro) * ONLREPCOST / (ONLREPRO_ORC);
-        points += ((float)curntn->aplus * 2) / ONLATTACK;
-        points += ((float)curntn->dplus * 2) / ONLDEFENCE;
+	    points += (safe_long_to_float(curntn->repro)) * ONLREPCOST / (ONLREPRO_ORC);
+	    points += (safe_long_to_float(curntn->aplus * 2)) / ONLATTACK;
+	    points += (safe_long_to_float(curntn->dplus * 2)) / ONLDEFENCE;
     } else {
-        points += ((float)curntn->aplus) / ONLATTACK;
-        points += ((float)curntn->dplus) / ONLDEFENCE;
-        points += ((float)curntn->repro) * ONLREPCOST / ONLREPRO;
+	    points += (safe_long_to_float(curntn->aplus)) / ONLATTACK;
+	    points += (safe_long_to_float(curntn->dplus)) / ONLDEFENCE;
+	    points += (safe_long_to_float(curntn->repro)) * ONLREPCOST / ONLREPRO;
     }
-    points += ((float)curntn->maxmove) / ONLMOVE;
+    points += (safe_long_to_float(curntn->maxmove)) / ONLMOVE;
     if (curntn->location == FAIR)
         points += ONLLOCCOST;
     else if (curntn->location == GREAT)
         points += 2 * ONLLOCCOST;
     /* points+=ONLDBLCOST*curntn->tfood/ONLHFOOD; */
-    points -= safe_int_to_float((TURN - 1) / LATESTART); /* extra points if you start late */
+    points -= safe_int_to_float((TURN - 1)) / LATESTART; /* extra points if you start late */
     if (TURN > 1)
         printf("point cost for nation %d is %.2f (bonus for latestart is %f)\n", country,
-               points, (float)(TURN - 1) / LATESTART);
+               points, safe_long_to_float((TURN - 1)) / LATESTART);
 
     points += 1.0f; /* round up */
-    return ((int)points);
+    return (safe_float_to_int(points));
 }
