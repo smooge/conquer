@@ -448,10 +448,10 @@ void redesignate(void) {
                     x = safe_long_to_short(get_number());
                     if (x < 100 && x > 0) {
                         if (y > END_MINE) {
-                            sptr->jewels = (char)x;
+				sptr->jewels = safe_short_to_uchar(x);
                             sptr->metal = 0;
                         } else {
-                            sptr->metal = (char)x;
+				sptr->metal = safe_short_to_uchar(x);
                             sptr->jewels = 0;
                         }
                     } else {
@@ -462,7 +462,7 @@ void redesignate(void) {
                     sptr->jewels = 0;
                     sptr->metal = 0;
                 }
-                sptr->tradegood = (char)y;
+                sptr->tradegood = safe_short_to_uchar(y);
                 reset_god();
                 return;
             default:
@@ -810,7 +810,7 @@ void construct(void) {
             mvaddstr(LINES - 2, 0, "How many crew per unit do you wish to add:");
             clrtoeol();
             refresh();
-            amount = (short)get_number();
+            amount = safe_long_to_short(get_number());
             if (amount < 0) {
                 if (isgod == TRUE)
                     reset_god();
@@ -971,7 +971,7 @@ void construct(void) {
 
         mvaddstr(LINES - 2, 0, "How many ships to construct?");
         refresh();
-        amount = (short)get_number();
+        amount = safe_long_to_short(get_number());
 
         /*sanity checks*/
         if ((amount > N_MASK))

@@ -402,7 +402,7 @@ int main(int argc, char **argv) {
     } else {
         /* Copy absolute path from datadir
          * Use FILELTH (datadir size) to prevent buffer over-read of source buffer */
-        strncpy(defaultdir, datadir, FILELTH - 1);
+        strncpy(defaultdir, datadir, FILELTH );
         defaultdir[FILELTH - 1] = '\0';
     }
 
@@ -891,7 +891,7 @@ void att_base(void) {
             else
                 x = 25;
             if (x < MAXTGVAL)
-                curntn->eatrate = (char)x;
+		    curntn->eatrate = safe_int_to_char(x);
             else
                 curntn->eatrate = MAXTGVAL;
             if (curntn->eatrate < 25)
@@ -1226,7 +1226,7 @@ void att_bonus(void) {
                     else
                         curntn->farm_ability = MAXTGVAL;
                 } else if (good <= END_SPELL) {
-                    curntn->spellpts += (short)(sptr->people / 1000 + 1);
+                    curntn->spellpts += safe_long_to_short(sptr->people / 1000 + 1);
                 } else if (good <= END_TERROR) {
                     if (curntn->terror + (*(tg_value + good) - '0') < MAXTGVAL)
                         curntn->terror += safe_clamp_nation_attr(*(tg_value + good) - '0');

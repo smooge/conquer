@@ -71,7 +71,7 @@
  *   Complexity: Moderate - Bit manipulation requires careful boundary testing
  * @last_documented: 2025-09-20
  */
-int addwships(short nvynum, short shipsize, short nships) {
+int addwships(int nvynum, int shipsize, int nships) {
     int hold = nships;
 
     /* return FALSE if fails, TRUE otherwise */

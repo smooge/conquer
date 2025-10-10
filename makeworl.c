@@ -114,14 +114,14 @@ void zeroworld(void) {
             P_NXLOC = P_NYLOC = P_NMOVE = 0;
         }
         curntn->active = INACTIVE;
-        curntn->repro = (char)0;
+        curntn->repro = 0;
         curntn->jewels = curntn->tgold = curntn->metals = 0L;
         curntn->powers = curntn->tciv = curntn->tmil = curntn->score = 0L;
         curntn->race = TUNKNOWN;
         curntn->maxmove = 0;
         curntn->spellpts = 0;
-        curntn->class = curntn->aplus = curntn->dplus = (short)0;
-        curntn->inflation = curntn->tsctrs = curntn->tships = (short)0;
+        curntn->class = curntn->aplus = curntn->dplus = 0;
+        curntn->inflation = curntn->tsctrs = curntn->tships = 0;
     }
 }
 
@@ -1624,7 +1624,7 @@ void populate(void) {
 
             country = safe_int_to_short(cnum);
             curntn = &ntn[country];
-            curntn->class = (short)class;
+            curntn->class = class;
             snprintf(line, sizeof(line), " %s (%s)", curntn->name, *(Class + curntn->class));
             mvaddstr(ypos, xpos, line);
             xpos += safe_size_to_int(strlen(line));

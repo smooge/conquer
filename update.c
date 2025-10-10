@@ -1563,7 +1563,7 @@ void updsectors(void) {
                 curntn->popularity = safe_int_to_uchar(
                     max(0, (int)(curntn->popularity - 2 * curntn->inflation)));
             } else
-                curntn->popularity = (char)MAXTGVAL;
+                curntn->popularity = MAXTGVAL;
             curntn->tsctrs = safe_int_to_short(spread.sectors);
             curntn->tciv = spread.civilians;
             curntn->tfood = spread.food;
