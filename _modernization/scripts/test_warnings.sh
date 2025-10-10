@@ -118,8 +118,14 @@ elif [[ $# -gt 1 ]]; then
     exit 1
 fi
 
+
 # Build warning flags based on level and compiler
 build_warning_flags() {
+    if [[ "$CC" == "gcc" ]]; then
+	SKIP=""
+    else
+	SKIP="-Wno-unknown-warning-option"
+    fi
     case $WARN_LEVEL in
         0) WARN="" ;;
         1) WARN="-Wall" ;;
@@ -162,6 +168,7 @@ build_warning_flags() {
             fi
             ;;
     esac
+    WARN="$WARN $SKIP"
 }
 
 # Build the warning flags

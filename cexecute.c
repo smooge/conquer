@@ -181,8 +181,8 @@ int execute(int isupdate) { /* 0 if not update, 1 if update */
                     P_ASTAT = safe_short_to_uchar(x);
                 break;
             case XAMEN: /*Aadjmen*/
-                armynum = (int)longvar;
-                P_ASOLD = (int)long2var;
+    	        armynum = safe_long_to_int(longvar);
+		P_ASOLD = safe_long_to_int(long2var);
                 P_ATYPE = safe_short_to_uchar(y);
                 break;
             case XBRIBE: /* nation has been bribed */

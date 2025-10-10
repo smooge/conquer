@@ -485,8 +485,9 @@ void change_status(int armynum, int new_stat) {
  * @last_documented: 2025-09-20
  */
 void reducearmy(int armynum, int men) {
-    int army2;
-    int oldx, oldy, army;
+    int army=0, army2=0;
+
+    unsigned char oldx=0, oldy=0;
 
     if (P_ATYPE >= MINMONSTER) {
         errormsg("sorry -- army is monster");
@@ -512,8 +513,8 @@ void reducearmy(int armynum, int men) {
         return;
     }
 
-    oldx = (int)P_AXLOC;
-    oldy = (int)P_AYLOC;
+    oldx = P_AXLOC;
+    oldy = P_AYLOC;
     army2 = armynum;
 
     armynum = (-1);
@@ -530,8 +531,8 @@ void reducearmy(int armynum, int men) {
         P_AMOVE = curntn->arm[army2].smove;
         P_ATYPE = curntn->arm[army2].unittyp;
         P_ASTAT = curntn->arm[army2].stat;
-        P_AXLOC = safe_int_to_uchar(oldx);
-        P_AYLOC = safe_int_to_uchar(oldy);
+        P_AXLOC = oldx;
+        P_AYLOC = oldy;
         P_ASOLD = men;
         curntn->arm[army2].sold -= P_ASOLD;
         AADJSTAT;

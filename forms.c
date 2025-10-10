@@ -824,12 +824,12 @@ void change(void) {
             mvprintw(5, 0, "active is %d", curntn->active);
         mvprintw(6, 0, "tax_rate...... %2d%%", curntn->tax_rate);
         mvprintw(7, 0, "inflation..... %2d%%", curntn->inflation);
-        i = (int)10 * curntn->tax_rate - curntn->popularity - curntn->terror
+        i = 10 * curntn->tax_rate - curntn->popularity - curntn->terror
             - 3 * curntn->charity;
         if (i < 0)
             i = 0;
         mvprintw(8, 0, "peasant revolt %2d%%", (i * PREVOLT) / 100);
-        i = (int)5 * curntn->tax_rate - curntn->prestige;
+        i = 5 * curntn->tax_rate - curntn->prestige;
         if (i < 0)
             i = 0;
         mvprintw(9, 0, "other revolt.. %2d%%", (i * PREVOLT) / 100);

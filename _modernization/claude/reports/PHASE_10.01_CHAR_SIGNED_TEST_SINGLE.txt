@@ -1,0 +1,160 @@
+=== CHAR SIGNEDNESS TEST (SINGLE FILE): misc.c ===
+Purpose: Simulate x86_64 behavior with -fsigned-char
+Platform: aarch64 (char is unsigned) → x86_64 simulation (char is signed)
+Compiler: gcc
+Char Flag: -fsigned-char (⭐ CRITICAL)
+Warning Level: 9 (-Wall -Wextra -Wpedantic -Wformat=2 -Wconversion -Wsign-conversion -Wimplicit-fallthrough -Wshadow -Wmissing-prototypes -Wcast-qual -Wstrict-prototypes -Wstringop-truncation)
+C Standard: c2x
+Date: Thu  9 Oct 15:56:52 EDT 2025
+
+--- Testing misc.c (Admin mode, -fsigned-char) ---
+misc.c: In function ‘get_number’:
+misc.c:162:13: warning: conversion to ‘chtype’ {aka ‘const unsigned int’} from ‘char’ may change the sign of the result [-Wsign-conversion]
+  162 |             addch(ch);
+      |             ^~~~~
+misc.c: In function ‘is_habitable’:
+misc.c:1127:18: warning: conversion to ‘char’ from ‘unsigned char’ may change the sign of the result [-Wsign-conversion]
+ 1127 |     if (((temp = sct[x][y].altitude) == WATER) || (temp == PEAK))
+      |                  ^~~
+misc.c:1130:18: warning: conversion to ‘char’ from ‘unsigned char’ may change the sign of the result [-Wsign-conversion]
+ 1130 |     if (((temp = sct[x][y].vegetation) == BARREN) || (temp == LT_VEG) || (temp == GOOD)
+      |                  ^~~
+In file included from misc.c:37:
+misc.c: In function ‘deplete’:
+data.h:169:25: warning: conversion to ‘unsigned char’ from ‘char’ may change the sign of the result [-Wsign-conversion]
+  169 | #define DRUIN           (*(des+7))      /* Ruined structure */
+      |                         ^
+data.h:1370:33: note: in expansion of macro ‘DRUIN’
+ 1370 |         sct[X][Y].designation = DRUIN; \
+      |                                 ^~~~~
+misc.c:1845:25: note: in expansion of macro ‘DEVASTATE’
+ 1845 |                         DEVASTATE(i, j)
+      |                         ^~~~~~~~~
+data.h:166:25: warning: conversion to ‘unsigned char’ from ‘char’ may change the sign of the result [-Wsign-conversion]
+  166 | #define DDEVASTATED     (*(des+4))      /* Devastated/destroyed area */
+      |                         ^
+data.h:1371:32: note: in expansion of macro ‘DDEVASTATED’
+ 1371 | } else sct[X][Y].designation = DDEVASTATED; \
+      |                                ^~~~~~~~~~~
+misc.c:1845:25: note: in expansion of macro ‘DEVASTATE’
+ 1845 |                         DEVASTATE(i, j)
+      |                         ^~~~~~~~~
+data.h:171:25: warning: conversion to ‘unsigned char’ from ‘char’ may change the sign of the result [-Wsign-conversion]
+  171 | #define DCAPITOL        (*(des+9))      /* Nation capital city */
+      |                         ^
+misc.c:1867:59: note: in expansion of macro ‘DCAPITOL’
+ 1867 |             sct[curntn->capx][curntn->capy].designation = DCAPITOL;
+      |                                                           ^~~~~~~~
+misc.c: In function ‘sackem’:
+data.h:163:25: warning: conversion to ‘unsigned char’ from ‘char’ may change the sign of the result [-Wsign-conversion]
+  163 | #define DCITY           (*(des+1))      /* City settlement */
+      |                         ^
+misc.c:2011:37: note: in expansion of macro ‘DCITY’
+ 2011 |             sct[x][y].designation = DCITY;
+      |                                     ^~~~~
+data.h:169:25: warning: conversion to ‘unsigned char’ from ‘char’ may change the sign of the result [-Wsign-conversion]
+  169 | #define DRUIN           (*(des+7))      /* Ruined structure */
+      |                         ^
+data.h:1370:33: note: in expansion of macro ‘DRUIN’
+ 1370 |         sct[X][Y].designation = DRUIN; \
+      |                                 ^~~~~
+misc.c:2013:13: note: in expansion of macro ‘DEVASTATE’
+ 2013 |             DEVASTATE(x, y)
+      |             ^~~~~~~~~
+data.h:166:25: warning: conversion to ‘unsigned char’ from ‘char’ may change the sign of the result [-Wsign-conversion]
+  166 | #define DDEVASTATED     (*(des+4))      /* Devastated/destroyed area */
+      |                         ^
+data.h:1371:32: note: in expansion of macro ‘DDEVASTATED’
+ 1371 | } else sct[X][Y].designation = DDEVASTATED; \
+      |                                ^~~~~~~~~~~
+misc.c:2013:13: note: in expansion of macro ‘DEVASTATE’
+ 2013 |             DEVASTATE(x, y)
+      |             ^~~~~~~~~
+misc.c: In function ‘destroy’:
+data.h:163:25: warning: conversion to ‘unsigned char’ from ‘char’ may change the sign of the result [-Wsign-conversion]
+  163 | #define DCITY           (*(des+1))      /* City settlement */
+      |                         ^
+misc.c:2247:51: note: in expansion of macro ‘DCITY’
+ 2247 |         sct[nptr->capx][nptr->capy].designation = DCITY;
+      |                                                   ^~~~~
+data.h:180:25: warning: conversion to ‘unsigned char’ from ‘char’ may change the sign of the result [-Wsign-conversion]
+  180 | #define DNODESIG        (*(des+18))     /* No designation (wilderness) */
+      |                         ^
+misc.c:2257:45: note: in expansion of macro ‘DNODESIG’
+ 2257 |                     sct[x][y].designation = DNODESIG;
+      |                                             ^~~~~~~~
+data.h:180:25: warning: conversion to ‘unsigned char’ from ‘char’ may change the sign of the result [-Wsign-conversion]
+  180 | #define DNODESIG        (*(des+18))     /* No designation (wilderness) */
+      |                         ^
+misc.c:2270:49: note: in expansion of macro ‘DNODESIG’
+ 2270 |                         sct[x][y].designation = DNODESIG;
+      |                                                 ^~~~~~~~
+data.h:180:25: warning: conversion to ‘unsigned char’ from ‘char’ may change the sign of the result [-Wsign-conversion]
+  180 | #define DNODESIG        (*(des+18))     /* No designation (wilderness) */
+      |                         ^
+misc.c:2283:53: note: in expansion of macro ‘DNODESIG’
+ 2283 |                             sct[x][y].designation = DNODESIG;
+      |                                                     ^~~~~~~~
+data.h:165:25: warning: conversion to ‘unsigned char’ from ‘char’ may change the sign of the result [-Wsign-conversion]
+  165 | #define DFARM           (*(des+3))      /* Agricultural farm */
+      |                         ^
+misc.c:2285:53: note: in expansion of macro ‘DFARM’
+ 2285 |                             sct[x][y].designation = DFARM;
+      |                                                     ^~~~~
+misc.c: In function ‘get_nname’:
+misc.c:3035:17: warning: conversion to ‘chtype’ {aka ‘const unsigned int’} from ‘char’ may change the sign of the result [-Wsign-conversion]
+ 3035 |                 addch(ch);
+      |                 ^~~~~
+
+--- Testing misc.c (Game mode, -fsigned-char) ---
+misc.c: In function ‘get_number’:
+misc.c:162:13: warning: conversion to ‘chtype’ {aka ‘const unsigned int’} from ‘char’ may change the sign of the result [-Wsign-conversion]
+  162 |             addch(ch);
+      |             ^~~~~
+misc.c: In function ‘is_habitable’:
+misc.c:1127:18: warning: conversion to ‘char’ from ‘unsigned char’ may change the sign of the result [-Wsign-conversion]
+ 1127 |     if (((temp = sct[x][y].altitude) == WATER) || (temp == PEAK))
+      |                  ^~~
+misc.c:1130:18: warning: conversion to ‘char’ from ‘unsigned char’ may change the sign of the result [-Wsign-conversion]
+ 1130 |     if (((temp = sct[x][y].vegetation) == BARREN) || (temp == LT_VEG) || (temp == GOOD)
+      |                  ^~~
+In file included from misc.c:37:
+misc.c: In function ‘destroy’:
+data.h:163:25: warning: conversion to ‘unsigned char’ from ‘char’ may change the sign of the result [-Wsign-conversion]
+  163 | #define DCITY           (*(des+1))      /* City settlement */
+      |                         ^
+misc.c:2247:51: note: in expansion of macro ‘DCITY’
+ 2247 |         sct[nptr->capx][nptr->capy].designation = DCITY;
+      |                                                   ^~~~~
+data.h:180:25: warning: conversion to ‘unsigned char’ from ‘char’ may change the sign of the result [-Wsign-conversion]
+  180 | #define DNODESIG        (*(des+18))     /* No designation (wilderness) */
+      |                         ^
+misc.c:2257:45: note: in expansion of macro ‘DNODESIG’
+ 2257 |                     sct[x][y].designation = DNODESIG;
+      |                                             ^~~~~~~~
+data.h:180:25: warning: conversion to ‘unsigned char’ from ‘char’ may change the sign of the result [-Wsign-conversion]
+  180 | #define DNODESIG        (*(des+18))     /* No designation (wilderness) */
+      |                         ^
+misc.c:2270:49: note: in expansion of macro ‘DNODESIG’
+ 2270 |                         sct[x][y].designation = DNODESIG;
+      |                                                 ^~~~~~~~
+data.h:180:25: warning: conversion to ‘unsigned char’ from ‘char’ may change the sign of the result [-Wsign-conversion]
+  180 | #define DNODESIG        (*(des+18))     /* No designation (wilderness) */
+      |                         ^
+misc.c:2283:53: note: in expansion of macro ‘DNODESIG’
+ 2283 |                             sct[x][y].designation = DNODESIG;
+      |                                                     ^~~~~~~~
+data.h:165:25: warning: conversion to ‘unsigned char’ from ‘char’ may change the sign of the result [-Wsign-conversion]
+  165 | #define DFARM           (*(des+3))      /* Agricultural farm */
+      |                         ^
+misc.c:2285:53: note: in expansion of macro ‘DFARM’
+ 2285 |                             sct[x][y].designation = DFARM;
+      |                                                     ^~~~~
+misc.c: In function ‘get_nname’:
+misc.c:3035:17: warning: conversion to ‘chtype’ {aka ‘const unsigned int’} from ‘char’ may change the sign of the result [-Wsign-conversion]
+ 3035 |                 addch(ch);
+      |                 ^~~~~
+
+=== SINGLE FILE TEST COMPLETE ===
+File: misc.c
+Report: _modernization/claude/reports/CHAR_SIGNED_TEST_SINGLE.txt
