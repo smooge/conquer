@@ -250,8 +250,8 @@ int execute(int isupdate) { /* 0 if not update, 1 if update */
                 curntn->nvy[armynum].galleys = safe_int_to_ushort(x);
                 break;
             case XNAHOLD: /*nadjhld*/
-                curntn->nvy[armynum].people = (unsigned char)y;
-                curntn->nvy[armynum].armynum = (unsigned char)x;
+                curntn->nvy[armynum].people = safe_long_to_uchar(y);
+                curntn->nvy[armynum].armynum = safe_long_to_uchar(x);
                 break;
             case XECNAME: /*Nadjname*/
                 snprintf(curntn->name, sizeof(curntn->name), "%.*s",

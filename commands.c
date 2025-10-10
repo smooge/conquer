@@ -853,7 +853,7 @@ void construct(void) {
 
             curntn->tgold -= cost;
             sct[XREAL][YREAL].people -= amount * shipsize;
-            P_NCREW += (unsigned char)amount;
+            P_NCREW += safe_long_to_uchar(amount);
             NADJCRW;
             SADJCIV;
 
@@ -1034,7 +1034,7 @@ void construct(void) {
             }
 
             /* crew average based on number of holding units */
-            P_NCREW = (unsigned char)(tmpvar / flthold(nvynum));
+            P_NCREW = safe_long_to_uchar(tmpvar / flthold(nvynum));
 
             sct[XREAL][YREAL].people -= amount * (shipsize + 1) * SHIPCREW;
             curntn->tgold -= cost;
@@ -1054,7 +1054,7 @@ void construct(void) {
                      (int)P_NCREW, P_NGAL(N_LIGHT), P_NGAL(N_MEDIUM), P_NGAL(N_HEAVY));
 
             if (fltmhold(nvynum) > 0)
-                P_NPEOP = (unsigned char)(onboard / fltmhold(nvynum));
+                P_NPEOP = safe_long_to_uchar(onboard / fltmhold(nvynum));
             else
                 P_NPEOP = 0;
             SADJCIV;
