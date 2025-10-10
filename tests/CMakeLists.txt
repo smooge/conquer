@@ -74,6 +74,27 @@ add_subdirectory(unit)
 add_subdirectory(integration)
 add_subdirectory(regression)
 
+# Build target that explicitly builds all test executables
+# This ensures tests are compiled before attempting to run them
+add_custom_target(build_all_tests
+    DEPENDS
+        # Unit tests
+        test_example_unit
+        test_safe_convert
+        test_comp_line
+        test_spew_utils
+        test_sort_utils
+        test_safe_system
+        test_m2alloc
+        test_memory_integration
+        # Integration tests
+        test_example_integration
+        # Regression tests
+        test_example_regression
+    COMMENT "Building all test executables"
+    VERBATIM
+)
+
 # Test runner targets
 add_custom_target(run_unit_tests
     COMMAND ${CMAKE_CTEST_COMMAND} --test-dir "${CMAKE_CURRENT_BINARY_DIR}" -L "unit" --output-on-failure
@@ -94,6 +115,7 @@ add_custom_target(run_regression_tests
 )
 
 add_custom_target(run_all_tests
+    DEPENDS build_all_tests
     COMMAND ${CMAKE_CTEST_COMMAND} --test-dir "${CMAKE_CURRENT_BINARY_DIR}" --output-on-failure
     COMMENT "Running all tests"
     VERBATIM
@@ -103,11 +125,18 @@ add_custom_target(run_all_tests
 add_custom_target(test_info
     COMMAND ${CMAKE_COMMAND} -E echo "=== Conquer Testing Infrastructure ==="
     COMMAND ${CMAKE_COMMAND} -E echo "Unity Framework: ${UNITY_ROOT}"
-    COMMAND ${CMAKE_COMMAND} -E echo "Available test targets:"
-    COMMAND ${CMAKE_COMMAND} -E echo "  run_unit_tests      - Unit tests only"
-    COMMAND ${CMAKE_COMMAND} -E echo "  run_integration_tests - Integration tests only"
-    COMMAND ${CMAKE_COMMAND} -E echo "  run_regression_tests - Regression tests only"
-    COMMAND ${CMAKE_COMMAND} -E echo "  run_all_tests       - All tests"
+    COMMAND ${CMAKE_COMMAND} -E echo ""
+    COMMAND ${CMAKE_COMMAND} -E echo "Build test targets:"
+    COMMAND ${CMAKE_COMMAND} -E echo "  build_all_tests     - Build all test executables"
+    COMMAND ${CMAKE_COMMAND} -E echo "  all                 - Build everything including tests"
+    COMMAND ${CMAKE_COMMAND} -E echo ""
+    COMMAND ${CMAKE_COMMAND} -E echo "Test runner targets:"
+    COMMAND ${CMAKE_COMMAND} -E echo "  run_unit_tests      - Build and run unit tests"
+    COMMAND ${CMAKE_COMMAND} -E echo "  run_integration_tests - Build and run integration tests"
+    COMMAND ${CMAKE_COMMAND} -E echo "  run_regression_tests - Build and run regression tests"
+    COMMAND ${CMAKE_COMMAND} -E echo "  run_all_tests       - Build and run all tests"
+    COMMAND ${CMAKE_COMMAND} -E echo ""
+    COMMAND ${CMAKE_COMMAND} -E echo "Information targets:"
     COMMAND ${CMAKE_COMMAND} -E echo "  test_info           - This information"
     COMMAND ${CMAKE_COMMAND} -E echo ""
     COMMAND ${CMAKE_COMMAND} -E echo "Direct CTest usage:"
