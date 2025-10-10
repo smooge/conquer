@@ -38,54 +38,6 @@ static int **attr; /* sector attractiveness */
 static long **newpop; /* storage for old population */
 
 /*
- * dtol - Convert double to long with precision control
- *
- * This utility function converts a double-precision floating point value
- * to a long integer using string formatting as an intermediate step.
- * The conversion uses sprintf with "%-60.0lf" format to eliminate fractional
- * parts and handle precision issues that might occur with direct casting.
- *
- * This approach was likely chosen to handle potential floating-point
- * precision issues in older systems or to ensure consistent rounding
- * behavior across different platforms.
- *
- * Parameters:
- *   d - Double value to convert to long integer
- *
- * Returns:
- *   Long integer representation of the input double (fractional part discarded)
- *
- * Side Effects:
- *   - Uses local buffer BIGLTH in size for string conversion
- *   - No global state modifications
- *
- * Testing Notes:
- *   Category: A (Unit Testable)
- *   Approach: Unit tests with various floating-point values
- *   Key Tests: Normal values, large values, negative values, edge cases near limits
- *   Dependencies: None - isolated utility function
- *   Mock Requirements: None
- *   Complexity: Simple - straightforward conversion utility
- *
- * Notes:
- *   - Thread safe - uses only local variables
- *   - Consider replacing with direct casting in modern C implementations
- *   - String formatting approach may be less efficient than direct conversion
- *   - BIGLTH buffer size should be sufficient for largest double representations
- * @last_documented: 2025-09-18
- */
-long dtol(double d) {
-    char tempstr[BIGLTH];
-    long l = 0;
-    snprintf(tempstr, sizeof(tempstr), "%-60.0lf", d);
-    if (sscanf(tempstr, "%ld", &l) != 1) {
-        /* Parse error - return 0 as fallback */
-        return 0;
-    }
-    return (l);
-}
-
-/*
  * update - Master turn processing coordinator for the entire game world
  *
  * This is the central orchestrator function that executes a complete game turn
@@ -2274,11 +2226,11 @@ void updcomodities(void) {
                         fprintf(fm, "Message from Conquer\n\n");
                         fprintf(fm, "Gold imbalance forced your treasury to purchase\n");
                         fprintf(fm, "%ld jewels for %ld gold talons to compensate.\n",
-                                dtol(safe_long_to_double(xx) * GODJEWL / GODPRICE), xx);
+                                safe_double_to_long(safe_long_to_double(xx) * GODJEWL / GODPRICE), xx);
                         mailclose(country);
                     }
                 }
-                curntn->jewels += dtol(safe_long_to_double(xx) * GODJEWL / GODPRICE);
+                curntn->jewels += safe_double_to_long(safe_long_to_double(xx) * GODJEWL / GODPRICE);
                 curntn->tgold -= xx;
             }
 
