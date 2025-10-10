@@ -239,7 +239,7 @@ void trade(void) {
                             switch (holdint) {
                                 case GETFOOD:
                                     curntn->tfood +=
-                                        (long)(GODFOOD * ((double)holdlong / GODPRICE));
+					    (long)(GODFOOD * (safe_long_to_double(holdlong) / GODPRICE));
                                     if ((tfile = fopen(tradefile, "a+")) == NULL) {
                                         tradeerr("Error opening file for trading");
                                         abrt()
@@ -250,11 +250,11 @@ void trade(void) {
                                     break;
                                 case GETMETAL:
                                     curntn->metals +=
-                                        (long)(GODMETAL * ((double)holdlong / GODPRICE));
+					       (long)(GODMETAL * (safe_long_to_double(holdlong) / GODPRICE));
                                     break;
                                 case GETJEWL:
                                     curntn->jewels +=
-                                        (long)(GODMETAL * ((double)holdlong / GODPRICE));
+					       (long)(GODMETAL * (safe_long_to_double(holdlong) / GODPRICE));
                                     break;
                             }
                         inloop = FALSE;
