@@ -1002,7 +1002,7 @@ void change(void) {
                 else if (intval > 10 && (curntn->tsctrs < 20 || curntn->score < 20))
                     errormsg("Sorry, you may not go above 10% yet");
                 else {
-                    curntn->tax_rate = (unsigned char)intval;
+                    curntn->tax_rate = safe_clamp_nation_attr(intval);
                     NADJNTN;
                 }
                 break;
@@ -1060,9 +1060,9 @@ void change(void) {
                     errormsg("Terror may only be adjusted once per turn");
                 } else if (intval > 0) {
                     terror_adj++;
-                    curntn->terror += (unsigned char)intval;
-                    curntn->popularity -= (unsigned char)intval;
-                    curntn->reputation -= (unsigned char)(intval + 1) / 2;
+                    curntn->terror += safe_clamp_nation_attr(intval);
+                    curntn->popularity -= safe_clamp_nation_attr(intval);
+                    curntn->reputation -= safe_clamp_nation_attr((intval + 1) / 2);
                     NADJNTN2;
                 }
                 break;
