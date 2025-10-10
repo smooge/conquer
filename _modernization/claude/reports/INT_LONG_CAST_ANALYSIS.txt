@@ -1,0 +1,110 @@
+Analyzing 28 C files...
+================================================================================
+INTEGER CAST ANALYSIS REPORT
+================================================================================
+
+
+================================================================================
+(LONG) CASTS ANALYSIS
+================================================================================
+
+Total (LONG) casts found: 30
+
+
+HIGH RISK (4 casts):
+--------------------------------------------------------------------------------
+
+  • Cast used for array indexing (4 occurrences)
+    npc.c:1048: diff = (long)min((int)diff, sct[curntn->capx][curntn->capy].people / 2
+    trade.c:182: holdlong = (long)tofood(&sct[safe_long_to_int(lvar1[holdint])][extra[h
+    trade.c:1228: returnval = (long)tofood(&sct[safe_long_to_int(longval)][extint], cntr
+    trade.c:1754: (long)extra[count], longval2, buy2[count]);
+
+LOW RISK (26 casts):
+--------------------------------------------------------------------------------
+
+  • Function argument cast (verify function signature) (9 occurrences)
+    makeworl.c:696: (long)NUMSECTS);
+    misc.c:166: sum += (long)(ch - '0');
+    npc.c:1045: diff = (long)min(ideal - P_ASOLD,
+    trade.c:487: holdlong2 = (long)getland(&count);
+    trade.c:510: holdlong = (long)flthold(extint);
+    ... and 4 more
+
+  • Widening cast for multiplication (likely safe, prevents overflow) (17 occurrences)
+    commands.c:986: cost = (long)amount * (shipsize % 3 + 1);
+    commands.c:1380: e_cost = (long)*(u_encost + newtype) * men;
+    commands.c:1381: i_cost = (long)*(u_enmetal + newtype) * men;
+    magic.c:904: e_cost = (long)*(u_encost + (newtype % UTYPE)) * *(unitminsth + (newty
+    misc.c:2845: product = (long)tofood(sptr, sptr->owner) * TOMANYPEOPLE;
+    ... and 12 more
+
+================================================================================
+(INT) CASTS ANALYSIS
+================================================================================
+
+Total (INT) casts found: 127
+
+
+HIGH RISK (17 casts):
+--------------------------------------------------------------------------------
+
+  • Cast to int for array indexing (use safe_long_to_int) (16 occurrences)
+    commands.c:1510: + compass((int)P_AXLOC, (int)P_AYLOC, (int)ntn[i].capx, (int)ntn[i].ca
+    main.c:1555: + (int)ntn[i].nvy[nvynum].galleys
+    move.c:275: see((int)curntn->arm[i].xloc - xoffset,
+    move.c:276: (int)curntn->arm[i].yloc - yoffset);
+    move.c:283: see((int)curntn->nvy[i].xloc - xoffset,
+    ... and 11 more
+
+  • Unsigned char to int for indexing (likely safe but verify bounds) (1 occurrences)
+    update.c:1328: ntn[occval].name, (int)P_AXLOC, (int)P_AYLOC);
+
+LOW RISK (110 casts):
+--------------------------------------------------------------------------------
+
+  • Arithmetic cast (likely type promotion) (74 occurrences)
+    cexecute.c:258: (int)(sizeof(curntn->name) - 1), comment);
+    commands.c:2366: xcurs = safe_int_to_short((int)P_AXLOC - xoffset);
+    commands.c:2367: ycurs = safe_int_to_short((int)P_AYLOC - yoffset);
+    display.c:973: return ((int)HAS_SEEN(x - xoffset, y - yoffset));
+    display.c:1055: for (i = (int)P_NXLOC - xoffset - NAVYSEE;
+    ... and 69 more
+
+  • Comparison cast (verify signedness) (1 occurrences)
+    safe_system.c:528: if ((int)len <= compnum) {
+
+  • Generic int cast (review context) (35 occurrences)
+    cexecute.c:184: armynum = (int)longvar;
+    cexecute.c:185: P_ASOLD = (int)long2var;
+    commands.c:808: mvprintw(LINES - 3, 0, "crew per unit = %d", (int)P_NCREW);
+    commands.c:1054: (int)P_NCREW, P_NGAL(N_LIGHT), P_NGAL(N_MEDIUM), P_NGAL(N_HEAVY));
+    commands.c:1493: (int)P_AXLOC, (int)P_AYLOC);
+    ... and 30 more
+
+================================================================================
+RECOMMENDATIONS
+================================================================================
+
+1. HIGH RISK CASTS - Address First:
+   - Array indexing with (int): Use safe_long_to_int() or safe_size_t_to_int()
+   - Verify array bounds are within INT_MAX
+   - Consider using size_t for array indices if appropriate
+
+2. MEDIUM RISK CASTS - Review Carefully:
+   - Function arguments: Verify function signature matches
+   - Assignments: Check for truncation with safe_convert functions
+   - Return values: Ensure return type matches function declaration
+
+3. LOW RISK CASTS - Review During Cleanup:
+   - Arithmetic: Usually safe, but verify no overflow
+   - Comparisons: Check signedness matches
+   - Widening casts (int→long): Generally safe
+
+4. Available safe_convert.h Functions:
+   - safe_long_to_int(long val)
+   - safe_int_to_short(int val)
+   - safe_int_to_uchar(int val)
+   - safe_size_t_to_int(size_t val)
+   - safe_double_to_long(double val)
+
