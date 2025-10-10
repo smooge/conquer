@@ -707,7 +707,7 @@ void mymove(void) {
             mvused /= 2;
         if (mvused != 0)
             mvused = (rand() % mvused);
-        P_NPEOP = (unsigned char)(P_NPEOP * (LONGTRIP - mvused) / LONGTRIP);
+        P_NPEOP = safe_long_to_uchar(P_NPEOP * (LONGTRIP - mvused) / LONGTRIP);
         mvaddstr(LINES - 1, 60, "HIT ANY KEY");
         refresh();
         getch();
