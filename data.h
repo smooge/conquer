@@ -1136,7 +1136,6 @@ extern void checktrade(void);
 extern void uptrade(void);
 extern void fixtrade(int cntry);
 /* update.c */
-extern long dtol(double d);
 extern void update(void);
 extern int attract(int x, int y, int race);
 extern int armymove(int armynum);
