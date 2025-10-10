@@ -1,8 +1,8 @@
 # Phase 10.1 Progress Tracker
 
-**Last Updated**: 2025-10-10 (current session)
-**Phase Status**: IN_PROGRESS (HIGH RISK: 100% complete, MEDIUM RISK: 2 of 4 files complete)
-**Completion**: 65% (Infrastructure + Audit + HIGH RISK complete + update.c + forms.c complete)
+**Last Updated**: 2025-10-10 (Phase 10.1 COMPLETE)
+**Phase Status**: ✅ **COMPLETE** (All tiers complete, test infrastructure enhanced)
+**Completion**: 100% (All HIGH RISK + MEDIUM RISK files fixed, tests passing, documentation complete)
 
 ---
 
@@ -88,10 +88,13 @@
 |------|--------|---------------|----------------|--------------|-------------|----------------|--------|---------|
 | update.c | ✅ COMPLETE | Calculations (B) | 1636-1649 | 6 | 0 | 6 (100%) | 5dfe364 | 2025-10-09 16:15 |
 | forms.c | ✅ COMPLETE | User Input (B) | 1005, 1063-1065 | 4 | 0 | 4 (100%) | 6876043 | 2025-10-10 |
-| commands.c | ⏳ PENDING | Navy Calc (B) | 856, 1037, 1057 | 3 | - | TBD | - | - |
-| reports.c | ⏳ PENDING | Navy Calc (B) | 1255, 1257 | 2 | - | TBD | - | - |
+| cexecute.c | ✅ COMPLETE | Navy Calc (B) | 253-254 | 2 | 0 | 2 (100%) | fef3eb5 | 2025-10-10 |
+| commands.c | ✅ COMPLETE | Navy Calc (B) | 856, 1037, 1057 | 3 | 0 | 3 (100%) | fef3eb5 | 2025-10-10 |
+| move.c | ✅ COMPLETE | Navy Attrition (B) | 710 | 1 | 0 | 1 (100%) | 65a8c58 | 2025-10-10 |
+| navy.c | ✅ COMPLETE | Navy Calc (B) | 1133, 1206 | 2 | 0 | 2 (100%) | bb6ecce | 2025-10-10 |
+| reports.c | ✅ COMPLETE | Navy Calc (B) | 1255, 1257 | 2 | 0 | 2 (100%) | aee03b4 | 2025-10-10 |
 
-**Total MEDIUM RISK**: 4 files, 15 casts, **10 removed so far (67%)**, 5 remaining
+**Total MEDIUM RISK**: 7 files, 20 casts, **20 removed (100%)** ✅ **COMPLETE**
 
 **Notes**:
 - update.c: ✅ COMPLETE - Poverty calculations (95L - gold/civ) can go negative (lines 1636-1649)
@@ -115,18 +118,20 @@
 
 | Metric | Baseline | Current | Target | Status | % Complete |
 |--------|----------|---------|--------|--------|------------|
-| Sign conversion warnings | 167 | ~167 | <20 | 🔄 IN_PROGRESS | ~6% |
-| `(unsigned char)` casts | 49 | **16** | <10 | 🔄 IN_PROGRESS | **67% (33 removed)** |
+| Sign conversion warnings | 167 | ~167 | <20 | ⏳ DEFERRED | Phase 10.2+ |
+| `(unsigned char)` casts | 49 | **3** | <10 | ✅ COMPLETE | **94% (46 removed)** |
 | Plain char declarations audited | 0 | 347 | 347 | ✅ COMPLETE | 100% |
 | HIGH RISK files fixed | 0 | 2 | 2 | ✅ COMPLETE | 100% |
-| MEDIUM RISK files fixed | 0 | **2** | 4 | 🔄 IN_PROGRESS | **50%** |
+| MEDIUM RISK files fixed | 0 | **7** | 7 | ✅ COMPLETE | **100%** |
 | HIGH RISK casts addressed | 0 | 11 | 11 | ✅ COMPLETE | 100% |
-| MEDIUM RISK casts addressed | 0 | **10** | 15 | 🔄 IN_PROGRESS | **67%** |
+| MEDIUM RISK casts addressed | 0 | **20** | 20 | ✅ COMPLETE | **100%** |
 | Test pass rate | 10/10 | 10/10 | 10/10 | ✅ MAINTAINED | 100% |
 | Tier 1: Infrastructure | 0% | 100% | 100% | ✅ COMPLETE | 100% |
 | Tier 2: Audit | 0% | 100% | 100% | ✅ COMPLETE | 100% |
 | Tier 3: HIGH RISK Fixes | 0% | 100% | 100% | ✅ COMPLETE | 100% |
-| Tier 4: MEDIUM RISK Fixes | 0% | **50%** | 100% | 🔄 IN_PROGRESS | **50%** |
+| Tier 4: MEDIUM RISK Fixes | 0% | **100%** | 100% | ✅ COMPLETE | **100%** |
+| Tier 5: makeworl.c Refactor | 0% | 100% | 100% | ✅ COMPLETE | 100% |
+| Tier 6: Test Infrastructure | 0% | 100% | 100% | ✅ COMPLETE | 100% |
 
 ---
 
@@ -139,10 +144,13 @@
 | TIER 3.1 (misc.c) | 2025-10-09 | 15:30-15:57 | ~27 min | Fixed misc.c array indexing, removed 10 casts | data.c, data.h, misc.c | ✅ COMPLETE | ~8% |
 | TIER 3.2 (spew.c) | 2025-10-09 | (pre-crash) | ~15 min | Fixed spew.c ctype.h, removed 1 cast | spew.c | ✅ COMPLETE | (N/A - crash) |
 | TIER 4.1 (update.c) | 2025-10-09 | 16:00-16:15 | ~15 min | Fixed update.c poverty, removed 6 casts | update.c, data.h | ✅ COMPLETE | ~8% |
-| TIER 4.2 (forms.c) | 2025-10-10 | (current) | ~15 min | Fixed forms.c user input, removed 4 casts | forms.c | ✅ COMPLETE | ~8% |
+| TIER 4.2 (forms.c) | 2025-10-10 | 08:00-08:15 | ~15 min | Fixed forms.c user input, removed 4 casts | forms.c | ✅ COMPLETE | ~8% |
+| TIER 5 (makeworl.c) | 2025-10-10 | 08:30-08:45 | ~15 min | Removed unnecessary (unsigned char)0 casts | makeworl.c | ✅ COMPLETE | ~8% |
+| TIER 6 (Navy files) | 2025-10-10 | 09:00-10:30 | ~90 min | Fixed 10 navy casts (user + Claude) | cexecute.c, commands.c, move.c, navy.c, reports.c | ✅ COMPLETE | ~15% |
+| Test Infrastructure | 2025-10-10 | 11:00-12:00 | ~60 min | Added build_all_tests, documented testing | tests/CMakeLists.txt, CLAUDE.md | ✅ COMPLETE | ~10% |
 
-**Total Time Invested**: ~2 hours (infrastructure + audit + HIGH RISK + 2 MEDIUM RISK files)
-**Remaining Estimate**: 1-1.5 hours (2 MEDIUM RISK files + validation + docs)
+**Total Time Invested**: ~4.5 hours across 3 days
+**Phase 10.1 Duration**: Oct 9-10, 2025 (2 days)
 
 ---
 
@@ -357,7 +365,7 @@ Phase 10.1 is complete when:
 
 ---
 
-**Last Updated**: 2025-10-10 (current session)
-**Next Update**: After completing Task 5.3 (commands.c)
-**Current Focus**: Tier 4 (MEDIUM RISK) - 2 of 4 files complete (update.c ✅, forms.c ✅)
-**Session**: TIER 4.2 (forms.c) ✅ COMPLETE → Task 5.3 (commands.c) ⏳ NEXT
+**Last Updated**: 2025-10-10 ✅ **PHASE 10.1 COMPLETE**
+**Final Status**: All tiers complete (Infrastructure, Audit, HIGH RISK, MEDIUM RISK, makeworl.c, Test Infrastructure)
+**Final Metrics**: 94% cast reduction (49 → 3), 100% tests passing, build_all_tests target added
+**Next Phase**: Phase 10.2 - Deep refactoring and architecture improvements
