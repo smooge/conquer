@@ -858,7 +858,7 @@ void change(void) {
         mvprintw(7, COLS / 2 - 12, "eatrate.......%3.2f", temp);
         mvprintw(8, COLS / 2 - 12, "wealth........ %3d", curntn->wealth);
         mvprintw(9, COLS / 2 - 12, "charity....... %2d%%", curntn->charity);
-        mvprintw(10, COLS / 2 - 12, "communication.%3.2f", (float)P_NTNCOM);
+        mvprintw(10, COLS / 2 - 12, "communication.%3.2lf", P_NTNCOM);
         mvprintw(11, COLS / 2 - 12, "reputation.... %3d", curntn->reputation);
         mvprintw(12, COLS / 2 - 12, "spoilrate.....%3d%%", curntn->spoilrate);
         mvprintw(13, COLS / 2 - 12, "farm ability.. %3d", curntn->farm_ability);
@@ -1188,7 +1188,7 @@ void change(void) {
                         case '1':
                             mvaddstr(LINES - 1, 0, "WHAT IS NEW VALUE FOR TREASURY? ");
                             refresh();
-                            curntn->tgold = (long)get_number();
+                            curntn->tgold = get_number();
                             if (curntn->tgold < 0L)
                                 curntn->tgold = 0L;
                             fprintf(ftmp, "L_NGOLD\t%d \t%d \t%ld \t0 \t0 \t%s\n", XNAGOLD,
@@ -1197,7 +1197,7 @@ void change(void) {
                         case '2':
                             mvaddstr(LINES - 1, 0, "WHAT IS NEW AMOUNT OF JEWELS? ");
                             refresh();
-                            curntn->jewels = (long)get_number();
+                            curntn->jewels = get_number();
                             if (curntn->jewels < 0L)
                                 curntn->jewels = 0L;
                             fprintf(ftmp, "L_NJWLS\t%d \t%d \t%ld \t0 \t0 \t%s\n", XNARGOLD,
@@ -1206,7 +1206,7 @@ void change(void) {
                         case '3':
                             mvaddstr(LINES - 1, 0, "WHAT IS NEW AMOUNT OF METAL? ");
                             refresh();
-                            curntn->metals = (long)get_number();
+                            curntn->metals = get_number();
                             if (curntn->metals < 0L)
                                 curntn->metals = 0L;
                             fprintf(ftmp, "L_NMETAL\t%d \t%d \t%ld \t0 \t0 \t%s\n", XNAMETAL,
@@ -1215,7 +1215,7 @@ void change(void) {
                         case '4':
                             mvaddstr(LINES - 1, 0, "WHAT IS NEW AMOUNT OF FOOD? ");
                             refresh();
-                            curntn->tfood = (long)get_number();
+                            curntn->tfood = get_number();
                             if (curntn->tfood < 0L)
                                 curntn->tfood = 0L;
                             break;
@@ -1700,7 +1700,7 @@ forpage: /* label for reading forward pages. pagenum set to page */
             done = TRUE;
         else {
             if (line[1] != '.' && line[1] != ':') {
-                strncpy(name, line, FILELTH - 1);
+                strncpy(name, line, FILELTH);
                 name[FILELTH - 1] = '\0';
                 newpage = FALSE;
                 pagenum = safe_int_to_short(todigit(line[0]));
