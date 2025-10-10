@@ -99,6 +99,8 @@ cd /projects/conquer-4.x && git add file.c && git commit -m "message"
 
 ## Build and Testing Commands
 
+### Warning Analysis and Compilation Testing
+
 **PRIMARY**: Use standardized testing script: `_modernization/scripts/test_warnings.sh -w 9 -x c2x -p 4 -s 8 -n c2x -t [BASELINE|ADMIN|GAME|UPDATE|FINAL|PROJECT] filename.c`
 
 **FALLBACK**: Manual GCC commands if script unavailable:
@@ -113,6 +115,73 @@ gcc -O2 -g -Wall -Wextra -Wformat -Wformat=2 -Wstrict-prototypes -Wold-style-def
 **CMake**: Always use `--clean-first` for accurate warning analysis:
 ```bash
 cmake --build build --clean-first --target conqrun 2>&1 | grep "warning:"
+```
+
+### Test Build and Execution Commands
+
+**⚠️ CRITICAL**: Always use `build_all_tests` or `run_all_tests` targets to ensure tests are built before execution.
+
+#### Building Tests Only
+```bash
+# Build all test executables (does not run tests)
+cmake --build /projects/conquer-4.x/build --target build_all_tests
+
+# Alternative: Build everything including tests
+cmake --build /projects/conquer-4.x/build --target all
+```
+
+#### Running Tests (Recommended - Builds + Runs)
+```bash
+# ✅ BEST: Build and run all tests
+cmake --build /projects/conquer-4.x/build --target run_all_tests
+
+# Run only unit tests (builds tests first if needed)
+cmake --build /projects/conquer-4.x/build --target run_unit_tests
+
+# Run only integration tests
+cmake --build /projects/conquer-4.x/build --target run_integration_tests
+
+# Run only regression tests
+cmake --build /projects/conquer-4.x/build --target run_regression_tests
+```
+
+#### Direct CTest Usage (Tests Must Be Built First)
+```bash
+# ⚠️ WARNING: Only use after building tests with build_all_tests or run_all_tests
+
+# Run all tests with output on failure
+ctest --test-dir /projects/conquer-4.x/build/tests --output-on-failure
+
+# Run tests with verbose output
+ctest --test-dir /projects/conquer-4.x/build/tests --verbose
+
+# Run tests matching a label
+ctest --test-dir /projects/conquer-4.x/build/tests -L unit --output-on-failure
+
+# Run tests in parallel (4 jobs)
+ctest --test-dir /projects/conquer-4.x/build/tests -j4 --output-on-failure
+```
+
+#### Test Information
+```bash
+# Display available test targets and usage
+cmake --build /projects/conquer-4.x/build --target test_info
+
+# List all available cmake targets
+cmake --build /projects/conquer-4.x/build --target help | grep test
+```
+
+#### Common Test Workflow
+```bash
+# 1. Make code changes to source files
+# 2. Build and run all tests to verify changes
+cmake --build /projects/conquer-4.x/build --target run_all_tests
+
+# 3. If tests pass, build main executables
+cmake --build /projects/conquer-4.x/build --target conqrun
+
+# 4. Create git commit with changes
+git add file.c && git commit -m "[PHASE-X] Description"
 ```
 
 ## Modernization Workflow
