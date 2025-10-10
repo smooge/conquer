@@ -2218,8 +2218,8 @@ void updcomodities(void) {
         if (isntn(ntn[country].active)) {
             curntn = &ntn[country];
             /*soldiers eat  2 times as much */
-            curntn->tfood -= safe_double_to_long((double)curntn->tmil * P_EATRATE * 2.0);
-            curntn->tfood -= safe_double_to_long((double)curntn->tciv * P_EATRATE);
+            curntn->tfood -= safe_double_to_long(safe_long_to_double(curntn->tmil) * P_EATRATE * 2.0);
+            curntn->tfood -= safe_double_to_long(safe_long_to_double(curntn->tciv) * P_EATRATE);
 
             /*starve people*/
             if (curntn->tfood < 0)
@@ -2263,10 +2263,10 @@ void updcomodities(void) {
             /*this state can occur if few people live in cities*/
             if (curntn->tfood < 0)
                 curntn->tfood = 0L;
-            tempflt = (float)curntn->tfood * (100 - curntn->spoilrate);
-            curntn->tfood = (long)(tempflt / 100.0);
+            tempflt = safe_long_to_float(curntn->tfood) * (100 - curntn->spoilrate);
+            curntn->tfood = safe_double_to_long((tempflt / 100.0));
 
-            if (((double)curntn->tgold) - GOLDTHRESH * ((double)curntn->jewels) > 0.0) {
+						 if ((safe_long_to_double(curntn->tgold)) - GOLDTHRESH * (safe_long_to_double(curntn->jewels)) > 0.0) {
                 /* buy jewels off commodities board */
                 xx = curntn->tgold - GOLDTHRESH * curntn->jewels;
                 if (ispc(curntn->active)) {
@@ -2274,11 +2274,11 @@ void updcomodities(void) {
                         fprintf(fm, "Message from Conquer\n\n");
                         fprintf(fm, "Gold imbalance forced your treasury to purchase\n");
                         fprintf(fm, "%ld jewels for %ld gold talons to compensate.\n",
-                                dtol((double)xx * GODJEWL / GODPRICE), xx);
+                                dtol(safe_long_to_double(xx) * GODJEWL / GODPRICE), xx);
                         mailclose(country);
                     }
                 }
-                curntn->jewels += dtol((double)xx * GODJEWL / GODPRICE);
+                curntn->jewels += dtol(safe_long_to_double(xx) * GODJEWL / GODPRICE);
                 curntn->tgold -= xx;
             }
 
