@@ -1252,9 +1252,9 @@ void fleetrpt(void) {
                             NADJMOV;
                             nvynum = newnavy;
                             if (flthold(nvynum) > 0)
-                                P_NCREW = (unsigned char)(crew / flthold(nvynum));
+                                P_NCREW = safe_long_to_uchar(crew / flthold(nvynum));
                             if (fltmhold(nvynum) > 0)
-                                P_NPEOP = (unsigned char)(people / fltmhold(nvynum));
+                                P_NPEOP = safe_long_to_uchar(people / fltmhold(nvynum));
                             NADJMOV;
                             NADJWAR;
                             NADJMER;
