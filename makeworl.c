@@ -105,13 +105,13 @@ void zeroworld(void) {
         curntn = &ntn[i];
         for (armynum = 0; armynum < MAXARM; armynum++) {
             P_ASOLD = (long)0;
-            P_AXLOC = P_AYLOC = P_ATYPE = P_AMOVE = (unsigned char)0;
+            P_AXLOC = P_AYLOC = P_ATYPE = P_AMOVE = 0;
             P_ASTAT = DEFEND;
         }
         for (nvynum = 0; nvynum < MAXNAVY; nvynum++) {
             P_NWSHP = P_NMSHP = P_NGSHP = (unsigned short)0;
-            P_NCREW = P_NPEOP = P_NARMY = (unsigned char)0;
-            P_NXLOC = P_NYLOC = P_NMOVE = (unsigned char)0;
+            P_NCREW = P_NPEOP = P_NARMY = 0;
+            P_NXLOC = P_NYLOC = P_NMOVE = 0;
         }
         curntn->active = INACTIVE;
         curntn->repro = (char)0;
