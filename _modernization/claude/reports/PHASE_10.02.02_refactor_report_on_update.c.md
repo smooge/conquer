@@ -1,10 +1,8 @@
-# Phase 10.2.2 - Pure Function Extraction Analysis Report
-
-## File: update.c
+# Phase 10.2.2 - Comprehensive Refactor Analysis Report: update.c
 
 **Analysis Date**: 2025-10-10
 **Analyzer**: Claude (claude-sonnet-4-5@20250929)
-**Phase**: 10.2.2 - Pure Function Extraction
+**Phase**: 10.2.2 - Deep Refactoring Assessment
 **File Size**: 2,632 lines
 **Total Functions**: 11 major functions
 
@@ -12,26 +10,46 @@
 
 ## Executive Summary
 
-**Overall Assessment**: ⭐⭐⭐⭐ **EXCELLENT extraction candidate**
+**Overall Assessment**: ⭐⭐⭐⭐ **EXCELLENT** - High extraction potential, perfect architectural placement, severe configuration coupling
 
-`update.c` is the core game engine turn processing file containing multiple high-value pure calculation functions embedded within I/O-heavy orchestration code. Extraction opportunities are **abundant and high-quality**, with clear separation points between business logic and infrastructure.
+### 3-Part Analysis Results
 
-**Key Findings**:
-- **17-21 pure functions** can be extracted
-- **54-74 unit tests** can be created
-- **5 high-priority extraction targets** identified
-- **Zero anticipated behavioral changes** (pure refactor)
-- **Critical game mechanics** (economics, population, military) are extractable
+**Part 1: Unit Testable Extraction Potential**
+- **Rating**: ⭐⭐⭐⭐⭐ EXCELLENT extraction candidate
+- **Extractable Functions**: 17-21 pure functions
+- **Test Creation Potential**: 54-74 unit tests
+- **Effort**: 6-7 hours
+- **ROI**: Very High - Critical game mechanics are extractable
 
-**Strategic Decision Point**: This file represents significant re-engineering opportunity. The volume and quality of extractable logic suggests this work may warrant:
+**Part 2: Architectural Placement Analysis**
+- **Rating**: ⭐⭐⭐⭐⭐ EXCELLENT placement - Zero architectural debt
+- **Misplaced Functions**: 0 of 11 (0% architectural debt)
+- **Recommendation**: NO CODE RELOCATION needed
+- **Rationale**: All functions belong in turn processing context
+
+**Part 3: Configuration Coupling Identification**
+- **Rating**: ⭐⭐⭐⭐⭐ SEVERE configuration coupling
+- **Magic Numbers**: 61+ hard-coded constants
+- **Categories**: 11 subsystems requiring externalization
+- **Priority**: URGENT - Create comprehensive `game_balance.h`
+
+### Key Strategic Insight
+
+`update.c` is the **core game engine turn processing file** containing:
+- ✅ **Exemplary architectural design** (0% misplaced code)
+- ✅ **Abundant extraction opportunities** (18 pure functions)
+- ❌ **Severe configuration coupling** (61+ magic numbers)
+
+This file represents **significant re-engineering opportunity** that may warrant:
 - Separate feature branch (`feature/phase-10.2-pure-function-extraction`)
-- Potential minor version increment (e.g., 4.x → 4.y) due to substantial architectural changes
+- Potential minor version increment (4.x → 4.y) due to substantial architectural changes
 
 ---
 
 ## File Overview
 
 ### Purpose
+
 Central orchestrator for game turn processing including:
 - Economic simulation (poverty, inflation, famine)
 - Population dynamics and migration
@@ -40,6 +58,7 @@ Central orchestrator for game turn processing including:
 - Diplomatic contact and trade processing
 
 ### Current Architecture
+
 **Pattern**: God objects with embedded business logic
 - Large orchestration functions (100-300+ lines)
 - Pure calculations mixed with file I/O, mail, news reporting
@@ -47,6 +66,7 @@ Central orchestrator for game turn processing including:
 - Complex conditional logic buried in loops
 
 ### Documentation Status
+
 ✅ **Excellent** - All functions comprehensively documented in Phase 3
 - Testing categories assigned (A/B/C)
 - Algorithm descriptions complete
@@ -54,7 +74,15 @@ Central orchestrator for game turn processing including:
 
 ---
 
-## Extraction Candidates (Priority Order)
+## Part 1: Unit Testable Extraction Potential
+
+### Overview
+
+`update.c` contains multiple high-value pure calculation functions embedded within I/O-heavy orchestration code. Extraction opportunities are **abundant and high-quality**, with clear separation points between business logic and infrastructure.
+
+**This file alone meets the entire Phase 10.2.2 goal** (15-25 functions, 30-75 tests).
+
+---
 
 ### 🥇 Priority 1: Poverty & Inflation Calculations
 
@@ -62,9 +90,12 @@ Central orchestrator for game turn processing including:
 **Current State**: Embedded in massive sector processing loop
 **Category**: Pure economic modeling
 
-#### Extractable Functions
+#### Extractable Functions (5 functions, 15-20 tests)
 
 ##### 1. `calculate_poverty_index()`
+
+**Current Code** (lines 1584-1602): 6-tier conditional structure calculating poverty from wealth distribution
+
 ```c
 /*
  * calculate_poverty_index - Determine poverty level based on wealth distribution
@@ -87,12 +118,6 @@ Central orchestrator for game turn processing including:
 unsigned char calculate_poverty_index(long gold, long civilians);
 ```
 
-**Current Code** (lines 1584-1602):
-- 6-tier conditional structure
-- Complex ratio calculations
-- Edge case handling (negative gold, low population)
-- **Zero I/O dependencies**
-
 **Test Cases**:
 1. Negative treasury → poverty = 95
 2. Very low population (< 100) → poverty = 20
@@ -107,6 +132,9 @@ unsigned char calculate_poverty_index(long gold, long civilians);
 ---
 
 ##### 2. `calculate_inflation_base()`
+
+**Current Code** (lines 1614-1627): Multi-factor inflation model
+
 ```c
 /*
  * calculate_inflation_base - Calculate national inflation rate
@@ -131,12 +159,6 @@ unsigned char calculate_poverty_index(long gold, long civilians);
 short calculate_inflation_base(int tax_rate, long military, long civilians, unsigned char poverty);
 ```
 
-**Current Code** (lines 1614-1627):
-- Tax rate contribution with randomization
-- Military burden calculation (ratio-based)
-- Poverty adjustment
-- Previous inflation decay
-
 **Test Cases**:
 1. Zero military, zero taxes → minimal inflation
 2. High tax rate → proportional inflation increase
@@ -149,6 +171,9 @@ short calculate_inflation_base(int tax_rate, long military, long civilians, unsi
 ---
 
 ##### 3. `apply_inflation_to_treasury()`
+
+**Current Code** (lines 1633-1637): Overflow-protected treasury reduction
+
 ```c
 /*
  * apply_inflation_to_treasury - Apply inflation effects to national gold reserves
@@ -169,11 +194,6 @@ short calculate_inflation_base(int tax_rate, long military, long civilians, unsi
 long apply_inflation_to_treasury(long gold, short inflation);
 ```
 
-**Current Code** (lines 1633-1637):
-- Overflow protection for large treasuries
-- Precision maintenance for normal economies
-- Mathematical equivalence between branches
-
 **Test Cases**:
 1. Small treasury (< 1M) → multiplication formula
 2. Large treasury (> 1M) → division formula
@@ -185,6 +205,9 @@ long apply_inflation_to_treasury(long gold, short inflation);
 ---
 
 ##### 4. `calculate_charity_distribution()`
+
+**Current Code** (lines 1572-1582): Wealth redistribution calculation
+
 ```c
 /*
  * calculate_charity_distribution - Distribute wealth via charity system
@@ -193,7 +216,7 @@ long apply_inflation_to_treasury(long gold, short inflation);
  * charity rate setting and gold increase during turn.
  *
  * Parameters:
- *   gold_increase - Gold gained during turn (spread.gold - curntn->tgold)
+ *   gold_increase - Gold gained during turn
  *   charity_rate - National charity percentage (0-100)
  *   civilians - Total civilian population
  *
@@ -205,11 +228,6 @@ long apply_inflation_to_treasury(long gold, short inflation);
 long calculate_charity_distribution(long gold_increase, unsigned char charity_rate, long civilians);
 ```
 
-**Current Code** (lines 1572-1582):
-- Proportional distribution calculation
-- Zero-population safety check
-- Negative increase handling (no charity from losses)
-
 **Test Cases**:
 1. Positive gold increase → proportional distribution
 2. Negative gold increase → zero charity
@@ -220,6 +238,9 @@ long calculate_charity_distribution(long gold_increase, unsigned char charity_ra
 ---
 
 ##### 5. `apply_charity_effects()`
+
+**Current Code** (lines 1605-1612): Social effects of wealth redistribution
+
 ```c
 /*
  * apply_charity_effects - Modify popularity and poverty based on charity
@@ -247,11 +268,6 @@ struct charity_effects apply_charity_effects(unsigned char current_popularity,
                                              long charity_per_civilian);
 ```
 
-**Current Code** (lines 1605-1612):
-- Popularity boost with cap
-- Poverty reduction (halving formula)
-- Boundary protection (no negative poverty)
-
 **Test Cases**:
 1. Large charity → capped popularity, significant poverty reduction
 2. Small charity → minor effects
@@ -277,9 +293,12 @@ struct charity_effects apply_charity_effects(unsigned char current_popularity,
 **Current State**: Standalone function but contains extractable sub-calculations
 **Category**: Pure calculation (already marked "Category A - Unit Testable")
 
-#### Extractable Functions
+#### Extractable Functions (4 functions, 12-18 tests)
 
 ##### 1. `calculate_tradegood_attractiveness()`
+
+**Current Code** (lines 242-245): Trade good value matching
+
 ```c
 /*
  * calculate_tradegood_attractiveness - Base attractiveness from trade goods
@@ -300,22 +319,14 @@ struct charity_effects apply_charity_effects(unsigned char current_popularity,
 int calculate_tradegood_attractiveness(int tradegood, int designation, char trade_good_value);
 ```
 
-**Current Code** (lines 242-245):
-- Trade good type checking
-- Designation matching logic
-- Special handling for mines (excluded from calculation)
-
-**Test Cases**:
-1. No trade good → 0 attractiveness
-2. Trade good + matching designation → value * TGATTR
-3. Mine designation → 0 (excluded)
-4. Goldmine designation → 0 (excluded)
-
 **Extraction Value**: ⭐⭐⭐⭐
 
 ---
 
 ##### 2. `calculate_designation_attractiveness()`
+
+**Current Code** (lines 247-271): Sector improvement value
+
 ```c
 /*
  * calculate_designation_attractiveness - Attractiveness based on sector improvements
@@ -328,7 +339,7 @@ int calculate_tradegood_attractiveness(int tradegood, int designation, char trad
  *   jewels - Jewel resource level (0-10+)
  *   metal - Metal resource level (0-10+)
  *   food_production - Food produced by sector
- *   food_scarcity_bonus - Bonus for farms during food shortage (calculated separately)
+ *   food_scarcity_bonus - Bonus for farms during food shortage
  *
  * Returns:
  *   Designation-based attractiveness value (0+)
@@ -338,13 +349,6 @@ int calculate_tradegood_attractiveness(int tradegood, int designation, char trad
 int calculate_designation_attractiveness(int designation, int jewels, int metal,
                                         int food_production, int food_scarcity_bonus);
 ```
-
-**Current Code** (lines 247-271):
-- Gold mine attractiveness (jewel-based, doubled if jewels >= 6)
-- Farm attractiveness (food-based or scarcity bonus)
-- City/Capitol/Town fixed bonuses
-- Mine attractiveness (metal-based, doubled if metal >= 6)
-- Habitable "other" designation bonus
 
 **Test Cases**:
 1. Goldmine with low jewels (<6) → GOLDATTR * jewels
@@ -361,6 +365,9 @@ int calculate_designation_attractiveness(int designation, int jewels, int metal,
 ---
 
 ##### 3. `calculate_farm_scarcity_bonus()`
+
+**Current Code** (lines 253-255): Food shortage detection
+
 ```c
 /*
  * calculate_farm_scarcity_bonus - Determine if nation has food shortage
@@ -383,20 +390,14 @@ int calculate_designation_attractiveness(int designation, int jewels, int metal,
 int calculate_farm_scarcity_bonus(long nation_food, int eat_rate, long civilians);
 ```
 
-**Current Code** (lines 253-255):
-- Complex ratio comparison
-- Threshold formula (250:11 ratio with eat_rate multiplier)
-
-**Test Cases**:
-1. Abundant food → no scarcity (0)
-2. Low food → scarcity detected (1)
-3. Edge case at threshold boundary
-
 **Extraction Value**: ⭐⭐⭐
 
 ---
 
 ##### 4. `calculate_race_terrain_bonus()`
+
+**Current Code** (lines 273-380): Complex race preference system
+
 ```c
 /*
  * calculate_race_terrain_bonus - Race-specific environmental preferences
@@ -421,16 +422,6 @@ int calculate_farm_scarcity_bonus(long nation_food, int eat_rate, long civilians
 int calculate_race_terrain_bonus(int race, int designation, int jewels, int metal,
                                  int vegetation, int altitude);
 ```
-
-**Current Code** (lines 273-380):
-- Four race-specific switch cases (DWARF, ELF, HUMAN, ORC)
-- Each race has unique bonuses for:
-  - Goldmines with high jewels
-  - Mines with high metal
-  - Towns/Cities/Capitols
-  - Vegetation preferences (wood, forest)
-  - Altitude preferences (mountain, hill, clear)
-- Water/peak altitude zeroes out attractiveness
 
 **Test Cases** (by race):
 - **Dwarf**: Mountain/hill bonuses, mine preference
@@ -459,9 +450,12 @@ int calculate_race_terrain_bonus(int race, int designation, int jewels, int meta
 **Current State**: Embedded in sector processing loop
 **Category**: Demographic simulation
 
-#### Extractable Functions
+#### Extractable Functions (3 functions, 9-12 tests)
 
 ##### 1. `calculate_population_growth()`
+
+**Current Code** (lines 1492-1522): Size-based growth with urban penalty
+
 ```c
 /*
  * calculate_population_growth - Calculate population increase for sector
@@ -472,12 +466,12 @@ int calculate_race_terrain_bonus(int race, int designation, int jewels, int meta
  * - Small populations (< 100): 10% growth rate (bootstrap)
  * - Normal populations: Full reproduction rate
  *
- * Urban designations (cities, capitols, towns) always use half rate regardless of size.
+ * Urban designations (cities, capitols, towns) always use half rate.
  *
  * Parameters:
  *   current_population - Current sector population (0+)
- *   reproduction_rate - Seasonal reproduction rate (calculated from nation repro / 4)
- *   designation - Sector designation (DCITY, DCAPITOL, DTOWN, or other)
+ *   reproduction_rate - Seasonal reproduction rate
+ *   designation - Sector designation
  *
  * Returns:
  *   New population after growth (capped at ABSMAXPEOPLE)
@@ -487,25 +481,14 @@ int calculate_race_terrain_bonus(int race, int designation, int jewels, int meta
 long calculate_population_growth(long current_population, int reproduction_rate, int designation);
 ```
 
-**Current Code** (lines 1492-1522):
-- Four-tier population size handling
-- Urban growth reduction (half rate)
-- Maximum population cap enforcement
-- Small population bootstrap growth
-
-**Test Cases**:
-1. Huge population (>= ABSMAXPEOPLE) → no growth, cap enforced
-2. Large non-urban (> TOMANYPEOPLE) → repro/200 growth rate
-3. Large urban (city/capitol/town) → repro/200 growth rate
-4. Small population (< 100) → 10% growth
-5. Normal population → repro/100 growth rate
-6. Edge cases at threshold boundaries
-
 **Extraction Value**: ⭐⭐⭐⭐⭐
 
 ---
 
 ##### 2. `calculate_resource_depletion()`
+
+**Current Code** (lines 1495-1521): Mining efficiency degradation
+
 ```c
 /*
  * calculate_resource_depletion - Determine if mine resources should deplete
@@ -516,8 +499,8 @@ long calculate_population_growth(long current_population, int reproduction_rate,
  * Parameters:
  *   population - Current sector population
  *   resource_amount - Metal or jewel resource level
- *   depletion_threshold - TOMUCHMINED constant (overmining threshold)
- *   random_factor - Random value 0-99 (from rand() % 100)
+ *   depletion_threshold - TOMUCHMINED constant
+ *   random_factor - Random value 0-99
  *
  * Returns:
  *   1 if resource should deplete, 0 otherwise
@@ -530,28 +513,19 @@ int calculate_resource_depletion(long population, int resource_amount,
                                 int depletion_threshold, int random_factor);
 ```
 
-**Current Code** (lines 1495-1521):
-- Population/resource ratio calculation
-- Randomized depletion threshold
-- Different formulas for huge vs large populations (2x factor)
-
-**Test Cases**:
-1. Low population, high resources → no depletion
-2. High population, low resources → likely depletion
-3. Huge population (2x multiplier) → increased depletion chance
-4. Random factor influence on probabilistic depletion
-
 **Extraction Value**: ⭐⭐⭐⭐
 
 ---
 
 ##### 3. `should_exhaust_mine()`
+
+**Current Code** (lines 1524-1528): Mine exhaustion detection
+
 ```c
 /*
  * should_exhaust_mine - Check if mine should convert to devastated sector
  *
- * Determines if mine/goldmine has exhausted all extractable resources
- * and should be converted to devastated designation.
+ * Determines if mine/goldmine has exhausted all extractable resources.
  *
  * Parameters:
  *   designation - Sector designation (DMINE or DGOLDMINE)
@@ -565,18 +539,6 @@ int calculate_resource_depletion(long population, int resource_amount,
  */
 int should_exhaust_mine(int designation, int metal, int jewels);
 ```
-
-**Current Code** (lines 1524-1528):
-- Goldmine exhaustion (jewels == 0)
-- Mine exhaustion (metal == 0)
-- Designation change to DDEVASTATED
-- Trade good removal (TG_none)
-
-**Test Cases**:
-1. Goldmine with jewels > 0 → not exhausted
-2. Goldmine with jewels == 0 → exhausted
-3. Mine with metal > 0 → not exhausted
-4. Mine with metal == 0 → exhausted
 
 **Extraction Value**: ⭐⭐⭐
 
@@ -598,12 +560,15 @@ int should_exhaust_mine(int designation, int metal, int jewels);
 **Current State**: Embedded in military update loop
 **Category**: Military mechanics
 
-#### Extractable Functions
+#### Extractable Functions (3 functions, 9-12 tests)
 
 ##### 1. `calculate_siege_attacker_strength()`
+
+**Current Code** (lines 1837-1850): Attacker strength with siege engine bonuses
+
 ```c
 /*
- * calculate_siege_attacker_strength - Calculate total attacker strength in siege
+ * calculate_siege_attacker_strength - Calculate total attacker strength
  *
  * Sums military strength of all attacking units in sector, applying
  * special bonuses for siege engines (count as 3x regular troops).
@@ -625,26 +590,17 @@ int calculate_siege_attacker_strength(struct s_nation nations[],
                                      int max_nations, int max_armies);
 ```
 
-**Current Code** (lines 1837-1850):
-- Nested nation/army loops
-- Siege engine 3x multiplier
-- Regular troop counting
-- Status filtering (SIEGE status only)
-
-**Test Cases**:
-1. No attackers → strength = 0
-2. Regular troops only → sum of soldiers
-3. Siege engines only → 3x soldiers
-4. Mixed force → regular + 3*siege engines
-
 **Extraction Value**: ⭐⭐⭐⭐
 
 ---
 
 ##### 2. `calculate_siege_defender_strength()`
+
+**Current Code** (lines 1852-1861): Defender strength with militia penalty
+
 ```c
 /*
- * calculate_siege_defender_strength - Calculate total defender strength in siege
+ * calculate_siege_defender_strength - Calculate total defender strength
  *
  * Sums military strength of defending nation's forces, applying
  * penalty for militia units (count as 50% effective when besieged).
@@ -665,22 +621,14 @@ int calculate_siege_defender_strength(struct s_nation *defender_nation,
                                      int max_armies);
 ```
 
-**Current Code** (lines 1852-1861):
-- Owner nation army iteration
-- Militia penalty (50% effectiveness)
-- Regular troops full strength
-- Location matching
-
-**Test Cases**:
-1. Regular troops only → full soldier count
-2. Militia only → half soldier count
-3. Mixed defenders → regular + militia/2
-
 **Extraction Value**: ⭐⭐⭐⭐
 
 ---
 
 ##### 3. `is_siege_valid()`
+
+**Current Code** (line 1862): Simple 2:1 ratio validation
+
 ```c
 /*
  * is_siege_valid - Validate siege based on attacker/defender strength ratio
@@ -699,15 +647,6 @@ int calculate_siege_defender_strength(struct s_nation *defender_nation,
  */
 int is_siege_valid(int attacker_strength, int defender_strength);
 ```
-
-**Current Code** (line 1862):
-- Simple 2:1 ratio check
-- Boolean return
-
-**Test Cases**:
-1. Attackers > 2*defenders → valid (1)
-2. Attackers == 2*defenders → valid (1)
-3. Attackers < 2*defenders → invalid (0)
 
 **Extraction Value**: ⭐⭐⭐
 
@@ -729,9 +668,12 @@ int is_siege_valid(int attacker_strength, int defender_strength);
 **Current State**: Mixed with mail/news I/O
 **Category**: Economic consequences
 
-#### Extractable Functions
+#### Extractable Functions (3 functions, 9-12 tests)
 
 ##### 1. `calculate_famine_deaths()`
+
+**Current Code** (lines 2185-2194): Death from starvation
+
 ```c
 /*
  * calculate_famine_deaths - Determine population loss from famine
@@ -751,28 +693,19 @@ int is_siege_valid(int attacker_strength, int defender_strength);
 long calculate_famine_deaths(long sector_population, long food_deficit);
 ```
 
-**Current Code** (lines 2185-2194):
-- Two-path calculation (small vs large population)
-- 1:3 food:death ratio
-- Maximum 1/3 population loss cap
-- Food deficit consumption
-
-**Test Cases**:
-1. Small deficit → proportional deaths (deficit/3)
-2. Large deficit → capped deaths (population/3)
-3. Edge case: deficit == 3*population
-4. Edge case: tiny deficit (< 3)
-
 **Extraction Value**: ⭐⭐⭐⭐
 
 ---
 
 ##### 2. `apply_famine_to_sector()`
+
+**Current Code** (lines 2185-2194): Population and food updates
+
 ```c
 /*
  * apply_famine_to_sector - Update sector and food after famine deaths
  *
- * Calculates population reduction and food deficit changes after famine event.
+ * Calculates population reduction and food deficit changes.
  *
  * Parameters:
  *   sector_population - Current sector population
@@ -790,22 +723,14 @@ struct famine_result {
 struct famine_result apply_famine_to_sector(long sector_population, long food_deficit);
 ```
 
-**Current Code** (lines 2185-2194):
-- Death calculation
-- Population reduction
-- Food deficit update
-- Two-phase logic based on population size
-
-**Test Cases**:
-1. Small population → entire deficit may be absorbed
-2. Large population → deficit reduced by deaths
-3. Verification: deaths = min(pop/3, deficit/3)
-
 **Extraction Value**: ⭐⭐⭐⭐
 
 ---
 
 ##### 3. `calculate_food_spoilage()`
+
+**Current Code** (lines 2218-2219): Spoilage rate application
+
 ```c
 /*
  * calculate_food_spoilage - Apply spoilage rate to remaining food
@@ -827,16 +752,6 @@ struct famine_result apply_famine_to_sector(long sector_population, long food_de
 long calculate_food_spoilage(long current_food, unsigned char spoilage_rate);
 ```
 
-**Current Code** (lines 2218-2219):
-- Percentage-based reduction
-- Float intermediate calculation (precision)
-- Conversion back to long
-
-**Test Cases**:
-1. Zero spoilage (0%) → no change
-2. Moderate spoilage (20%) → 80% remains
-3. High spoilage (50%) → 50% remains
-
 **Extraction Value**: ⭐⭐⭐
 
 ---
@@ -851,60 +766,7 @@ long calculate_food_spoilage(long current_food, unsigned char spoilage_rate);
 
 ---
 
-## Moderate Extraction Candidates
-
-### Movement Point Calculations (updmil: lines 1808-1909)
-
-**Challenge**: Tightly coupled with army status updates
-**Extractable Logic**: Movement calculation formulas based on unit type, status, magic
-**Effort**: Medium - requires careful separation of calculation from state updates
-**Value**: ⭐⭐⭐ - Would improve testability but higher refactoring risk
-
-**Potential Functions**:
-- `calculate_base_movement(unit_type, nation_max_move, army_status)`
-- `apply_magic_movement_modifiers(base_movement, magic_flags, ownership)`
-- `calculate_group_movement(leader_movement, member_movements[])`
-
-**Decision**: **DEFER** to later phase - requires more invasive refactoring
-
----
-
-## Functions NOT Suitable for Extraction
-
-### `update()` - Master Turn Coordinator (lines 102-182)
-**Why Not**: Pure orchestration logic, no extractable calculations
-**Pattern**: Sequential subsystem calls with integrity checks
-**Value**: Already appropriate architecture (orchestrator pattern)
-
-### `updexecs()` - Nation Execution Loop (lines 864-1045)
-**Why Not**: Heavy I/O (file, mail, random execution), stateful
-**Pattern**: Complex iteration with side effects
-**Value**: Would require complete re-architecture (beyond scope)
-
-### `updcapture()` - Sector Capture Processing (lines 1248-1354)
-**Why Not**: State modification core purpose, mail notifications integral
-**Pattern**: Territory ownership changes with notifications
-**Value**: Appropriate for its purpose (state transformation)
-
-### `updmil()` - Military Update (lines 1759-2057)
-**Why Not**: 300+ lines of stateful updates, too large and complex
-**Pattern**: Massive state transformation with naval/siege/movement updates
-**Value**: Needs full re-architecture (separate epic)
-**Note**: Siege calculations (lines 1835-1867) ARE extractable despite being in this function
-
-### `updleader()` - Leader/Monster Spawning (lines 2357-2444)
-**Why Not**: Side effects are primary purpose (unit creation)
-**Pattern**: Probabilistic spawning with state modification
-**Value**: Birth rate calculations could be extracted but low ROI
-
-### `move_people()` - Population Migration (lines 2564-2631)
-**Why Not**: Memory buffer manipulation, algorithmic not calculational
-**Pattern**: Circular buffer matrix operations
-**Value**: Already well-optimized for its purpose
-
----
-
-## Extraction Summary
+## Part 1 Summary: Extraction Potential
 
 ### Total Extraction Potential
 
@@ -925,196 +787,286 @@ long calculate_food_spoilage(long current_food, unsigned char spoilage_rate);
 
 ---
 
-## Strategic Recommendations
+## Part 2: Architectural Placement Analysis
 
-### Re-engineering Decision Analysis
+### 2.1 Functions That Belong Here ✅
 
-#### Evidence for Separate Branch/Version:
+All 12 functions in update.c are correctly placed as turn processing orchestration:
 
-1. **Volume**: 18 extractable functions from ONE file
-2. **Scope**: 4 new source files + 4 test files = 8 new files
-3. **Effort**: 6-7 hours for one file (8-10 more files to analyze)
-4. **Impact**: Core game mechanics refactored (economics, population, military)
-5. **Architecture**: Fundamental separation of business logic from infrastructure
+| Function | Lines | Placement | Rationale |
+|----------|-------|-----------|-----------|
+| `update()` | 102-182 | ✅ CORRECT | Master turn coordinator |
+| `updexecs()` | 864-1045 | ✅ CORRECT | Nation execution coordinator |
+| `updsectors()` | 1453-1643 | ✅ CORRECT | World sector update |
+| `updcapture()` | 1248-1354 | ✅ CORRECT | Territory capture processing |
+| `updmil()` | 1759-2057 | ✅ CORRECT | Military update |
+| `updcomodities()` | 2160-2255 | ✅ CORRECT | Economic commodities |
+| `updleader()` | 2357-2444 | ✅ CORRECT | Leadership spawning |
+| `score()` | 657-663 | ✅ CORRECT | Scoring update |
+| `armymove()` | 447-611 | ✅ CORRECT | AI army movement |
+| `do_lizard()` | 1111-1165 | ✅ CORRECT | Special race update |
+| `attract()` | 236-384 | ✅ CORRECT | Population migration |
+| `move_people()` | 2564-2631 | ✅ CORRECT | Civilian movement |
 
-#### Branch Strategy Recommendation:
+**Analysis**: update.c demonstrates **exemplary architectural cohesion** - every function is directly related to turn processing and game state updates.
 
-**Option A: Feature Branch (Recommended)**
-- Branch: `feature/phase-10.2-pure-function-extraction`
-- Base: `phase_10_deep_refactoring`
-- Merge strategy: Squash merge or feature merge with comprehensive testing
-- Version: Maintain 4.x (architectural refactor, not feature change)
+### 2.2 Functions That Should Move ❌
 
-**Option B: New Minor Version**
-- Branch: `release/4.y` (where y = x + 1)
-- Rationale: Significant architectural changes warrant version increment
-- Migration: Provide compatibility notes for any API changes
-- Version: 4.x → 4.y (minor version bump)
+**NONE** - All functions are properly placed.
 
-**Option C: Continue in Current Branch**
-- Risk: High - substantial changes may destabilize current work
-- Benefit: Simpler git history
-- Recommendation: Only if extraction is done incrementally with heavy testing
+### 2.3 Architectural Strengths 💪
 
-### Recommended Approach:
+1. **Clear Responsibility**: Turn processing and world update coordination
+2. **Logical Grouping**: Related functions co-located appropriately
+3. **Orchestration Pattern**: Master functions delegate to subsystems appropriately
+4. **No Feature Creep**: No unrelated utility functions
 
-```bash
-# Create feature branch from current phase branch
-git checkout phase_10_deep_refactoring
-git checkout -b feature/phase-10.2-pure-function-extraction
+### 2.4 Comparison to Problem Files
 
-# Work in feature branch with frequent commits
-# Each extraction gets its own commit:
-# - [EXTRACT] Poverty/inflation calculations → nation_economics.c
-# - [EXTRACT] Sector attractiveness → sector_attractiveness.c
-# etc.
+| Aspect | update.c | admin.c | io.c | misc.c |
+|--------|----------|---------|------|--------|
+| Misplaced Functions | 0% | 29% | 60% | 70% |
+| Architectural Debt | ⭐ NONE | ⭐⭐⭐⭐⭐ CRITICAL | ⭐⭐ POOR | ⭐⭐ POOR |
+| Recommendation | NO RELOCATION | RELOCATE 3 | RELOCATE 9 | ELIMINATE FILE |
 
-# When complete, merge back to phase_10_deep_refactoring
-# After full phase 10 completion, consider version increment for release
+**Conclusion**: update.c is a **model file** for architectural organization.
+
+---
+
+## Part 3: Configuration Coupling Identification
+
+### 3.1 Magic Numbers Requiring Externalization
+
+**Critical Discovery**: update.c contains **61+ hard-coded constants** controlling game balance, economics, and mechanics.
+
+#### Category 1: Population Growth (7 constants)
+
+**Lines**: 1480-1522
+
+```c
+// Current hardcoded values:
+if (sptr->people >= ABSMAXPEOPLE)  // 32767
+if (sptr->people < 100)  // Small population threshold
+sptr->people += sptr->people / 10;  // 10% growth
+sptr->people += (rephold * sptr->people) / 100;  // Normal growth divisor
+sptr->people += (rephold * sptr->people) / 200;  // Urban growth penalty
 ```
 
----
+**Proposed Configuration**:
+```c
+// game_balance.h
+#define POPULATION_MAX_SECTOR           32767
+#define POPULATION_URBAN_THRESHOLD      10000
+#define POPULATION_SMALL_THRESHOLD      100
+#define POPULATION_SMALL_GROWTH_BONUS   10
+#define POPULATION_BASE_GROWTH_DIVISOR  100
+#define POPULATION_URBAN_GROWTH_DIVISOR 200
+#define POPULATION_DESERT_FOOD_MIN      100
+```
 
-## Implementation Roadmap
-
-### Phase 10.2.2 Execution Plan
-
-#### Session 1: Foundation (2-3 hours)
-1. **Setup** (30 min):
-   - Create `nation_economics.c/h`, `sector_attractiveness.c/h`
-   - Create corresponding test files
-   - Update CMakeLists.txt
-   - Create stub test framework
-
-2. **Priority 1: Poverty/Inflation** (1.5h):
-   - Extract 5 economic calculation functions
-   - Write 15-20 unit tests
-   - Verify all tests pass
-   - Refactor `updsectors()` to use new functions
-   - Verify zero behavioral change
-   - Git commit
-
-3. **Priority 2: Attractiveness (Start)** (1h):
-   - Extract `calculate_tradegood_attractiveness()`
-   - Extract `calculate_farm_scarcity_bonus()`
-   - Write 7-9 tests
-   - Git commit
-
-#### Session 2: Completion (2-3 hours)
-4. **Priority 2: Attractiveness (Finish)** (1h):
-   - Extract `calculate_designation_attractiveness()`
-   - Extract `calculate_race_terrain_bonus()`
-   - Write 10-12 tests
-   - Refactor `attract()` to use new functions
-   - Git commit
-
-5. **Priority 3: Population Growth** (1h):
-   - Extract 3 population functions
-   - Write 9-12 tests
-   - Refactor `updsectors()` population code
-   - Git commit
-
-6. **Priorities 4-5: Military & Famine** (1h):
-   - Extract siege calculations
-   - Extract famine calculations
-   - Write 18-24 tests
-   - Git commits
-
-7. **Validation** (30 min):
-   - Run full test suite (verify 40-85 tests passing)
-   - Run build with all warning levels
-   - Manual smoke testing
-   - Create session memory
+**Priority**: ⭐⭐⭐⭐⭐ CRITICAL
 
 ---
 
-## Testing Strategy
+#### Category 2: Poverty Calculation (11 constants)
 
-### Unit Test Coverage Goals
+**Lines**: 1584-1602
 
-**Per-Function Testing**:
-- Boundary conditions (min, max, zero, negative)
-- Typical cases (common game scenarios)
-- Edge cases (threshold boundaries)
-- Error conditions (invalid inputs)
+```c
+// Complex poverty tiers:
+if (curntn->tgold / curntn->tciv < 30L)
+    curntn->poverty = 95L - curntn->tgold / curntn->tciv;
+else if (curntn->tgold / curntn->tciv < 80L)
+    curntn->poverty = 65L - (curntn->tgold / curntn->tciv - 30L) / 2L;
+// ... continues for 4 more tiers
+```
 
-**Integration Testing**:
-- Verify calling code produces identical results
-- Test full turn processing with new functions
-- Compare output with baseline (pre-extraction)
+**Proposed Configuration**:
+```c
+// game_balance.h - Poverty Thresholds
+#define POVERTY_WEALTH_THRESHOLD_1      30L
+#define POVERTY_WEALTH_THRESHOLD_2      80L
+#define POVERTY_WEALTH_THRESHOLD_3      120L
+#define POVERTY_WEALTH_THRESHOLD_4      200L
+#define POVERTY_BASE_EXTREME            95L
+#define POVERTY_BASE_HIGH               65L
+#define POVERTY_BASE_MODERATE           40L
+#define POVERTY_BASE_LOW                30L
+#define POVERTY_BASE_WEALTHY            20
+#define POVERTY_DIVISOR_HIGH            2L
+#define POVERTY_DIVISOR_MODERATE        4L
+```
 
-**Regression Protection**:
-- All 10 existing tests must continue passing
-- No warning regressions (maintain level 9 clean)
-- Behavioral equivalence verification
+**Priority**: ⭐⭐⭐⭐⭐ CRITICAL
 
 ---
 
-## Risk Assessment
+#### Category 3: Inflation Formula (10 constants)
 
-### Extraction Risks
+**Lines**: 1614-1637
+
+```c
+curntn->inflation += safe_int_to_short(curntn->tax_rate / 4
+                   + (rand() % (curntn->tax_rate * 3 / 4 + 1)));
+
+if (spread.civilians > 0)
+    curntn->inflation += safe_long_to_short((curntn->tmil * 100 / spread.civilians - 15) / 5);
+
+curntn->inflation += safe_int_to_short((curntn->poverty - 50) / 2);
+
+if (curntn->tgold > 1000000L)
+    curntn->tgold = (curntn->tgold / (400L + curntn->inflation)) * 400L;
+```
+
+**Proposed Configuration**:
+```c
+// game_balance.h - Inflation
+#define INFLATION_TAX_DIVISOR           4
+#define INFLATION_TAX_RANDOM_FACTOR     3
+#define INFLATION_TAX_RANDOM_DIVISOR    4
+#define INFLATION_MILITARY_THRESHOLD    15
+#define INFLATION_MILITARY_DIVISOR      5
+#define INFLATION_MILITARY_MULTIPLIER   100
+#define INFLATION_POVERTY_THRESHOLD     50
+#define INFLATION_POVERTY_DIVISOR       2
+#define INFLATION_TREASURY_THRESHOLD    1000000L
+#define INFLATION_APPLICATION_BASE      400L
+```
+
+**Priority**: ⭐⭐⭐⭐⭐ CRITICAL
+
+---
+
+#### Category 4: Food Economy (5 constants)
+
+**Lines**: 2172-2219
+
+```c
+curntn->tfood -= safe_double_to_long(safe_long_to_double(curntn->tmil) * P_EATRATE * 2.0);
+curntn->tfood -= safe_double_to_long(safe_long_to_double(curntn->tciv) * P_EATRATE);
+
+dead = sptr->people / 3;  // Maximum 1/3 population loss
+sptr->people += curntn->tfood / 3;  // 1 death per 3 food deficit
+
+tempflt = safe_long_to_float(curntn->tfood) * (100 - curntn->spoilrate);
+```
+
+**Proposed Configuration**:
+```c
+// game_balance.h - Food Economy
+#define FOOD_MILITARY_CONSUMPTION_MULTIPLIER  2.0
+#define FOOD_CIVILIAN_CONSUMPTION_MULTIPLIER  1.0
+#define FAMINE_DEATH_DIVISOR                  3
+#define FAMINE_MAX_POPULATION_LOSS            3
+#define FOOD_SPOILAGE_PERCENTAGE_BASE         100
+```
+
+**Priority**: ⭐⭐⭐⭐⭐ CRITICAL
+
+---
+
+#### Category 5-11: Additional Configuration (28+ constants)
+
+**Remaining Categories**:
+- Resource Depletion (4 constants) - Lines 1495-1521
+- Leader Birth Rates (7 constants) - Lines 2366-2421
+- AI Movement (6 constants) - Lines 487-556, 1013-1017
+- Siege Mechanics (3 constants) - Lines 1843-1867
+- Random Events (3 constants) - Lines 154-159
+- Population Movement (2 constants) - Line 2594
+- Economic Balance (3+ constants) - Lines 2221-2234
+
+**Priority**: ⭐⭐⭐⭐ HIGH to ⭐⭐⭐ MEDIUM
+
+---
+
+### 3.2 Summary of Configuration Coupling
+
+| Category | Constants | Priority |
+|----------|-----------|----------|
+| Population Growth | 7 | ⭐⭐⭐⭐⭐ CRITICAL |
+| Resource Depletion | 4 | ⭐⭐⭐⭐ HIGH |
+| Poverty Calculation | 11 | ⭐⭐⭐⭐⭐ CRITICAL |
+| Inflation Formula | 10 | ⭐⭐⭐⭐⭐ CRITICAL |
+| Food/Famine | 5 | ⭐⭐⭐⭐⭐ CRITICAL |
+| Economic Balance | 3+ | ⭐⭐⭐⭐ HIGH |
+| Leader Birth Rates | 7 | ⭐⭐⭐ MEDIUM |
+| AI Movement | 6 | ⭐⭐⭐ MEDIUM |
+| Siege Mechanics | 3 | ⭐⭐⭐⭐ HIGH |
+| Random Events | 3 | ⭐⭐ LOW |
+| Population Movement | 2 | ⭐⭐⭐ MEDIUM |
+| **TOTAL** | **61+** | - |
+
+---
+
+## Comprehensive Recommendations
+
+### Immediate Actions (Phase 10.2.2)
+
+1. ✅ **CREATE** `game_balance.h` with all 61+ configuration parameters
+2. ✅ **REFACTOR** update.c to use named constants
+3. ✅ **DOCUMENT** each parameter with game design rationale
+4. ✅ **TEST** compilation and verify zero behavior changes
+
+**Effort**: 4-6 hours for configuration externalization
+
+---
+
+### Future Actions (Phase 10.3+)
+
+1. **EXTRACT** 18 pure calculation functions to utility modules
+2. **CREATE** comprehensive unit tests (54-74 tests)
+3. **ESTABLISH** game balance modding support
+4. **IMPLEMENT** configuration validation
+
+**Effort**: 6-7 hours for extraction + 8-12 hours for testing
+
+---
+
+### Code Quality Benefits
+
+**After Modernization**:
+- 🎯 **Testability**: Pure formulas become unit testable
+- 🔧 **Moddability**: Game balance tunable without recompilation
+- 📖 **Maintainability**: Clear documentation of design decisions
+- 🐛 **Debuggability**: Easy to identify balance issues
+- 🚀 **Experimentation**: Safe to try different balance parameters
+
+---
+
+## Final Assessment
+
+### Overall Ratings
+
+| Criterion | Rating | Details |
+|-----------|--------|---------|
+| **Extraction Potential** | ⭐⭐⭐⭐⭐ | 18 functions, 54-74 tests |
+| **Architectural Placement** | ⭐⭐⭐⭐⭐ | 0% misplaced code |
+| **Configuration Coupling** | ⭐⭐⭐⭐⭐ SEVERE | 61+ magic numbers |
+| **Overall Priority** | ⭐⭐⭐⭐⭐ | HIGHEST priority file |
+
+### Strategic Value
+
+update.c is the **single most valuable file** for Phase 10.2.2 refactoring:
+- Meets entire phase goal alone
+- Perfect architectural model
+- Critical game mechanics
+- High testability ROI
+- Low extraction risk
+
+### Risk Assessment
 
 | Risk | Likelihood | Impact | Mitigation |
 |------|------------|--------|------------|
-| Behavioral change | Low | High | Comprehensive unit tests, before/after comparison |
-| Performance regression | Very Low | Medium | Profile before/after, pure functions may improve |
-| Build breakage | Very Low | Medium | Incremental commits, CMake validation |
-| Test maintenance burden | Medium | Low | Good naming, clear test structure |
-| Over-engineering | Low | Medium | Extract only pure calculations, avoid premature optimization |
+| Behavioral change | Low | High | Comprehensive unit tests |
+| Performance regression | Very Low | Medium | Benchmark before/after |
+| Build breakage | Very Low | Medium | Incremental commits |
 
-### Success Factors
-
-✅ **High Success Probability**:
-1. All functions already documented (Phase 3 complete)
-2. Clear testing categories assigned
-3. Pure calculation logic (minimal I/O coupling)
-4. Well-understood game mechanics
-5. Existing test infrastructure in place
-
----
-
-## Dependencies & Prerequisites
-
-### Before Starting Extraction:
-
-✅ **Complete** (Already Done):
-- [ ] Phase 3 documentation (✅ DONE)
-- [ ] Testing infrastructure (✅ Unity framework operational)
-- [ ] CMake build system (✅ Functional)
-- [ ] Clean compilation (✅ Level 9 zero warnings)
-
-⏳ **Required** (To Do):
-- [ ] Create extraction analysis reports for other files
-- [ ] Decide on branching strategy
-- [ ] Create new source file stubs
-- [ ] Update CMakeLists.txt for new files
-
----
-
-## Conclusion
-
-### Overall Assessment: ⭐⭐⭐⭐⭐ EXCELLENT
-
-`update.c` represents an **ideal extraction candidate** with:
-- Clear separation between calculation and I/O
-- Well-documented functions with testing guidance
-- High-value business logic (economics, population, military)
-- Low extraction risk (pure mathematical functions)
-- Substantial testability improvements (54-74 new tests)
-
-### Key Decision Point:
-
-**This file alone meets the entire Phase 10.2.2 goal**, but analysis of other files (forms.c, navy.c, combat.c, etc.) will likely reveal similar opportunities, suggesting **total modernization scope may be 100+ extracted functions** across the codebase.
-
-**Recommendation**: Complete extraction analysis for all target files before beginning implementation to make informed branching/versioning decision.
+**Success Probability**: ⭐⭐⭐⭐⭐ VERY HIGH
 
 ---
 
 **Report Generated**: 2025-10-10
-**Next Steps**: Analyze forms.c, navy.c, combat.c, move.c, randeven.c, extcmds.c, cexecute.c
-**Final Deliverable**: Comparative summary report with re-engineering recommendation
-
----
-
 **Analysis Completed By**: Claude (claude-sonnet-4-5@20250929)
-**Session**: Phase 10.2.2 Planning - Pure Function Extraction Assessment
+**Status**: ✅ COMPLETE - Full 3-part analysis
+**Next Steps**: Consolidate remaining partial files (forms.c, navy.c, combat.c)
